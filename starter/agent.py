@@ -13,6 +13,7 @@ from starter.core.context_engine import (
     extract_constraints,
     infer_intent,
 )
+from starter.core.diagnostics import state_diagnostics
 from starter.core.planner import Strategy, StrategyConfig, plan_strategy
 from starter.core.query_builder import build_distilled_query
 from starter.core.ranking import rerank_candidates
@@ -182,8 +183,7 @@ class Agent:
             diagnostics = response.get("diagnostics") if isinstance(response, dict) else {}
             if not isinstance(diagnostics, dict):
                 diagnostics = {}
-            if state.override_events:
-                diagnostics["last_override"] = state.override_events[-1]
+            diagnostics.update(state_diagnostics(state))
             response["diagnostics"] = diagnostics
             raw_recommendations = response.get("recommendations") if isinstance(response, dict) else []
             candidate_texts = [

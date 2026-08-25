@@ -61,6 +61,8 @@ class AgentSmokeTest(unittest.TestCase):
             self.assertIn(agent._sessions["s1"].previous_strategy["intent"], {"buying", "browsing"})
             self.assertGreaterEqual(agent._sessions["s1"].previous_strategy["retrieval_depth"], 10)
             self.assertIn("strategy", first["diagnostics"])
+            self.assertIn("active_constraints", first["diagnostics"])
+            self.assertIn("distilled_query", first["diagnostics"])
             self.assertEqual(agent._sessions["s1"].previous_diagnostics["strategy"], third["diagnostics"]["strategy"])
             self.assertIsNotNone(first["ask_attribute"])
             self.assertIn(first["ask_attribute"], agent._sessions["s1"].asked_attributes)
