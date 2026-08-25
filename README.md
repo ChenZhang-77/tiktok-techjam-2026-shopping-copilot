@@ -104,6 +104,12 @@ selection uses fixed cross-validation within the 160-session development split;
 see `docs/development_folds_v1.json` and ADR-0001. Do not run holdout or full
 evaluation during ordinary B development.
 
+Run an individual development validation fold with:
+
+```bash
+./scripts/start_experiment.sh experiment-name --split development --fold fold_1
+```
+
 Each run creates a separate ignored local folder:
 
 ```text

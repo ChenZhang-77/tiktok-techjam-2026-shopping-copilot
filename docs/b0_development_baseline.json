@@ -29,25 +29,33 @@
       "sample_count": 8,
       "hit_rate_at_10": 0.875,
       "mrr": 0.775,
-      "mttc": 5.875
+      "mttc": 5.875,
+      "efficiency": 0.5125,
+      "recommended_technical_score": 0.7725
     },
     "browsing": {
       "sample_count": 64,
       "hit_rate_at_10": 0.8125,
       "mrr": 0.572241,
-      "mttc": 4.90625
+      "mttc": 4.90625,
+      "efficiency": 0.609375,
+      "recommended_technical_score": 0.699797
     },
     "buying": {
       "sample_count": 64,
       "hit_rate_at_10": 0.71875,
       "mrr": 0.449058,
-      "mttc": 5.234375
+      "mttc": 5.234375,
+      "efficiency": 0.576562,
+      "recommended_technical_score": 0.609405
     },
     "intent_override": {
       "sample_count": 24,
       "hit_rate_at_10": 0.708333,
       "mrr": 0.502827,
-      "mttc": 6.458333
+      "mttc": 6.458333,
+      "efficiency": 0.454167,
+      "recommended_technical_score": 0.595848
     }
   },
   "holdout_status": "exposed_before_b_stage",

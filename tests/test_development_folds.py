@@ -6,6 +6,7 @@ from pathlib import Path
 
 from experiments.development_folds import (
     build_development_fold_manifest,
+    filter_development_fold,
     validate_development_fold_manifest,
 )
 
@@ -15,6 +16,34 @@ def _sample(sample_id: str, scenario: str) -> dict:
 
 
 class DevelopmentFoldTest(unittest.TestCase):
+    def test_filters_samples_to_one_named_development_fold(self) -> None:
+        samples = [
+            _sample("sample_a", "buying"),
+            _sample("sample_b", "buying"),
+            _sample("sample_c", "buying"),
+        ]
+        manifest = {
+            "folds": {
+                "fold_1": ["sample_a", "sample_c"],
+                "fold_2": ["sample_b"],
+            }
+        }
+
+        selected = filter_development_fold(samples, manifest, "fold_1")
+
+        self.assertEqual([sample["sample_id"] for sample in selected], ["sample_a", "sample_c"])
+
+    def test_v1_protocol_rejects_a_different_fold_count(self) -> None:
+        samples = [_sample(f"buying_{index}", "buying") for index in range(8)]
+        public_split = {
+            "version": "public-split-v1",
+            "development": [sample["sample_id"] for sample in samples],
+            "holdout": [],
+        }
+
+        with self.assertRaisesRegex(ValueError, "fixed at 4"):
+            build_development_fold_manifest(samples, public_split, fold_count=5)
+
     def test_builds_complete_disjoint_stratified_folds_from_development_ids(self) -> None:
         scenarios = ("buying", "browsing", "intent_override", "boundary")
         samples = [
@@ -37,24 +66,27 @@ class DevelopmentFoldTest(unittest.TestCase):
             ],
         }
 
-        manifest = build_development_fold_manifest(samples, public_split, fold_count=2)
+        manifest = build_development_fold_manifest(samples, public_split)
 
         self.assertEqual(manifest["sample_count"], 16)
-        self.assertEqual(manifest["fold_count"], 2)
-        self.assertEqual(set(manifest["folds"]), {"fold_1", "fold_2"})
-        self.assertEqual({len(ids) for ids in manifest["folds"].values()}, {8})
+        self.assertEqual(manifest["fold_count"], 4)
+        self.assertEqual(set(manifest["folds"]), {"fold_1", "fold_2", "fold_3", "fold_4"})
+        self.assertEqual({len(ids) for ids in manifest["folds"].values()}, {4})
         self.assertEqual(
             set().union(*(set(ids) for ids in manifest["folds"].values())),
             set(development_ids),
         )
-        self.assertFalse(set(manifest["folds"]["fold_1"]) & set(manifest["folds"]["fold_2"]))
+        fold_sets = [set(ids) for ids in manifest["folds"].values()]
+        for index, left in enumerate(fold_sets):
+            for right in fold_sets[index + 1:]:
+                self.assertFalse(left & right)
 
         by_id = {sample["sample_id"]: sample["scenario_type"] for sample in samples}
         for fold_ids in manifest["folds"].values():
             counts = {scenario: 0 for scenario in scenarios}
             for sample_id in fold_ids:
                 counts[by_id[sample_id]] += 1
-            self.assertEqual(counts, {scenario: 2 for scenario in scenarios})
+            self.assertEqual(counts, {scenario: 1 for scenario in scenarios})
 
     def test_validation_rejects_an_id_assigned_to_multiple_folds(self) -> None:
         samples = [
@@ -89,7 +121,7 @@ class DevelopmentFoldTest(unittest.TestCase):
         public_split = json.loads(Path("docs/public_split_v1.json").read_text(encoding="utf-8"))
         committed = json.loads(Path("docs/development_folds_v1.json").read_text(encoding="utf-8"))
 
-        rebuilt = build_development_fold_manifest(samples, public_split, fold_count=4)
+        rebuilt = build_development_fold_manifest(samples, public_split)
 
         self.assertEqual(committed, rebuilt)
         validate_development_fold_manifest(samples, public_split, committed)

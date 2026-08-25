@@ -9,6 +9,7 @@ from pathlib import Path
 
 FOLD_VERSION = "development-folds-v1"
 FOLD_SEED = "techjam-2026-development-folds-v1"
+FOLD_COUNT = 4
 
 
 def _fold_key(sample_id: str) -> str:
@@ -20,10 +21,10 @@ def build_development_fold_manifest(
     samples: list[dict],
     public_split_manifest: dict,
     *,
-    fold_count: int = 4,
+    fold_count: int = FOLD_COUNT,
 ) -> dict:
-    if fold_count < 2:
-        raise ValueError("fold_count must be at least 2")
+    if fold_count != FOLD_COUNT:
+        raise ValueError(f"{FOLD_VERSION} is fixed at {FOLD_COUNT} folds")
 
     development_ids = [str(sample_id) for sample_id in public_split_manifest["development"]]
     if len(development_ids) != len(set(development_ids)):
@@ -105,6 +106,14 @@ def validate_development_fold_manifest(
             raise ValueError(f"Development folds are not stratified for scenario: {scenario}")
 
 
+def filter_development_fold(samples: list[dict], manifest: dict, fold_name: str) -> list[dict]:
+    folds = manifest.get("folds")
+    if not isinstance(folds, dict) or fold_name not in folds:
+        raise ValueError(f"Unknown development fold: {fold_name}")
+    selected_ids = {str(sample_id) for sample_id in folds[fold_name]}
+    return [sample for sample in samples if str(sample["sample_id"]) in selected_ids]
+
+
 def _load_jsonl(path: str | Path) -> list[dict]:
     with Path(path).open(encoding="utf-8") as handle:
         return [json.loads(line) for line in handle if line.strip()]
@@ -114,13 +123,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Create deterministic folds within the Development Set.")
     parser.add_argument("--dataset", default="data/public_set.jsonl")
     parser.add_argument("--public-split", default="docs/public_split_v1.json")
-    parser.add_argument("--fold-count", type=int, default=4)
     parser.add_argument("--output", default="docs/development_folds_v1.json")
     args = parser.parse_args()
 
     samples = _load_jsonl(args.dataset)
     public_split = json.loads(Path(args.public_split).read_text(encoding="utf-8"))
-    manifest = build_development_fold_manifest(samples, public_split, fold_count=args.fold_count)
+    manifest = build_development_fold_manifest(samples, public_split)
     validate_development_fold_manifest(samples, public_split, manifest)
 
     output = Path(args.output)

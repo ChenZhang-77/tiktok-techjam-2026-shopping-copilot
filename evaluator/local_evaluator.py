@@ -10,6 +10,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from evaluator.splits import filter_samples, load_split_manifest
+from experiments.development_folds import filter_development_fold
 from starter.agent import Agent
 
 
@@ -91,6 +92,24 @@ def behavior_for(scenario: str, card: dict, rng: random.Random) -> dict:
 def load_jsonl(path: str | Path) -> list[dict]:
     with Path(path).open(encoding="utf-8") as handle:
         return [json.loads(line) for line in handle if line.strip()]
+
+
+def select_evaluation_samples(
+    samples: list[dict],
+    *,
+    split: str,
+    public_split_manifest: dict | None = None,
+    development_fold: str | None = None,
+    development_fold_manifest: dict | None = None,
+) -> list[dict]:
+    if development_fold and split != "development":
+        raise ValueError("A development fold can only be used with the development split")
+    selected = filter_samples(samples, split, public_split_manifest)
+    if not development_fold:
+        return selected
+    if development_fold_manifest is None:
+        raise ValueError("A development-fold manifest is required when selecting a fold")
+    return filter_development_fold(selected, development_fold_manifest, development_fold)
 
 
 def normalize_recommendations(payload: object, catalog_ids: set[str]) -> list[str]:
@@ -303,12 +322,23 @@ def main() -> None:
     parser.add_argument("--output", default="results.json")
     parser.add_argument("--split", choices=("full", "development", "holdout"), default="full")
     parser.add_argument("--split-manifest", default="docs/public_split_v1.json")
+    parser.add_argument("--development-fold", choices=("fold_1", "fold_2", "fold_3", "fold_4"))
+    parser.add_argument("--development-fold-manifest", default="docs/development_folds_v1.json")
     args = parser.parse_args()
     samples = load_jsonl(args.dataset)
     manifest = None
     if args.split != "full":
         manifest = load_split_manifest(args.split_manifest)
-        samples = filter_samples(samples, args.split, manifest)
+    development_fold_manifest = None
+    if args.development_fold:
+        development_fold_manifest = load_split_manifest(args.development_fold_manifest)
+    samples = select_evaluation_samples(
+        samples,
+        split=args.split,
+        public_split_manifest=manifest,
+        development_fold=args.development_fold,
+        development_fold_manifest=development_fold_manifest,
+    )
     catalog_ids, categories, products = catalog_index(args.catalog)
     result = evaluate(Agent(args.catalog), samples, catalog_ids, categories, products)
     result["evaluation"] = {
@@ -316,6 +346,9 @@ def main() -> None:
         "split": args.split,
         "split_manifest": args.split_manifest if args.split != "full" else None,
         "split_version": manifest.get("version") if manifest else None,
+        "development_fold": args.development_fold,
+        "development_fold_manifest": args.development_fold_manifest if args.development_fold else None,
+        "development_fold_version": development_fold_manifest.get("version") if development_fold_manifest else None,
     }
     Path(args.output).write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({key: value for key, value in result.items() if key != "sessions"}, indent=2))

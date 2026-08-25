@@ -24,6 +24,16 @@ Rebuild and validate the fold manifest with:
 python3 -m experiments.development_folds
 ```
 
+Run one validation fold without touching the Exposed Holdout:
+
+```bash
+./scripts/start_experiment.sh b1-parity-fold-1 --split development --fold fold_1
+```
+
+Repeat with `fold_2`, `fold_3`, and `fold_4`. A retained experiment must report
+all four results; the ordinary unsuffixed development run remains the 160-session
+aggregate comparison against `docs/b0_development_baseline.json`.
+
 Recommended note format:
 
 ```markdown

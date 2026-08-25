@@ -10,6 +10,7 @@ json_escape() {
 
 NAME=""
 SPLIT="development"
+FOLD=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --split)
@@ -20,8 +21,16 @@ while [[ $# -gt 0 ]]; do
       SPLIT="${1#--split=}"
       shift
       ;;
+    --fold)
+      FOLD="${2:-}"
+      shift 2
+      ;;
+    --fold=*)
+      FOLD="${1#--fold=}"
+      shift
+      ;;
     -h|--help)
-      echo "Usage: ./scripts/start_experiment.sh [experiment-name] [--split development|full|holdout]"
+      echo "Usage: ./scripts/start_experiment.sh [experiment-name] [--split development|full|holdout] [--fold fold_1|fold_2|fold_3|fold_4]"
       echo "Default: development. The public holdout is exposed; use full only for the Final Public Run after freeze."
       exit 0
       ;;
@@ -44,13 +53,30 @@ case "$SPLIT" in
     exit 1
     ;;
 esac
+if [[ -n "$FOLD" ]]; then
+  case "$FOLD" in
+    fold_1|fold_2|fold_3|fold_4) ;;
+    *)
+      echo "Invalid development fold: $FOLD. Use fold_1, fold_2, fold_3, or fold_4." >&2
+      exit 1
+      ;;
+  esac
+  if [[ "$SPLIT" != "development" ]]; then
+    echo "--fold can only be used with --split development." >&2
+    exit 1
+  fi
+fi
 
 SLUG="$(printf '%s' "$NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
 if [[ -z "$SLUG" ]]; then
   SLUG="experiment"
 fi
 
-RUN_ID="$(date '+%Y-%m-%d-%H%M')-${SLUG}-${SPLIT}"
+RUN_SUFFIX="$SPLIT"
+if [[ -n "$FOLD" ]]; then
+  RUN_SUFFIX="${RUN_SUFFIX}-${FOLD}"
+fi
+RUN_ID="$(date '+%Y-%m-%d-%H%M')-${SLUG}-${RUN_SUFFIX}"
 RUN_DIR="experiments/runs/${RUN_ID}"
 COUNTER=2
 while [[ -e "$RUN_DIR" ]]; do
@@ -90,13 +116,18 @@ cat > "$RUN_DIR/metadata.json" <<EOF
   "git_commit": "$(json_escape "$GIT_COMMIT")",
   "git_dirty": $GIT_DIRTY,
   "split": "$(json_escape "$SPLIT")",
+  "development_fold": "$(json_escape "$FOLD")",
   "split_manifest": "docs/public_split_v1.json",
-  "command": "$(json_escape "./scripts/start_experiment.sh $NAME --split $SPLIT")"
+  "development_fold_manifest": "docs/development_folds_v1.json",
+  "command": "$(json_escape "./scripts/start_experiment.sh $NAME --split $SPLIT${FOLD:+ --fold $FOLD}")"
 }
 EOF
 
 if [[ -f docs/public_split_v1.json ]]; then
   cp docs/public_split_v1.json "$RUN_DIR/public_split_v1.json"
+fi
+if [[ -f docs/development_folds_v1.json ]]; then
+  cp docs/development_folds_v1.json "$RUN_DIR/development_folds_v1.json"
 fi
 
 cat > "$RUN_DIR/notes.md" <<EOF
@@ -114,7 +145,11 @@ See \`results.json\`.
 
 EOF
 
-"$PYTHON" -m evaluator.local_evaluator --split "$SPLIT" --output "$RUN_DIR/results.json"
+EVALUATOR_ARGS=(--split "$SPLIT" --output "$RUN_DIR/results.json")
+if [[ -n "$FOLD" ]]; then
+  EVALUATOR_ARGS+=(--development-fold "$FOLD")
+fi
+"$PYTHON" -m evaluator.local_evaluator "${EVALUATOR_ARGS[@]}"
 
 EXISTING_PIDS="$(lsof -ti :8765 2>/dev/null || true)"
 if [[ -n "$EXISTING_PIDS" ]]; then
