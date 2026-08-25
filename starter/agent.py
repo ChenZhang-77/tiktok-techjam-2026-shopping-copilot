@@ -5,6 +5,8 @@ import re
 import sqlite3
 from pathlib import Path
 
+from starter.core.response_guard import guard_response
+
 
 TOKEN_RE = re.compile(r"[a-z0-9]+", re.IGNORECASE)
 STOPWORDS = {
@@ -39,6 +41,8 @@ class Agent:
         self.catalog_path = Path(catalog_path)
         self.connection = sqlite3.connect(":memory:")
         self._sessions: set[str] = set()
+        self._catalog_ids: set[str] = set()
+        self._fallback_ids: list[str] = []
         self._build_index()
 
     def _build_index(self) -> None:
@@ -52,9 +56,12 @@ class Agent:
         with self.catalog_path.open(encoding="utf-8") as handle:
             for line in handle:
                 product = json.loads(line)
+                parent_asin = str(product["parent_asin"])
+                self._catalog_ids.add(parent_asin)
+                self._fallback_ids.append(parent_asin)
                 batch.append(
                     (
-                        str(product["parent_asin"]),
+                        parent_asin,
                         _text(product.get("title")),
                         _text(product.get("categories")),
                         _text(product.get("features")),
@@ -74,7 +81,7 @@ class Agent:
         # The profile is anonymized and may be used for personalization.
         self._sessions.add(session_id)
 
-    def respond(
+    def _respond_impl(
         self,
         session_id: str,
         user_message: str,
@@ -100,3 +107,26 @@ class Agent:
             "recommendations": recommendations,
             "usage": {"prompt_tokens": 0, "completion_tokens": 0},
         }
+
+    def respond(
+        self,
+        session_id: str,
+        user_message: str,
+        turn: int,
+        top_k: int,
+    ) -> dict:
+        try:
+            response = self._respond_impl(session_id, user_message, turn, top_k)
+        except Exception:
+            response = {
+                "message": "Here are the closest matches I found.",
+                "ask_attribute": None,
+                "recommendations": [],
+                "usage": {"prompt_tokens": 0, "completion_tokens": 0},
+            }
+        return guard_response(
+            response,
+            catalog_ids=self._catalog_ids,
+            fallback_ids=self._fallback_ids,
+            top_k=top_k,
+        )
