@@ -26,7 +26,7 @@ fi
 echo "Verifying checksum..."
 (
   cd "$DATA_DIR"
-  shasum -a 256 -c SHA256SUMS --ignore-missing
+  LC_ALL=C LANG=C shasum -a 256 -c SHA256SUMS --ignore-missing
 )
 
 if [[ ! -f "$CATALOG_JSONL" ]]; then
