@@ -72,6 +72,22 @@ Run the official weak starter baseline:
 
 The command writes `results.json`. The first target is to reproduce the official baseline in `docs/baseline_results.json`.
 
+## Realtime Process Visualizer
+
+The visualizer is a debugging tool for watching one public session turn by turn. It does not replace the official evaluator and does not modify `evaluator/local_evaluator.py`.
+
+```bash
+python3 visualizer/server.py
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8765
+```
+
+It shows the customer message, Agent message, `ask_attribute`, Top 10 recommendations, target product, and hit/rank status for each turn. The current BM25 baseline usually has `ask_attribute = null`; after improving `starter/agent.py`, the same page will show the improved multi-turn behavior.
+
 ## Development Plan
 
 Step 1: reproduce the official baseline.

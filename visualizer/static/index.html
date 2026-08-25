@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Track 4 Process Visualizer</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>Track 4 Process Visualizer</h1>
+        <p>Realtime view of one public shopping-copilot session.</p>
+      </div>
+      <div class="controls" aria-label="Run controls">
+        <label>
+          Session
+          <select id="sessionSelect"></select>
+        </label>
+        <label>
+          Delay
+          <select id="delaySelect">
+            <option value="0">0 ms</option>
+            <option value="400">400 ms</option>
+            <option value="700" selected>700 ms</option>
+            <option value="1200">1200 ms</option>
+          </select>
+        </label>
+        <button id="runButton" type="button">Run</button>
+        <button id="stopButton" type="button" disabled>Stop</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar" aria-label="Session metadata">
+        <section>
+          <h2>Session</h2>
+          <dl id="sessionMeta"></dl>
+        </section>
+        <section>
+          <h2>Target Product</h2>
+          <div id="targetBox" class="target-box">Select a session and run it.</div>
+        </section>
+        <section>
+          <h2>Final</h2>
+          <div id="finalBox" class="final-box">Waiting.</div>
+        </section>
+      </aside>
+
+      <section class="timeline" aria-label="Realtime conversation turns">
+        <div class="timeline-header">
+          <h2>Conversation</h2>
+          <span id="statusText">Idle</span>
+        </div>
+        <div id="turns" class="turns"></div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
