@@ -683,3 +683,20 @@ The project is submission-ready only when:
 - README, Devpost, public GitHub, public YouTube demo, disclosures, and team
   contributions satisfy the official deliverables,
 - the architecture and tradeoffs can be explained without framework buzzwords.
+
+## Agent skills
+
+### Issue tracker
+
+Engineering specs and tickets are tracked as local Markdown under `.scratch/`.
+See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The repository uses the default canonical triage-role names. See
+`docs/agents/triage-labels.md`.
+
+### Domain docs
+
+The repository uses a single-context domain-document layout. See
+`docs/agents/domain.md`.
