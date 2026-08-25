@@ -9,50 +9,44 @@
   <body>
     <header class="topbar">
       <div>
-        <h1>Track 4 Process Visualizer</h1>
-        <p>Realtime view of one public shopping-copilot session.</p>
+        <h1>Shopping Copilot Dialogue</h1>
+        <p>Inspect one selected customer session and its completed Agent trace.</p>
       </div>
       <div class="controls" aria-label="Run controls">
+        <label>
+          Experiment
+          <select id="experimentSelect"></select>
+        </label>
         <label>
           Session
           <select id="sessionSelect"></select>
         </label>
-        <label>
-          Delay
-          <select id="delaySelect">
-            <option value="0">0 ms</option>
-            <option value="400">400 ms</option>
-            <option value="700" selected>700 ms</option>
-            <option value="1200">1200 ms</option>
-          </select>
-        </label>
-        <button id="runButton" type="button">Run</button>
-        <button id="stopButton" type="button" disabled>Stop</button>
       </div>
     </header>
 
     <main class="layout">
       <aside class="sidebar" aria-label="Session metadata">
-        <section>
-          <h2>Session</h2>
+        <section class="side-panel">
+          <h2>Overall Metrics</h2>
+          <dl id="overallMetrics"></dl>
+          <div id="scenarioMetrics" class="scenario-metrics"></div>
+        </section>
+        <section class="side-panel">
+          <h2>Current Customer</h2>
           <dl id="sessionMeta"></dl>
-        </section>
-        <section>
-          <h2>Target Product</h2>
-          <div id="targetBox" class="target-box">Select a session and run it.</div>
-        </section>
-        <section>
-          <h2>Final</h2>
+          <h3>Target Product</h3>
+          <div id="targetBox" class="target-box">Select a session and start it.</div>
+          <h3>Session Result</h3>
           <div id="finalBox" class="final-box">Waiting.</div>
         </section>
       </aside>
 
       <section class="timeline" aria-label="Realtime conversation turns">
         <div class="timeline-header">
-          <h2>Conversation</h2>
+          <h2>Dialogue</h2>
           <span id="statusText">Idle</span>
         </div>
-        <div id="turns" class="turns"></div>
+        <div id="chat" class="chat"></div>
       </section>
     </main>
 

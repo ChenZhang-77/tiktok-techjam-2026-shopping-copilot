@@ -38,8 +38,10 @@ evaluator/local_evaluator.py      official local evaluator
 starter/agent.py                  editable weak BM25 baseline
 scripts/download_catalog.sh       downloads official catalog release asset
 scripts/run_baseline.sh           runs the local evaluator
+scripts/start_experiment.sh       runs one named experiment and opens its visualizer
 experiments/                      team experiment notes
 submission/                       final packaging notes
+visualizer/                       local dialogue and metric inspection page
 ```
 
 Large data files are intentionally not committed:
@@ -72,9 +74,39 @@ Run the official weak starter baseline:
 
 The command writes `results.json`. The first target is to reproduce the official baseline in `docs/baseline_results.json`.
 
-## Realtime Process Visualizer
+## Recommended Experiment Run
 
-The visualizer is a debugging tool for watching one public session turn by turn. It does not replace the official evaluator and does not modify `evaluator/local_evaluator.py`.
+For normal development, prefer the named experiment script:
+
+```bash
+./scripts/start_experiment.sh baseline-bm25
+```
+
+Replace `baseline-bm25` with a short name for the change being tested, such as:
+
+```bash
+./scripts/start_experiment.sh stateful-memory
+./scripts/start_experiment.sh slot-extraction-v1
+```
+
+Each run creates a separate ignored local folder:
+
+```text
+experiments/runs/YYYY-MM-DD-HHMM-experiment-name/
+```
+
+That folder contains:
+
+- `results.json`: metrics for that run
+- `agent_snapshot.py`: the `starter/agent.py` code used for that run
+- `metadata.json`: run name, time, branch, and commit
+- `notes.md`: experiment notes template
+
+The script also starts the local visualizer and opens the run-specific URL automatically.
+
+## Dialogue Visualizer
+
+The visualizer is a debugging tool for inspecting one public session at a time. It does not replace the official evaluator and does not modify `evaluator/local_evaluator.py`.
 
 ```bash
 python3 visualizer/server.py
@@ -86,7 +118,9 @@ Then open:
 http://127.0.0.1:8765
 ```
 
-It shows the customer message, Agent message, `ask_attribute`, Top 10 recommendations, target product, and hit/rank status for each turn. The current BM25 baseline usually has `ask_attribute = null`; after improving `starter/agent.py`, the same page will show the improved multi-turn behavior.
+It shows overall metrics for the selected experiment, current customer metadata, target product, customer messages, Agent messages, `ask_attribute`, Top 10 recommendations, and hit/rank status for each turn. Use the Experiment dropdown to switch between saved local runs.
+
+The current BM25 baseline usually has `ask_attribute = null`; after improving `starter/agent.py`, the same page will show the improved multi-turn behavior.
 
 ## Development Plan
 
