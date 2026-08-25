@@ -86,4 +86,7 @@ def guard_response(
     usage = _safe_usage(payload.get("usage"))
     if usage is not None:
         guarded["usage"] = usage
+    diagnostics = payload.get("diagnostics")
+    if isinstance(diagnostics, dict):
+        guarded["diagnostics"] = diagnostics
     return guarded
