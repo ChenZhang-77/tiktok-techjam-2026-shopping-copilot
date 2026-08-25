@@ -9,6 +9,7 @@ import uuid
 from collections import defaultdict
 from pathlib import Path
 
+from evaluator.splits import filter_samples, load_split_manifest
 from starter.agent import Agent
 
 
@@ -300,10 +301,22 @@ def main() -> None:
     parser.add_argument("--catalog", default="data/catalog.jsonl")
     parser.add_argument("--dataset", default="data/public_set.jsonl")
     parser.add_argument("--output", default="results.json")
+    parser.add_argument("--split", choices=("full", "development", "holdout"), default="full")
+    parser.add_argument("--split-manifest", default="docs/public_split_v1.json")
     args = parser.parse_args()
     samples = load_jsonl(args.dataset)
+    manifest = None
+    if args.split != "full":
+        manifest = load_split_manifest(args.split_manifest)
+        samples = filter_samples(samples, args.split, manifest)
     catalog_ids, categories, products = catalog_index(args.catalog)
     result = evaluate(Agent(args.catalog), samples, catalog_ids, categories, products)
+    result["evaluation"] = {
+        "dataset": args.dataset,
+        "split": args.split,
+        "split_manifest": args.split_manifest if args.split != "full" else None,
+        "split_version": manifest.get("version") if manifest else None,
+    }
     Path(args.output).write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({key: value for key, value in result.items() if key != "sessions"}, indent=2))
 

@@ -2,6 +2,15 @@
 
 Use this folder for team experiment notes. Do not commit large generated artifacts.
 
+Run ordinary experiments on the fixed development split:
+
+```bash
+./scripts/start_experiment.sh experiment-name --split development
+```
+
+Use `--split holdout` only after the approach is frozen for a later check. Use
+`--split full` for final public-set reporting, not for repeated tuning.
+
 Recommended note format:
 
 ```markdown

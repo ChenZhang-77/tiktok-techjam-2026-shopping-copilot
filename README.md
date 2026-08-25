@@ -39,6 +39,7 @@ starter/agent.py                  editable weak BM25 baseline
 scripts/download_catalog.sh       downloads official catalog release asset
 scripts/run_baseline.sh           runs the local evaluator
 scripts/start_experiment.sh       runs one named experiment and opens its visualizer
+docs/public_split_v1.json         fixed public-set development/holdout split
 experiments/                      team experiment notes
 submission/                       final packaging notes
 visualizer/                       local dialogue and metric inspection page
@@ -79,20 +80,28 @@ The command writes `results.json`. The first target is to reproduce the official
 For normal development, prefer the named experiment script:
 
 ```bash
-./scripts/start_experiment.sh baseline-bm25
+./scripts/start_experiment.sh baseline-bm25 --split development
 ```
 
 Replace `baseline-bm25` with a short name for the change being tested, such as:
 
 ```bash
-./scripts/start_experiment.sh stateful-memory
-./scripts/start_experiment.sh slot-extraction-v1
+./scripts/start_experiment.sh stateful-memory --split development
+./scripts/start_experiment.sh slot-extraction-v1 --split development
+```
+
+The supported splits are:
+
+```text
+development: 160 public sessions for ordinary iteration
+holdout:     40 public sessions reserved for a later frozen check
+full:        all 200 public sessions for final public reporting
 ```
 
 Each run creates a separate ignored local folder:
 
 ```text
-experiments/runs/YYYY-MM-DD-HHMM-experiment-name/
+experiments/runs/YYYY-MM-DD-HHMM-experiment-name-split/
 ```
 
 That folder contains:
@@ -100,6 +109,7 @@ That folder contains:
 - `results.json`: metrics for that run
 - `agent_snapshot.py`: the `starter/agent.py` code used for that run
 - `metadata.json`: run name, time, branch, and commit
+- `public_split_v1.json`: copied split manifest when present
 - `notes.md`: experiment notes template
 
 The script also starts the local visualizer and opens the run-specific URL automatically.

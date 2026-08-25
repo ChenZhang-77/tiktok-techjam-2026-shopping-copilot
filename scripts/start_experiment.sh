@@ -8,13 +8,48 @@ json_escape() {
   python3 -c 'import json, sys; print(json.dumps(sys.argv[1])[1:-1])' "$1"
 }
 
-NAME="${1:-baseline}"
+NAME=""
+SPLIT="full"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --split)
+      SPLIT="${2:-}"
+      shift 2
+      ;;
+    --split=*)
+      SPLIT="${1#--split=}"
+      shift
+      ;;
+    -h|--help)
+      echo "Usage: ./scripts/start_experiment.sh [experiment-name] [--split full|development|holdout]"
+      exit 0
+      ;;
+    *)
+      if [[ -z "$NAME" ]]; then
+        NAME="$1"
+      else
+        NAME="${NAME} $1"
+      fi
+      shift
+      ;;
+  esac
+done
+
+NAME="${NAME:-baseline}"
+case "$SPLIT" in
+  full|development|holdout) ;;
+  *)
+    echo "Invalid split: $SPLIT. Use full, development, or holdout." >&2
+    exit 1
+    ;;
+esac
+
 SLUG="$(printf '%s' "$NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
 if [[ -z "$SLUG" ]]; then
   SLUG="experiment"
 fi
 
-RUN_ID="$(date '+%Y-%m-%d-%H%M')-${SLUG}"
+RUN_ID="$(date '+%Y-%m-%d-%H%M')-${SLUG}-${SPLIT}"
 RUN_DIR="experiments/runs/${RUN_ID}"
 COUNTER=2
 while [[ -e "$RUN_DIR" ]]; do
@@ -37,6 +72,10 @@ cp starter/agent.py "$RUN_DIR/agent_snapshot.py"
 
 GIT_BRANCH="$(git branch --show-current 2>/dev/null || true)"
 GIT_COMMIT="$(git rev-parse --short HEAD 2>/dev/null || true)"
+GIT_DIRTY="false"
+if ! git diff --quiet --ignore-submodules -- 2>/dev/null || ! git diff --cached --quiet --ignore-submodules -- 2>/dev/null; then
+  GIT_DIRTY="true"
+fi
 CREATED_AT="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 
 cat > "$RUN_DIR/metadata.json" <<EOF
@@ -46,9 +85,16 @@ cat > "$RUN_DIR/metadata.json" <<EOF
   "created_at": "$CREATED_AT",
   "git_branch": "$(json_escape "$GIT_BRANCH")",
   "git_commit": "$(json_escape "$GIT_COMMIT")",
-  "command": "$(json_escape "./scripts/start_experiment.sh $NAME")"
+  "git_dirty": $GIT_DIRTY,
+  "split": "$(json_escape "$SPLIT")",
+  "split_manifest": "docs/public_split_v1.json",
+  "command": "$(json_escape "./scripts/start_experiment.sh $NAME --split $SPLIT")"
 }
 EOF
+
+if [[ -f docs/public_split_v1.json ]]; then
+  cp docs/public_split_v1.json "$RUN_DIR/public_split_v1.json"
+fi
 
 cat > "$RUN_DIR/notes.md" <<EOF
 # $NAME
@@ -65,7 +111,7 @@ See \`results.json\`.
 
 EOF
 
-"$PYTHON" -m evaluator.local_evaluator --output "$RUN_DIR/results.json"
+"$PYTHON" -m evaluator.local_evaluator --split "$SPLIT" --output "$RUN_DIR/results.json"
 
 if ! curl -fsS "http://127.0.0.1:8765/api/sessions" >/dev/null 2>&1; then
   nohup "$PYTHON" visualizer/server.py >/tmp/tiktok-techjam-visualizer.log 2>&1 &
