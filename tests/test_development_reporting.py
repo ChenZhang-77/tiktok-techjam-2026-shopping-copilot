@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from experiments.development_reporting import AgentObserver, add_scenario_scores
+from experiments.evaluation_reporting import AgentObserver, add_scenario_scores
 
 
 class _StubAgent:
@@ -18,9 +18,26 @@ class _StubAgent:
         }
 
 
+class _InvalidStubAgent(_StubAgent):
+    def respond(self, session_id: str, user_message: str, turn: int, top_k: int) -> dict:
+        return {
+            "message": "ok",
+            "ask_attribute": "not_allowed",
+            "recommendations": [{"parent_asin": "NOT_IN_CATALOG"}],
+            "usage": {"prompt_tokens": -1, "completion_tokens": 0},
+        }
+
+
 class DevelopmentReportingTest(unittest.TestCase):
+    def test_counts_an_observably_invalid_public_payload(self) -> None:
+        observer = AgentObserver(_InvalidStubAgent(), catalog_ids={"VALID"})
+
+        observer.respond("session", "query", 1, 10)
+
+        self.assertEqual(observer.counts()["invalid_response_payloads"], 1)
+
     def test_observes_public_errors_and_reported_fallbacks(self) -> None:
-        observer = AgentObserver(_StubAgent())
+        observer = AgentObserver(_StubAgent(), catalog_ids=set())
 
         observer.reset("session", {})
         observer.respond("session", "query", 1, 10)
