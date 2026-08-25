@@ -47,6 +47,7 @@ class Agent:
         self._sessions: dict[str, SessionState] = {}
         self._catalog_ids: set[str] = set()
         self._fallback_ids: list[str] = []
+        self._product_texts: dict[str, str] = {}
         self._build_index()
 
     def _build_index(self) -> None:
@@ -63,6 +64,17 @@ class Agent:
                 parent_asin = str(product["parent_asin"])
                 self._catalog_ids.add(parent_asin)
                 self._fallback_ids.append(parent_asin)
+                product_text = " ".join(
+                    (
+                        _text(product.get("title")),
+                        _text(product.get("categories")),
+                        _text(product.get("features")),
+                        _text(product.get("details")),
+                        _text(product.get("store")),
+                        _text(product.get("description")),
+                    )
+                )
+                self._product_texts[parent_asin] = product_text
                 batch.append(
                     (
                         parent_asin,
@@ -142,7 +154,13 @@ class Agent:
                 "usage": {"prompt_tokens": 0, "completion_tokens": 0},
             }
         if state is not None:
-            ask_attribute, question = choose_clarification(state, turn=turn)
+            raw_recommendations = response.get("recommendations") if isinstance(response, dict) else []
+            candidate_texts = [
+                self._product_texts.get(str(item.get("parent_asin", "")).strip(), "")
+                for item in raw_recommendations
+                if isinstance(item, dict)
+            ]
+            ask_attribute, question = choose_clarification(state, turn=turn, candidate_texts=candidate_texts)
             if ask_attribute:
                 response["ask_attribute"] = ask_attribute
                 base_message = response.get("message") if isinstance(response, dict) else ""

@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import re
+from collections import Counter
+
+from starter.core.context_engine import CATEGORY_TERMS, COLORS, MATERIALS, STYLE_TERMS, USE_CASES
 from starter.core.response_guard import ALLOWED_ASK_ATTRIBUTES
 from starter.core.state import SessionState
 
@@ -19,26 +23,81 @@ QUESTION_TEXT = {
 
 BUYING_PRIORITY = ("feature", "material", "color", "size", "style", "use_case", "brand", "budget", "other")
 BROWSING_PRIORITY = ("feature", "use_case", "style", "material", "color", "size", "other")
+CANDIDATE_TERMS = {
+    "category": CATEGORY_TERMS,
+    "material": MATERIALS,
+    "color": COLORS,
+    "style": STYLE_TERMS,
+    "use_case": USE_CASES,
+}
 
 
-def choose_clarification(state: SessionState, *, turn: int) -> tuple[str | None, str]:
-    if turn >= 10:
-        return None, ""
-
+def _available_attributes(state: SessionState, priority: tuple[str, ...]) -> list[str]:
     known = {
         str(constraint.get("attribute"))
         for constraint in state.active_constraints
         if constraint.get("active", True)
     }
     unavailable = set(state.asked_attributes) | set(state.no_preference_attributes)
-    priority = BUYING_PRIORITY if state.intent == "buying" else BROWSING_PRIORITY
+    return [
+        attribute
+        for attribute in priority
+        if attribute in ALLOWED_ASK_ATTRIBUTES
+        and attribute not in unavailable
+        and (attribute not in known or attribute == "other")
+    ]
 
-    for attribute in priority:
-        if attribute not in ALLOWED_ASK_ATTRIBUTES:
+
+def _term_hits(text: str, terms: set[str]) -> set[str]:
+    lowered = text.lower()
+    return {
+        term
+        for term in terms
+        if re.search(rf"\b{re.escape(term)}\b", lowered)
+    }
+
+
+def candidate_attribute_scores(candidate_texts: list[str]) -> dict[str, float]:
+    scores: dict[str, float] = {}
+    for attribute, terms in CANDIDATE_TERMS.items():
+        counts: Counter[str] = Counter()
+        covered = 0
+        for text in candidate_texts:
+            hits = _term_hits(text, terms)
+            if hits:
+                covered += 1
+                counts.update(hits)
+        if len(counts) < 2 or covered < 2:
             continue
-        if attribute in unavailable:
-            continue
-        if attribute in known and attribute != "other":
-            continue
-        return attribute, QUESTION_TEXT[attribute]
-    return None, ""
+        diversity = min(len(counts), 6) / 6.0
+        coverage = covered / max(len(candidate_texts), 1)
+        scores[attribute] = round(0.65 * diversity + 0.35 * coverage, 6)
+    return scores
+
+
+def choose_clarification(
+    state: SessionState,
+    *,
+    turn: int,
+    candidate_texts: list[str] | None = None,
+) -> tuple[str | None, str]:
+    if turn >= 10:
+        return None, ""
+
+    priority = BUYING_PRIORITY if state.intent == "buying" else BROWSING_PRIORITY
+    available = _available_attributes(state, priority)
+    if not available:
+        return None, ""
+
+    if "feature" in available:
+        return "feature", QUESTION_TEXT["feature"]
+
+    scores = candidate_attribute_scores(candidate_texts or [])
+    ranked = sorted(
+        [attribute for attribute in available if attribute in scores],
+        key=lambda attribute: (-scores[attribute], priority.index(attribute)),
+    )
+    if ranked:
+        return ranked[0], QUESTION_TEXT[ranked[0]]
+
+    return available[0], QUESTION_TEXT[available[0]]
