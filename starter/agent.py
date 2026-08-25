@@ -6,6 +6,7 @@ import sqlite3
 from pathlib import Path
 
 from starter.core.response_guard import guard_response
+from starter.core.state import SessionState
 
 
 TOKEN_RE = re.compile(r"[a-z0-9]+", re.IGNORECASE)
@@ -40,7 +41,7 @@ class Agent:
     def __init__(self, catalog_path: str | Path = "data/catalog.jsonl") -> None:
         self.catalog_path = Path(catalog_path)
         self.connection = sqlite3.connect(":memory:")
-        self._sessions: set[str] = set()
+        self._sessions: dict[str, SessionState] = {}
         self._catalog_ids: set[str] = set()
         self._fallback_ids: list[str] = []
         self._build_index()
@@ -79,7 +80,7 @@ class Agent:
 
     def reset(self, session_id: str, user_profile: dict) -> None:
         # The profile is anonymized and may be used for personalization.
-        self._sessions.add(session_id)
+        self._sessions[session_id] = SessionState(session_id=session_id, user_profile=dict(user_profile or {}))
 
     def _respond_impl(
         self,
@@ -115,6 +116,9 @@ class Agent:
         turn: int,
         top_k: int,
     ) -> dict:
+        state = self._sessions.get(session_id)
+        if state is not None:
+            state.record_user_turn(turn, user_message)
         try:
             response = self._respond_impl(session_id, user_message, turn, top_k)
         except Exception:
@@ -124,9 +128,12 @@ class Agent:
                 "recommendations": [],
                 "usage": {"prompt_tokens": 0, "completion_tokens": 0},
             }
-        return guard_response(
+        guarded = guard_response(
             response,
             catalog_ids=self._catalog_ids,
             fallback_ids=self._fallback_ids,
             top_k=top_k,
         )
+        if state is not None:
+            state.record_agent_response(guarded)
+        return guarded
