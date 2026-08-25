@@ -19,8 +19,13 @@ Holdout as confirmatory evidence.
 ## Comments
 
 - Merged A-side `origin/main` at `2280bf7` into the B feature branch.
-- Verified 43 standard-library tests after adding the fold protocol.
+- Verified 49 standard-library tests after adding the fold and reporting protocol.
 - Reproduced Development Set metrics exactly: HitRate@10 0.7625, MRR
   0.522693, MTTC 5.31875, Efficiency 0.568125, TechnicalScore 0.651683.
 - Generated four deterministic 40-session folds; each contains 16 Buying,
   16 Browsing, 6 Intent Override, and 2 Boundary sessions.
+- Kept the official evaluator byte-for-byte unchanged; fold selection and
+  per-scenario derived scores run through an external experiment wrapper.
+- Recorded zero public respond exceptions, zero invalid response payloads, and
+  zero explicitly reported fallbacks. A-side internal fallbacks are not
+  observable until B1 supplies Retrieval Diagnostics.
