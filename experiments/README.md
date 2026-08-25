@@ -8,8 +8,21 @@ Run ordinary experiments on the fixed development split:
 ./scripts/start_experiment.sh experiment-name --split development
 ```
 
-Use `--split holdout` only after the approach is frozen for a later check. Use
-`--split full` for final public-set reporting, not for repeated tuning.
+The 40-session public holdout is already exposed because the A-side baseline was
+run on all 200 sessions before B-stage development. Do not use `--split holdout`
+for B-stage selection. Use the four deterministic folds in
+`docs/development_folds_v1.json` for cross-validation within the 160-session
+Development Set.
+
+Use `--split full` exactly once after the complete B configuration is frozen.
+That Final Public Run is for non-confirmatory reporting and must not trigger
+further tuning. See `docs/adr/0001-treat-public-holdout-as-exposed.md`.
+
+Rebuild and validate the fold manifest with:
+
+```bash
+python3 -m experiments.development_folds
+```
 
 Recommended note format:
 

@@ -94,9 +94,15 @@ The supported splits are:
 
 ```text
 development: 160 public sessions for ordinary iteration
-holdout:     40 public sessions reserved for a later frozen check
-full:        all 200 public sessions for final public reporting
+holdout:     40 exposed public sessions; do not use for B-stage selection
+full:        all 200 public sessions for one final non-confirmatory report
 ```
+
+The A-side baseline was already evaluated on the full public set before B-stage
+work began, so the original holdout is no longer sealed. B-stage feature
+selection uses fixed cross-validation within the 160-session development split;
+see `docs/development_folds_v1.json` and ADR-0001. Do not run holdout or full
+evaluation during ordinary B development.
 
 Each run creates a separate ignored local folder:
 

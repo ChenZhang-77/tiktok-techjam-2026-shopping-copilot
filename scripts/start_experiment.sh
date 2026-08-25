@@ -9,7 +9,7 @@ json_escape() {
 }
 
 NAME=""
-SPLIT="full"
+SPLIT="development"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --split)
@@ -21,7 +21,8 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -h|--help)
-      echo "Usage: ./scripts/start_experiment.sh [experiment-name] [--split full|development|holdout]"
+      echo "Usage: ./scripts/start_experiment.sh [experiment-name] [--split development|full|holdout]"
+      echo "Default: development. The public holdout is exposed; use full only for the Final Public Run after freeze."
       exit 0
       ;;
     *)

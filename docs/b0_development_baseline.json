@@ -1,0 +1,55 @@
+{
+  "baseline": "a_control_plane_before_b_integration",
+  "agent_source_commit": "2280bf7",
+  "dataset": "data/public_set.jsonl",
+  "dataset_sha256": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579",
+  "catalog": "data/catalog.jsonl",
+  "catalog_sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
+  "split": "development",
+  "split_version": "public-split-v1",
+  "split_manifest_sha256": "98171487d3416ff97989e98aeca145b87df74337c5edbe7c908dd80afc538c50",
+  "development_fold_version": "development-folds-v1",
+  "development_fold_count": 4,
+  "development_fold_manifest_sha256": "d9219a4be4533c4f99156197d03e19e6512ce57b262944a201f8605244ccd78d",
+  "python": "3.12.13",
+  "test_command": "python3 -m unittest discover -s tests -v",
+  "a_side_test_count": 40,
+  "b0_test_count": 43,
+  "evaluation_command": "python3 -m evaluator.local_evaluator --split development --output results.json",
+  "metrics": {
+    "sample_count": 160,
+    "hit_rate_at_10": 0.7625,
+    "mrr": 0.522693,
+    "mttc": 5.31875,
+    "efficiency": 0.568125,
+    "recommended_technical_score": 0.651683
+  },
+  "scenario_metrics": {
+    "boundary": {
+      "sample_count": 8,
+      "hit_rate_at_10": 0.875,
+      "mrr": 0.775,
+      "mttc": 5.875
+    },
+    "browsing": {
+      "sample_count": 64,
+      "hit_rate_at_10": 0.8125,
+      "mrr": 0.572241,
+      "mttc": 4.90625
+    },
+    "buying": {
+      "sample_count": 64,
+      "hit_rate_at_10": 0.71875,
+      "mrr": 0.449058,
+      "mttc": 5.234375
+    },
+    "intent_override": {
+      "sample_count": 24,
+      "hit_rate_at_10": 0.708333,
+      "mrr": 0.502827,
+      "mttc": 6.458333
+    }
+  },
+  "holdout_status": "exposed_before_b_stage",
+  "selection_policy": "Use only fixed cross-validation within the 160-session Development Set until configuration freeze."
+}
