@@ -33,6 +33,14 @@ SIZE_RE = re.compile(r"\b(?:size\s*)?(?:xxs|xs|s|m|l|xl|xxl|xxxl|\d{1,2}(?:\.\d)
 BUDGET_RE = re.compile(r"\b(?:under|below|less than|around|about|up to|budget)\s*\$?\s*(\d+(?:\.\d{1,2})?)\b|\$\s*(\d+(?:\.\d{1,2})?)", re.I)
 BRAND_RE = re.compile(r"\b(?:brand|from|by)\s+([A-Z][A-Za-z0-9&' -]{1,30})")
 TOKEN_RE = re.compile(r"[a-z0-9]+", re.I)
+OVERRIDE_RE = re.compile(
+    r"\b(?:actually|instead|ignore|forget|rather|change|changed my mind|what i need)\b",
+    re.I,
+)
+NO_PREFERENCE_RE = re.compile(
+    r"\b(?:no preference|don't care|do not care|doesn't matter|does not matter|any|use your judgment)\b",
+    re.I,
+)
 
 
 @dataclass(frozen=True)
@@ -130,3 +138,22 @@ def extract_constraints(user_message: str, turn: int) -> list[dict]:
         if key not in unique or item.confidence > unique[key].confidence:
             unique[key] = item
     return [item.to_dict() for item in unique.values()]
+
+
+def detect_override(user_message: str) -> bool:
+    return OVERRIDE_RE.search(str(user_message or "")) is not None
+
+
+def detect_no_preference_attributes(user_message: str) -> list[str]:
+    text = str(user_message or "")
+    if NO_PREFERENCE_RE.search(text) is None:
+        return []
+    lowered = text.lower()
+    attributes = [
+        attribute
+        for attribute in ("category", "material", "color", "size", "style", "brand", "budget", "feature", "use_case")
+        if re.search(rf"\b{re.escape(attribute.replace('_', ' '))}\b", lowered)
+    ]
+    if "use case" in lowered and "use_case" not in attributes:
+        attributes.append("use_case")
+    return attributes

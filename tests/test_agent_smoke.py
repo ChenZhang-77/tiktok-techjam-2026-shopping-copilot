@@ -61,6 +61,22 @@ class AgentSmokeTest(unittest.TestCase):
             self.assertTrue(first["recommendations"])
             self.assertTrue(second["recommendations"])
 
+    def test_agent_override_rebuilds_query_from_active_constraints(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            catalog_path = Path(directory) / "catalog.jsonl"
+            _write_catalog(catalog_path)
+            agent = Agent(catalog_path)
+
+            agent.reset("s1", {})
+            agent.respond("s1", "I need leather shoes", 1, 2)
+            agent.respond("s1", "Actually, ignore that. I need cotton instead.", 2, 2)
+
+            state = agent._sessions["s1"]
+            self.assertEqual(state.active_constraint_values("material"), ["cotton"])
+            self.assertEqual([item["normalized_value"] for item in state.overridden_constraints], ["leather"])
+            self.assertNotIn("leather", state.previous_distilled_query)
+            self.assertIn("cotton", state.previous_distilled_query)
+
 
 if __name__ == "__main__":
     unittest.main()

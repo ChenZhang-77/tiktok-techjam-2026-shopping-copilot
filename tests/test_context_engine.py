@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from starter.core.context_engine import extract_constraints
+from starter.core.context_engine import detect_no_preference_attributes, detect_override, extract_constraints
 from starter.core.state import SessionState
 
 
@@ -37,6 +37,11 @@ class ContextEngineTest(unittest.TestCase):
         self.assertEqual(state.active_constraint_values("color"), ["black"])
         self.assertEqual(state.active_constraint_values("material"), ["leather"])
         self.assertEqual(state.active_constraint_values("category"), ["shoes"])
+
+    def test_detects_override_and_no_preference_attributes(self) -> None:
+        self.assertTrue(detect_override("Actually, ignore that. I need cotton instead."))
+        self.assertEqual(detect_no_preference_attributes("I don't care about material."), ["material"])
+        self.assertEqual(detect_no_preference_attributes("Color does not matter."), ["color"])
 
 
 if __name__ == "__main__":

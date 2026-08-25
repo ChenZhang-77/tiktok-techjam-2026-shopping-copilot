@@ -5,7 +5,7 @@ import re
 import sqlite3
 from pathlib import Path
 
-from starter.core.context_engine import extract_constraints
+from starter.core.context_engine import detect_no_preference_attributes, detect_override, extract_constraints
 from starter.core.query_builder import build_distilled_query
 from starter.core.response_guard import guard_response
 from starter.core.state import SessionState
@@ -122,7 +122,11 @@ class Agent:
         query_text = user_message
         if state is not None:
             state.record_user_turn(turn, user_message)
-            state.add_constraints(extract_constraints(user_message, turn))
+            state.apply_user_context(
+                constraints=extract_constraints(user_message, turn),
+                override=detect_override(user_message),
+                no_preference_attributes=detect_no_preference_attributes(user_message),
+            )
             query_text = build_distilled_query(user_message, state.active_constraints)
             state.previous_distilled_query = query_text
         try:

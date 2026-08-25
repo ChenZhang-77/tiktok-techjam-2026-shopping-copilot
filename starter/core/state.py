@@ -49,6 +49,38 @@ class SessionState:
             self.active_constraints.append(dict(constraint))
             existing.add(key)
 
+    def apply_user_context(
+        self,
+        *,
+        constraints: list[dict],
+        override: bool = False,
+        no_preference_attributes: list[str] | None = None,
+    ) -> None:
+        for attribute in no_preference_attributes or []:
+            self.mark_no_preference(attribute)
+            self._deactivate_attribute(attribute, destination=self.rejected_constraints)
+        if override and constraints:
+            self.override_seen = True
+            for attribute in {str(item.get("attribute")) for item in constraints if item.get("attribute")}:
+                self._deactivate_attribute(attribute, destination=self.overridden_constraints)
+        filtered = [
+            constraint
+            for constraint in constraints
+            if str(constraint.get("attribute")) not in self.no_preference_attributes
+        ]
+        self.add_constraints(filtered)
+
+    def _deactivate_attribute(self, attribute: str, *, destination: list[dict]) -> None:
+        kept: list[dict] = []
+        for constraint in self.active_constraints:
+            if constraint.get("attribute") != attribute or not constraint.get("active", True):
+                kept.append(constraint)
+                continue
+            inactive = dict(constraint)
+            inactive["active"] = False
+            destination.append(inactive)
+        self.active_constraints = kept
+
     def active_constraint_values(self, attribute: str | None = None) -> list[str]:
         values: list[str] = []
         for constraint in self.active_constraints:
