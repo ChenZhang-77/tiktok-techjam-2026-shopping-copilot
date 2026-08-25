@@ -5,6 +5,8 @@ import re
 import sqlite3
 from pathlib import Path
 
+from starter.core.context_engine import extract_constraints
+from starter.core.query_builder import build_distilled_query
 from starter.core.response_guard import guard_response
 from starter.core.state import SessionState
 
@@ -85,13 +87,13 @@ class Agent:
     def _respond_impl(
         self,
         session_id: str,
-        user_message: str,
+        query_text: str,
         turn: int,
         top_k: int,
     ) -> dict:
         if session_id not in self._sessions:
             raise RuntimeError("reset must be called before respond")
-        unique_terms = list(dict.fromkeys(_terms(user_message)))[:40]
+        unique_terms = list(dict.fromkeys(_terms(query_text)))[:40]
         expression = " OR ".join(f'"{term}"' for term in unique_terms)
         if not expression:
             recommendations: list[dict] = []
@@ -117,10 +119,14 @@ class Agent:
         top_k: int,
     ) -> dict:
         state = self._sessions.get(session_id)
+        query_text = user_message
         if state is not None:
             state.record_user_turn(turn, user_message)
+            state.add_constraints(extract_constraints(user_message, turn))
+            query_text = build_distilled_query(user_message, state.active_constraints)
+            state.previous_distilled_query = query_text
         try:
-            response = self._respond_impl(session_id, user_message, turn, top_k)
+            response = self._respond_impl(session_id, query_text, turn, top_k)
         except Exception:
             response = {
                 "message": "Here are the closest matches I found.",

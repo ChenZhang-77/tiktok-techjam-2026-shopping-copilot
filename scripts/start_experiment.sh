@@ -69,6 +69,8 @@ fi
 
 mkdir -p "$RUN_DIR"
 cp starter/agent.py "$RUN_DIR/agent_snapshot.py"
+cp -R starter "$RUN_DIR/starter"
+find "$RUN_DIR/starter" -name __pycache__ -type d -prune -exec rm -r {} +
 
 GIT_BRANCH="$(git branch --show-current 2>/dev/null || true)"
 GIT_COMMIT="$(git rev-parse --short HEAD 2>/dev/null || true)"
@@ -113,15 +115,24 @@ EOF
 
 "$PYTHON" -m evaluator.local_evaluator --split "$SPLIT" --output "$RUN_DIR/results.json"
 
-if ! curl -fsS "http://127.0.0.1:8765/api/sessions" >/dev/null 2>&1; then
-  nohup "$PYTHON" visualizer/server.py >/tmp/tiktok-techjam-visualizer.log 2>&1 &
+EXISTING_PIDS="$(lsof -ti :8765 2>/dev/null || true)"
+if [[ -n "$EXISTING_PIDS" ]]; then
+  kill $EXISTING_PIDS
   for _ in {1..40}; do
-    if curl -fsS "http://127.0.0.1:8765/api/sessions" >/dev/null 2>&1; then
+    if ! lsof -ti :8765 >/dev/null 2>&1; then
       break
     fi
     sleep 0.25
   done
 fi
+
+nohup "$PYTHON" visualizer/server.py >/tmp/tiktok-techjam-visualizer.log 2>&1 &
+for _ in {1..80}; do
+  if curl -fsS "http://127.0.0.1:8765/api/sessions" >/dev/null 2>&1; then
+    break
+  fi
+  sleep 0.25
+done
 
 URL="http://127.0.0.1:8765?experiment=$(basename "$RUN_DIR")"
 if command -v open >/dev/null 2>&1; then

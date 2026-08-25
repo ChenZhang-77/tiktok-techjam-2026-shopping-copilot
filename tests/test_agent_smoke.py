@@ -53,6 +53,11 @@ class AgentSmokeTest(unittest.TestCase):
                 agent._sessions["s1"].previous_candidate_ids,
                 agent._sessions["s1"].raw_history[-1].recommendation_ids,
             )
+            self.assertEqual(agent._sessions["s1"].active_constraint_values("material"), ["leather"])
+            self.assertEqual(agent._sessions["s1"].active_constraint_values("color"), ["black"])
+            self.assertEqual(agent._sessions["s2"].active_constraint_values("material"), ["cotton"])
+            self.assertIn("leather", agent._sessions["s1"].previous_distilled_query)
+            self.assertIn("black", agent._sessions["s1"].previous_distilled_query)
             self.assertTrue(first["recommendations"])
             self.assertTrue(second["recommendations"])
 

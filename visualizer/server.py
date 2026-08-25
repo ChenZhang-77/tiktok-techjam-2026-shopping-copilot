@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import importlib.util
 import json
 import time
@@ -216,6 +217,29 @@ class TraceRunner:
         cache_key = run_dir.name
         if cache_key in self._agent_cache:
             return self._agent_cache[cache_key]
+        package_snapshot = run_dir / "starter/agent.py"
+        if package_snapshot.exists():
+            saved_modules = {
+                name: module
+                for name, module in sys.modules.items()
+                if name == "starter" or name.startswith("starter.")
+            }
+            saved_path = list(sys.path)
+            for name in list(saved_modules):
+                sys.modules.pop(name, None)
+            sys.path.insert(0, str(run_dir))
+            try:
+                module = importlib.import_module("starter.agent")
+                agent_cls = getattr(module, "Agent", None)
+            finally:
+                for name in [name for name in list(sys.modules) if name == "starter" or name.startswith("starter.")]:
+                    sys.modules.pop(name, None)
+                sys.modules.update(saved_modules)
+                sys.path[:] = saved_path
+            if agent_cls is None:
+                raise ValueError(f"starter/agent.py in {cache_key} does not define Agent.")
+            self._agent_cache[cache_key] = agent_cls
+            return agent_cls
         snapshot = run_dir / "agent_snapshot.py"
         if not snapshot.exists():
             return Agent

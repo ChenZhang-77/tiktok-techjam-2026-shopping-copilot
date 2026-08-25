@@ -36,6 +36,31 @@ class SessionState:
         self.raw_history.append(record)
         return record
 
+    def add_constraints(self, constraints: list[dict]) -> None:
+        existing = {
+            (str(item.get("attribute")), str(item.get("normalized_value")))
+            for item in self.active_constraints
+            if item.get("active", True)
+        }
+        for constraint in constraints:
+            key = (str(constraint.get("attribute")), str(constraint.get("normalized_value")))
+            if not key[0] or not key[1] or key in existing:
+                continue
+            self.active_constraints.append(dict(constraint))
+            existing.add(key)
+
+    def active_constraint_values(self, attribute: str | None = None) -> list[str]:
+        values: list[str] = []
+        for constraint in self.active_constraints:
+            if not constraint.get("active", True):
+                continue
+            if attribute is not None and constraint.get("attribute") != attribute:
+                continue
+            value = str(constraint.get("normalized_value") or "").strip()
+            if value:
+                values.append(value)
+        return values
+
     def record_agent_response(self, response: dict) -> None:
         if not self.raw_history:
             return
