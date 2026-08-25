@@ -6,8 +6,14 @@ import sqlite3
 from pathlib import Path
 
 from starter.core.clarification import choose_clarification
-from starter.core.context_engine import detect_no_preference_attributes, detect_override, extract_constraints, infer_intent
-from starter.core.planner import Strategy, plan_strategy
+from starter.core.context_engine import (
+    detect_no_preference_attributes,
+    detect_override,
+    detect_rejected_constraints,
+    extract_constraints,
+    infer_intent,
+)
+from starter.core.planner import Strategy, StrategyConfig, plan_strategy
 from starter.core.query_builder import build_distilled_query
 from starter.core.ranking import rerank_candidates
 from starter.core.response_guard import guard_response
@@ -43,8 +49,9 @@ def _terms(text: str) -> list[str]:
 class Agent:
     """Editable weak baseline: stateless BM25 retrieval with no LLM dependency."""
 
-    def __init__(self, catalog_path: str | Path = "data/catalog.jsonl") -> None:
+    def __init__(self, catalog_path: str | Path = "data/catalog.jsonl", strategy_config: StrategyConfig | None = None) -> None:
         self.catalog_path = Path(catalog_path)
+        self.strategy_config = strategy_config or StrategyConfig()
         self.connection = sqlite3.connect(":memory:")
         self._sessions: dict[str, SessionState] = {}
         self._catalog_ids: set[str] = set()
@@ -154,9 +161,10 @@ class Agent:
                 constraints=constraints,
                 override=detect_override(user_message),
                 no_preference_attributes=detect_no_preference_attributes(user_message),
+                rejected_constraints=detect_rejected_constraints(user_message, turn),
             )
             state.intent = infer_intent(user_message, constraints)
-            strategy = plan_strategy(state, turn=turn, top_k=top_k)
+            strategy = plan_strategy(state, turn=turn, top_k=top_k, config=self.strategy_config)
             state.previous_strategy = strategy.to_dict()
             query_text = build_distilled_query(user_message, state.active_constraints)
             state.previous_distilled_query = query_text
@@ -171,6 +179,12 @@ class Agent:
                 "usage": {"prompt_tokens": 0, "completion_tokens": 0},
             }
         if state is not None:
+            diagnostics = response.get("diagnostics") if isinstance(response, dict) else {}
+            if not isinstance(diagnostics, dict):
+                diagnostics = {}
+            if state.override_events:
+                diagnostics["last_override"] = state.override_events[-1]
+            response["diagnostics"] = diagnostics
             raw_recommendations = response.get("recommendations") if isinstance(response, dict) else []
             candidate_texts = [
                 self._product_texts.get(str(item.get("parent_asin", "")).strip(), "")

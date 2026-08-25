@@ -6,6 +6,19 @@ from starter.core.state import SessionState
 
 
 @dataclass(frozen=True)
+class StrategyConfig:
+    buying_depth_sparse: int = 60
+    buying_depth_constrained: int = 80
+    browsing_depth_sparse: int = 120
+    browsing_depth_constrained: int = 100
+    buying_lexical_weight: float = 0.72
+    buying_structured_weight: float = 0.28
+    browsing_lexical_weight: float = 0.62
+    browsing_structured_weight: float = 0.20
+    browsing_semantic_weight: float = 0.18
+
+
+@dataclass(frozen=True)
 class Strategy:
     intent: str
     lexical_weight: float
@@ -31,17 +44,18 @@ class Strategy:
         }
 
 
-def plan_strategy(state: SessionState, *, turn: int, top_k: int) -> Strategy:
+def plan_strategy(state: SessionState, *, turn: int, top_k: int, config: StrategyConfig | None = None) -> Strategy:
+    config = config or StrategyConfig()
     intent = state.intent or "browsing"
     active_count = sum(1 for item in state.active_constraints if item.get("active", True))
     has_hard = any(bool(item.get("hard")) for item in state.active_constraints if item.get("active", True))
 
     if intent == "buying":
-        depth = max(top_k, 80 if active_count >= 2 else 60)
+        depth = max(top_k, config.buying_depth_constrained if active_count >= 2 else config.buying_depth_sparse)
         return Strategy(
             intent="buying",
-            lexical_weight=0.72,
-            structured_weight=0.28,
+            lexical_weight=config.buying_lexical_weight,
+            structured_weight=config.buying_structured_weight,
             semantic_weight=0.0,
             retrieval_depth=depth,
             allow_hard_filter=has_hard and active_count >= 2,
@@ -50,12 +64,12 @@ def plan_strategy(state: SessionState, *, turn: int, top_k: int) -> Strategy:
             reason=f"buying intent with {active_count} active constraints",
         )
 
-    depth = max(top_k, 120 if active_count <= 1 else 100)
+    depth = max(top_k, config.browsing_depth_sparse if active_count <= 1 else config.browsing_depth_constrained)
     return Strategy(
         intent="browsing",
-        lexical_weight=0.62,
-        structured_weight=0.20,
-        semantic_weight=0.18,
+        lexical_weight=config.browsing_lexical_weight,
+        structured_weight=config.browsing_structured_weight,
+        semantic_weight=config.browsing_semantic_weight,
         retrieval_depth=depth,
         allow_hard_filter=False,
         clarification_enabled=turn < 10,

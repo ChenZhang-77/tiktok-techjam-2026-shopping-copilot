@@ -29,6 +29,7 @@ class SessionState:
     previous_strategy: dict | None = None
     previous_diagnostics: dict | None = None
     override_seen: bool = False
+    override_events: list[dict] = field(default_factory=list)
 
     def record_user_turn(self, turn: int, user_message: str) -> TurnRecord:
         self.current_turn = turn
@@ -55,20 +56,67 @@ class SessionState:
         constraints: list[dict],
         override: bool = False,
         no_preference_attributes: list[str] | None = None,
+        rejected_constraints: list[dict] | None = None,
     ) -> None:
         for attribute in no_preference_attributes or []:
             self.mark_no_preference(attribute)
             self._deactivate_attribute(attribute, destination=self.rejected_constraints)
+        rejected_keys: set[tuple[str, str]] = set()
+        for constraint in rejected_constraints or []:
+            rejected = dict(constraint)
+            rejected["active"] = False
+            attribute = str(rejected.get("attribute") or "")
+            value = str(rejected.get("normalized_value") or rejected.get("raw_value") or "")
+            if not attribute or not value:
+                continue
+            rejected_keys.add((attribute, value))
+            self._deactivate_value(attribute, value, destination=self.rejected_constraints)
+            if not any(
+                item.get("attribute") == attribute
+                and str(item.get("normalized_value") or item.get("raw_value") or "") == value
+                for item in self.rejected_constraints
+            ):
+                self.rejected_constraints.append(rejected)
         if override and constraints:
             self.override_seen = True
-            for attribute in {str(item.get("attribute")) for item in constraints if item.get("attribute")}:
+            override_attributes = {str(item.get("attribute")) for item in constraints if item.get("attribute")}
+            if "category" in override_attributes:
+                override_attributes.update({"material", "color", "size", "style", "brand", "budget", "feature", "use_case"})
+            for attribute in override_attributes:
                 self._deactivate_attribute(attribute, destination=self.overridden_constraints)
+            self.previous_candidate_ids = []
+            self.override_events.append({
+                "turn": self.current_turn,
+                "attributes": sorted(override_attributes),
+                "new_values": [
+                    str(item.get("normalized_value") or item.get("raw_value") or "")
+                    for item in constraints
+                    if item.get("attribute")
+                ],
+                "reason": "category reset" if "category" in override_attributes else "attribute replacement",
+            })
         filtered = [
             constraint
             for constraint in constraints
             if str(constraint.get("attribute")) not in self.no_preference_attributes
+            and (
+                str(constraint.get("attribute") or ""),
+                str(constraint.get("normalized_value") or constraint.get("raw_value") or ""),
+            ) not in rejected_keys
         ]
         self.add_constraints(filtered)
+
+    def _deactivate_value(self, attribute: str, value: str, *, destination: list[dict]) -> None:
+        kept: list[dict] = []
+        for constraint in self.active_constraints:
+            normalized = str(constraint.get("normalized_value") or constraint.get("raw_value") or "")
+            if constraint.get("attribute") != attribute or normalized != value or not constraint.get("active", True):
+                kept.append(constraint)
+                continue
+            inactive = dict(constraint)
+            inactive["active"] = False
+            destination.append(inactive)
+        self.active_constraints = kept
 
     def _deactivate_attribute(self, attribute: str, *, destination: list[dict]) -> None:
         kept: list[dict] = []

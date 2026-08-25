@@ -39,6 +39,8 @@ class SessionStateTest(unittest.TestCase):
 
     def test_override_deactivates_prior_same_attribute_constraints(self) -> None:
         state = SessionState(session_id="s1", user_profile={})
+        state.record_user_turn(2, "Actually cotton instead")
+        state.previous_candidate_ids = ["A", "B"]
         state.apply_user_context(constraints=[{
             "attribute": "material",
             "normalized_value": "leather",
@@ -52,6 +54,33 @@ class SessionStateTest(unittest.TestCase):
         self.assertEqual(state.active_constraint_values("material"), ["cotton"])
         self.assertEqual([item["normalized_value"] for item in state.overridden_constraints], ["leather"])
         self.assertTrue(state.override_seen)
+        self.assertEqual(state.previous_candidate_ids, [])
+        self.assertEqual(state.override_events[-1]["reason"], "attribute replacement")
+
+    def test_category_override_deactivates_prior_product_context(self) -> None:
+        state = SessionState(session_id="s1", user_profile={})
+        state.apply_user_context(constraints=[
+            {"attribute": "category", "normalized_value": "shoes", "active": True},
+            {"attribute": "material", "normalized_value": "leather", "active": True},
+            {"attribute": "color", "normalized_value": "black", "active": True},
+        ])
+        state.record_user_turn(2, "Actually I need a cotton shirt instead")
+        state.apply_user_context(
+            constraints=[
+                {"attribute": "category", "normalized_value": "shirt", "active": True},
+                {"attribute": "material", "normalized_value": "cotton", "active": True},
+            ],
+            override=True,
+        )
+
+        self.assertEqual(state.active_constraint_values("category"), ["shirt"])
+        self.assertEqual(state.active_constraint_values("material"), ["cotton"])
+        self.assertEqual(state.active_constraint_values("color"), [])
+        self.assertEqual(
+            sorted(item["normalized_value"] for item in state.overridden_constraints),
+            ["black", "leather", "shoes"],
+        )
+        self.assertEqual(state.override_events[-1]["reason"], "category reset")
 
     def test_no_preference_deactivates_attribute_constraints(self) -> None:
         state = SessionState(session_id="s1", user_profile={})
@@ -64,6 +93,21 @@ class SessionStateTest(unittest.TestCase):
 
         self.assertEqual(state.active_constraint_values("color"), [])
         self.assertEqual(state.no_preference_attributes, {"color"})
+        self.assertEqual([item["normalized_value"] for item in state.rejected_constraints], ["black"])
+
+    def test_rejected_constraint_is_not_readded_as_active(self) -> None:
+        state = SessionState(session_id="s1", user_profile={})
+        state.apply_user_context(constraints=[{
+            "attribute": "color",
+            "normalized_value": "black",
+            "active": True,
+        }])
+        state.apply_user_context(
+            constraints=[{"attribute": "color", "normalized_value": "black", "active": True}],
+            rejected_constraints=[{"attribute": "color", "normalized_value": "black", "active": False}],
+        )
+
+        self.assertEqual(state.active_constraint_values("color"), [])
         self.assertEqual([item["normalized_value"] for item in state.rejected_constraints], ["black"])
 
 

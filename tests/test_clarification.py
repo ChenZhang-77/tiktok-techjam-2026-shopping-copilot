@@ -60,6 +60,18 @@ class ClarificationTest(unittest.TestCase):
 
         self.assertEqual(ask_attribute, "color")
 
+    def test_black_shoes_next_asks_material_before_unrelated_feature(self) -> None:
+        state = SessionState(session_id="s1", user_profile={})
+        state.intent = "buying"
+        state.apply_user_context(constraints=[
+            {"attribute": "category", "normalized_value": "shoes"},
+            {"attribute": "color", "normalized_value": "black"},
+        ])
+
+        ask_attribute, _ = choose_clarification(state, turn=1)
+
+        self.assertEqual(ask_attribute, "material")
+
 
 if __name__ == "__main__":
     unittest.main()

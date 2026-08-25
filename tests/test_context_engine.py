@@ -2,7 +2,13 @@ from __future__ import annotations
 
 import unittest
 
-from starter.core.context_engine import detect_no_preference_attributes, detect_override, extract_constraints, infer_intent
+from starter.core.context_engine import (
+    detect_no_preference_attributes,
+    detect_override,
+    detect_rejected_constraints,
+    extract_constraints,
+    infer_intent,
+)
 from starter.core.state import SessionState
 
 
@@ -42,6 +48,13 @@ class ContextEngineTest(unittest.TestCase):
         self.assertTrue(detect_override("Actually, ignore that. I need cotton instead."))
         self.assertEqual(detect_no_preference_attributes("I don't care about material."), ["material"])
         self.assertEqual(detect_no_preference_attributes("Color does not matter."), ["color"])
+
+    def test_detects_rejected_constraints(self) -> None:
+        rejected = detect_rejected_constraints("Any color is fine except black, and avoid leather.", 3)
+        by_attribute = {item["attribute"]: item["normalized_value"] for item in rejected}
+
+        self.assertEqual(by_attribute["color"], "black")
+        self.assertEqual(by_attribute["material"], "leather")
 
     def test_intent_infers_buying_from_hard_constraints(self) -> None:
         self.assertEqual(

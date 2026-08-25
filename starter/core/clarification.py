@@ -75,6 +75,21 @@ def candidate_attribute_scores(candidate_texts: list[str]) -> dict[str, float]:
     return scores
 
 
+def _active_attributes(state: SessionState) -> set[str]:
+    return {
+        str(constraint.get("attribute"))
+        for constraint in state.active_constraints
+        if constraint.get("active", True)
+    }
+
+
+def _frontload_concrete_buying_attribute(state: SessionState, available: list[str]) -> str | None:
+    active = _active_attributes(state)
+    if state.intent != "buying" or not {"category", "color"}.issubset(active):
+        return None
+    return "material" if "material" in available else None
+
+
 def choose_clarification(
     state: SessionState,
     *,
@@ -88,6 +103,10 @@ def choose_clarification(
     available = _available_attributes(state, priority)
     if not available:
         return None, ""
+
+    concrete_attribute = _frontload_concrete_buying_attribute(state, available)
+    if concrete_attribute is not None:
+        return concrete_attribute, QUESTION_TEXT[concrete_attribute]
 
     if "feature" in available:
         return "feature", QUESTION_TEXT["feature"]

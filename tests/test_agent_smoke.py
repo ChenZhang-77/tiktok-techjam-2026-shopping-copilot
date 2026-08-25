@@ -82,6 +82,7 @@ class AgentSmokeTest(unittest.TestCase):
             self.assertEqual([item["normalized_value"] for item in state.overridden_constraints], ["leather"])
             self.assertNotIn("leather", state.previous_distilled_query)
             self.assertIn("cotton", state.previous_distilled_query)
+            self.assertEqual(state.previous_diagnostics["last_override"]["reason"], "attribute replacement")
 
 
 if __name__ == "__main__":

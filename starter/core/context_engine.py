@@ -41,6 +41,10 @@ NO_PREFERENCE_RE = re.compile(
     r"\b(?:no preference|don't care|do not care|don't have a preference|do not have a preference|doesn't matter|does not matter|any|use your judgment)\b",
     re.I,
 )
+REJECTION_WINDOW_RE = re.compile(
+    r"\b(?:not|avoid|without|except|exclude|don't want|do not want|anything except|anything but)\b[^.?!;]*",
+    re.I,
+)
 
 
 @dataclass(frozen=True)
@@ -157,6 +161,35 @@ def detect_no_preference_attributes(user_message: str) -> list[str]:
     if "use case" in lowered and "use_case" not in attributes:
         attributes.append("use_case")
     return attributes
+
+
+def detect_rejected_constraints(user_message: str, turn: int) -> list[dict]:
+    text = str(user_message or "")
+    rejected: list[Constraint] = []
+    for match in REJECTION_WINDOW_RE.finditer(text):
+        window = match.group(0)
+        hard = True
+        for value in _word_matches(window, MATERIALS):
+            rejected.append(_constraint("material", value, turn, text, 0.82, hard))
+        for value in _word_matches(window, COLORS):
+            rejected.append(_constraint("color", value, turn, text, 0.80, hard))
+        for value in _word_matches(window, CATEGORY_TERMS):
+            rejected.append(_constraint("category", value, turn, text, 0.72, hard))
+        for value in _word_matches(window, STYLE_TERMS):
+            rejected.append(_constraint("style", value, turn, text, 0.68, hard))
+        for value in _word_matches(window, USE_CASES):
+            rejected.append(_constraint("use_case", value, turn, text, 0.65, hard))
+        for size_match in SIZE_RE.finditer(window):
+            raw = size_match.group(0)
+            if raw.lower() not in {"i", "a"}:
+                rejected.append(_constraint("size", raw, turn, text, 0.70, hard))
+
+    unique: dict[tuple[str, str], Constraint] = {}
+    for item in rejected:
+        key = (item.attribute, item.normalized_value)
+        if key not in unique or item.confidence > unique[key].confidence:
+            unique[key] = item
+    return [item.to_dict() for item in unique.values()]
 
 
 def infer_intent(user_message: str, constraints: list[dict]) -> str:
