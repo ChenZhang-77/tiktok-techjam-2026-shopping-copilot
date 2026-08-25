@@ -5,13 +5,7 @@ from pathlib import Path
 import json
 import tempfile
 
-from evaluator.local_evaluator import (
-    catalog_index,
-    evaluate,
-    metric_summary,
-    normalize_recommendations,
-    select_evaluation_samples,
-)
+from evaluator.local_evaluator import catalog_index, evaluate, metric_summary, normalize_recommendations
 
 
 class EchoTargetAgent:
@@ -26,25 +20,6 @@ class EchoTargetAgent:
 
 
 class EvaluatorTest(unittest.TestCase):
-    def test_selects_one_fold_only_from_the_development_set(self) -> None:
-        samples = [
-            {"sample_id": "a"},
-            {"sample_id": "b"},
-            {"sample_id": "c"},
-        ]
-        public_split = {"development": ["a", "b"], "holdout": ["c"]}
-        development_folds = {"folds": {"fold_1": ["a"], "fold_2": ["b"]}}
-
-        selected = select_evaluation_samples(
-            samples,
-            split="development",
-            public_split_manifest=public_split,
-            development_fold="fold_1",
-            development_fold_manifest=development_folds,
-        )
-
-        self.assertEqual(selected, [{"sample_id": "a"}])
-
     def test_normalization_preserves_first_valid_unique_order(self) -> None:
         payload = [
             {"parent_asin": "A"}, {"parent_asin": "bad"}, {"parent_asin": "A"},

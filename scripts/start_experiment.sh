@@ -145,11 +145,11 @@ See \`results.json\`.
 
 EOF
 
-EVALUATOR_ARGS=(--split "$SPLIT" --output "$RUN_DIR/results.json")
 if [[ -n "$FOLD" ]]; then
-  EVALUATOR_ARGS+=(--development-fold "$FOLD")
+  "$PYTHON" -m experiments.development_reporting --fold "$FOLD" --output "$RUN_DIR/results.json"
+else
+  "$PYTHON" -m evaluator.local_evaluator --split "$SPLIT" --output "$RUN_DIR/results.json"
 fi
-"$PYTHON" -m evaluator.local_evaluator "${EVALUATOR_ARGS[@]}"
 
 EXISTING_PIDS="$(lsof -ti :8765 2>/dev/null || true)"
 if [[ -n "$EXISTING_PIDS" ]]; then

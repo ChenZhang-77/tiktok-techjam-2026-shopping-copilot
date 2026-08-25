@@ -92,24 +92,49 @@ class DevelopmentFoldTest(unittest.TestCase):
         samples = [
             _sample("buying_1", "buying"),
             _sample("buying_2", "buying"),
+            _sample("buying_3", "buying"),
+            _sample("buying_4", "buying"),
         ]
         public_split = {
             "version": "public-split-v1",
-            "development": ["buying_1", "buying_2"],
+            "development": ["buying_1", "buying_2", "buying_3", "buying_4"],
             "holdout": [],
         }
         manifest = {
             "version": "development-folds-v1",
             "public_split_version": "public-split-v1",
-            "sample_count": 2,
-            "fold_count": 2,
+            "sample_count": 4,
+            "fold_count": 4,
             "folds": {
                 "fold_1": ["buying_1"],
                 "fold_2": ["buying_1", "buying_2"],
+                "fold_3": ["buying_3"],
+                "fold_4": ["buying_4"],
             },
         }
 
         with self.assertRaisesRegex(ValueError, "assigned to multiple folds"):
+            validate_development_fold_manifest(samples, public_split, manifest)
+
+    def test_validation_rejects_a_five_fold_manifest_labeled_as_v1(self) -> None:
+        samples = [_sample(f"buying_{index}", "buying") for index in range(5)]
+        public_split = {
+            "version": "public-split-v1",
+            "development": [sample["sample_id"] for sample in samples],
+            "holdout": [],
+        }
+        manifest = {
+            "version": "development-folds-v1",
+            "public_split_version": "public-split-v1",
+            "sample_count": 5,
+            "fold_count": 5,
+            "folds": {
+                f"fold_{index + 1}": [f"buying_{index}"]
+                for index in range(5)
+            },
+        }
+
+        with self.assertRaisesRegex(ValueError, "fixed at 4"):
             validate_development_fold_manifest(samples, public_split, manifest)
 
     def test_committed_manifest_matches_the_public_development_set(self) -> None:

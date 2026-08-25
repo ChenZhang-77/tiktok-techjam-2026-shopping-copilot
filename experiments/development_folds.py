@@ -68,6 +68,9 @@ def validate_development_fold_manifest(
 
     folds = manifest.get("folds")
     fold_count = manifest.get("fold_count")
+    expected_fold_names = {f"fold_{index + 1}" for index in range(FOLD_COUNT)}
+    if fold_count != FOLD_COUNT or not isinstance(folds, dict) or set(folds) != expected_fold_names:
+        raise ValueError(f"{FOLD_VERSION} is fixed at {FOLD_COUNT} folds")
     if not isinstance(folds, dict) or not isinstance(fold_count, int) or len(folds) != fold_count:
         raise ValueError("Development fold count does not match the fold mapping")
 
