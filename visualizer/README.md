@@ -9,7 +9,7 @@ This tool is for debugging and understanding agent behavior. It does not replace
 From the repository root, run one experiment with a name:
 
 ```bash
-./scripts/start_experiment.sh baseline-bm25
+./scripts/start_experiment.sh baseline-bm25 --split development
 ```
 
 The script will:
@@ -25,6 +25,8 @@ http://127.0.0.1:8765?experiment=2026-08-25-2105-baseline-bm25
 ```
 
 Each experiment gets its own directory and URL. Old experiment outputs are not overwritten.
+When an experiment was run on `development` or `holdout`, the Session dropdown
+shows only sessions from that split.
 
 ## Manual Visualizer
 

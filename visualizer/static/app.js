@@ -61,8 +61,10 @@ function fmt(value, digits = 4) {
 }
 
 function renderOverall(payload) {
+  const evaluation = payload.evaluation || {};
   overallMetrics.innerHTML = `
     <dt>Source</dt><dd>${escapeHtml(payload.source)}</dd>
+    <dt>Split</dt><dd>${escapeHtml(evaluation.split || "full")}</dd>
     <dt>Samples</dt><dd>${escapeHtml(payload.sample_count)}</dd>
     <dt>HitRate@10</dt><dd>${escapeHtml(fmt(payload.hit_rate_at_10, 6))}</dd>
     <dt>MRR</dt><dd>${escapeHtml(fmt(payload.mrr, 6))}</dd>
@@ -178,7 +180,11 @@ function renderTraceTurn(payload) {
 }
 
 async function loadSessions() {
-  const response = await fetch("/api/sessions");
+  const response = await fetch(`/api/sessions?${experimentQuery()}`);
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to load sessions");
+  }
   const sessions = await response.json();
   sessionSelect.innerHTML = sessions.map((session) => {
     const label = `#${session.index} · ${session.scenario_type} · ${session.category}`;
@@ -244,7 +250,9 @@ experimentSelect.addEventListener("change", () => {
   }
   const query = params.toString();
   window.history.replaceState(null, "", query ? `?${query}` : window.location.pathname);
-  Promise.all([loadOverall(), loadSelectedTrace()]).catch((error) => {
+  Promise.all([loadSessions(), loadOverall()])
+    .then(() => loadSelectedTrace())
+    .catch((error) => {
     statusText.textContent = error.message;
     sessionSelect.disabled = false;
   });

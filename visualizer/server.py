@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import importlib.util
 import json
 import time
@@ -216,6 +217,29 @@ class TraceRunner:
         cache_key = run_dir.name
         if cache_key in self._agent_cache:
             return self._agent_cache[cache_key]
+        package_snapshot = run_dir / "starter/agent.py"
+        if package_snapshot.exists():
+            saved_modules = {
+                name: module
+                for name, module in sys.modules.items()
+                if name == "starter" or name.startswith("starter.")
+            }
+            saved_path = list(sys.path)
+            for name in list(saved_modules):
+                sys.modules.pop(name, None)
+            sys.path.insert(0, str(run_dir))
+            try:
+                module = importlib.import_module("starter.agent")
+                agent_cls = getattr(module, "Agent", None)
+            finally:
+                for name in [name for name in list(sys.modules) if name == "starter" or name.startswith("starter.")]:
+                    sys.modules.pop(name, None)
+                sys.modules.update(saved_modules)
+                sys.path[:] = saved_path
+            if agent_cls is None:
+                raise ValueError(f"starter/agent.py in {cache_key} does not define Agent.")
+            self._agent_cache[cache_key] = agent_cls
+            return agent_cls
         snapshot = run_dir / "agent_snapshot.py"
         if not snapshot.exists():
             return Agent
@@ -230,6 +254,27 @@ class TraceRunner:
             raise ValueError(f"agent_snapshot.py in {cache_key} does not define Agent.")
         self._agent_cache[cache_key] = agent_cls
         return agent_cls
+
+    def _experiment_result(self, experiment_id: str | None) -> dict:
+        run_dir = self._run_dir(experiment_id)
+        result_path = run_dir / "results.json" if run_dir is not None else ROOT / "results.json"
+        if result_path.exists():
+            return json.loads(result_path.read_text(encoding="utf-8"))
+        return {}
+
+    def _split_sample_ids(self, experiment_id: str | None) -> set[str] | None:
+        result = self._experiment_result(experiment_id)
+        evaluation = result.get("evaluation") if isinstance(result.get("evaluation"), dict) else {}
+        split = evaluation.get("split") or "full"
+        if split == "full":
+            return None
+        manifest_path = ROOT / str(evaluation.get("split_manifest") or "docs/public_split_v1.json")
+        if not manifest_path.exists():
+            run_dir = self._run_dir(experiment_id)
+            if run_dir is not None and (run_dir / "public_split_v1.json").exists():
+                manifest_path = run_dir / "public_split_v1.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        return set(str(sample_id) for sample_id in manifest[split])
 
     def experiments(self) -> list[dict]:
         items = [{
@@ -279,11 +324,15 @@ class TraceRunner:
             "efficiency": data.get("efficiency"),
             "technical_score": data.get("recommended_technical_score", data.get("technical_score")),
             "scenario_metrics": data.get("scenario_metrics", {}),
+            "evaluation": data.get("evaluation", {}),
         }
 
-    def session_summaries(self) -> list[dict]:
+    def session_summaries(self, experiment_id: str | None = None) -> list[dict]:
+        selected = self._split_sample_ids(experiment_id)
         summaries: list[dict] = []
         for index, sample in enumerate(self.samples):
+            if selected is not None and str(sample.get("sample_id")) not in selected:
+                continue
             target = str(sample["ground_truth"]["parent_asin"])
             product = self.products.get(target)
             summaries.append(
@@ -498,7 +547,12 @@ class VisualizerHandler(BaseHTTPRequestHandler):
             self._send_file(STATIC_DIR / "styles.css", "text/css; charset=utf-8")
             return
         if parsed.path == "/api/sessions":
-            self._send_json(self.runner.session_summaries())
+            query = parse_qs(parsed.query)
+            experiment_id = query.get("experiment", ["current"])[0]
+            try:
+                self._send_json(self.runner.session_summaries(experiment_id))
+            except ValueError as exc:
+                self._send_json({"message": str(exc)}, status=400)
             return
         if parsed.path == "/api/experiments":
             self._send_json(self.runner.experiments())
