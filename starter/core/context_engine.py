@@ -38,7 +38,7 @@ OVERRIDE_RE = re.compile(
     re.I,
 )
 NO_PREFERENCE_RE = re.compile(
-    r"\b(?:no preference|don't care|do not care|doesn't matter|does not matter|any|use your judgment)\b",
+    r"\b(?:no preference|don't care|do not care|don't have a preference|do not have a preference|doesn't matter|does not matter|any|use your judgment)\b",
     re.I,
 )
 
@@ -157,3 +157,14 @@ def detect_no_preference_attributes(user_message: str) -> list[str]:
     if "use case" in lowered and "use_case" not in attributes:
         attributes.append("use_case")
     return attributes
+
+
+def infer_intent(user_message: str, constraints: list[dict]) -> str:
+    text = str(user_message or "").lower()
+    has_hard_constraint = any(bool(item.get("hard")) for item in constraints)
+    concrete_count = sum(1 for item in constraints if item.get("attribute") != "feature")
+    if has_hard_constraint or concrete_count >= 2:
+        return "buying"
+    if any(marker in text for marker in ("exploring", "browse", "browsing", "not sure", "ideas", "recommend")):
+        return "browsing"
+    return "browsing"

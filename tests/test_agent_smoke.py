@@ -58,6 +58,8 @@ class AgentSmokeTest(unittest.TestCase):
             self.assertEqual(agent._sessions["s2"].active_constraint_values("material"), ["cotton"])
             self.assertIn("leather", agent._sessions["s1"].previous_distilled_query)
             self.assertIn("black", agent._sessions["s1"].previous_distilled_query)
+            self.assertIsNotNone(first["ask_attribute"])
+            self.assertIn(first["ask_attribute"], agent._sessions["s1"].asked_attributes)
             self.assertTrue(first["recommendations"])
             self.assertTrue(second["recommendations"])
 
