@@ -3,6 +3,8 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import math
+import time
 from pathlib import Path
 
 from evaluator.local_evaluator import catalog_index, evaluate, load_jsonl
@@ -12,6 +14,7 @@ from experiments.development_folds import (
     validate_development_fold_manifest,
 )
 from starter.agent import Agent
+from starter.contracts import validate_agent_response
 from starter.core.response_guard import ALLOWED_ASK_ATTRIBUTES
 
 
@@ -22,16 +25,20 @@ class AgentObserver:
         self._respond_exceptions = 0
         self._invalid_response_payloads = 0
         self._reported_fallbacks = 0
+        self._response_latencies_ms: list[float] = []
 
     def reset(self, session_id: str, user_profile: dict) -> None:
         self._agent.reset(session_id, user_profile)
 
     def respond(self, session_id: str, user_message: str, turn: int, top_k: int) -> dict:
+        started = time.perf_counter()
         try:
             response = self._agent.respond(session_id, user_message, turn, top_k)
         except Exception:
             self._respond_exceptions += 1
             raise
+        finally:
+            self._response_latencies_ms.append((time.perf_counter() - started) * 1000.0)
         if not self._is_valid_response(response, top_k):
             self._invalid_response_payloads += 1
         diagnostics = response.get("diagnostics") if isinstance(response, dict) else None
@@ -40,30 +47,15 @@ class AgentObserver:
         return response
 
     def _is_valid_response(self, response: object, top_k: int) -> bool:
-        if not isinstance(response, dict) or not isinstance(response.get("message"), str):
+        try:
+            validate_agent_response(
+                response,
+                catalog_ids=self._catalog_ids,
+                top_k=top_k,
+                allowed_ask_attributes=ALLOWED_ASK_ATTRIBUTES,
+            )
+        except ValueError:
             return False
-        ask_attribute = response.get("ask_attribute")
-        if ask_attribute is not None and ask_attribute not in ALLOWED_ASK_ATTRIBUTES:
-            return False
-        recommendations = response.get("recommendations")
-        if not isinstance(recommendations, list) or len(recommendations) > top_k:
-            return False
-        seen: set[str] = set()
-        for item in recommendations:
-            if not isinstance(item, dict):
-                return False
-            parent_asin = str(item.get("parent_asin") or "").strip()
-            if not parent_asin or parent_asin not in self._catalog_ids or parent_asin in seen:
-                return False
-            seen.add(parent_asin)
-        usage = response.get("usage")
-        if usage is not None:
-            if not isinstance(usage, dict):
-                return False
-            for key in ("prompt_tokens", "completion_tokens"):
-                value = usage.get(key)
-                if not isinstance(value, int) or value < 0:
-                    return False
         return True
 
     def counts(self) -> dict:
@@ -73,6 +65,33 @@ class AgentObserver:
             "reported_fallbacks": self._reported_fallbacks,
             "internal_fallbacks": None,
             "internal_fallbacks_note": "Not observable through the A-side public Agent interface.",
+        }
+
+    def timing(self) -> dict:
+        if not self._response_latencies_ms:
+            return {
+                "response_count": 0,
+                "total_ms": 0.0,
+                "mean_ms": 0.0,
+                "p50_ms": 0.0,
+                "p95_ms": 0.0,
+                "max_ms": 0.0,
+            }
+        ordered = sorted(self._response_latencies_ms)
+        count = len(ordered)
+
+        def percentile(fraction: float) -> float:
+            index = max(0, math.ceil(fraction * count) - 1)
+            return ordered[index]
+
+        total = sum(ordered)
+        return {
+            "response_count": count,
+            "total_ms": round(total, 6),
+            "mean_ms": round(total / count, 6),
+            "p50_ms": round(percentile(0.50), 6),
+            "p95_ms": round(percentile(0.95), 6),
+            "max_ms": round(ordered[-1], 6),
         }
 
 
@@ -117,11 +136,20 @@ def evaluate_split(
     if fold_name and development_folds is not None:
         evaluation_samples = filter_development_fold(evaluation_samples, development_folds, fold_name)
 
+    initialization_started = time.perf_counter()
     catalog_ids, categories, products = catalog_index(catalog_path)
     observer = AgentObserver(Agent(catalog_path), catalog_ids=catalog_ids)
+    initialization_ms = (time.perf_counter() - initialization_started) * 1000.0
+    evaluation_started = time.perf_counter()
     result = evaluate(observer, evaluation_samples, catalog_ids, categories, products)
+    evaluation_wall_ms = (time.perf_counter() - evaluation_started) * 1000.0
     result = add_scenario_scores(result)
     result["observed_run_counts"] = observer.counts()
+    result["timing"] = {
+        "initialization_ms": round(initialization_ms, 6),
+        "evaluation_wall_ms": round(evaluation_wall_ms, 6),
+        "responses": observer.timing(),
+    }
     result["evaluation"] = {
         "dataset": str(dataset_path),
         "split": split,

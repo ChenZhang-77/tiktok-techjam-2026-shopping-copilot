@@ -1333,6 +1333,18 @@
     "internal_fallbacks": null,
     "internal_fallbacks_note": "Not observable through the A-side public Agent interface."
   },
+  "timing": {
+    "initialization_ms": 1423.713333,
+    "evaluation_wall_ms": 31899.148709,
+    "responses": {
+      "response_count": 813,
+      "total_ms": 31858.267902,
+      "mean_ms": 39.186061,
+      "p50_ms": 39.809125,
+      "p95_ms": 73.855209,
+      "max_ms": 97.761041
+    }
+  },
   "evaluation": {
     "dataset": "data/public_set.jsonl",
     "split": "development",

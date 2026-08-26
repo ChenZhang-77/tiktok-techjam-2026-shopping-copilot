@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+from collections.abc import Collection
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
@@ -85,3 +87,52 @@ def validate_retrieval_request(payload: dict) -> None:
     leaked = FORBIDDEN_RETRIEVAL_REQUEST_KEYS & set(payload)
     if leaked:
         raise ValueError(f"RetrievalRequest contains evaluator-only fields: {sorted(leaked)}")
+
+
+def validate_agent_response(
+    payload: object,
+    *,
+    catalog_ids: Collection[str],
+    top_k: int,
+    allowed_ask_attributes: Collection[str],
+) -> None:
+    if not isinstance(payload, dict):
+        raise ValueError("Agent response must be an object")
+    required_fields = {"message", "ask_attribute", "recommendations"}
+    allowed_fields = required_fields | {"usage", "diagnostics"}
+    if not required_fields <= set(payload) or not set(payload) <= allowed_fields:
+        raise ValueError("Agent response fields do not match the public contract")
+    if not isinstance(payload["message"], str):
+        raise ValueError("Agent response message must be a string")
+
+    ask_attribute = payload["ask_attribute"]
+    if ask_attribute is not None and ask_attribute not in allowed_ask_attributes:
+        raise ValueError("Agent response ask_attribute is not allowed")
+
+    recommendations = payload["recommendations"]
+    if not isinstance(recommendations, list) or not 0 <= len(recommendations) <= min(top_k, 100):
+        raise ValueError("Agent response recommendations exceed the allowed count")
+    seen: set[str] = set()
+    for item in recommendations:
+        if not isinstance(item, dict) or not {"parent_asin"} <= set(item) <= {"parent_asin", "score"}:
+            raise ValueError("Agent recommendation fields do not match the public contract")
+        parent_asin = item["parent_asin"]
+        if not isinstance(parent_asin, str) or not parent_asin or parent_asin not in catalog_ids or parent_asin in seen:
+            raise ValueError("Agent recommendation ASIN is invalid or duplicated")
+        if "score" in item:
+            score = item["score"]
+            if isinstance(score, bool) or not isinstance(score, (int, float)) or not math.isfinite(score):
+                raise ValueError("Agent recommendation score must be a finite number")
+        seen.add(parent_asin)
+
+    usage = payload.get("usage")
+    if usage is not None:
+        if not isinstance(usage, dict) or set(usage) != {"prompt_tokens", "completion_tokens"}:
+            raise ValueError("Agent response usage fields do not match the public contract")
+        for value in usage.values():
+            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                raise ValueError("Agent response token counts must be non-negative integers")
+
+    diagnostics = payload.get("diagnostics")
+    if diagnostics is not None and not isinstance(diagnostics, dict):
+        raise ValueError("Agent response diagnostics must be an object")

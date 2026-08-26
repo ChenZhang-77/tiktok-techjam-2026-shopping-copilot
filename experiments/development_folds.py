@@ -108,6 +108,10 @@ def validate_development_fold_manifest(
         if max(counts) - min(counts) > 1:
             raise ValueError(f"Development folds are not stratified for scenario: {scenario}")
 
+    canonical = build_development_fold_manifest(samples, public_split_manifest)
+    if manifest != canonical:
+        raise ValueError("Development fold manifest does not match the canonical deterministic assignment")
+
 
 def filter_development_fold(samples: list[dict], manifest: dict, fold_name: str) -> list[dict]:
     folds = manifest.get("folds")

@@ -1322,9 +1322,6 @@
     "dataset": "data/public_set.jsonl",
     "split": "development",
     "split_manifest": "docs/public_split_v1.json",
-    "split_version": "public-split-v1",
-    "development_fold": null,
-    "development_fold_manifest": null,
-    "development_fold_version": null
+    "split_version": "public-split-v1"
   }
 }

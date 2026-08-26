@@ -137,6 +137,25 @@ class DevelopmentFoldTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "fixed at 4"):
             validate_development_fold_manifest(samples, public_split, manifest)
 
+    def test_validation_rejects_a_noncanonical_stratified_assignment(self) -> None:
+        samples = [_sample(f"buying_{index}", "buying") for index in range(8)]
+        public_split = {
+            "version": "public-split-v1",
+            "dataset": "data/public_set.jsonl",
+            "development": [sample["sample_id"] for sample in samples],
+            "holdout": [],
+        }
+        manifest = build_development_fold_manifest(samples, public_split)
+        first = manifest["folds"]["fold_1"][0]
+        second = manifest["folds"]["fold_2"][0]
+        manifest["folds"]["fold_1"][0] = second
+        manifest["folds"]["fold_2"][0] = first
+        manifest["folds"]["fold_1"].sort()
+        manifest["folds"]["fold_2"].sort()
+
+        with self.assertRaisesRegex(ValueError, "canonical"):
+            validate_development_fold_manifest(samples, public_split, manifest)
+
     def test_committed_manifest_matches_the_public_development_set(self) -> None:
         samples = [
             json.loads(line)

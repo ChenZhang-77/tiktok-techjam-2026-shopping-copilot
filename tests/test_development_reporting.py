@@ -28,6 +28,17 @@ class _InvalidStubAgent(_StubAgent):
         }
 
 
+class _SubtlyInvalidStubAgent(_StubAgent):
+    def respond(self, session_id: str, user_message: str, turn: int, top_k: int) -> dict:
+        return {
+            "message": "ok",
+            "ask_attribute": None,
+            "recommendations": [{"parent_asin": "VALID", "score": "high"}],
+            "usage": {"prompt_tokens": True, "completion_tokens": 0},
+            "unexpected": "not in the response contract",
+        }
+
+
 class DevelopmentReportingTest(unittest.TestCase):
     def test_counts_an_observably_invalid_public_payload(self) -> None:
         observer = AgentObserver(_InvalidStubAgent(), catalog_ids={"VALID"})
@@ -35,6 +46,23 @@ class DevelopmentReportingTest(unittest.TestCase):
         observer.respond("session", "query", 1, 10)
 
         self.assertEqual(observer.counts()["invalid_response_payloads"], 1)
+
+    def test_rejects_subtle_schema_violations(self) -> None:
+        observer = AgentObserver(_SubtlyInvalidStubAgent(), catalog_ids={"VALID"})
+
+        observer.respond("session", "query", 1, 10)
+
+        self.assertEqual(observer.counts()["invalid_response_payloads"], 1)
+
+    def test_records_response_latency(self) -> None:
+        observer = AgentObserver(_StubAgent(), catalog_ids=set())
+
+        observer.respond("session", "query", 1, 10)
+
+        timing = observer.timing()
+        self.assertEqual(timing["response_count"], 1)
+        for field in ("total_ms", "mean_ms", "p50_ms", "p95_ms", "max_ms"):
+            self.assertGreaterEqual(timing[field], 0.0)
 
     def test_observes_public_errors_and_reported_fallbacks(self) -> None:
         observer = AgentObserver(_StubAgent(), catalog_ids=set())
