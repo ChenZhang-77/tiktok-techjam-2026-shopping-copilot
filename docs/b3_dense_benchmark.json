@@ -1,6 +1,6 @@
 {
   "experiment": "b3_minilm_dense_route",
-  "run_code_commit": "8113c0e",
+  "run_code_commit": "aae10ee",
   "run_branch": "patryk/track4-experiments",
   "code_worktree_clean_before_runs": true,
   "split": "development",
@@ -8,11 +8,11 @@
   "development_fold_version": "development-folds-v1",
   "cache_metadata_artifact": "docs/b3_dense_cache_metadata.json",
   "raw_reports": {
-    "development_dense": {"path": "docs/b3_reports/development_dense.json", "sha256": "f99b9ade39eb3af770041d55122b3188dfdfe22e577d5884dc09e3ce4b4a9e94"},
-    "fold_1_dense": {"path": "docs/b3_reports/fold_1_dense.json", "sha256": "85b0176e6f8e4140d9770735c853c8c686a8d0dfd89bd320dd291da8f105b9d5"},
-    "fold_2_dense": {"path": "docs/b3_reports/fold_2_dense.json", "sha256": "cbd4ff35c57745789b29f3223d9bfb56cfba3cf86c840cea8d6a8eef305d8bc4"},
-    "fold_3_dense": {"path": "docs/b3_reports/fold_3_dense.json", "sha256": "5920ffa55f919f9c9131ee5168cf785c64812baf7801c8df4979190362b7e6cb"},
-    "fold_4_dense": {"path": "docs/b3_reports/fold_4_dense.json", "sha256": "9549e581d14ff2f03a04668139f00afa8be1d27c0e083309621db4c4df9dee12"}
+    "development_dense": {"path": "docs/b3_reports/development_dense.json", "sha256": "9de729bad4edd61ac210d7ca0322abdbe9a080e428bbf607189471d3ce7c1019"},
+    "fold_1_dense": {"path": "docs/b3_reports/fold_1_dense.json", "sha256": "3d31cf4d1311dd77e99a9234df6a56edb09d8e6fa91fd0883e5c518eea82ce94"},
+    "fold_2_dense": {"path": "docs/b3_reports/fold_2_dense.json", "sha256": "ff60cad6769d76f093c8548e592836eb57f40f4ffab8ed1e5ba8cbb0fa61db4e"},
+    "fold_3_dense": {"path": "docs/b3_reports/fold_3_dense.json", "sha256": "442e077e62dbb198b22120dbda00d3826b18c46d85bb1e90d20cde403f694cfd"},
+    "fold_4_dense": {"path": "docs/b3_reports/fold_4_dense.json", "sha256": "2e3e51a10a188cc67bea3ec01c6f1c51891eb4a87de208ee6b4e96bc5c424435"}
   },
   "fixed_cross_validation": {
     "fold_1": {"dense": {"hit_rate_at_10": 0.375, "mrr": 0.134613, "mttc": 7.8, "recommended_technical_score": 0.291884}, "structured": {"hit_rate_at_10": 0.725, "mrr": 0.438472, "mttc": 5.35, "recommended_technical_score": 0.607042}, "dense_only_complementary_hits": 1, "oracle_union_hit_rate_at_10": 0.75},
@@ -32,12 +32,12 @@
     "respond_exceptions": 0,
     "invalid_response_payloads": 0,
     "reported_fallbacks": 0,
-    "initialization_ms": 1407.227667,
-    "dense_query_mean_ms_including_cold_start": 6.356044,
-    "dense_query_p50_ms": 4.760833,
-    "dense_query_p95_ms": 5.808292,
-    "dense_query_cold_start_max_ms": 1915.303084,
-    "peak_rss_bytes": 1110736896
+    "initialization_ms": 1380.264583,
+    "dense_query_mean_ms_including_cold_start": 6.336605,
+    "dense_query_p50_ms": 4.749625,
+    "dense_query_p95_ms": 5.721209,
+    "dense_query_cold_start_max_ms": 1922.52325,
+    "peak_rss_bytes": 1114521600
   },
   "operational_paths": {
     "cache_rebuild": {
@@ -48,15 +48,15 @@
     },
     "cache_hit_development_160": {
       "reported_fallbacks": 0,
-      "initialization_ms": 1407.227667,
-      "dense_query_p50_ms": 4.760833,
-      "peak_rss_bytes": 1110736896
+      "initialization_ms": 1380.264583,
+      "dense_query_p50_ms": 4.749625,
+      "peak_rss_bytes": 1114521600
     },
     "cache_miss_smoke": {
       "artifact": "docs/b3_cache_miss_smoke.json",
-      "sha256": "99659d13f94d827b131d37927c2e73027454315279850890608028e874eb9306",
-      "initialization_ms": 1124.073833,
-      "query_ms": 12.722083,
+      "sha256": "d230f6fe152695101dcbb24b62da6ac3f6578e644b59555ce4a302dcfbc460ba",
+      "initialization_ms": 1124.084334,
+      "query_ms": 13.056333,
       "route": "bm25",
       "fallback_used": true,
       "reason": "dense_cache_missing",
