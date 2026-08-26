@@ -1,0 +1,109 @@
+{
+  "experiment": "b2_guarded_structured_evidence",
+  "run_code_commit": "e8fbbbb",
+  "run_branch": "patryk/track4-experiments",
+  "run_worktree_dirty": false,
+  "dataset": "data/public_set.jsonl",
+  "dataset_sha256": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579",
+  "catalog": "data/catalog.jsonl",
+  "catalog_sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
+  "split": "development",
+  "split_version": "public-split-v1",
+  "development_fold_version": "development-folds-v1",
+  "commands": {
+    "retained_default": "python3 -m experiments.evaluation_reporting --split development --output /tmp/b2-development-clean.json",
+    "fold_lexical_ablation": "python3 -m experiments.evaluation_reporting --split development --fold <fold_1..fold_4> --lexical-only --output <output.json>",
+    "fold_structured": "python3 -m experiments.evaluation_reporting --split development --fold <fold_1..fold_4> --structured-filter --output <output.json>"
+  },
+  "structured_config": {
+    "enabled_by_default": true,
+    "minimum_confidence": 0.75,
+    "minimum_filter_matches": 10,
+    "minimum_filter_coverage": 0.1,
+    "allow_price_filter": false,
+    "evidence_fields": [
+      "title",
+      "categories",
+      "features",
+      "details",
+      "store",
+      "description",
+      "price_when_parseable"
+    ]
+  },
+  "fixed_cross_validation": {
+    "fold_count": 4,
+    "samples_per_fold": 40,
+    "folds": {
+      "fold_1": {
+        "lexical": {"hit_rate_at_10": 0.725, "mrr": 0.434306, "mttc": 5.35, "recommended_technical_score": 0.605792},
+        "structured": {"hit_rate_at_10": 0.725, "mrr": 0.438472, "mttc": 5.35, "recommended_technical_score": 0.607042},
+        "delta": {"hit_rate_at_10": 0.0, "mrr": 0.004166, "mttc": 0.0, "recommended_technical_score": 0.00125}
+      },
+      "fold_2": {
+        "lexical": {"hit_rate_at_10": 0.775, "mrr": 0.62003, "mttc": 5.45, "recommended_technical_score": 0.684509},
+        "structured": {"hit_rate_at_10": 0.775, "mrr": 0.62003, "mttc": 5.45, "recommended_technical_score": 0.684509},
+        "delta": {"hit_rate_at_10": 0.0, "mrr": 0.0, "mttc": 0.0, "recommended_technical_score": 0.0}
+      },
+      "fold_3": {
+        "lexical": {"hit_rate_at_10": 0.8, "mrr": 0.537282, "mttc": 4.7, "recommended_technical_score": 0.687185},
+        "structured": {"hit_rate_at_10": 0.8, "mrr": 0.54756, "mttc": 4.65, "recommended_technical_score": 0.691268},
+        "delta": {"hit_rate_at_10": 0.0, "mrr": 0.010278, "mttc": -0.05, "recommended_technical_score": 0.004083}
+      },
+      "fold_4": {
+        "lexical": {"hit_rate_at_10": 0.75, "mrr": 0.499157, "mttc": 5.775, "recommended_technical_score": 0.629247},
+        "structured": {"hit_rate_at_10": 0.75, "mrr": 0.501895, "mttc": 5.775, "recommended_technical_score": 0.630069},
+        "delta": {"hit_rate_at_10": 0.0, "mrr": 0.002738, "mttc": 0.0, "recommended_technical_score": 0.000822}
+      }
+    },
+    "mean_delta": {
+      "hit_rate_at_10": 0.0,
+      "mrr": 0.004296,
+      "mttc": -0.0125,
+      "recommended_technical_score": 0.001539
+    },
+    "scenario_result": "Browsing and Boundary are unchanged in every fold. Buying improves in folds 1, 3, and 4 and is unchanged in fold 2. Intent Override is unchanged except for a small fold 4 MRR gain."
+  },
+  "development_160": {
+    "lexical_reference": {
+      "hit_rate_at_10": 0.7625,
+      "mrr": 0.522693,
+      "mttc": 5.31875,
+      "efficiency": 0.568125,
+      "recommended_technical_score": 0.651683
+    },
+    "structured_retained": {
+      "hit_rate_at_10": 0.7625,
+      "mrr": 0.526989,
+      "mttc": 5.30625,
+      "efficiency": 0.569375,
+      "recommended_technical_score": 0.653222
+    },
+    "delta": {
+      "hit_rate_at_10": 0.0,
+      "mrr": 0.004296,
+      "mttc": -0.0125,
+      "efficiency": 0.00125,
+      "recommended_technical_score": 0.001539
+    },
+    "observed_run_counts": {
+      "respond_exceptions": 0,
+      "invalid_response_payloads": 0,
+      "reported_fallbacks": 0,
+      "internal_fallbacks": 0
+    },
+    "structured_response_timing_ms": {
+      "response_count": 811,
+      "mean": 45.405103,
+      "p50": 44.840709,
+      "p95": 87.224459,
+      "max": 119.655583
+    }
+  },
+  "hypothesis": "Guarded cross-field evidence can improve precise Buying and Intent Override ordering without reducing broad Browsing recall; sparse evidence and incompatible hard constraints must relax instead of emptying the candidate pool.",
+  "result": "All four fixed folds preserve HitRate@10. Mean MRR increases by 0.004296 and mean TechnicalScore by 0.001539; the full Development Set reproduces those gains with zero observed errors or fallbacks.",
+  "decision": "retain_guarded_structured_filter_as_default",
+  "lexical_ablation": "retained_via_explicit_--lexical-only",
+  "holdout_status": "not_run_during_b2",
+  "full_status": "not_run_during_b2"
+}
