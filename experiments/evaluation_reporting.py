@@ -27,40 +27,7 @@ from starter.retrieval import (
     HybridRetriever,
     StructuredConfig,
 )
-from starter.retrieval.dense import (
-    CACHE_SCHEMA_VERSION,
-    PRODUCT_TEXT_TEMPLATE,
-    QUERY_TEXT_TEMPLATE,
-)
-
-
-def dense_run_configuration(config: DenseConfig) -> dict:
-    metadata_path = config.cache_dir / "metadata.json"
-    metadata: dict = {}
-    try:
-        loaded = json.loads(metadata_path.read_text(encoding="utf-8"))
-        if isinstance(loaded, dict):
-            metadata = loaded
-    except (OSError, ValueError):
-        pass
-    cache_files = [
-        config.cache_dir / name
-        for name in ("metadata.json", "ids.json", "vectors.npy")
-    ]
-    return {
-        "cache_dir": str(config.cache_dir),
-        "cache_schema_version": CACHE_SCHEMA_VERSION,
-        "cache_available": all(path.is_file() for path in cache_files),
-        "cache_size_bytes": sum(path.stat().st_size for path in cache_files if path.is_file()),
-        "build_seconds": metadata.get("build_seconds"),
-        "model_id": config.model_id,
-        "model_revision": config.model_revision,
-        "dimension": config.dimension,
-        "dtype": config.dtype,
-        "normalized": config.normalized,
-        "product_text_template": PRODUCT_TEXT_TEMPLATE,
-        "query_text_template": QUERY_TEXT_TEMPLATE,
-    }
+from starter.retrieval.fusion import fusion_fallback_configuration
 
 
 def code_provenance() -> dict:
@@ -286,14 +253,17 @@ def evaluate_split(
             config=FusionConfig(rrf_k=fusion_rrf_k),
             dense_config=dense_config,
         )
+        dense_configuration = retriever.dense_configuration()
     elif retrieval_mode == "dense":
         retriever = DenseRetriever(catalog_path, config=dense_config)
+        dense_configuration = retriever.configuration_snapshot()
     else:
         retriever = HybridRetriever(
             catalog_path,
             structured_config=structured_config,
             constraint_rerank_enabled=retrieval_mode != "lexical",
         )
+        dense_configuration = None
     observer = AgentObserver(
         Agent(catalog_path, retriever=retriever),
         catalog_ids=catalog_ids,
@@ -329,15 +299,13 @@ def evaluate_split(
         "structured_filter": structured_filter_enabled,
         "fusion_rrf_k": fusion_rrf_k if retrieval_mode == "fusion" else None,
         "dense_configuration": (
-            dense_run_configuration(dense_config)
-            if retrieval_mode in {"dense", "fusion"}
-            else None
+            dense_configuration
         ),
         "fallback_configuration": (
             {"retrieval_mode": "structured", "structured_filter": True}
             if retrieval_mode == "dense"
             else (
-                {"unavailable_route": "degrade_to_available_routes"}
+                fusion_fallback_configuration()
                 if retrieval_mode == "fusion"
                 else None
             )

@@ -21,6 +21,13 @@ from starter.retrieval.hybrid import HybridRetriever
 ROUTE_ORDER = ("lexical", "structured", "dense")
 
 
+def fusion_fallback_configuration() -> dict[str, str]:
+    return {
+        "unavailable_route": "degrade_to_available_routes",
+        "all_routes_failed": "catalog_fallback_up_to_retrieval_depth",
+    }
+
+
 @dataclass(frozen=True)
 class FusionConfig:
     rrf_k: float = 60.0
@@ -112,6 +119,9 @@ class LocalRouteProvider:
                         "dense_route_degraded",
                     )
         return RouteBatch(results=results, failures=failures)
+
+    def dense_configuration(self) -> dict:
+        return self._dense.configuration_snapshot()
 
 
 class FusionRetriever:
@@ -253,3 +263,9 @@ class FusionRetriever:
                 route_failures=failures,
             ),
         )
+
+    def dense_configuration(self) -> dict:
+        provider = self._route_provider
+        if not isinstance(provider, LocalRouteProvider):
+            raise RuntimeError("Dense configuration is available only for local fusion routes")
+        return provider.dense_configuration()

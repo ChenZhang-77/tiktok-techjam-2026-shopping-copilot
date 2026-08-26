@@ -118,7 +118,6 @@ fi
 if [[ "$RETRIEVAL_MODE" == "dense" ]]; then
   FALLBACK_CONFIGURATION='{"retrieval_mode":"structured","structured_filter":true}'
 elif [[ "$RETRIEVAL_MODE" == "fusion" ]]; then
-  FALLBACK_CONFIGURATION='{"unavailable_route":"degrade_to_available_routes"}'
   FUSION_RRF_K="$RRF_K"
   RRF_K_TEXT=" --rrf-k $RRF_K"
 fi
@@ -148,6 +147,9 @@ fi
 PYTHON="python3"
 if [[ -x .venv/bin/python ]]; then
   PYTHON=".venv/bin/python"
+fi
+if [[ "$RETRIEVAL_MODE" == "fusion" ]]; then
+  FALLBACK_CONFIGURATION="$($PYTHON -c 'import json; from starter.retrieval.fusion import fusion_fallback_configuration; print(json.dumps(fusion_fallback_configuration(), separators=(",", ":")))')"
 fi
 
 mkdir -p "$RUN_DIR"

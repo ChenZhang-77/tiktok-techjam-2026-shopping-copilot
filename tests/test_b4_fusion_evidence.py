@@ -40,7 +40,10 @@ class B4FusionEvidenceTest(unittest.TestCase):
                 self.assertEqual(report["evaluation"]["fusion_rrf_k"], expected_k)
                 self.assertEqual(
                     report["evaluation"]["fallback_configuration"],
-                    {"unavailable_route": "degrade_to_available_routes"},
+                    {
+                        "unavailable_route": "degrade_to_available_routes",
+                        "all_routes_failed": "catalog_fallback_up_to_retrieval_depth",
+                    },
                 )
                 self.assertEqual(
                     set(report["retrieval_diagnostics"]["route_overlap_counts"]),

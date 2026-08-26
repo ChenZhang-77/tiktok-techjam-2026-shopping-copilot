@@ -184,11 +184,12 @@ class DenseFallbackTest(unittest.TestCase):
             _write_compatible_cache(cache, catalog)
             backend = FakeBackend()
 
-            result = DenseRetriever(
+            retriever = DenseRetriever(
                 catalog,
                 config=DenseConfig(cache_dir=cache),
                 backend_factory=lambda _config, _ids: backend,
-            ).retrieve(_request())
+            )
+            result = retriever.retrieve(_request())
 
             self.assertEqual([item.parent_asin for item in result.candidates], ["B", "A"])
             self.assertEqual(result.candidates[0].source, "dense")
@@ -196,6 +197,10 @@ class DenseFallbackTest(unittest.TestCase):
             self.assertEqual(result.candidates[0].diagnostics["dense_rank"], 1)
             self.assertFalse(result.diagnostics.fallback_used)
             self.assertEqual(result.diagnostics.route, "dense")
+            snapshot = retriever.configuration_snapshot()
+            self.assertEqual(snapshot["cache_status"], "compatible")
+            self.assertTrue(snapshot["cache_available"])
+            self.assertGreater(snapshot["cache_size_bytes"], 0)
 
     def test_missing_cache_reaches_deterministic_lexical_fallback(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -217,6 +222,9 @@ class DenseFallbackTest(unittest.TestCase):
             self.assertTrue(first.diagnostics.fallback_used)
             self.assertIn("dense_cache_missing", first.diagnostics.notes)
             self.assertEqual(first.diagnostics.route, "bm25")
+            snapshot = retriever.configuration_snapshot()
+            self.assertEqual(snapshot["cache_status"], "dense_cache_missing")
+            self.assertFalse(snapshot["cache_available"])
 
     def test_incompatible_metadata_reaches_lexical_fallback(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

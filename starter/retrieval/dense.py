@@ -209,6 +209,37 @@ class DenseRetriever:
             self._unavailable_reason or "dense_route_unavailable",
         )
 
+    def configuration_snapshot(self) -> dict:
+        metadata_path = self.config.cache_dir / "metadata.json"
+        metadata: dict = {}
+        try:
+            loaded = json.loads(metadata_path.read_text(encoding="utf-8"))
+            if isinstance(loaded, dict):
+                metadata = loaded
+        except (OSError, ValueError):
+            pass
+        cache_files = [
+            self.config.cache_dir / name
+            for name in ("metadata.json", "ids.json", "vectors.npy")
+        ]
+        return {
+            "cache_dir": str(self.config.cache_dir),
+            "cache_schema_version": CACHE_SCHEMA_VERSION,
+            "cache_status": self._unavailable_reason or "compatible",
+            "cache_available": self._unavailable_reason is None,
+            "cache_size_bytes": sum(
+                path.stat().st_size for path in cache_files if path.is_file()
+            ),
+            "build_seconds": metadata.get("build_seconds"),
+            "model_id": self.config.model_id,
+            "model_revision": self.config.model_revision,
+            "dimension": self.config.dimension,
+            "dtype": self.config.dtype,
+            "normalized": self.config.normalized,
+            "product_text_template": PRODUCT_TEXT_TEMPLATE,
+            "query_text_template": QUERY_TEXT_TEMPLATE,
+        }
+
     def _fallback_result(self, request: RetrievalRequest, reason: str) -> RetrievalResult:
         result = self._lexical.retrieve(request)
         diagnostics = replace(

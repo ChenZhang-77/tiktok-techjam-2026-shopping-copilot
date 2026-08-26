@@ -97,6 +97,11 @@ class DevelopmentReportingTest(unittest.TestCase):
                 return_value={"commit": "test", "worktree_clean": True},
             ),
         ):
+            from_catalog.return_value.dense_configuration.return_value = {
+                "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+                "dimension": 384,
+                "cache_size_bytes": 1,
+            }
             report = evaluate_split(
                 catalog_path="catalog.jsonl",
                 dataset_path="dataset.jsonl",
@@ -123,7 +128,10 @@ class DevelopmentReportingTest(unittest.TestCase):
         self.assertIn("cache_size_bytes", report["evaluation"]["dense_configuration"])
         self.assertEqual(
             report["evaluation"]["fallback_configuration"],
-            {"unavailable_route": "degrade_to_available_routes"},
+            {
+                "unavailable_route": "degrade_to_available_routes",
+                "all_routes_failed": "catalog_fallback_up_to_retrieval_depth",
+            },
         )
 
     @patch("experiments.evaluation_reporting.subprocess.run")
