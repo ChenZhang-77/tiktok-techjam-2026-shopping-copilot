@@ -56,6 +56,7 @@ def guard_response(
 
     recommendations: list[dict] = []
     seen: set[str] = set()
+    catalog_fill_used = False
     raw_recommendations = payload.get("recommendations")
     if not isinstance(raw_recommendations, list):
         raw_recommendations = []
@@ -75,6 +76,7 @@ def guard_response(
                 continue
             seen.add(parent_asin)
             recommendations.append({"parent_asin": parent_asin})
+            catalog_fill_used = True
             if len(recommendations) >= limit:
                 break
 
@@ -88,5 +90,20 @@ def guard_response(
         guarded["usage"] = usage
     diagnostics = payload.get("diagnostics")
     if isinstance(diagnostics, dict):
-        guarded["diagnostics"] = diagnostics
+        guarded_diagnostics = dict(diagnostics)
+        if catalog_fill_used:
+            guarded_diagnostics["fallback_used"] = True
+            retrieval = guarded_diagnostics.get("retrieval")
+            if isinstance(retrieval, dict):
+                guarded_retrieval = dict(retrieval)
+                guarded_retrieval["fallback_used"] = True
+                notes = guarded_retrieval.get("notes")
+                guarded_notes = list(notes) if isinstance(notes, list) else []
+                if "response_guard_catalog_fill" not in guarded_notes:
+                    guarded_notes.append("response_guard_catalog_fill")
+                guarded_retrieval["notes"] = guarded_notes
+                guarded_diagnostics["retrieval"] = guarded_retrieval
+        guarded["diagnostics"] = guarded_diagnostics
+    elif catalog_fill_used:
+        guarded["diagnostics"] = {"fallback_used": True}
     return guarded

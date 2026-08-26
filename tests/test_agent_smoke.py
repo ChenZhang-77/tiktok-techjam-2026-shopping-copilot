@@ -39,6 +39,27 @@ class _RecordingRetriever:
         )
 
 
+class _InvalidCandidatesRetriever(_RecordingRetriever):
+    fallback_ids = ("A", "B", "C")
+    catalog_ids = frozenset(fallback_ids)
+
+    def retrieve(self, request: RetrievalRequest) -> RetrievalResult:
+        self.requests.append(request)
+        return RetrievalResult(
+            candidates=[
+                Candidate(parent_asin="A", source="bm25"),
+                Candidate(parent_asin="A", source="bm25"),
+                Candidate(parent_asin="NOT_IN_CATALOG", source="bm25"),
+            ],
+            diagnostics=RetrievalDiagnostics(
+                route="bm25",
+                candidate_count=3,
+                fallback_used=False,
+                latency_ms=1.0,
+            ),
+        )
+
+
 def _write_catalog(path: Path) -> None:
     rows = [
         {
@@ -64,6 +85,18 @@ def _write_catalog(path: Path) -> None:
 
 
 class AgentSmokeTest(unittest.TestCase):
+    def test_response_guard_fill_is_reported_as_a_retrieval_fallback(self) -> None:
+        agent = Agent(retriever=_InvalidCandidatesRetriever())
+        agent.reset("s1", {})
+
+        response = agent.respond("s1", "I need leather shoes", 1, 3)
+
+        self.assertEqual(
+            response["recommendations"],
+            [{"parent_asin": "A"}, {"parent_asin": "B"}, {"parent_asin": "C"}],
+        )
+        self.assertTrue(response["diagnostics"]["fallback_used"])
+
     def test_agent_routes_retrieval_through_the_public_seam(self) -> None:
         retriever = _RecordingRetriever()
         agent = Agent(retriever=retriever)

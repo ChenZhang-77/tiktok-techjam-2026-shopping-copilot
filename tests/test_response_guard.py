@@ -6,6 +6,29 @@ from starter.core.response_guard import guard_response
 
 
 class ResponseGuardTest(unittest.TestCase):
+    def test_guard_marks_fallback_when_invalid_results_require_catalog_fill(self) -> None:
+        guarded = guard_response(
+            {
+                "message": "matches",
+                "ask_attribute": None,
+                "recommendations": [
+                    {"parent_asin": "A"},
+                    {"parent_asin": "A"},
+                    {"parent_asin": "NOT_IN_CATALOG"},
+                ],
+                "diagnostics": {"fallback_used": False},
+            },
+            catalog_ids={"A", "B", "C"},
+            fallback_ids=["A", "B", "C"],
+            top_k=3,
+        )
+
+        self.assertEqual(
+            guarded["recommendations"],
+            [{"parent_asin": "A"}, {"parent_asin": "B"}, {"parent_asin": "C"}],
+        )
+        self.assertTrue(guarded["diagnostics"]["fallback_used"])
+
     def test_guard_normalizes_schema_and_recommendations(self) -> None:
         guarded = guard_response(
             {
