@@ -1,10 +1,10 @@
 {
   "sample_count": 40,
   "hit_rate_at_10": 0.775,
-  "mrr": 0.552877,
-  "mttc": 5.225,
-  "efficiency": 0.5775,
-  "recommended_technical_score": 0.668863,
+  "mrr": 0.62003,
+  "mttc": 5.45,
+  "efficiency": 0.555,
+  "recommended_technical_score": 0.684509,
   "reported_token_usage": {
     "prompt_tokens": 0,
     "completion_tokens": 0,
@@ -14,34 +14,34 @@
     "boundary": {
       "sample_count": 2,
       "hit_rate_at_10": 1.0,
-      "mrr": 0.571429,
+      "mrr": 0.6,
       "mttc": 6.0,
       "efficiency": 0.5,
-      "recommended_technical_score": 0.771429
+      "recommended_technical_score": 0.78
     },
     "browsing": {
       "sample_count": 16,
-      "hit_rate_at_10": 0.875,
-      "mrr": 0.630208,
-      "mttc": 4.25,
-      "efficiency": 0.675,
-      "recommended_technical_score": 0.761562
+      "hit_rate_at_10": 0.8125,
+      "mrr": 0.723958,
+      "mttc": 4.9375,
+      "efficiency": 0.60625,
+      "recommended_technical_score": 0.744687
     },
     "buying": {
       "sample_count": 16,
-      "hit_rate_at_10": 0.625,
-      "mrr": 0.467014,
-      "mttc": 5.8125,
-      "efficiency": 0.51875,
-      "recommended_technical_score": 0.556354
+      "hit_rate_at_10": 0.6875,
+      "mrr": 0.532366,
+      "mttc": 5.6875,
+      "efficiency": 0.53125,
+      "recommended_technical_score": 0.60971
     },
     "intent_override": {
       "sample_count": 6,
       "hit_rate_at_10": 0.833333,
-      "mrr": 0.569444,
+      "mrr": 0.583333,
       "mttc": 6.0,
       "efficiency": 0.5,
-      "recommended_technical_score": 0.6875
+      "recommended_technical_score": 0.691666
     }
   },
   "sessions": [
@@ -50,16 +50,16 @@
       "scenario_type": "intent_override",
       "hit": true,
       "first_hit_turn": 6,
-      "best_rank": 4,
-      "reciprocal_rank": 0.25
+      "best_rank": 3,
+      "reciprocal_rank": 0.3333333333333333
     },
     {
       "sample_id": "public_0011",
       "scenario_type": "browsing",
-      "hit": true,
-      "first_hit_turn": 4,
-      "best_rank": 8,
-      "reciprocal_rank": 0.125
+      "hit": false,
+      "first_hit_turn": null,
+      "best_rank": null,
+      "reciprocal_rank": 0.0
     },
     {
       "sample_id": "public_0020",
@@ -74,8 +74,8 @@
       "scenario_type": "browsing",
       "hit": true,
       "first_hit_turn": 3,
-      "best_rank": 3,
-      "reciprocal_rank": 0.3333333333333333
+      "best_rank": 4,
+      "reciprocal_rank": 0.25
     },
     {
       "sample_id": "public_0022",
@@ -97,9 +97,9 @@
       "sample_id": "public_0027",
       "scenario_type": "buying",
       "hit": true,
-      "first_hit_turn": 3,
-      "best_rank": 9,
-      "reciprocal_rank": 0.1111111111111111
+      "first_hit_turn": 6,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
     },
     {
       "sample_id": "public_0029",
@@ -122,8 +122,8 @@
       "scenario_type": "browsing",
       "hit": true,
       "first_hit_turn": 3,
-      "best_rank": 4,
-      "reciprocal_rank": 0.25
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
     },
     {
       "sample_id": "public_0041",
@@ -208,10 +208,10 @@
     {
       "sample_id": "public_0093",
       "scenario_type": "buying",
-      "hit": false,
-      "first_hit_turn": null,
-      "best_rank": null,
-      "reciprocal_rank": 0.0
+      "hit": true,
+      "first_hit_turn": 6,
+      "best_rank": 8,
+      "reciprocal_rank": 0.125
     },
     {
       "sample_id": "public_0096",
@@ -242,16 +242,16 @@
       "scenario_type": "buying",
       "hit": true,
       "first_hit_turn": 8,
-      "best_rank": 9,
-      "reciprocal_rank": 0.1111111111111111
+      "best_rank": 7,
+      "reciprocal_rank": 0.14285714285714285
     },
     {
       "sample_id": "public_0113",
       "scenario_type": "browsing",
       "hit": true,
       "first_hit_turn": 2,
-      "best_rank": 4,
-      "reciprocal_rank": 0.25
+      "best_rank": 3,
+      "reciprocal_rank": 0.3333333333333333
     },
     {
       "sample_id": "public_0114",
@@ -354,16 +354,16 @@
       "scenario_type": "boundary",
       "hit": true,
       "first_hit_turn": 5,
-      "best_rank": 7,
-      "reciprocal_rank": 0.14285714285714285
+      "best_rank": 5,
+      "reciprocal_rank": 0.2
     },
     {
       "sample_id": "public_0196",
       "scenario_type": "browsing",
       "hit": true,
-      "first_hit_turn": 2,
-      "best_rank": 8,
-      "reciprocal_rank": 0.125
+      "first_hit_turn": 6,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
     }
   ],
   "code_provenance": {
@@ -378,110 +378,58 @@
     "internal_fallbacks_note": "B1 Agent diagnostics expose fallback_used at the public boundary."
   },
   "retrieval_diagnostics": {
-    "route_candidate_counts": {
-      "lexical": {
-        "response_count": 200,
-        "total": 18560,
-        "mean": 92.8,
-        "min": 60,
-        "max": 120
-      },
-      "structured": {
-        "response_count": 200,
-        "total": 18560,
-        "mean": 92.8,
-        "min": 60,
-        "max": 120
-      },
-      "dense": {
-        "response_count": 136,
-        "total": 13620,
-        "mean": 100.147059,
-        "min": 100,
-        "max": 120
-      }
-    },
-    "route_overlap_counts": {
-      "lexical|structured": {
-        "response_count": 200,
-        "total": 18560,
-        "mean": 92.8,
-        "min": 60,
-        "max": 120
-      },
-      "lexical|dense": {
-        "response_count": 136,
-        "total": 751,
-        "mean": 5.522059,
-        "min": 0,
-        "max": 32
-      },
-      "structured|dense": {
-        "response_count": 136,
-        "total": 751,
-        "mean": 5.522059,
-        "min": 0,
-        "max": 32
-      }
-    },
+    "route_candidate_counts": {},
+    "route_overlap_counts": {},
     "route_failure_counts": {}
   },
   "timing": {
-    "initialization_ms": 1367.229583,
-    "evaluation_wall_ms": 12163.176,
+    "initialization_ms": 1281.22075,
+    "evaluation_wall_ms": 9282.278167,
     "responses": {
-      "response_count": 200,
-      "total_ms": 12144.041257,
-      "mean_ms": 60.720206,
-      "p50_ms": 48.491917,
-      "p95_ms": 103.229584,
-      "max_ms": 1917.072667
+      "response_count": 209,
+      "total_ms": 9265.256957,
+      "mean_ms": 44.331373,
+      "p50_ms": 43.542208,
+      "p95_ms": 86.399834,
+      "max_ms": 113.44075
     },
     "retrieval": {
       "latency": {
-        "response_count": 200,
-        "total_ms": 10866.803459,
-        "mean_ms": 54.334017,
-        "p50_ms": 37.56575,
-        "p95_ms": 102.5595,
-        "max_ms": 1907.678375
+        "response_count": 209,
+        "total_ms": 7932.873173,
+        "mean_ms": 37.956331,
+        "p50_ms": 34.126625,
+        "p95_ms": 85.973042,
+        "max_ms": 112.999667
       },
-      "lexical_route_latency": {
-        "response_count": 200,
-        "total_ms": 4034.424255,
-        "mean_ms": 20.172121,
-        "p50_ms": 18.557209,
-        "p95_ms": 39.942583,
-        "max_ms": 74.390875
+      "lexical_latency": {
+        "response_count": 209,
+        "total_ms": 3016.500331,
+        "mean_ms": 14.433016,
+        "p50_ms": 14.631292,
+        "p95_ms": 24.86375,
+        "max_ms": 46.609041
       },
-      "structured_route_latency": {
-        "response_count": 200,
-        "total_ms": 8118.355706,
-        "mean_ms": 40.591779,
-        "p50_ms": 33.097208,
-        "p95_ms": 94.374917,
-        "max_ms": 186.864958
+      "constraint_rerank_latency": {
+        "response_count": 209,
+        "total_ms": 2883.112002,
+        "mean_ms": 13.794794,
+        "p50_ms": 11.285625,
+        "p95_ms": 40.029625,
+        "max_ms": 45.989625
       },
-      "fusion_latency": {
-        "response_count": 200,
-        "total_ms": 54.101044,
-        "mean_ms": 0.270505,
-        "p50_ms": 0.282916,
-        "p95_ms": 0.417458,
-        "max_ms": 1.129
-      },
-      "dense_route_latency": {
-        "response_count": 136,
-        "total_ms": 2663.726042,
-        "mean_ms": 19.586221,
-        "p50_ms": 4.967959,
-        "p95_ms": 10.5005,
-        "max_ms": 1895.554541
+      "structured_filter_latency": {
+        "response_count": 209,
+        "total_ms": 55.06488,
+        "mean_ms": 0.263468,
+        "p50_ms": 0.000125,
+        "p95_ms": 1.356334,
+        "max_ms": 3.055709
       }
     }
   },
   "resources": {
-    "peak_rss_bytes": 1100529664,
+    "peak_rss_bytes": 570834944,
     "peak_rss_kind": "process_peak_rss"
   },
   "evaluation": {
@@ -492,25 +440,10 @@
     "development_fold": "fold_2",
     "development_fold_manifest": "docs/development_folds_v1.json",
     "development_fold_version": "development-folds-v1",
-    "retrieval_mode": "fusion",
+    "retrieval_mode": "structured",
     "structured_filter": true,
-    "fusion_rrf_k": 10.0,
-    "dense_configuration": {
-      "cache_dir": "embeddings/minilm-l6-v2-v1",
-      "cache_schema_version": 1,
-      "cache_available": true,
-      "cache_size_bytes": 77501054,
-      "build_seconds": 255.086887,
-      "model_id": "sentence-transformers/all-MiniLM-L6-v2",
-      "model_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
-      "dimension": 384,
-      "dtype": "float32",
-      "normalized": true,
-      "product_text_template": "product-fields-v1",
-      "query_text_template": "distilled-query-v1"
-    },
-    "fallback_configuration": {
-      "unavailable_route": "degrade_to_available_routes"
-    }
+    "fusion_rrf_k": null,
+    "dense_configuration": null,
+    "fallback_configuration": null
   }
 }

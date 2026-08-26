@@ -1,15 +1,7 @@
 {
-  "version": "b4-fusion-v1",
-  "run_code_commit": "1cc816e",
-  "protocol": {
-    "dataset": "data/public_set.jsonl",
-    "split": "development",
-    "development_sample_count": 160,
-    "fold_manifest": "docs/development_folds_v1.json",
-    "folds": 4,
-    "holdout_status": "not_run_during_b4",
-    "full_status": "not_run_during_b4"
-  },
+  "version": "b4-fusion-v2",
+  "run_code_commit": "efdf5c8",
+  "protocol": {"dataset": "data/public_set.jsonl", "split": "development", "development_sample_count": 160, "fold_manifest": "docs/development_folds_v1.json", "folds": 4, "same_revision_comparison": true, "holdout_status": "not_run_during_b4", "full_status": "not_run_during_b4"},
   "method": {
     "name": "strategy_weighted_reciprocal_rank_fusion",
     "formula": "strategy_route_weight / (rrf_k + route_rank)",
@@ -19,47 +11,41 @@
     "catalog_validation": "drop_non_catalog_parent_asin",
     "deduplication": "first_valid_parent_asin_per_route_then_global_fusion",
     "tie_break": "first_route_observation_then_parent_asin",
-    "route_failure_policy": "degrade_to_available_routes_with_reason"
+    "route_failure_policy": "degrade_to_available_routes_then_catalog_fallback"
   },
+  "dense_configuration": {"model_id": "sentence-transformers/all-MiniLM-L6-v2", "model_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41", "dimension": 384, "dtype": "float32", "normalized": true, "cache_size_bytes": 77501054, "build_seconds": 255.086887, "product_text_template": "product-fields-v1", "query_text_template": "distilled-query-v1"},
   "raw_reports": {
-    "development_fusion_k10": {"path": "docs/b4_reports/development_fusion_k10.json", "sha256": "dd69d61a788577d2cc2f00a65c449f1b72a2183d333dabc39c318b69c4c15ad0"},
-    "fold_1_fusion_k10": {"path": "docs/b4_reports/fold_1_fusion_k10.json", "sha256": "45e593025fcdf23189d0f6d616a2973f2465a4c40d0191ff62f509026da78fde"},
-    "fold_2_fusion_k10": {"path": "docs/b4_reports/fold_2_fusion_k10.json", "sha256": "bb94cdca38739b716732524e421a4d1d82c93b608dedaa79edd064e3d90253a0"},
-    "fold_3_fusion_k10": {"path": "docs/b4_reports/fold_3_fusion_k10.json", "sha256": "a3592777c2f49a1957f6ca4be4d329a72f2a7c105353f3079aba533da333f603"},
-    "fold_4_fusion_k10": {"path": "docs/b4_reports/fold_4_fusion_k10.json", "sha256": "ae54bf48e0098a3c4579a5fb49803c5c9ca83bf2ea70f2d2cbbfbf1d9fb94bac"},
-    "development_fusion_k60": {"path": "docs/b4_reports/development_fusion_k60.json", "sha256": "2750eda46205e25188fc2a129d49843c08032e130146df18f30941114725e41c"},
-    "fold_1_fusion_k60": {"path": "docs/b4_reports/fold_1_fusion_k60.json", "sha256": "1492e5b631d1eae70cc25fd9e1ea62eb9b670871c0046c5a9711da6f2bf60260"},
-    "fold_2_fusion_k60": {"path": "docs/b4_reports/fold_2_fusion_k60.json", "sha256": "158c66ecf34861ccba6c940ee5968d610ecea5aa4b0eb15938908d2fff9a4660"},
-    "fold_3_fusion_k60": {"path": "docs/b4_reports/fold_3_fusion_k60.json", "sha256": "ba51b671a948bd17f2f35a33084cf94fc2da259a0eeb429f9d3651c2631ef8ff"},
-    "fold_4_fusion_k60": {"path": "docs/b4_reports/fold_4_fusion_k60.json", "sha256": "16292ea6d85bc89e6a94f5a51e2eab1f19101c23c948e8322fd1f13580922bea"}
+    "development_fusion_k10": {"path": "docs/b4_reports/development_fusion_k10.json", "sha256": "cb3763df8c1b71dcf01ecbf79c2e1a034a4dfeef77612a3193c1b2e46ab4533b"},
+    "fold_1_fusion_k10": {"path": "docs/b4_reports/fold_1_fusion_k10.json", "sha256": "667101c9a4e295f020d1f63d079851c0d5caab05319d374dd21410b5efa57669"},
+    "fold_2_fusion_k10": {"path": "docs/b4_reports/fold_2_fusion_k10.json", "sha256": "de8c036043011cbf684b12f02f4e53b38f17554a881978997f768409fa252d19"},
+    "fold_3_fusion_k10": {"path": "docs/b4_reports/fold_3_fusion_k10.json", "sha256": "ded961632aec748b27d11a3aeb528618e63337e4da0680eea6a12137db082158"},
+    "fold_4_fusion_k10": {"path": "docs/b4_reports/fold_4_fusion_k10.json", "sha256": "bc5f67e0c0f4a20f63861f6f9538ea6617d3255cc8152bfc4f168902f7ff9745"},
+    "development_fusion_k60": {"path": "docs/b4_reports/development_fusion_k60.json", "sha256": "1f494a20cca7d527192389dd1d1dc8ed6432fc4cb3707b5b107d8cfa345a05e6"},
+    "fold_1_fusion_k60": {"path": "docs/b4_reports/fold_1_fusion_k60.json", "sha256": "abef50129ec3619e81342e82ec16c20946c77d6d0b19ef199c488ed40bbaf583"},
+    "fold_2_fusion_k60": {"path": "docs/b4_reports/fold_2_fusion_k60.json", "sha256": "7d3dd8ae243873331ef86a883a074de7fd2e6cd8aca57538ea29e9be664ed940"},
+    "fold_3_fusion_k60": {"path": "docs/b4_reports/fold_3_fusion_k60.json", "sha256": "ecba85e383955fe59f4c1d80ab4e671c898a75cc2e0547e042427070a92f7490"},
+    "fold_4_fusion_k60": {"path": "docs/b4_reports/fold_4_fusion_k60.json", "sha256": "1c741ce9ea6e2211f4932d59455fa6466fec99d3d1a0f05e227cc9d6932873c0"},
+    "development_structured": {"path": "docs/b4_reports/development_structured.json", "sha256": "1540903b80c1564c97e28049c3b1e3e951865c3b9900dcea716042a225fb4753"},
+    "fold_1_structured": {"path": "docs/b4_reports/fold_1_structured.json", "sha256": "242aa88ca519081f329ba8df9de73d32bca01ad1313f17d68d4936f8f5236b4c"},
+    "fold_2_structured": {"path": "docs/b4_reports/fold_2_structured.json", "sha256": "230569e73b7d3c9a374d628eb8d61b3f3a25415f780f3c4d9a882ca5b9343f43"},
+    "fold_3_structured": {"path": "docs/b4_reports/fold_3_structured.json", "sha256": "b1290051d1a2c4e7676bbe3be840a118e60ed7a87ca860f1759be014253e055d"},
+    "fold_4_structured": {"path": "docs/b4_reports/fold_4_structured.json", "sha256": "fcdef4e282b4ebf17fb491f7e9310a443dab5d6bf5d29109da9233c07e5d17cc"},
+    "development_lexical": {"path": "docs/b4_reports/development_lexical.json", "sha256": "3c3e2069be48e0a2702fd0504cba1752bc5e772fb915906a4ce4ab58c1a3ddee"},
+    "fold_1_lexical": {"path": "docs/b4_reports/fold_1_lexical.json", "sha256": "c06d262f0e75a1fa9259fad8491a22a5aee1276188864b884574e063fa8f4738"},
+    "fold_2_lexical": {"path": "docs/b4_reports/fold_2_lexical.json", "sha256": "de661872c96d9cedaeed009961e402968a88265a25b716f201ce15d0edba6390"},
+    "fold_3_lexical": {"path": "docs/b4_reports/fold_3_lexical.json", "sha256": "655fd08210419ea2cbb69f0d86dcca511d0195e806f2641d5b27c2d89d0970f6"},
+    "fold_4_lexical": {"path": "docs/b4_reports/fold_4_lexical.json", "sha256": "2645b775886f8af2a5a862670bb1e34c4888dc3d76e32b162b59bc329f231869"},
+    "development_dense": {"path": "docs/b4_reports/development_dense.json", "sha256": "2044548e245b3fa3b00d0a6dae2d18dd0dbb675b7375dfedfc215cf90e79bb11"},
+    "fold_1_dense": {"path": "docs/b4_reports/fold_1_dense.json", "sha256": "00c82b8fabe30c1e9a19095b265fda1a6a8485f5490aadbd9417d3c848fde1b8"},
+    "fold_2_dense": {"path": "docs/b4_reports/fold_2_dense.json", "sha256": "7bf606984177b3b794eb5c975d9989c08d09eaf338ea61622ce1340cc8ff702c"},
+    "fold_3_dense": {"path": "docs/b4_reports/fold_3_dense.json", "sha256": "11455b6a4a9b1490cc2ad67909cffefe94891454c9c25dbfa724ecea57f28b8f"},
+    "fold_4_dense": {"path": "docs/b4_reports/fold_4_dense.json", "sha256": "66ef98592dcfd8aaede361645176794d710b64c4618cb398748e0781c52d0ff7"}
   },
   "single_route_and_unfused_ablations": {
-    "control_plane_no_guarded_filter": {
-      "source": "docs/b0_development_report.json",
-      "hit_rate_at_10": 0.7625,
-      "recommended_technical_score": 0.651683
-    },
-    "retained_structured": {
-      "source": "docs/b2_reports/development_structured.json",
-      "sha256": "66a7e57351a8346b5af587a4462b4d4838d5196e5e377c25897aae55e6c8f305",
-      "hit_rate_at_10": 0.7625,
-      "mrr": 0.526989,
-      "recommended_technical_score": 0.653222
-    },
-    "lexical_only": {
-      "source": "docs/b2_reports/development_lexical.json",
-      "sha256": "f9ce2dcc9e11c11d6ba56c2d91421bd8807e4922ae2ac108eafc428cf6614a55",
-      "hit_rate_at_10": 0.71875,
-      "mrr": 0.485851,
-      "recommended_technical_score": 0.617005
-    },
-    "dense_only": {
-      "source": "docs/b3_reports/development_dense.json",
-      "sha256": "2549fd45d54ea116c89f4b911ff227e314b9f72b1183ea794300eef5ae1969b6",
-      "hit_rate_at_10": 0.3375,
-      "mrr": 0.160501,
-      "recommended_technical_score": 0.27265
-    }
+    "control_plane_no_guarded_filter": {"source": "docs/b0_development_report.json", "hit_rate_at_10": 0.7625, "recommended_technical_score": 0.651683},
+    "retained_structured": {"source": "docs/b4_reports/development_structured.json", "sha256": "1540903b80c1564c97e28049c3b1e3e951865c3b9900dcea716042a225fb4753", "hit_rate_at_10": 0.7625, "mrr": 0.526989, "recommended_technical_score": 0.653222},
+    "lexical_only": {"source": "docs/b4_reports/development_lexical.json", "sha256": "3c3e2069be48e0a2702fd0504cba1752bc5e772fb915906a4ce4ab58c1a3ddee", "hit_rate_at_10": 0.71875, "mrr": 0.485851, "recommended_technical_score": 0.617005},
+    "dense_only": {"source": "docs/b4_reports/development_dense.json", "sha256": "2044548e245b3fa3b00d0a6dae2d18dd0dbb675b7375dfedfc215cf90e79bb11", "hit_rate_at_10": 0.3375, "mrr": 0.160501, "recommended_technical_score": 0.27265}
   },
   "fixed_cross_validation": {
     "fold_1": {"structured": {"hit_rate_at_10": 0.725, "recommended_technical_score": 0.607042}, "fusion_k10": {"hit_rate_at_10": 0.725, "recommended_technical_score": 0.603164}, "fusion_k60": {"hit_rate_at_10": 0.65, "recommended_technical_score": 0.554652}},
@@ -80,21 +66,20 @@
     "fusion_k10": {"hit_rate_at_10": 0.75, "mrr": 0.48662, "mttc": 5.16875, "efficiency": 0.583125, "recommended_technical_score": 0.637611},
     "fusion_k60": {"hit_rate_at_10": 0.73125, "mrr": 0.480454, "mttc": 5.275, "efficiency": 0.5725, "recommended_technical_score": 0.624261}
   },
-  "operational_cost_fusion_k10": {
-    "initialization_ms": 1355.601416,
-    "retrieval_mean_ms": 45.283434,
-    "retrieval_p50_ms": 37.327791,
-    "retrieval_p95_ms": 92.311833,
-    "lexical_route_mean_ms": 18.689633,
-    "structured_route_mean_ms": 38.453161,
-    "dense_route_mean_ms": 9.572805,
-    "fusion_mean_ms": 0.242949,
-    "peak_rss_bytes": 1106477056,
-    "respond_exceptions": 0,
-    "invalid_response_payloads": 0,
-    "reported_fallbacks": 0
+  "scenario_comparison_fusion_k10_vs_structured": {
+    "boundary": {"hit_rate_at_10_delta": 0.0, "mrr_delta": -0.232143, "mttc_delta": -0.625, "recommended_technical_score_delta": -0.057143},
+    "browsing": {"hit_rate_at_10_delta": -0.03125, "mrr_delta": -0.057658, "mttc_delta": -0.015625, "recommended_technical_score_delta": -0.03261},
+    "buying": {"hit_rate_at_10_delta": 0.015625, "mrr_delta": -0.010609, "mttc_delta": -0.359375, "recommended_technical_score_delta": 0.011817},
+    "intent_override": {"hit_rate_at_10_delta": -0.041666, "mrr_delta": -0.009705, "mttc_delta": 0.291667, "recommended_technical_score_delta": -0.029578}
   },
+  "route_diagnostics_fusion_k10": {
+    "mean_candidate_count": {"lexical": 92.452351, "structured": 92.452351, "dense": 100.037665},
+    "mean_overlap_count": {"lexical|structured": 92.452351, "lexical|dense": 6.463277, "structured|dense": 6.463277},
+    "route_failure_counts": {}
+  },
+  "operational_cost_fusion_k10": {"initialization_ms": 1452.402958, "retrieval_mean_ms": 46.446244, "retrieval_p50_ms": 37.212291, "retrieval_p95_ms": 93.299625, "lexical_route_mean_ms": 18.59206, "structured_route_mean_ms": 38.319878, "dense_route_mean_ms": 11.248322, "fusion_mean_ms": 0.387155, "peak_rss_bytes": 1070530560, "respond_exceptions": 0, "invalid_response_payloads": 0, "reported_fallbacks": 0},
+  "hypothesis": "Strategy-weighted RRF may convert the dense route's complementary Development hits into higher recall without sacrificing structured-route precision.",
   "decision": "retain_fusion_as_optional_ablation_reject_as_runtime_default",
   "runtime_default": "structured",
-  "result": "K=10 is the stronger tested fusion constant, but it loses TechnicalScore on three of four fixed folds and trails retained structured retrieval by 0.015611 on the fold mean. Keep the deterministic fusion implementation and diagnostics as an optional ablation; preserve structured retrieval as the runtime default."
+  "result": "K=10 is the stronger tested fusion constant. Buying TechnicalScore improves by 0.011817, but Boundary, Browsing, and Intent Override regress; it loses TechnicalScore on three of four fixed folds and trails structured retrieval by 0.015611 on the fold mean. Keep deterministic fusion and diagnostics as an optional ablation; preserve structured retrieval as the runtime default."
 }
