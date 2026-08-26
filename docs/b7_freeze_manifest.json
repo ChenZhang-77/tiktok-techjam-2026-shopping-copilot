@@ -1,0 +1,132 @@
+{
+  "stage": "B7",
+  "branch": "patryk/track4-experiments",
+  "review_fixed_point": "2280bf7",
+  "code_behavior_freeze_commit": "5b66df5",
+  "runtime_default": {
+    "retrieval_mode": "structured",
+    "catalog_index": "in_memory_sqlite_fts5",
+    "constraint_rerank": true,
+    "guarded_structured_filter": true,
+    "profile_weight": 0.0,
+    "dense_route": false,
+    "fusion": false,
+    "semantic_reranker": false,
+    "external_api": false,
+    "token_cost": 0
+  },
+  "frozen_inputs": {
+    "catalog_sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
+    "public_set_sha256": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579",
+    "evaluator_sha256": "c21e10a6e772c4824d85f513f0d7d53d23942d20ec9eb3853ff49119317ef96f",
+    "public_split_sha256": "98171487d3416ff97989e98aeca145b87df74337c5edbe7c908dd80afc538c50",
+    "development_folds_sha256": "d9219a4be4533c4f99156197d03e19e6512ce57b262944a201f8605244ccd78d"
+  },
+  "pre_freeze_development": {
+    "code_commit": "eea6bbc",
+    "path": "docs/b7_pre_freeze_development.json",
+    "sha256": "39328322ba3bd1ebf5b607ec546bc4df14638f2b2956953852cc9401f8890eb4",
+    "hit_rate_at_10": 0.7625,
+    "mrr": 0.526989,
+    "mttc": 5.30625,
+    "efficiency": 0.569375,
+    "recommended_technical_score": 0.653222,
+    "reported_fallbacks": 0,
+    "invalid_response_payloads": 0,
+    "retrieval_mean_ms": 36.870219,
+    "retrieval_p50_ms": 32.505333,
+    "retrieval_p95_ms": 82.687167,
+    "initialization_ms": 1252.970375,
+    "peak_rss_bytes": 574144512
+  },
+  "ablations": [
+    {
+      "name": "official_weak_bm25",
+      "hit_rate_at_10": 0.125,
+      "mrr": 0.068034,
+      "mttc": 9.81,
+      "recommended_technical_score": 0.10671,
+      "decision": "comparison_only"
+    },
+    {
+      "name": "pure_lexical",
+      "hit_rate_at_10": 0.71875,
+      "mrr": 0.485851,
+      "mttc": 5.40625,
+      "recommended_technical_score": 0.617005,
+      "decision": "reject_as_default"
+    },
+    {
+      "name": "constraint_rerank_without_guarded_filter",
+      "hit_rate_at_10": 0.7625,
+      "mrr": 0.522693,
+      "mttc": 5.31875,
+      "recommended_technical_score": 0.651683,
+      "decision": "retain_as_ablation_base"
+    },
+    {
+      "name": "retained_structured",
+      "hit_rate_at_10": 0.7625,
+      "mrr": 0.526989,
+      "mttc": 5.30625,
+      "recommended_technical_score": 0.653222,
+      "decision": "retain_as_runtime_default"
+    },
+    {
+      "name": "dense_only",
+      "hit_rate_at_10": 0.3375,
+      "mrr": 0.160501,
+      "mttc": 8.2125,
+      "recommended_technical_score": 0.27265,
+      "decision": "reject_as_default"
+    },
+    {
+      "name": "fusion_rrf_k10",
+      "hit_rate_at_10": 0.75,
+      "mrr": 0.48662,
+      "mttc": 5.16875,
+      "recommended_technical_score": 0.637611,
+      "decision": "reject_as_default"
+    },
+    {
+      "name": "semantic_rerank_top30",
+      "hit_rate_at_10": 0.78125,
+      "mrr": 0.484162,
+      "mttc": 4.96875,
+      "recommended_technical_score": 0.656499,
+      "decision": "reject_as_default_due_to_mrr_intent_override_and_cost"
+    }
+  ],
+  "per_scenario_sources": [
+    "docs/b2_structured_cv.json",
+    "docs/b3_dense_benchmark.json",
+    "docs/b4_fusion_cv.json",
+    "docs/b5_semantic_rerank_cv.json"
+  ],
+  "optional_reranker_clean_cache": {
+    "path": "docs/b7_clean_cache_reproduction.json",
+    "sha256": "84f460c9804f3c5616feeddeefd439ba8d0959dc2a45d70589d1ea40644b940a",
+    "runtime_file_count": 6,
+    "snapshot_size_bytes": 63416932,
+    "timeout_ms": 5000.0,
+    "runtime_network_access": false
+  },
+  "review": {
+    "resolution": "docs/b7_review_resolution.md",
+    "standards_hard_findings": 0,
+    "standards_nonblocking_judgments": 1,
+    "spec_findings": 0,
+    "blocking_findings": 0
+  },
+  "test_gate_before_manifest": {
+    "command": ".venv/bin/python -m unittest discover -s tests -v",
+    "passed": 140,
+    "failed": 0
+  },
+  "final_public_run": {
+    "status": "pending_single_run_after_freeze_commit",
+    "command": ".venv/bin/python -m experiments.evaluation_reporting --split full --structured-filter --output /private/tmp/b7-final-public.json",
+    "separate_holdout_run": false,
+    "limitation": "The 40-session public holdout was exposed by earlier A-side full runs, so the Final Public Run is non-confirmatory and will not drive tuning."
+  }
+}
