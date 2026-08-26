@@ -5,6 +5,7 @@ import math
 import re
 import sqlite3
 import time
+from dataclasses import replace
 from pathlib import Path
 
 from starter.contracts import (
@@ -125,24 +126,47 @@ class HybridRetriever:
         self._connection.commit()
 
     def retrieve(self, request: RetrievalRequest) -> RetrievalResult:
+        result = self.retrieve_routes(request)["structured"]
+        return RetrievalResult(
+            candidates=[replace(candidate, source="bm25") for candidate in result.candidates],
+            diagnostics=replace(result.diagnostics, route="bm25"),
+        )
+
+    def retrieve_routes(self, request: RetrievalRequest) -> dict[str, RetrievalResult]:
         self._validate_request(request)
         started = time.perf_counter()
         unique_terms = list(dict.fromkeys(_terms(request.query)))[:40]
         expression = " OR ".join(f'"{term}"' for term in unique_terms)
         if not expression:
-            return self._result(
-                [],
-                [],
-                request,
-                started,
-                StructuredOutcome([]),
-                constraint_reranked=False,
-                stage_latencies_ms={
-                    "lexical": 0.0,
-                    "constraint_rerank": 0.0,
-                    "structured_filter": 0.0,
-                },
-            )
+            empty_timings = {
+                "lexical": 0.0,
+                "constraint_rerank": 0.0,
+                "structured_filter": 0.0,
+            }
+            return {
+                "lexical": self._result(
+                    [],
+                    [],
+                    request,
+                    started,
+                    StructuredOutcome([]),
+                    source="lexical",
+                    route="lexical",
+                    constraint_reranked=False,
+                    stage_latencies_ms=empty_timings,
+                ),
+                "structured": self._result(
+                    [],
+                    [],
+                    request,
+                    started,
+                    StructuredOutcome([]),
+                    source="structured",
+                    route="structured",
+                    constraint_reranked=False,
+                    stage_latencies_ms=empty_timings,
+                ),
+            }
 
         lexical_started = time.perf_counter()
         rows = self._connection.execute(
@@ -152,6 +176,21 @@ class HybridRetriever:
         ).fetchall()
         lexical_latency_ms = (time.perf_counter() - lexical_started) * 1000.0
         lexical_ids = [str(row[0]) for row in rows]
+        lexical_result = self._result(
+            lexical_ids,
+            lexical_ids,
+            request,
+            started,
+            StructuredOutcome(lexical_ids),
+            source="lexical",
+            route="lexical",
+            constraint_reranked=False,
+            stage_latencies_ms={
+                "lexical": lexical_latency_ms,
+                "constraint_rerank": 0.0,
+                "structured_filter": 0.0,
+            },
+        )
         rerank_started = time.perf_counter()
         if self.constraint_rerank_enabled:
             ranked_ids = rerank_candidates(
@@ -178,19 +217,24 @@ class HybridRetriever:
         structured_filter_latency_ms = (
             time.perf_counter() - structured_filter_started
         ) * 1000.0
-        return self._result(
-            lexical_ids,
-            structured_outcome.ordered_ids,
-            request,
-            started,
-            structured_outcome,
-            constraint_reranked=constraint_reranked,
-            stage_latencies_ms={
-                "lexical": lexical_latency_ms,
-                "constraint_rerank": constraint_rerank_latency_ms,
-                "structured_filter": structured_filter_latency_ms,
-            },
-        )
+        return {
+            "lexical": lexical_result,
+            "structured": self._result(
+                lexical_ids,
+                structured_outcome.ordered_ids,
+                request,
+                started,
+                structured_outcome,
+                source="structured",
+                route="structured",
+                constraint_reranked=constraint_reranked,
+                stage_latencies_ms={
+                    "lexical": lexical_latency_ms,
+                    "constraint_rerank": constraint_rerank_latency_ms,
+                    "structured_filter": structured_filter_latency_ms,
+                },
+            ),
+        }
 
     def _result(
         self,
@@ -200,6 +244,8 @@ class HybridRetriever:
         started: float,
         structured_outcome: StructuredOutcome,
         *,
+        source: str,
+        route: str,
         constraint_reranked: bool,
         stage_latencies_ms: dict[str, float],
     ) -> RetrievalResult:
@@ -207,7 +253,7 @@ class HybridRetriever:
         candidates = [
             Candidate(
                 parent_asin=parent_asin,
-                source="bm25",
+                source=source,
                 evidence_text=self._product_texts[parent_asin],
                 diagnostics={
                     "lexical_rank": lexical_ranks[parent_asin],
@@ -229,7 +275,7 @@ class HybridRetriever:
         return RetrievalResult(
             candidates=candidates,
             diagnostics=RetrievalDiagnostics(
-                route="bm25",
+                route=route,
                 candidate_count=len(candidates),
                 fallback_used=False,
                 latency_ms=round((time.perf_counter() - started) * 1000.0, 6),

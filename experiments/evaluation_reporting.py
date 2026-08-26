@@ -19,7 +19,13 @@ from experiments.development_folds import (
 from starter.agent import Agent
 from starter.contracts import validate_agent_response
 from starter.core.response_guard import ALLOWED_ASK_ATTRIBUTES
-from starter.retrieval import DenseRetriever, HybridRetriever, StructuredConfig
+from starter.retrieval import (
+    DenseRetriever,
+    FusionConfig,
+    FusionRetriever,
+    HybridRetriever,
+    StructuredConfig,
+)
 
 
 def code_provenance() -> dict:
@@ -173,12 +179,13 @@ def evaluate_split(
     development_fold_path: str | Path,
     fold_name: str | None = None,
     retrieval_mode: str = "structured",
+    fusion_rrf_k: float = 60.0,
 ) -> dict:
     if fold_name and split != "development":
         raise ValueError("A development fold can only be used with the development split")
-    if retrieval_mode not in {"structured", "no_guarded_filter", "lexical", "dense"}:
+    if retrieval_mode not in {"structured", "no_guarded_filter", "lexical", "dense", "fusion"}:
         raise ValueError(
-            "retrieval_mode must be structured, no_guarded_filter, lexical, or dense"
+            "retrieval_mode must be structured, no_guarded_filter, lexical, dense, or fusion"
         )
 
     samples = load_jsonl(dataset_path)
@@ -194,8 +201,14 @@ def evaluate_split(
 
     initialization_started = time.perf_counter()
     catalog_ids, categories, products = catalog_index(catalog_path)
-    structured_config = StructuredConfig(enabled=retrieval_mode == "structured")
-    if retrieval_mode == "dense":
+    structured_filter_enabled = retrieval_mode in {"structured", "fusion"}
+    structured_config = StructuredConfig(enabled=structured_filter_enabled)
+    if retrieval_mode == "fusion":
+        retriever = FusionRetriever.from_catalog(
+            catalog_path,
+            config=FusionConfig(rrf_k=fusion_rrf_k),
+        )
+    elif retrieval_mode == "dense":
         retriever = DenseRetriever(catalog_path)
     else:
         retriever = HybridRetriever(
@@ -234,11 +247,16 @@ def evaluate_split(
         "development_fold_manifest": str(development_fold_path) if split == "development" else None,
         "development_fold_version": development_folds.get("version") if development_folds else None,
         "retrieval_mode": retrieval_mode,
-        "structured_filter": structured_config.enabled,
+        "structured_filter": structured_filter_enabled,
+        "fusion_rrf_k": fusion_rrf_k if retrieval_mode == "fusion" else None,
         "fallback_configuration": (
             {"retrieval_mode": "structured", "structured_filter": True}
             if retrieval_mode == "dense"
-            else None
+            else (
+                {"unavailable_route": "degrade_to_available_routes"}
+                if retrieval_mode == "fusion"
+                else None
+            )
         ),
     }
     return result
@@ -268,6 +286,13 @@ def main() -> None:
         help="Keep the B1 constraint reranker but disable guarded structured filtering.",
     )
     retrieval_mode.add_argument(
+        "--fusion",
+        action="store_const",
+        const="fusion",
+        dest="retrieval_mode",
+        help="Fuse weighted lexical, structured, and available dense Route rankings.",
+    )
+    retrieval_mode.add_argument(
         "--dense-only",
         action="store_const",
         const="dense",
@@ -282,6 +307,12 @@ def main() -> None:
         help="Run pure BM25 without constraint reranking or guarded filtering.",
     )
     parser.set_defaults(retrieval_mode="structured")
+    parser.add_argument(
+        "--rrf-k",
+        type=float,
+        default=60.0,
+        help="Weighted reciprocal-rank-fusion constant used by --fusion.",
+    )
     parser.add_argument("--output", default="results.json")
     args = parser.parse_args()
 
@@ -293,6 +324,7 @@ def main() -> None:
         development_fold_path=args.development_fold_manifest,
         fold_name=args.fold,
         retrieval_mode=args.retrieval_mode,
+        fusion_rrf_k=args.rrf_k,
     )
     Path(args.output).write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({key: value for key, value in result.items() if key != "sessions"}, indent=2))

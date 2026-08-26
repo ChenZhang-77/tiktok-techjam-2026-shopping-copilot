@@ -95,6 +95,9 @@ class RetrievalDiagnostics:
     relaxed_constraints: list[dict[str, Any]] = field(default_factory=list)
     filtered_pool_sizes: list[dict[str, Any]] = field(default_factory=list)
     stage_latencies_ms: dict[str, float] = field(default_factory=dict)
+    route_candidate_counts: dict[str, int] = field(default_factory=dict)
+    route_overlap_counts: dict[str, int] = field(default_factory=dict)
+    route_failures: dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return asdict(self)

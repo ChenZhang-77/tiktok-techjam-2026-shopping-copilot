@@ -6,7 +6,7 @@ evidence and tolerating unavailable Routes.
 
 **Blocked by:** 04 — Add structured evidence and safe relaxation; 05 — Benchmark a reproducible dense Route.
 
-**Status:** ready-for-agent
+**Status:** in-progress
 
 - [ ] Fusion parameters are centralized configuration rather than scattered constants.
 - [ ] Candidates are deduplicated by catalog-valid parent ASIN with stable tie-breaking.
@@ -17,3 +17,7 @@ evidence and tolerating unavailable Routes.
 
 ## Comments
 
+- B4 keeps Developer A's `Strategy` route-weight semantics unchanged. Fusion
+  consumes `lexical_weight`, `structured_weight`, and `semantic_weight`; B4
+  centralizes only the RRF constant, route availability, and deterministic
+  tie-breaking mechanics.

@@ -44,6 +44,44 @@ def _request(
 
 
 class StructuredRetrievalTest(unittest.TestCase):
+    def test_route_bundle_exposes_lexical_and_structured_orders_from_one_seam(self) -> None:
+        rows = [
+            {"parent_asin": "A", "title": "cotton walking shoes"},
+            {"parent_asin": "B", "title": "leather walking shoes"},
+        ]
+        constraint = {
+            "attribute": "material",
+            "normalized_value": "leather",
+            "confidence": 1.0,
+            "hard": True,
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            catalog_path = Path(directory) / "catalog.jsonl"
+            _write_catalog(catalog_path, rows)
+            retriever = HybridRetriever(catalog_path)
+            request = _request(
+                "walking shoes",
+                [constraint],
+                allow_hard_filter=False,
+            )
+
+            routes = retriever.retrieve_routes(request)
+
+            self.assertEqual(
+                [candidate.parent_asin for candidate in routes["lexical"].candidates],
+                ["A", "B"],
+            )
+            self.assertEqual(
+                [candidate.parent_asin for candidate in routes["structured"].candidates],
+                ["B", "A"],
+            )
+            self.assertEqual(routes["lexical"].candidates[0].source, "lexical")
+            self.assertEqual(routes["structured"].candidates[0].source, "structured")
+            self.assertEqual(
+                [candidate.parent_asin for candidate in retriever.retrieve(request).candidates],
+                ["B", "A"],
+            )
+
     def test_retained_structured_filter_is_the_runtime_default(self) -> None:
         rows = [
             {
