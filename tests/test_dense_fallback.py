@@ -41,6 +41,22 @@ def _request() -> RetrievalRequest:
 
 
 class DenseFallbackTest(unittest.TestCase):
+    def test_corrupt_metadata_reaches_lexical_fallback(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "catalog.jsonl"
+            cache = root / "cache"
+            cache.mkdir()
+            _write_catalog(catalog)
+            (cache / "metadata.json").write_text("{not-json", encoding="utf-8")
+
+            result = DenseRetriever(catalog, config=DenseConfig(cache_dir=cache)).retrieve(
+                _request()
+            )
+
+            self.assertTrue(result.diagnostics.fallback_used)
+            self.assertIn("dense_cache_corrupt", result.diagnostics.notes)
+
     def test_product_text_template_is_exact_and_cross_field(self) -> None:
         text = product_text(
             {

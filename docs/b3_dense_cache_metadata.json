@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "catalog_sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
+  "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+  "model_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+  "dimension": 384,
+  "dtype": "float32",
+  "normalized": true,
+  "product_count": 50000,
+  "product_text_template": "product-fields-v1",
+  "query_text_template": "distilled-query-v1",
+  "sentence_transformers_version": "5.7.0",
+  "transformers_version": "5.15.1",
+  "torch_version": "2.13.0",
+  "numpy_version": "2.5.2",
+  "batch_size": 128,
+  "seed": null,
+  "build_seconds": 255.086887,
+  "vectors_bytes": 76800128,
+  "ids_bytes": 700001,
+  "approximate_vector_memory_bytes": 76800000,
+  "platform": "Darwin-arm64",
+  "generated_artifact_sha256": {
+    "metadata.json": "7ae4aded8d4e1fa4faea6ba0b7793447ade6a4d9f2bd8c1cafee56756adbb0b6",
+    "ids.json": "4ef7a2d6107a76dd806971572fc4c266fd7600565297fe6f3eaf93b1593b961a",
+    "vectors.npy": "4c7a5cd71a0fc819ef0d69d5eea08ad1ce9e83a0d35b8109df3a759e81733ffc"
+  },
+  "generated_cache_policy": "not_committed; rebuild with .venv/bin/python -m scripts.build_dense_index"
+}
