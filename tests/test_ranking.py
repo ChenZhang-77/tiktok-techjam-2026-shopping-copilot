@@ -35,6 +35,62 @@ class RankingTest(unittest.TestCase):
             ["A", "B"],
         )
 
+    def test_equivalent_constraints_are_counted_once(self) -> None:
+        ranked = rerank_candidates(
+            ["A", "B"],
+            product_texts={
+                "A": "canvas shoe",
+                "B": "leather shoe",
+            },
+            active_constraints=[
+                {
+                    "attribute": "material",
+                    "normalized_value": "leather",
+                    "confidence": 1.0,
+                    "hard": True,
+                    "source_turn": 1,
+                },
+                {
+                    "attribute": "material",
+                    "raw_value": "Leather",
+                    "confidence": 1.0,
+                    "hard": True,
+                    "source_turn": 2,
+                },
+            ],
+            lexical_weight=0.8,
+            structured_weight=0.2,
+        )
+
+        self.assertEqual(ranked, ["A", "B"])
+
+    def test_hard_constraint_wins_over_equivalent_soft_duplicate(self) -> None:
+        ranked = rerank_candidates(
+            ["A", "B"],
+            product_texts={
+                "A": "canvas shoe",
+                "B": "leather shoe",
+            },
+            active_constraints=[
+                {
+                    "attribute": "material",
+                    "normalized_value": "leather",
+                    "confidence": 1.0,
+                    "hard": False,
+                },
+                {
+                    "attribute": "material",
+                    "raw_value": "Leather",
+                    "confidence": 1.0,
+                    "hard": True,
+                },
+            ],
+            lexical_weight=0.7,
+            structured_weight=0.3,
+        )
+
+        self.assertEqual(ranked, ["B", "A"])
+
 
 if __name__ == "__main__":
     unittest.main()

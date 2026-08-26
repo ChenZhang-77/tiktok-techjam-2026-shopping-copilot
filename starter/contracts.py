@@ -99,6 +99,7 @@ class RetrievalDiagnostics:
     route_candidate_counts: dict[str, int] = field(default_factory=dict)
     route_overlap_counts: dict[str, int] = field(default_factory=dict)
     route_failures: dict[str, str] = field(default_factory=dict)
+    rerank_pool_size: int = 0
 
     def to_dict(self) -> dict:
         return asdict(self)

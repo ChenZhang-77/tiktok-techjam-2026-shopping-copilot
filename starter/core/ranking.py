@@ -44,6 +44,26 @@ def _constraint_score(product_text: str, constraint: Mapping[str, object]) -> fl
     return weight * confidence * hard_multiplier * overlap * 0.45
 
 
+def _deduplicate_constraints(
+    active_constraints: Sequence[Mapping[str, object]],
+) -> list[Mapping[str, object]]:
+    """Keep one strongest explicit constraint for each attribute/value pair."""
+    strongest: dict[tuple[str, str], tuple[tuple[bool, float], Mapping[str, object]]] = {}
+    for constraint in active_constraints:
+        if not constraint.get("active", True):
+            continue
+        attribute = str(constraint.get("attribute") or "feature").strip().lower()
+        value = str(
+            constraint.get("normalized_value") or constraint.get("raw_value") or ""
+        ).strip().lower()
+        key = (attribute, value)
+        strength = (bool(constraint.get("hard")), float(constraint.get("confidence") or 0.5))
+        previous = strongest.get(key)
+        if previous is None or strength > previous[0]:
+            strongest[key] = (strength, constraint)
+    return [item for _, item in strongest.values()]
+
+
 def rerank_candidates(
     candidate_ids: Sequence[str],
     *,
@@ -52,7 +72,7 @@ def rerank_candidates(
     lexical_weight: float,
     structured_weight: float,
 ) -> list[str]:
-    constraints = [item for item in active_constraints if item.get("active", True)]
+    constraints = _deduplicate_constraints(active_constraints)
     if not constraints or structured_weight <= 0:
         return list(candidate_ids)
 

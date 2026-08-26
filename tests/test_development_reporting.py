@@ -10,7 +10,7 @@ from experiments.evaluation_reporting import (
     code_provenance,
     evaluate_split,
 )
-from starter.retrieval import DenseConfig, FusionConfig
+from starter.retrieval import DenseConfig, FusionConfig, RerankerConfig
 
 
 class _StubAgent:
@@ -67,6 +67,52 @@ class _SubtlyInvalidStubAgent(_StubAgent):
 
 
 class DevelopmentReportingTest(unittest.TestCase):
+    def test_semantic_rerank_mode_wraps_retained_structured_candidates(self) -> None:
+        empty_result = {"scenario_metrics": {}}
+        with (
+            patch("experiments.evaluation_reporting.load_jsonl", return_value=[]),
+            patch(
+                "experiments.evaluation_reporting.load_split_manifest",
+                return_value={"version": "test"},
+            ),
+            patch("experiments.evaluation_reporting.validate_development_fold_manifest"),
+            patch("experiments.evaluation_reporting.filter_samples", return_value=[]),
+            patch("experiments.evaluation_reporting.catalog_index", return_value=(set(), set(), {})),
+            patch("experiments.evaluation_reporting.HybridRetriever") as hybrid,
+            patch("experiments.evaluation_reporting.RerankingRetriever") as reranker,
+            patch("experiments.evaluation_reporting.Agent", return_value=_StubAgent()),
+            patch("experiments.evaluation_reporting.evaluate", return_value=empty_result),
+            patch(
+                "experiments.evaluation_reporting.code_provenance",
+                return_value={"commit": "test", "worktree_clean": True},
+            ),
+        ):
+            reranker.return_value.configuration_snapshot.return_value = {
+                "candidate_limit": 30,
+                "model_id": "cross-encoder/ms-marco-MiniLM-L2-v2",
+            }
+            report = evaluate_split(
+                catalog_path="catalog.jsonl",
+                dataset_path="dataset.jsonl",
+                split="development",
+                public_split_path="split.json",
+                development_fold_path="folds.json",
+                retrieval_mode="semantic_rerank",
+                rerank_candidate_limit=30,
+            )
+
+        reranker.assert_called_once_with(
+            hybrid.return_value,
+            config=RerankerConfig(candidate_limit=30),
+        )
+        self.assertEqual(report["evaluation"]["retrieval_mode"], "semantic_rerank")
+        self.assertTrue(report["evaluation"]["structured_filter"])
+        self.assertEqual(report["evaluation"]["reranker_configuration"]["candidate_limit"], 30)
+        self.assertEqual(
+            report["evaluation"]["fallback_configuration"],
+            {"semantic_rerank_failure": "exact_pre_rerank_candidate_order"},
+        )
+
     def test_aggregates_route_candidate_overlap_and_failure_diagnostics(self) -> None:
         observer = AgentObserver(_RouteDiagnosticsStubAgent(), catalog_ids=set())
 
