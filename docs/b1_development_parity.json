@@ -1,0 +1,40 @@
+{
+  "experiment": "b1_agent_retrieval_seam_exact_parity",
+  "run_code_commit": "b66b8ce",
+  "run_branch": "patryk/track4-experiments",
+  "run_worktree_dirty": false,
+  "evaluation_command": "python3 -m experiments.evaluation_reporting --split development --output docs/b1_development_parity_report.json",
+  "split": "development",
+  "split_version": "public-split-v1",
+  "development_fold_version": "development-folds-v1",
+  "dataset": "data/public_set.jsonl",
+  "dataset_sha256": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579",
+  "catalog": "data/catalog.jsonl",
+  "catalog_sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
+  "report_artifact": "docs/b1_development_parity_report.json",
+  "report_artifact_sha256": "e167deb7d10e55718ad3cb61080c02299928bafe2dc54ff66541d56f0524a5a0",
+  "test_command": "python3 -m unittest discover -s tests -v",
+  "test_count_after_evidence_checks": 79,
+  "models": {
+    "llm": null,
+    "dense_retriever": null,
+    "semantic_reranker": null,
+    "note": "B1 parity uses deterministic local SQLite FTS5 BM25 plus the existing constraint-aware reranker."
+  },
+  "strategy_config": {
+    "buying_depth_sparse": 60,
+    "buying_depth_constrained": 80,
+    "browsing_depth_sparse": 120,
+    "browsing_depth_constrained": 100,
+    "buying_lexical_weight": 0.72,
+    "buying_structured_weight": 0.28,
+    "browsing_lexical_weight": 0.62,
+    "browsing_structured_weight": 0.2,
+    "browsing_semantic_weight": 0.18
+  },
+  "hypothesis": "Routing the Agent through RetrievalRequest and RetrievalResult preserves every B0 Development Set outcome while making retrieval and fallback diagnostics observable.",
+  "result": "Exact parity: all overall metrics, all four scenario metric groups, and all 160 per-session evaluator outcomes match B0. The run recorded zero respond exceptions, invalid payloads, reported fallbacks, and internal retrieval fallbacks.",
+  "decision": "keep_exact_parity_integration",
+  "holdout_status": "not_run_during_b1",
+  "full_status": "not_run_during_b1"
+}

@@ -39,7 +39,7 @@ class Agent:
     ) -> None:
         self.catalog_path = Path(catalog_path)
         self.strategy_config = strategy_config or StrategyConfig()
-        self.retriever = retriever or HybridRetriever(self.catalog_path)
+        self.retriever = retriever if retriever is not None else HybridRetriever(self.catalog_path)
         self._sessions: dict[str, SessionState] = {}
         self._catalog_ids = set(self.retriever.catalog_ids)
         self._fallback_ids = list(self.retriever.fallback_ids)

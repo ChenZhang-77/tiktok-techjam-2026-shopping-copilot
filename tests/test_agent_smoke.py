@@ -60,6 +60,11 @@ class _InvalidCandidatesRetriever(_RecordingRetriever):
         )
 
 
+class _FalseyRetriever(_RecordingRetriever):
+    def __bool__(self) -> bool:
+        return False
+
+
 def _write_catalog(path: Path) -> None:
     rows = [
         {
@@ -85,6 +90,13 @@ def _write_catalog(path: Path) -> None:
 
 
 class AgentSmokeTest(unittest.TestCase):
+    def test_explicit_falsey_retriever_is_not_replaced(self) -> None:
+        retriever = _FalseyRetriever()
+
+        agent = Agent(retriever=retriever)
+
+        self.assertIs(agent.retriever, retriever)
+
     def test_response_guard_fill_is_reported_as_a_retrieval_fallback(self) -> None:
         agent = Agent(retriever=_InvalidCandidatesRetriever())
         agent.reset("s1", {})
