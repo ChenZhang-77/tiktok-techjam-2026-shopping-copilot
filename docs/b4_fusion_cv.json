@@ -1,0 +1,100 @@
+{
+  "version": "b4-fusion-v1",
+  "run_code_commit": "1cc816e",
+  "protocol": {
+    "dataset": "data/public_set.jsonl",
+    "split": "development",
+    "development_sample_count": 160,
+    "fold_manifest": "docs/development_folds_v1.json",
+    "folds": 4,
+    "holdout_status": "not_run_during_b4",
+    "full_status": "not_run_during_b4"
+  },
+  "method": {
+    "name": "strategy_weighted_reciprocal_rank_fusion",
+    "formula": "strategy_route_weight / (rrf_k + route_rank)",
+    "route_order": ["lexical", "structured", "dense"],
+    "strategy_weight_semantics": "unchanged_from_developer_a",
+    "tested_rrf_k": [10.0, 60.0],
+    "catalog_validation": "drop_non_catalog_parent_asin",
+    "deduplication": "first_valid_parent_asin_per_route_then_global_fusion",
+    "tie_break": "first_route_observation_then_parent_asin",
+    "route_failure_policy": "degrade_to_available_routes_with_reason"
+  },
+  "raw_reports": {
+    "development_fusion_k10": {"path": "docs/b4_reports/development_fusion_k10.json", "sha256": "dd69d61a788577d2cc2f00a65c449f1b72a2183d333dabc39c318b69c4c15ad0"},
+    "fold_1_fusion_k10": {"path": "docs/b4_reports/fold_1_fusion_k10.json", "sha256": "45e593025fcdf23189d0f6d616a2973f2465a4c40d0191ff62f509026da78fde"},
+    "fold_2_fusion_k10": {"path": "docs/b4_reports/fold_2_fusion_k10.json", "sha256": "bb94cdca38739b716732524e421a4d1d82c93b608dedaa79edd064e3d90253a0"},
+    "fold_3_fusion_k10": {"path": "docs/b4_reports/fold_3_fusion_k10.json", "sha256": "a3592777c2f49a1957f6ca4be4d329a72f2a7c105353f3079aba533da333f603"},
+    "fold_4_fusion_k10": {"path": "docs/b4_reports/fold_4_fusion_k10.json", "sha256": "ae54bf48e0098a3c4579a5fb49803c5c9ca83bf2ea70f2d2cbbfbf1d9fb94bac"},
+    "development_fusion_k60": {"path": "docs/b4_reports/development_fusion_k60.json", "sha256": "2750eda46205e25188fc2a129d49843c08032e130146df18f30941114725e41c"},
+    "fold_1_fusion_k60": {"path": "docs/b4_reports/fold_1_fusion_k60.json", "sha256": "1492e5b631d1eae70cc25fd9e1ea62eb9b670871c0046c5a9711da6f2bf60260"},
+    "fold_2_fusion_k60": {"path": "docs/b4_reports/fold_2_fusion_k60.json", "sha256": "158c66ecf34861ccba6c940ee5968d610ecea5aa4b0eb15938908d2fff9a4660"},
+    "fold_3_fusion_k60": {"path": "docs/b4_reports/fold_3_fusion_k60.json", "sha256": "ba51b671a948bd17f2f35a33084cf94fc2da259a0eeb429f9d3651c2631ef8ff"},
+    "fold_4_fusion_k60": {"path": "docs/b4_reports/fold_4_fusion_k60.json", "sha256": "16292ea6d85bc89e6a94f5a51e2eab1f19101c23c948e8322fd1f13580922bea"}
+  },
+  "single_route_and_unfused_ablations": {
+    "control_plane_no_guarded_filter": {
+      "source": "docs/b0_development_report.json",
+      "hit_rate_at_10": 0.7625,
+      "recommended_technical_score": 0.651683
+    },
+    "retained_structured": {
+      "source": "docs/b2_reports/development_structured.json",
+      "sha256": "66a7e57351a8346b5af587a4462b4d4838d5196e5e377c25897aae55e6c8f305",
+      "hit_rate_at_10": 0.7625,
+      "mrr": 0.526989,
+      "recommended_technical_score": 0.653222
+    },
+    "lexical_only": {
+      "source": "docs/b2_reports/development_lexical.json",
+      "sha256": "f9ce2dcc9e11c11d6ba56c2d91421bd8807e4922ae2ac108eafc428cf6614a55",
+      "hit_rate_at_10": 0.71875,
+      "mrr": 0.485851,
+      "recommended_technical_score": 0.617005
+    },
+    "dense_only": {
+      "source": "docs/b3_reports/development_dense.json",
+      "sha256": "2549fd45d54ea116c89f4b911ff227e314b9f72b1183ea794300eef5ae1969b6",
+      "hit_rate_at_10": 0.3375,
+      "mrr": 0.160501,
+      "recommended_technical_score": 0.27265
+    }
+  },
+  "fixed_cross_validation": {
+    "fold_1": {"structured": {"hit_rate_at_10": 0.725, "recommended_technical_score": 0.607042}, "fusion_k10": {"hit_rate_at_10": 0.725, "recommended_technical_score": 0.603164}, "fusion_k60": {"hit_rate_at_10": 0.65, "recommended_technical_score": 0.554652}},
+    "fold_2": {"structured": {"hit_rate_at_10": 0.775, "recommended_technical_score": 0.684509}, "fusion_k10": {"hit_rate_at_10": 0.775, "recommended_technical_score": 0.668863}, "fusion_k60": {"hit_rate_at_10": 0.775, "recommended_technical_score": 0.669696}},
+    "fold_3": {"structured": {"hit_rate_at_10": 0.8, "recommended_technical_score": 0.691268}, "fusion_k10": {"hit_rate_at_10": 0.8, "recommended_technical_score": 0.692646}, "fusion_k60": {"hit_rate_at_10": 0.8, "recommended_technical_score": 0.678958}},
+    "fold_4": {"structured": {"hit_rate_at_10": 0.75, "recommended_technical_score": 0.630069}, "fusion_k10": {"hit_rate_at_10": 0.7, "recommended_technical_score": 0.585771}, "fusion_k60": {"hit_rate_at_10": 0.7, "recommended_technical_score": 0.593738}},
+    "mean": {
+      "structured": {"hit_rate_at_10": 0.7625, "mrr": 0.526989, "recommended_technical_score": 0.653222},
+      "fusion_k10": {"hit_rate_at_10": 0.75, "mrr": 0.486619, "recommended_technical_score": 0.637611},
+      "fusion_k60": {"hit_rate_at_10": 0.73125, "mrr": 0.480454, "recommended_technical_score": 0.624261},
+      "fusion_k10_delta_vs_structured": {"hit_rate_at_10": -0.0125, "mrr": -0.04037, "recommended_technical_score": -0.015611},
+      "fusion_k60_delta_vs_structured": {"hit_rate_at_10": -0.03125, "mrr": -0.046535, "recommended_technical_score": -0.028961}
+    },
+    "fusion_k10_technical_score_fold_wins_vs_structured": 1,
+    "fusion_k10_technical_score_fold_losses_vs_structured": 3
+  },
+  "development_160": {
+    "fusion_k10": {"hit_rate_at_10": 0.75, "mrr": 0.48662, "mttc": 5.16875, "efficiency": 0.583125, "recommended_technical_score": 0.637611},
+    "fusion_k60": {"hit_rate_at_10": 0.73125, "mrr": 0.480454, "mttc": 5.275, "efficiency": 0.5725, "recommended_technical_score": 0.624261}
+  },
+  "operational_cost_fusion_k10": {
+    "initialization_ms": 1355.601416,
+    "retrieval_mean_ms": 45.283434,
+    "retrieval_p50_ms": 37.327791,
+    "retrieval_p95_ms": 92.311833,
+    "lexical_route_mean_ms": 18.689633,
+    "structured_route_mean_ms": 38.453161,
+    "dense_route_mean_ms": 9.572805,
+    "fusion_mean_ms": 0.242949,
+    "peak_rss_bytes": 1106477056,
+    "respond_exceptions": 0,
+    "invalid_response_payloads": 0,
+    "reported_fallbacks": 0
+  },
+  "decision": "retain_fusion_as_optional_ablation_reject_as_runtime_default",
+  "runtime_default": "structured",
+  "result": "K=10 is the stronger tested fusion constant, but it loses TechnicalScore on three of four fixed folds and trails retained structured retrieval by 0.015611 on the fold mean. Keep the deterministic fusion implementation and diagnostics as an optional ablation; preserve structured retrieval as the runtime default."
+}
