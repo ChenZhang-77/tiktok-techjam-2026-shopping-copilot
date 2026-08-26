@@ -74,8 +74,8 @@ class DevelopmentReportingTest(unittest.TestCase):
             "respond_exceptions": 0,
             "invalid_response_payloads": 0,
             "reported_fallbacks": 1,
-            "internal_fallbacks": None,
-            "internal_fallbacks_note": "Not observable through the A-side public Agent interface.",
+            "internal_fallbacks": 1,
+            "internal_fallbacks_note": "B1 Agent diagnostics expose fallback_used at the public boundary.",
         })
 
     def test_adds_efficiency_and_technical_score_to_each_scenario(self) -> None:

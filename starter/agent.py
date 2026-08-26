@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import json
-import re
-import sqlite3
 from pathlib import Path
+from typing import Protocol
 
+from starter.contracts import RetrievalRequest, RetrievalResult
 from starter.core.clarification import choose_clarification
 from starter.core.context_engine import (
     detect_no_preference_attributes,
@@ -16,92 +15,34 @@ from starter.core.context_engine import (
 from starter.core.diagnostics import state_diagnostics
 from starter.core.planner import Strategy, StrategyConfig, plan_strategy
 from starter.core.query_builder import build_distilled_query
-from starter.core.ranking import rerank_candidates
 from starter.core.response_guard import guard_response
 from starter.core.state import SessionState
+from starter.retrieval import HybridRetriever
 
 
-TOKEN_RE = re.compile(r"[a-z0-9]+", re.IGNORECASE)
-STOPWORDS = {
-    "a", "an", "and", "are", "as", "at", "be", "but", "by", "for", "from",
-    "i", "in", "is", "it", "me", "my", "of", "on", "or", "please", "some",
-    "that", "the", "this", "to", "want", "with", "would", "you", "looking",
-}
+class Retriever(Protocol):
+    catalog_ids: frozenset[str]
+    fallback_ids: tuple[str, ...]
 
-
-def _text(value: object) -> str:
-    if value is None:
-        return ""
-    if isinstance(value, dict):
-        return " ".join(f"{key} {item}" for key, item in value.items())
-    if isinstance(value, list):
-        return " ".join(str(item) for item in value)
-    return str(value)
-
-
-def _terms(text: str) -> list[str]:
-    return [
-        token.lower()
-        for token in TOKEN_RE.findall(text)
-        if len(token) > 1 and token.lower() not in STOPWORDS
-    ]
+    def retrieve(self, request: RetrievalRequest) -> RetrievalResult:
+        ...
 
 
 class Agent:
-    """Editable weak baseline: stateless BM25 retrieval with no LLM dependency."""
+    """Stateful Control Plane backed by the shared local retrieval seam."""
 
-    def __init__(self, catalog_path: str | Path = "data/catalog.jsonl", strategy_config: StrategyConfig | None = None) -> None:
+    def __init__(
+        self,
+        catalog_path: str | Path = "data/catalog.jsonl",
+        strategy_config: StrategyConfig | None = None,
+        retriever: Retriever | None = None,
+    ) -> None:
         self.catalog_path = Path(catalog_path)
         self.strategy_config = strategy_config or StrategyConfig()
-        self.connection = sqlite3.connect(":memory:")
+        self.retriever = retriever or HybridRetriever(self.catalog_path)
         self._sessions: dict[str, SessionState] = {}
-        self._catalog_ids: set[str] = set()
-        self._fallback_ids: list[str] = []
-        self._product_texts: dict[str, str] = {}
-        self._build_index()
-
-    def _build_index(self) -> None:
-        cursor = self.connection.cursor()
-        cursor.execute(
-            "CREATE VIRTUAL TABLE products USING fts5("
-            "parent_asin UNINDEXED, title, categories, features, details, store, description, "
-            "tokenize='unicode61 remove_diacritics 2')"
-        )
-        batch: list[tuple[str, str, str, str, str, str, str]] = []
-        with self.catalog_path.open(encoding="utf-8") as handle:
-            for line in handle:
-                product = json.loads(line)
-                parent_asin = str(product["parent_asin"])
-                self._catalog_ids.add(parent_asin)
-                self._fallback_ids.append(parent_asin)
-                product_text = " ".join(
-                    (
-                        _text(product.get("title")),
-                        _text(product.get("categories")),
-                        _text(product.get("features")),
-                        _text(product.get("details")),
-                        _text(product.get("store")),
-                        _text(product.get("description")),
-                    )
-                )
-                self._product_texts[parent_asin] = product_text
-                batch.append(
-                    (
-                        parent_asin,
-                        _text(product.get("title")),
-                        _text(product.get("categories")),
-                        _text(product.get("features")),
-                        _text(product.get("details")),
-                        _text(product.get("store")),
-                        _text(product.get("description")),
-                    )
-                )
-                if len(batch) >= 1000:
-                    cursor.executemany("INSERT INTO products VALUES (?, ?, ?, ?, ?, ?, ?)", batch)
-                    batch.clear()
-        if batch:
-            cursor.executemany("INSERT INTO products VALUES (?, ?, ?, ?, ?, ?, ?)", batch)
-        self.connection.commit()
+        self._catalog_ids = set(self.retriever.catalog_ids)
+        self._fallback_ids = list(self.retriever.fallback_ids)
 
     def reset(self, session_id: str, user_profile: dict) -> None:
         # The profile is anonymized and may be used for personalization.
@@ -114,36 +55,43 @@ class Agent:
         turn: int,
         top_k: int,
         strategy: Strategy | None = None,
-    ) -> dict:
+    ) -> tuple[dict, dict[str, str]]:
         if session_id not in self._sessions:
             raise RuntimeError("reset must be called before respond")
-        unique_terms = list(dict.fromkeys(_terms(query_text)))[:40]
-        expression = " OR ".join(f'"{term}"' for term in unique_terms)
-        if not expression:
-            recommendations: list[dict] = []
-        else:
-            rows = self.connection.execute(
-                "SELECT parent_asin FROM products WHERE products MATCH ? "
-                "ORDER BY bm25(products, 0.0, 6.0, 4.0, 2.5, 2.5, 1.5, 1.0) LIMIT ?",
-                (expression, strategy.retrieval_depth if strategy else top_k),
-            ).fetchall()
-            candidate_ids = [str(row[0]) for row in rows]
-            if strategy:
-                candidate_ids = rerank_candidates(
-                    candidate_ids,
-                    product_texts=self._product_texts,
-                    active_constraints=self._sessions[session_id].active_constraints,
-                    lexical_weight=strategy.lexical_weight,
-                    structured_weight=strategy.structured_weight,
-                )
-            recommendations = [{"parent_asin": parent_asin} for parent_asin in candidate_ids[:top_k]]
-        return {
+        if strategy is None:
+            raise RuntimeError("strategy must be planned before retrieval")
+        state = self._sessions[session_id]
+        request = RetrievalRequest(
+            session_id=session_id,
+            turn=turn,
+            top_k=top_k,
+            query=query_text,
+            intent=strategy.intent,
+            strategy=strategy,
+            active_constraints=[dict(item) for item in state.active_constraints],
+            no_preference_attributes=sorted(state.no_preference_attributes),
+            rejected_constraints=[dict(item) for item in state.rejected_constraints],
+            asked_attributes=sorted(state.asked_attributes),
+        )
+        result = self.retriever.retrieve(request)
+        recommendations = result.recommendations(top_k)
+        fallback_used = result.diagnostics.fallback_used or len(recommendations) < top_k
+        response = {
             "message": "Here are the closest matches I found.",
             "ask_attribute": None,
             "recommendations": recommendations,
-            "diagnostics": {"strategy": strategy.to_dict()} if strategy else {},
+            "diagnostics": {
+                "strategy": strategy.to_dict(),
+                "retrieval": result.diagnostics.to_dict(),
+                "fallback_used": fallback_used,
+            },
             "usage": {"prompt_tokens": 0, "completion_tokens": 0},
         }
+        evidence = {
+            candidate.parent_asin: candidate.evidence_text or ""
+            for candidate in result.candidates[:top_k]
+        }
+        return response, evidence
 
     def respond(
         self,
@@ -170,13 +118,24 @@ class Agent:
             query_text = build_distilled_query(user_message, state.active_constraints)
             state.previous_distilled_query = query_text
         try:
-            response = self._respond_impl(session_id, query_text, turn, top_k, strategy)
+            response, candidate_evidence = self._respond_impl(session_id, query_text, turn, top_k, strategy)
         except Exception:
+            candidate_evidence = {}
             response = {
                 "message": "Here are the closest matches I found.",
                 "ask_attribute": None,
                 "recommendations": [],
-                "diagnostics": {"strategy": strategy.to_dict()} if strategy else {},
+                "diagnostics": {
+                    "strategy": strategy.to_dict() if strategy else None,
+                    "retrieval": {
+                        "route": "fallback",
+                        "candidate_count": 0,
+                        "fallback_used": True,
+                        "latency_ms": None,
+                        "notes": ["retrieval_error"],
+                    },
+                    "fallback_used": True,
+                },
                 "usage": {"prompt_tokens": 0, "completion_tokens": 0},
             }
         if state is not None:
@@ -187,7 +146,7 @@ class Agent:
             response["diagnostics"] = diagnostics
             raw_recommendations = response.get("recommendations") if isinstance(response, dict) else []
             candidate_texts = [
-                self._product_texts.get(str(item.get("parent_asin", "")).strip(), "")
+                candidate_evidence.get(str(item.get("parent_asin", "")).strip(), "")
                 for item in raw_recommendations
                 if isinstance(item, dict)
             ]

@@ -7,7 +7,7 @@ and Development Set metrics.
 
 **Blocked by:** 02 — Add a parity Hybrid Retriever.
 
-**Status:** ready-for-agent
+**Status:** in-progress
 
 - [ ] Agent responses satisfy the existing contract and smoke tests through the new seam.
 - [ ] The legacy embedded retrieval path is removed only after all callers migrate.
@@ -16,4 +16,3 @@ and Development Set metrics.
 - [ ] Retrieval failure reaches a deterministic catalog-valid fallback without leaking an exception.
 
 ## Comments
-

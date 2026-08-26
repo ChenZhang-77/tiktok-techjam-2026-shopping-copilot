@@ -56,6 +56,7 @@ class HybridRetriever:
         self.catalog_path = Path(catalog_path)
         self._connection = sqlite3.connect(":memory:")
         self._catalog_ids: set[str] = set()
+        self._fallback_ids: list[str] = []
         self._product_texts: dict[str, str] = {}
         try:
             self._build_index()
@@ -72,6 +73,10 @@ class HybridRetriever:
     @property
     def catalog_size(self) -> int:
         return len(self._catalog_ids)
+
+    @property
+    def fallback_ids(self) -> tuple[str, ...]:
+        return tuple(self._fallback_ids)
 
     def close(self) -> None:
         self._connection.close()
@@ -96,6 +101,7 @@ class HybridRetriever:
                     raise ValueError(f"Duplicate parent_asin in catalog: {parent_asin}")
 
                 self._catalog_ids.add(parent_asin)
+                self._fallback_ids.append(parent_asin)
                 evidence = tuple(_text(product.get(field)) for field in EVIDENCE_FIELDS)
                 self._product_texts[parent_asin] = " ".join(evidence)
                 batch.append((parent_asin, *evidence))
@@ -142,6 +148,7 @@ class HybridRetriever:
             Candidate(
                 parent_asin=parent_asin,
                 source="bm25",
+                evidence_text=self._product_texts[parent_asin],
                 diagnostics={
                     "lexical_rank": lexical_ranks[parent_asin],
                     "final_rank": rank,

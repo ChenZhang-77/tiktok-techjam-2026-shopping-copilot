@@ -75,6 +75,7 @@ class Candidate:
     score: float | None = None
     source: str | None = None
     diagnostics: dict[str, Any] = field(default_factory=dict)
+    evidence_text: str | None = None
 
     def to_recommendation(self) -> dict:
         payload = {"parent_asin": self.parent_asin}

@@ -63,8 +63,8 @@ class AgentObserver:
             "respond_exceptions": self._respond_exceptions,
             "invalid_response_payloads": self._invalid_response_payloads,
             "reported_fallbacks": self._reported_fallbacks,
-            "internal_fallbacks": None,
-            "internal_fallbacks_note": "Not observable through the A-side public Agent interface.",
+            "internal_fallbacks": self._reported_fallbacks,
+            "internal_fallbacks_note": "B1 Agent diagnostics expose fallback_used at the public boundary.",
         }
 
     def timing(self) -> dict:
