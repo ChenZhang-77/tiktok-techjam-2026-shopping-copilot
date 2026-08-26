@@ -134,9 +134,11 @@ class HybridRetriever:
                 started,
                 StructuredOutcome([]),
                 constraint_reranked=False,
-                lexical_latency_ms=0.0,
-                constraint_rerank_latency_ms=0.0,
-                structured_filter_latency_ms=0.0,
+                stage_latencies_ms={
+                    "lexical": 0.0,
+                    "constraint_rerank": 0.0,
+                    "structured_filter": 0.0,
+                },
             )
 
         lexical_started = time.perf_counter()
@@ -180,9 +182,11 @@ class HybridRetriever:
             started,
             structured_outcome,
             constraint_reranked=constraint_reranked,
-            lexical_latency_ms=lexical_latency_ms,
-            constraint_rerank_latency_ms=constraint_rerank_latency_ms,
-            structured_filter_latency_ms=structured_filter_latency_ms,
+            stage_latencies_ms={
+                "lexical": lexical_latency_ms,
+                "constraint_rerank": constraint_rerank_latency_ms,
+                "structured_filter": structured_filter_latency_ms,
+            },
         )
 
     def _result(
@@ -194,9 +198,7 @@ class HybridRetriever:
         structured_outcome: StructuredOutcome,
         *,
         constraint_reranked: bool,
-        lexical_latency_ms: float,
-        constraint_rerank_latency_ms: float,
-        structured_filter_latency_ms: float,
+        stage_latencies_ms: dict[str, float],
     ) -> RetrievalResult:
         lexical_ranks = {parent_asin: rank for rank, parent_asin in enumerate(lexical_ids, start=1)}
         candidates = [
@@ -228,13 +230,13 @@ class HybridRetriever:
                 candidate_count=len(candidates),
                 fallback_used=False,
                 latency_ms=round((time.perf_counter() - started) * 1000.0, 6),
-                lexical_latency_ms=round(lexical_latency_ms, 6),
-                constraint_rerank_latency_ms=round(constraint_rerank_latency_ms, 6),
-                structured_filter_latency_ms=round(structured_filter_latency_ms, 6),
                 notes=notes,
                 structured_filter_applied=structured_outcome.filter_applied,
                 relaxed_constraints=structured_outcome.relaxed_constraints,
                 filtered_pool_sizes=structured_outcome.pool_sizes,
+                stage_latencies_ms={
+                    name: round(value, 6) for name, value in stage_latencies_ms.items()
+                },
             ),
         )
 

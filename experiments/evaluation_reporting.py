@@ -29,12 +29,8 @@ class AgentObserver:
         self._invalid_response_payloads = 0
         self._reported_fallbacks = 0
         self._response_latencies_ms: list[float] = []
-        self._retrieval_latencies_ms: dict[str, list[float]] = {
-            "latency_ms": [],
-            "lexical_latency_ms": [],
-            "constraint_rerank_latency_ms": [],
-            "structured_filter_latency_ms": [],
-        }
+        self._retrieval_latencies_ms: list[float] = []
+        self._retrieval_stage_latencies_ms: dict[str, list[float]] = {}
 
     def reset(self, session_id: str, user_profile: dict) -> None:
         self._agent.reset(session_id, user_profile)
@@ -55,10 +51,16 @@ class AgentObserver:
             self._reported_fallbacks += 1
         retrieval = diagnostics.get("retrieval") if isinstance(diagnostics, dict) else None
         if isinstance(retrieval, dict):
-            for key, values in self._retrieval_latencies_ms.items():
-                value = retrieval.get(key)
-                if isinstance(value, (int, float)) and not isinstance(value, bool):
-                    values.append(float(value))
+            total_latency = retrieval.get("latency_ms")
+            if isinstance(total_latency, (int, float)) and not isinstance(total_latency, bool):
+                self._retrieval_latencies_ms.append(float(total_latency))
+            stage_latencies = retrieval.get("stage_latencies_ms")
+            if isinstance(stage_latencies, dict):
+                for stage, value in stage_latencies.items():
+                    if isinstance(value, (int, float)) and not isinstance(value, bool):
+                        self._retrieval_stage_latencies_ms.setdefault(str(stage), []).append(
+                            float(value)
+                        )
         return response
 
     def _is_valid_response(self, response: object, top_k: int) -> bool:
@@ -114,10 +116,14 @@ class AgentObserver:
         return self._timing_summary(self._response_latencies_ms)
 
     def retrieval_timing(self) -> dict:
-        return {
-            key.removesuffix("_ms"): self._timing_summary(values)
-            for key, values in self._retrieval_latencies_ms.items()
-        }
+        timings = {"latency": self._timing_summary(self._retrieval_latencies_ms)}
+        timings.update(
+            {
+                f"{stage}_latency": self._timing_summary(values)
+                for stage, values in self._retrieval_stage_latencies_ms.items()
+            }
+        )
+        return timings
 
 
 def add_scenario_scores(result: dict) -> dict:

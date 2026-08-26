@@ -28,6 +28,11 @@ def _strategy() -> Strategy:
 
 
 class ContractsTest(unittest.TestCase):
+    def test_retrieval_diagnostics_preserves_the_original_positional_signature(self) -> None:
+        diagnostics = RetrievalDiagnostics("bm25", 10, False, 1.5, ["legacy-note"])
+
+        self.assertEqual(diagnostics.notes, ["legacy-note"])
+
     def test_agent_response_validator_rejects_schema_drift(self) -> None:
         with self.assertRaises(ValueError):
             validate_agent_response(
