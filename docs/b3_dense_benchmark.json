@@ -1,6 +1,6 @@
 {
   "experiment": "b3_minilm_dense_route",
-  "run_code_commit": "be57968",
+  "run_code_commit": "8113c0e",
   "run_branch": "patryk/track4-experiments",
   "code_worktree_clean_before_runs": true,
   "split": "development",
@@ -8,11 +8,11 @@
   "development_fold_version": "development-folds-v1",
   "cache_metadata_artifact": "docs/b3_dense_cache_metadata.json",
   "raw_reports": {
-    "development_dense": {"path": "docs/b3_reports/development_dense.json", "sha256": "e9a9fc360c1864e3dcc73f392a2008e40385410fb9ab77e9a923ee4357c56ec3"},
-    "fold_1_dense": {"path": "docs/b3_reports/fold_1_dense.json", "sha256": "aea6c9eaa2da188fa0475e79cda7e9b0cd166863a0637def863834c8a9913f5d"},
-    "fold_2_dense": {"path": "docs/b3_reports/fold_2_dense.json", "sha256": "be31198b7c3d90067b073f2b869dee87a032d8afb978bf411c27d46d8b5e5cff"},
-    "fold_3_dense": {"path": "docs/b3_reports/fold_3_dense.json", "sha256": "468fe524028499b4f342dc7f11301898255b8eb132d6c2696d1784586d42d629"},
-    "fold_4_dense": {"path": "docs/b3_reports/fold_4_dense.json", "sha256": "772df9f84e7cea5d8127ed475b189ec4354766676c273e3d235e744722e2d974"}
+    "development_dense": {"path": "docs/b3_reports/development_dense.json", "sha256": "f99b9ade39eb3af770041d55122b3188dfdfe22e577d5884dc09e3ce4b4a9e94"},
+    "fold_1_dense": {"path": "docs/b3_reports/fold_1_dense.json", "sha256": "85b0176e6f8e4140d9770735c853c8c686a8d0dfd89bd320dd291da8f105b9d5"},
+    "fold_2_dense": {"path": "docs/b3_reports/fold_2_dense.json", "sha256": "cbd4ff35c57745789b29f3223d9bfb56cfba3cf86c840cea8d6a8eef305d8bc4"},
+    "fold_3_dense": {"path": "docs/b3_reports/fold_3_dense.json", "sha256": "5920ffa55f919f9c9131ee5168cf785c64812baf7801c8df4979190362b7e6cb"},
+    "fold_4_dense": {"path": "docs/b3_reports/fold_4_dense.json", "sha256": "9549e581d14ff2f03a04668139f00afa8be1d27c0e083309621db4c4df9dee12"}
   },
   "fixed_cross_validation": {
     "fold_1": {"dense": {"hit_rate_at_10": 0.375, "mrr": 0.134613, "mttc": 7.8, "recommended_technical_score": 0.291884}, "structured": {"hit_rate_at_10": 0.725, "mrr": 0.438472, "mttc": 5.35, "recommended_technical_score": 0.607042}, "dense_only_complementary_hits": 1, "oracle_union_hit_rate_at_10": 0.75},
@@ -32,12 +32,12 @@
     "respond_exceptions": 0,
     "invalid_response_payloads": 0,
     "reported_fallbacks": 0,
-    "initialization_ms": 1398.792458,
-    "dense_query_mean_ms_including_cold_start": 6.392817,
-    "dense_query_p50_ms": 4.754917,
-    "dense_query_p95_ms": 5.856542,
-    "dense_query_cold_start_max_ms": 1911.379084,
-    "peak_rss_bytes": 1110818816
+    "initialization_ms": 1407.227667,
+    "dense_query_mean_ms_including_cold_start": 6.356044,
+    "dense_query_p50_ms": 4.760833,
+    "dense_query_p95_ms": 5.808292,
+    "dense_query_cold_start_max_ms": 1915.303084,
+    "peak_rss_bytes": 1110736896
   },
   "operational_paths": {
     "cache_rebuild": {
@@ -48,15 +48,15 @@
     },
     "cache_hit_development_160": {
       "reported_fallbacks": 0,
-      "initialization_ms": 1398.792458,
-      "dense_query_p50_ms": 4.754917,
-      "peak_rss_bytes": 1110818816
+      "initialization_ms": 1407.227667,
+      "dense_query_p50_ms": 4.760833,
+      "peak_rss_bytes": 1110736896
     },
     "cache_miss_smoke": {
       "artifact": "docs/b3_cache_miss_smoke.json",
-      "sha256": "ad98b15f37c95232ee7e783c017ac459ebed03fb8199b6df4fa485e3e3c02e20",
-      "initialization_ms": 1113.43,
-      "query_ms": 12.89625,
+      "sha256": "99659d13f94d827b131d37927c2e73027454315279850890608028e874eb9306",
+      "initialization_ms": 1124.073833,
+      "query_ms": 12.722083,
       "route": "bm25",
       "fallback_used": true,
       "reason": "dense_cache_missing",

@@ -374,37 +374,37 @@
     "internal_fallbacks_note": "B1 Agent diagnostics expose fallback_used at the public boundary."
   },
   "timing": {
-    "initialization_ms": 1391.869375,
-    "evaluation_wall_ms": 5336.975833,
+    "initialization_ms": 1388.387375,
+    "evaluation_wall_ms": 5773.603625,
     "responses": {
       "response_count": 287,
-      "total_ms": 5315.769833,
-      "mean_ms": 18.521846,
-      "p50_ms": 7.9005,
-      "p95_ms": 18.745959,
-      "max_ms": 2400.838833
+      "total_ms": 5751.564547,
+      "mean_ms": 20.040295,
+      "p50_ms": 7.8555,
+      "p95_ms": 18.810584,
+      "max_ms": 2841.294458
     },
     "retrieval": {
       "latency": {
         "response_count": 287,
-        "total_ms": 3856.807959,
-        "mean_ms": 13.438355,
-        "p50_ms": 4.9905,
-        "p95_ms": 7.100917,
-        "max_ms": 2399.75175
+        "total_ms": 4290.810753,
+        "mean_ms": 14.95056,
+        "p50_ms": 4.908,
+        "p95_ms": 6.958084,
+        "max_ms": 2840.023041
       },
       "dense_latency": {
         "response_count": 287,
-        "total_ms": 3856.807959,
-        "mean_ms": 13.438355,
-        "p50_ms": 4.9905,
-        "p95_ms": 7.100917,
-        "max_ms": 2399.75175
+        "total_ms": 4290.810753,
+        "mean_ms": 14.95056,
+        "p50_ms": 4.908,
+        "p95_ms": 6.958084,
+        "max_ms": 2840.023041
       }
     }
   },
   "resources": {
-    "peak_rss_bytes": 1101545472,
+    "peak_rss_bytes": 1101152256,
     "peak_rss_kind": "process_peak_rss"
   },
   "evaluation": {
@@ -416,6 +416,10 @@
     "development_fold_manifest": "docs/development_folds_v1.json",
     "development_fold_version": "development-folds-v1",
     "retrieval_mode": "dense",
-    "structured_filter": false
+    "structured_filter": false,
+    "fallback_configuration": {
+      "retrieval_mode": "structured",
+      "structured_filter": true
+    }
   }
 }
