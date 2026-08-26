@@ -44,6 +44,12 @@ while [[ $# -gt 0 ]]; do
       RETRIEVAL_MODE_FLAG="--no-guarded-filter"
       shift
       ;;
+    --dense-only)
+      RETRIEVAL_MODE="dense"
+      STRUCTURED_FILTER="false"
+      RETRIEVAL_MODE_FLAG="--dense-only"
+      shift
+      ;;
     --lexical-only)
       RETRIEVAL_MODE="lexical"
       STRUCTURED_FILTER="false"
@@ -51,7 +57,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -h|--help)
-      echo "Usage: ./scripts/start_experiment.sh [experiment-name] [--split development|full|holdout] [--fold fold_1|fold_2|fold_3|fold_4] [--structured-filter|--no-guarded-filter|--lexical-only]"
+      echo "Usage: ./scripts/start_experiment.sh [experiment-name] [--split development|full|holdout] [--fold fold_1|fold_2|fold_3|fold_4] [--structured-filter|--no-guarded-filter|--lexical-only|--dense-only]"
       echo "Default: development with the retained structured filter. Use --no-guarded-filter for the B1 control or --lexical-only for pure BM25. The public holdout is exposed; use full only for the Final Public Run after freeze."
       exit 0
       ;;

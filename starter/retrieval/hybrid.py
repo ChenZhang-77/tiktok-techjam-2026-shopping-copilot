@@ -85,6 +85,9 @@ class HybridRetriever:
     def fallback_ids(self) -> tuple[str, ...]:
         return tuple(self._fallback_ids)
 
+    def evidence_text(self, parent_asin: str) -> str:
+        return self._product_texts.get(parent_asin, "")
+
     def close(self) -> None:
         self._connection.close()
 

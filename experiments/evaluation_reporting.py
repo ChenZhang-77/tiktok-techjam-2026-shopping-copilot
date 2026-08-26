@@ -18,7 +18,7 @@ from experiments.development_folds import (
 from starter.agent import Agent
 from starter.contracts import validate_agent_response
 from starter.core.response_guard import ALLOWED_ASK_ATTRIBUTES
-from starter.retrieval import HybridRetriever, StructuredConfig
+from starter.retrieval import DenseRetriever, HybridRetriever, StructuredConfig
 
 
 class AgentObserver:
@@ -156,8 +156,10 @@ def evaluate_split(
 ) -> dict:
     if fold_name and split != "development":
         raise ValueError("A development fold can only be used with the development split")
-    if retrieval_mode not in {"structured", "no_guarded_filter", "lexical"}:
-        raise ValueError("retrieval_mode must be structured, no_guarded_filter, or lexical")
+    if retrieval_mode not in {"structured", "no_guarded_filter", "lexical", "dense"}:
+        raise ValueError(
+            "retrieval_mode must be structured, no_guarded_filter, lexical, or dense"
+        )
 
     samples = load_jsonl(dataset_path)
     public_split = load_split_manifest(public_split_path)
@@ -173,11 +175,14 @@ def evaluate_split(
     initialization_started = time.perf_counter()
     catalog_ids, categories, products = catalog_index(catalog_path)
     structured_config = StructuredConfig(enabled=retrieval_mode == "structured")
-    retriever = HybridRetriever(
-        catalog_path,
-        structured_config=structured_config,
-        constraint_rerank_enabled=retrieval_mode != "lexical",
-    )
+    if retrieval_mode == "dense":
+        retriever = DenseRetriever(catalog_path)
+    else:
+        retriever = HybridRetriever(
+            catalog_path,
+            structured_config=structured_config,
+            constraint_rerank_enabled=retrieval_mode != "lexical",
+        )
     observer = AgentObserver(
         Agent(catalog_path, retriever=retriever),
         catalog_ids=catalog_ids,
@@ -235,6 +240,13 @@ def main() -> None:
         const="no_guarded_filter",
         dest="retrieval_mode",
         help="Keep the B1 constraint reranker but disable guarded structured filtering.",
+    )
+    retrieval_mode.add_argument(
+        "--dense-only",
+        action="store_const",
+        const="dense",
+        dest="retrieval_mode",
+        help="Run the cached local dense route with lexical fallback.",
     )
     retrieval_mode.add_argument(
         "--lexical-only",
