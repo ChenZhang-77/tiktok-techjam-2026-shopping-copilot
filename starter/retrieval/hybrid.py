@@ -17,6 +17,7 @@ from starter.contracts import (
 from starter.core.planner import Strategy
 from starter.core.ranking import rerank_candidates
 from starter.retrieval.structured import (
+    EVIDENCE_FIELDS,
     ProductEvidence,
     StructuredConfig,
     StructuredOutcome,
@@ -31,20 +32,9 @@ STOPWORDS = {
     "i", "in", "is", "it", "me", "my", "of", "on", "or", "please", "some",
     "that", "the", "this", "to", "want", "with", "would", "you", "looking",
 }
-EVIDENCE_FIELDS = ("title", "categories", "features", "details", "store", "description")
 BM25_FIELD_WEIGHTS = (0.0, 6.0, 4.0, 2.5, 2.5, 1.5, 1.0)
 BM25_EXPRESSION = f"bm25(products, {', '.join(str(weight) for weight in BM25_FIELD_WEIGHTS)})"
 MAX_RETRIEVAL_DEPTH = 500
-
-
-def _text(value: object) -> str:
-    if value is None:
-        return ""
-    if isinstance(value, dict):
-        return " ".join(f"{key} {item}" for key, item in value.items())
-    if isinstance(value, list):
-        return " ".join(str(item) for item in value)
-    return str(value)
 
 
 def _terms(text: str) -> list[str]:
@@ -62,6 +52,7 @@ class HybridRetriever:
         self,
         catalog_path: str | Path = "data/catalog.jsonl",
         structured_config: StructuredConfig | None = None,
+        constraint_rerank_enabled: bool = True,
     ) -> None:
         started = time.perf_counter()
         self.catalog_path = Path(catalog_path)
@@ -73,6 +64,7 @@ class HybridRetriever:
         self.structured_config = (
             structured_config if structured_config is not None else StructuredConfig()
         )
+        self.constraint_rerank_enabled = constraint_rerank_enabled
         try:
             self._build_index()
         except Exception:
@@ -117,10 +109,11 @@ class HybridRetriever:
 
                 self._catalog_ids.add(parent_asin)
                 self._fallback_ids.append(parent_asin)
-                self._structured_evidence[parent_asin] = ProductEvidence.from_product(product)
-                evidence = tuple(_text(product.get(field)) for field in EVIDENCE_FIELDS)
-                self._product_texts[parent_asin] = " ".join(evidence)
-                batch.append((parent_asin, *evidence))
+                product_evidence = ProductEvidence.from_product(product)
+                self._structured_evidence[parent_asin] = product_evidence
+                field_values = tuple(product_evidence.fields[field] for field in EVIDENCE_FIELDS)
+                self._product_texts[parent_asin] = product_evidence.combined_text
+                batch.append((parent_asin, *field_values))
                 if len(batch) >= 1000:
                     cursor.executemany("INSERT INTO products VALUES (?, ?, ?, ?, ?, ?, ?)", batch)
                     batch.clear()
@@ -134,22 +127,41 @@ class HybridRetriever:
         unique_terms = list(dict.fromkeys(_terms(request.query)))[:40]
         expression = " OR ".join(f'"{term}"' for term in unique_terms)
         if not expression:
-            return self._result([], [], request, started, StructuredOutcome([]))
+            return self._result(
+                [],
+                [],
+                request,
+                started,
+                StructuredOutcome([]),
+                constraint_reranked=False,
+                lexical_latency_ms=0.0,
+                constraint_rerank_latency_ms=0.0,
+                structured_filter_latency_ms=0.0,
+            )
 
+        lexical_started = time.perf_counter()
         rows = self._connection.execute(
             "SELECT parent_asin FROM products WHERE products MATCH ? "
             f"ORDER BY {BM25_EXPRESSION}, rowid ASC LIMIT ?",
             (expression, request.strategy.retrieval_depth),
         ).fetchall()
+        lexical_latency_ms = (time.perf_counter() - lexical_started) * 1000.0
         lexical_ids = [str(row[0]) for row in rows]
-        ranked_ids = rerank_candidates(
-            lexical_ids,
-            product_texts=self._product_texts,
-            active_constraints=request.active_constraints,
-            lexical_weight=request.strategy.lexical_weight,
-            structured_weight=request.strategy.structured_weight,
-        )
+        rerank_started = time.perf_counter()
+        if self.constraint_rerank_enabled:
+            ranked_ids = rerank_candidates(
+                lexical_ids,
+                product_texts=self._product_texts,
+                active_constraints=request.active_constraints,
+                lexical_weight=request.strategy.lexical_weight,
+                structured_weight=request.strategy.structured_weight,
+            )
+        else:
+            ranked_ids = list(lexical_ids)
+        constraint_rerank_latency_ms = (time.perf_counter() - rerank_started) * 1000.0
+        constraint_reranked = ranked_ids != lexical_ids
         structured_outcome = StructuredOutcome(ranked_ids)
+        structured_filter_started = time.perf_counter()
         if request.strategy.allow_hard_filter:
             structured_outcome = apply_guarded_filters(
                 ranked_ids,
@@ -158,12 +170,19 @@ class HybridRetriever:
                 top_k=request.top_k,
                 config=self.structured_config,
             )
+        structured_filter_latency_ms = (
+            time.perf_counter() - structured_filter_started
+        ) * 1000.0
         return self._result(
             lexical_ids,
             structured_outcome.ordered_ids,
             request,
             started,
             structured_outcome,
+            constraint_reranked=constraint_reranked,
+            lexical_latency_ms=lexical_latency_ms,
+            constraint_rerank_latency_ms=constraint_rerank_latency_ms,
+            structured_filter_latency_ms=structured_filter_latency_ms,
         )
 
     def _result(
@@ -173,9 +192,13 @@ class HybridRetriever:
         request: RetrievalRequest,
         started: float,
         structured_outcome: StructuredOutcome,
+        *,
+        constraint_reranked: bool,
+        lexical_latency_ms: float,
+        constraint_rerank_latency_ms: float,
+        structured_filter_latency_ms: float,
     ) -> RetrievalResult:
         lexical_ranks = {parent_asin: rank for rank, parent_asin in enumerate(lexical_ids, start=1)}
-        reranked = ranked_ids != lexical_ids
         candidates = [
             Candidate(
                 parent_asin=parent_asin,
@@ -184,7 +207,7 @@ class HybridRetriever:
                 diagnostics={
                     "lexical_rank": lexical_ranks[parent_asin],
                     "final_rank": rank,
-                    "constraint_reranked": reranked,
+                    "constraint_reranked": constraint_reranked,
                     "structured_matches": structured_matches(
                         self._structured_evidence[parent_asin],
                         request.active_constraints,
@@ -193,7 +216,7 @@ class HybridRetriever:
             )
             for rank, parent_asin in enumerate(ranked_ids, start=1)
         ]
-        notes = ["constraint_rerank_applied"] if reranked else []
+        notes = ["constraint_rerank_applied"] if constraint_reranked else []
         if structured_outcome.filter_applied:
             notes.append("guarded_structured_filter_applied")
         if structured_outcome.relaxed_constraints:
@@ -205,6 +228,9 @@ class HybridRetriever:
                 candidate_count=len(candidates),
                 fallback_used=False,
                 latency_ms=round((time.perf_counter() - started) * 1000.0, 6),
+                lexical_latency_ms=round(lexical_latency_ms, 6),
+                constraint_rerank_latency_ms=round(constraint_rerank_latency_ms, 6),
+                structured_filter_latency_ms=round(structured_filter_latency_ms, 6),
                 notes=notes,
                 structured_filter_applied=structured_outcome.filter_applied,
                 relaxed_constraints=structured_outcome.relaxed_constraints,

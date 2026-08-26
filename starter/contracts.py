@@ -90,6 +90,9 @@ class RetrievalDiagnostics:
     candidate_count: int
     fallback_used: bool = False
     latency_ms: float | None = None
+    lexical_latency_ms: float | None = None
+    constraint_rerank_latency_ms: float | None = None
+    structured_filter_latency_ms: float | None = None
     notes: list[str] = field(default_factory=list)
     structured_filter_applied: bool = False
     relaxed_constraints: list[dict[str, Any]] = field(default_factory=list)

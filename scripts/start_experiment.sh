@@ -11,6 +11,7 @@ json_escape() {
 NAME=""
 SPLIT="development"
 FOLD=""
+RETRIEVAL_MODE="structured"
 STRUCTURED_FILTER="true"
 RETRIEVAL_MODE_FLAG=""
 while [[ $# -gt 0 ]]; do
@@ -32,18 +33,26 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --structured-filter)
+      RETRIEVAL_MODE="structured"
       STRUCTURED_FILTER="true"
       RETRIEVAL_MODE_FLAG="--structured-filter"
       shift
       ;;
+    --no-guarded-filter)
+      RETRIEVAL_MODE="no_guarded_filter"
+      STRUCTURED_FILTER="false"
+      RETRIEVAL_MODE_FLAG="--no-guarded-filter"
+      shift
+      ;;
     --lexical-only)
+      RETRIEVAL_MODE="lexical"
       STRUCTURED_FILTER="false"
       RETRIEVAL_MODE_FLAG="--lexical-only"
       shift
       ;;
     -h|--help)
-      echo "Usage: ./scripts/start_experiment.sh [experiment-name] [--split development|full|holdout] [--fold fold_1|fold_2|fold_3|fold_4] [--structured-filter|--lexical-only]"
-      echo "Default: development with the retained structured filter. Use --lexical-only for ablation. The public holdout is exposed; use full only for the Final Public Run after freeze."
+      echo "Usage: ./scripts/start_experiment.sh [experiment-name] [--split development|full|holdout] [--fold fold_1|fold_2|fold_3|fold_4] [--structured-filter|--no-guarded-filter|--lexical-only]"
+      echo "Default: development with the retained structured filter. Use --no-guarded-filter for the B1 control or --lexical-only for pure BM25. The public holdout is exposed; use full only for the Final Public Run after freeze."
       exit 0
       ;;
     *)
@@ -135,6 +144,7 @@ cat > "$RUN_DIR/metadata.json" <<EOF
   "development_fold": "$(json_escape "$FOLD")",
   "split_manifest": "docs/public_split_v1.json",
   "development_fold_manifest": "docs/development_folds_v1.json",
+  "retrieval_mode": "$(json_escape "$RETRIEVAL_MODE")",
   "structured_filter": $STRUCTURED_FILTER,
   "command": "$(json_escape "./scripts/start_experiment.sh $NAME --split $SPLIT${FOLD:+ --fold $FOLD}$RETRIEVAL_MODE_TEXT")"
 }

@@ -4,6 +4,8 @@ import argparse
 import copy
 import json
 import math
+import resource
+import sys
 import time
 from pathlib import Path
 
@@ -27,6 +29,12 @@ class AgentObserver:
         self._invalid_response_payloads = 0
         self._reported_fallbacks = 0
         self._response_latencies_ms: list[float] = []
+        self._retrieval_latencies_ms: dict[str, list[float]] = {
+            "latency_ms": [],
+            "lexical_latency_ms": [],
+            "constraint_rerank_latency_ms": [],
+            "structured_filter_latency_ms": [],
+        }
 
     def reset(self, session_id: str, user_profile: dict) -> None:
         self._agent.reset(session_id, user_profile)
@@ -45,6 +53,12 @@ class AgentObserver:
         diagnostics = response.get("diagnostics") if isinstance(response, dict) else None
         if isinstance(diagnostics, dict) and diagnostics.get("fallback_used") is True:
             self._reported_fallbacks += 1
+        retrieval = diagnostics.get("retrieval") if isinstance(diagnostics, dict) else None
+        if isinstance(retrieval, dict):
+            for key, values in self._retrieval_latencies_ms.items():
+                value = retrieval.get(key)
+                if isinstance(value, (int, float)) and not isinstance(value, bool):
+                    values.append(float(value))
         return response
 
     def _is_valid_response(self, response: object, top_k: int) -> bool:
@@ -68,8 +82,9 @@ class AgentObserver:
             "internal_fallbacks_note": "B1 Agent diagnostics expose fallback_used at the public boundary.",
         }
 
-    def timing(self) -> dict:
-        if not self._response_latencies_ms:
+    @staticmethod
+    def _timing_summary(values: list[float]) -> dict:
+        if not values:
             return {
                 "response_count": 0,
                 "total_ms": 0.0,
@@ -78,7 +93,7 @@ class AgentObserver:
                 "p95_ms": 0.0,
                 "max_ms": 0.0,
             }
-        ordered = sorted(self._response_latencies_ms)
+        ordered = sorted(values)
         count = len(ordered)
 
         def percentile(fraction: float) -> float:
@@ -93,6 +108,15 @@ class AgentObserver:
             "p50_ms": round(percentile(0.50), 6),
             "p95_ms": round(percentile(0.95), 6),
             "max_ms": round(ordered[-1], 6),
+        }
+
+    def timing(self) -> dict:
+        return self._timing_summary(self._response_latencies_ms)
+
+    def retrieval_timing(self) -> dict:
+        return {
+            key.removesuffix("_ms"): self._timing_summary(values)
+            for key, values in self._retrieval_latencies_ms.items()
         }
 
 
@@ -122,10 +146,12 @@ def evaluate_split(
     public_split_path: str | Path,
     development_fold_path: str | Path,
     fold_name: str | None = None,
-    structured_filter: bool | None = None,
+    retrieval_mode: str = "structured",
 ) -> dict:
     if fold_name and split != "development":
         raise ValueError("A development fold can only be used with the development split")
+    if retrieval_mode not in {"structured", "no_guarded_filter", "lexical"}:
+        raise ValueError("retrieval_mode must be structured, no_guarded_filter, or lexical")
 
     samples = load_jsonl(dataset_path)
     public_split = load_split_manifest(public_split_path)
@@ -140,12 +166,12 @@ def evaluate_split(
 
     initialization_started = time.perf_counter()
     catalog_ids, categories, products = catalog_index(catalog_path)
-    structured_config = (
-        StructuredConfig()
-        if structured_filter is None
-        else StructuredConfig(enabled=structured_filter)
+    structured_config = StructuredConfig(enabled=retrieval_mode == "structured")
+    retriever = HybridRetriever(
+        catalog_path,
+        structured_config=structured_config,
+        constraint_rerank_enabled=retrieval_mode != "lexical",
     )
-    retriever = HybridRetriever(catalog_path, structured_config=structured_config)
     observer = AgentObserver(
         Agent(catalog_path, retriever=retriever),
         catalog_ids=catalog_ids,
@@ -160,6 +186,12 @@ def evaluate_split(
         "initialization_ms": round(initialization_ms, 6),
         "evaluation_wall_ms": round(evaluation_wall_ms, 6),
         "responses": observer.timing(),
+        "retrieval": observer.retrieval_timing(),
+    }
+    peak_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    result["resources"] = {
+        "peak_rss_bytes": int(peak_rss if sys.platform == "darwin" else peak_rss * 1024),
+        "peak_rss_kind": "process_peak_rss",
     }
     result["evaluation"] = {
         "dataset": str(dataset_path),
@@ -169,6 +201,7 @@ def evaluate_split(
         "development_fold": fold_name,
         "development_fold_manifest": str(development_fold_path) if split == "development" else None,
         "development_fold_version": development_folds.get("version") if development_folds else None,
+        "retrieval_mode": retrieval_mode,
         "structured_filter": structured_config.enabled,
     }
     return result
@@ -186,18 +219,25 @@ def main() -> None:
     retrieval_mode.add_argument(
         "--structured-filter",
         action="store_const",
-        const=True,
-        dest="structured_filter",
+        const="structured",
+        dest="retrieval_mode",
         help="Explicitly enable the retained structured filter (the default).",
+    )
+    retrieval_mode.add_argument(
+        "--no-guarded-filter",
+        action="store_const",
+        const="no_guarded_filter",
+        dest="retrieval_mode",
+        help="Keep the B1 constraint reranker but disable guarded structured filtering.",
     )
     retrieval_mode.add_argument(
         "--lexical-only",
         action="store_const",
-        const=False,
-        dest="structured_filter",
-        help="Disable structured filtering for the lexical ablation.",
+        const="lexical",
+        dest="retrieval_mode",
+        help="Run pure BM25 without constraint reranking or guarded filtering.",
     )
-    parser.set_defaults(structured_filter=None)
+    parser.set_defaults(retrieval_mode="structured")
     parser.add_argument("--output", default="results.json")
     args = parser.parse_args()
 
@@ -208,7 +248,7 @@ def main() -> None:
         public_split_path=args.public_split,
         development_fold_path=args.development_fold_manifest,
         fold_name=args.fold,
-        structured_filter=args.structured_filter,
+        retrieval_mode=args.retrieval_mode,
     )
     Path(args.output).write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({key: value for key, value in result.items() if key != "sessions"}, indent=2))

@@ -45,7 +45,82 @@ def _request(
 
 class StructuredRetrievalTest(unittest.TestCase):
     def test_retained_structured_filter_is_the_runtime_default(self) -> None:
-        self.assertTrue(StructuredConfig().enabled)
+        rows = [
+            {
+                "parent_asin": f"W{index:02d}",
+                "title": "white leather walking shoes",
+            }
+            for index in range(10)
+        ] + [
+            {
+                "parent_asin": f"B{index:02d}",
+                "title": "black cotton walking shoes",
+            }
+            for index in range(10)
+        ]
+        constraints = [
+            {
+                "attribute": "color",
+                "normalized_value": "black",
+                "confidence": 0.9,
+                "hard": True,
+            },
+            {
+                "attribute": "material",
+                "normalized_value": "leather",
+                "confidence": 0.8,
+                "hard": True,
+            },
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            catalog_path = Path(directory) / "catalog.jsonl"
+            _write_catalog(catalog_path, rows)
+            retriever = HybridRetriever(catalog_path)
+
+            result = retriever.retrieve(_request("walking shoes", constraints))
+
+            self.assertEqual(
+                [candidate.parent_asin for candidate in result.candidates[:2]],
+                ["B00", "B01"],
+            )
+            self.assertTrue(result.diagnostics.structured_filter_applied)
+            self.assertEqual(
+                result.diagnostics.relaxed_constraints,
+                [{"attribute": "material", "value": "leather", "confidence": 0.8}],
+            )
+
+    def test_lexical_only_runtime_bypasses_constraint_reranking(self) -> None:
+        rows = [
+            {"parent_asin": "A", "title": "white walking shoes"},
+            {"parent_asin": "B", "title": "black walking shoes"},
+        ]
+        constraint = {
+            "attribute": "color",
+            "normalized_value": "black",
+            "confidence": 1.0,
+            "hard": True,
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            catalog_path = Path(directory) / "catalog.jsonl"
+            _write_catalog(catalog_path, rows)
+            lexical = HybridRetriever(
+                catalog_path,
+                structured_config=StructuredConfig(enabled=False),
+                constraint_rerank_enabled=False,
+            )
+
+            result = lexical.retrieve(_request("walking shoes", [constraint]))
+
+            self.assertEqual(
+                [candidate.parent_asin for candidate in result.candidates],
+                ["A", "B"],
+            )
+            self.assertTrue(
+                all(
+                    not candidate.diagnostics["constraint_reranked"]
+                    for candidate in result.candidates
+                )
+            )
 
     def test_zero_result_combination_relaxes_lowest_confidence_constraint(self) -> None:
         rows = [
