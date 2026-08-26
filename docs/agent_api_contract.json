@@ -1,6 +1,26 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "TechJam Conversational Shopping Agent Contract",
+  "$defs": {
+    "diagnostic_value": {
+      "oneOf": [
+        {
+          "type": "object",
+          "propertyNames": {
+            "not": {
+              "enum": ["ground_truth", "target", "target_asin", "target_parent_asin", "scenario_type", "difficulty_bucket", "intent_card", "behavior"]
+            }
+          },
+          "additionalProperties": {"$ref": "#/$defs/diagnostic_value"}
+        },
+        {
+          "type": "array",
+          "items": {"$ref": "#/$defs/diagnostic_value"}
+        },
+        {"type": ["string", "number", "boolean", "null"]}
+      ]
+    }
+  },
   "reset_request": {
     "type": "object",
     "required": ["session_id", "user_profile"],
@@ -71,7 +91,7 @@
             "enum": ["ground_truth", "target", "target_asin", "target_parent_asin", "scenario_type", "difficulty_bucket", "intent_card", "behavior"]
           }
         },
-        "additionalProperties": true
+        "additionalProperties": {"$ref": "#/$defs/diagnostic_value"}
       }
     },
     "additionalProperties": false

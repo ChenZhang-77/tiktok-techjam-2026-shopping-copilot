@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import math
 from collections.abc import Collection
 from dataclasses import asdict, dataclass, field
@@ -149,6 +150,10 @@ def validate_agent_response(
     diagnostics = payload.get("diagnostics")
     if diagnostics is not None and not isinstance(diagnostics, dict):
         raise ValueError("Agent response diagnostics must be an object")
-    leaked = _find_forbidden_runtime_keys(diagnostics)
+    try:
+        normalized_diagnostics = json.loads(json.dumps(diagnostics, allow_nan=False))
+    except (TypeError, ValueError) as error:
+        raise ValueError("Agent response diagnostics must be JSON-serializable") from error
+    leaked = _find_forbidden_runtime_keys(normalized_diagnostics)
     if leaked:
         raise ValueError(f"Agent response diagnostics contain evaluator-only fields: {sorted(leaked)}")

@@ -57,6 +57,20 @@ class ContractsTest(unittest.TestCase):
                 allowed_ask_attributes={"color"},
             )
 
+    def test_agent_response_validator_scans_json_serializable_tuples(self) -> None:
+        with self.assertRaisesRegex(ValueError, "evaluator-only"):
+            validate_agent_response(
+                {
+                    "message": "ok",
+                    "ask_attribute": None,
+                    "recommendations": [{"parent_asin": "VALID"}],
+                    "diagnostics": {"retrieval": ({"target_asin": "VALID"},)},
+                },
+                catalog_ids={"VALID"},
+                top_k=10,
+                allowed_ask_attributes={"color"},
+            )
+
     def test_retrieval_request_serializes_without_evaluator_only_fields(self) -> None:
         request = RetrievalRequest(
             session_id="s1",
