@@ -119,6 +119,44 @@ class B3DenseEvidenceTest(unittest.TestCase):
         )
         self.assertTrue(self.cache_metadata["generated_cache_policy"].startswith("not_committed"))
 
+    def test_operational_paths_match_cache_and_structured_evidence(self) -> None:
+        paths = self.record["operational_paths"]
+        cache_hit = paths["cache_hit_development_160"]
+        development = self.record["development_160"]
+        self.assertEqual(cache_hit["reported_fallbacks"], development["reported_fallbacks"])
+        self.assertEqual(cache_hit["initialization_ms"], development["initialization_ms"])
+        self.assertEqual(cache_hit["dense_query_p50_ms"], development["dense_query_p50_ms"])
+        self.assertEqual(cache_hit["peak_rss_bytes"], development["peak_rss_bytes"])
+
+        cache_miss = paths["cache_miss_smoke"]
+        cache_miss_artifact = ROOT / cache_miss["artifact"]
+        self.assertEqual(
+            hashlib.sha256(cache_miss_artifact.read_bytes()).hexdigest(),
+            cache_miss["sha256"],
+        )
+        cache_miss_report = json.loads(cache_miss_artifact.read_text(encoding="utf-8"))
+        for key in ("initialization_ms", "query_ms", "route", "fallback_used", "candidate_count"):
+            self.assertEqual(cache_miss[key], cache_miss_report[key])
+        self.assertIn(cache_miss["reason"], cache_miss_report["notes"])
+
+        structured = json.loads(
+            (ROOT / paths["structured_baseline_development_160"]["source"]).read_text(
+                encoding="utf-8"
+            )
+        )
+        baseline = paths["structured_baseline_development_160"]
+        self.assertEqual(baseline["initialization_ms"], structured["timing"]["initialization_ms"])
+        self.assertEqual(
+            baseline["retrieval_mean_ms"], structured["timing"]["retrieval"]["latency"]["mean_ms"]
+        )
+        self.assertEqual(
+            baseline["retrieval_p50_ms"], structured["timing"]["retrieval"]["latency"]["p50_ms"]
+        )
+        self.assertEqual(
+            baseline["retrieval_p95_ms"], structured["timing"]["retrieval"]["latency"]["p95_ms"]
+        )
+        self.assertEqual(baseline["peak_rss_bytes"], structured["resources"]["peak_rss_bytes"])
+
     def test_decision_keeps_dense_bounded_to_b4_and_preserves_final_split_boundary(self) -> None:
         self.assertEqual(self.record["decision"], "retain_for_b4_fusion_ablation_only_not_default")
         self.assertEqual(self.record["holdout_status"], "not_run_during_b3")

@@ -1,6 +1,6 @@
 {
   "experiment": "b3_minilm_dense_route",
-  "run_code_commit": "48ffc41",
+  "run_code_commit": "be57968",
   "run_branch": "patryk/track4-experiments",
   "code_worktree_clean_before_runs": true,
   "split": "development",
@@ -8,11 +8,11 @@
   "development_fold_version": "development-folds-v1",
   "cache_metadata_artifact": "docs/b3_dense_cache_metadata.json",
   "raw_reports": {
-    "development_dense": {"path": "docs/b3_reports/development_dense.json", "sha256": "307a63a46bc216b5865fcca3bf92cb6bf3cdf2ee96da30467c71470cec3248dd"},
-    "fold_1_dense": {"path": "docs/b3_reports/fold_1_dense.json", "sha256": "87a328b2fe159bd1d9b5023445864e36e3db032cd7a3d489939c1ffc532b741e"},
-    "fold_2_dense": {"path": "docs/b3_reports/fold_2_dense.json", "sha256": "e4b5d0c6ca3175e049d56484a1553e3a8393f5fa21abca343898b87a9dfac96f"},
-    "fold_3_dense": {"path": "docs/b3_reports/fold_3_dense.json", "sha256": "49802cd6af9e1c12579a2eae8923b7589058ba642c8d46e5247abc35e5b50d0e"},
-    "fold_4_dense": {"path": "docs/b3_reports/fold_4_dense.json", "sha256": "f071b4ef4ae48135b2a5e217b128285a32490c96aece6c92bf82818753ab514c"}
+    "development_dense": {"path": "docs/b3_reports/development_dense.json", "sha256": "e9a9fc360c1864e3dcc73f392a2008e40385410fb9ab77e9a923ee4357c56ec3"},
+    "fold_1_dense": {"path": "docs/b3_reports/fold_1_dense.json", "sha256": "aea6c9eaa2da188fa0475e79cda7e9b0cd166863a0637def863834c8a9913f5d"},
+    "fold_2_dense": {"path": "docs/b3_reports/fold_2_dense.json", "sha256": "be31198b7c3d90067b073f2b869dee87a032d8afb978bf411c27d46d8b5e5cff"},
+    "fold_3_dense": {"path": "docs/b3_reports/fold_3_dense.json", "sha256": "468fe524028499b4f342dc7f11301898255b8eb132d6c2696d1784586d42d629"},
+    "fold_4_dense": {"path": "docs/b3_reports/fold_4_dense.json", "sha256": "772df9f84e7cea5d8127ed475b189ec4354766676c273e3d235e744722e2d974"}
   },
   "fixed_cross_validation": {
     "fold_1": {"dense": {"hit_rate_at_10": 0.375, "mrr": 0.134613, "mttc": 7.8, "recommended_technical_score": 0.291884}, "structured": {"hit_rate_at_10": 0.725, "mrr": 0.438472, "mttc": 5.35, "recommended_technical_score": 0.607042}, "dense_only_complementary_hits": 1, "oracle_union_hit_rate_at_10": 0.75},
@@ -32,12 +32,44 @@
     "respond_exceptions": 0,
     "invalid_response_payloads": 0,
     "reported_fallbacks": 0,
-    "initialization_ms": 1351.332959,
-    "dense_query_mean_ms_including_cold_start": 6.350459,
-    "dense_query_p50_ms": 4.763291,
-    "dense_query_p95_ms": 5.85,
-    "dense_query_cold_start_max_ms": 1894.180584,
-    "peak_rss_bytes": 1110720512
+    "initialization_ms": 1398.792458,
+    "dense_query_mean_ms_including_cold_start": 6.392817,
+    "dense_query_p50_ms": 4.754917,
+    "dense_query_p95_ms": 5.856542,
+    "dense_query_cold_start_max_ms": 1911.379084,
+    "peak_rss_bytes": 1110818816
+  },
+  "operational_paths": {
+    "cache_rebuild": {
+      "mode": "one_time_local_build",
+      "build_seconds": 255.086887,
+      "requires_hosted_vector_database": false,
+      "requires_network_after_model_acquisition": false
+    },
+    "cache_hit_development_160": {
+      "reported_fallbacks": 0,
+      "initialization_ms": 1398.792458,
+      "dense_query_p50_ms": 4.754917,
+      "peak_rss_bytes": 1110818816
+    },
+    "cache_miss_smoke": {
+      "artifact": "docs/b3_cache_miss_smoke.json",
+      "sha256": "ad98b15f37c95232ee7e783c017ac459ebed03fb8199b6df4fa485e3e3c02e20",
+      "initialization_ms": 1113.43,
+      "query_ms": 12.89625,
+      "route": "bm25",
+      "fallback_used": true,
+      "reason": "dense_cache_missing",
+      "candidate_count": 20
+    },
+    "structured_baseline_development_160": {
+      "source": "docs/b2_reports/development_structured.json",
+      "initialization_ms": 1457.603542,
+      "retrieval_mean_ms": 38.196302,
+      "retrieval_p50_ms": 33.416125,
+      "retrieval_p95_ms": 88.438333,
+      "peak_rss_bytes": 583581696
+    }
   },
   "hypothesis": "A lightweight local semantic route may recover lexically missed relevant products and justify bounded fusion despite weaker single-route ranking.",
   "result": "Dense-only regresses every fold and cannot replace structured retrieval. It contributes four complementary hits across three folds, producing a development oracle-union ceiling of 0.7875 versus structured 0.7625.",

@@ -1,0 +1,14 @@
+{
+  "experiment": "b3_dense_cache_miss_smoke",
+  "run_code_commit": "be57968",
+  "catalog": "data/catalog.jsonl",
+  "cache_state": "missing_temporary_directory",
+  "query": "shoes",
+  "retrieval_depth": 20,
+  "initialization_ms": 1113.43,
+  "query_ms": 12.89625,
+  "route": "bm25",
+  "fallback_used": true,
+  "notes": ["dense_cache_missing"],
+  "candidate_count": 20
+}
