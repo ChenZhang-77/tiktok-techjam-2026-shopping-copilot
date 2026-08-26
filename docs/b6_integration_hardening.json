@@ -1,0 +1,62 @@
+{
+  "stage": "B6",
+  "run_code_commit": "f19a57d",
+  "runtime_default": "structured",
+  "development_report": {
+    "path": "docs/b6_development_integration.json",
+    "sha256": "f93b6f487794e6ece721d2e1933d2c5c612606750a2fc7db732838081baece71"
+  },
+  "development_160": {
+    "hit_rate_at_10": 0.7625,
+    "mrr": 0.526989,
+    "mttc": 5.30625,
+    "recommended_technical_score": 0.653222,
+    "metric_change_from_b2_retained_structured": 0.0,
+    "respond_exceptions": 0,
+    "invalid_response_payloads": 0,
+    "reported_fallbacks": 0
+  },
+  "diagnostics": {
+    "lexical_route_response_count": 811,
+    "structured_route_response_count": 811,
+    "lexical_structured_overlap_response_count": 811,
+    "structured_filter_applied_responses": 172,
+    "relaxed_constraint_responses": 2,
+    "filtered_pool_step_count": 212,
+    "cache_state_counts": {
+      "lexical_index:memory_ready": 811,
+      "structured_evidence:memory_ready": 811
+    },
+    "route_failure_counts": {}
+  },
+  "operational_cost": {
+    "initialization_ms": 1244.555333,
+    "evaluation_wall_ms": 34488.376125,
+    "retrieval_mean_ms": 36.434035,
+    "retrieval_p50_ms": 31.866542,
+    "retrieval_p95_ms": 81.494917,
+    "peak_rss_bytes": 573702144,
+    "structured_generated_disk_cache_bytes": 0,
+    "catalog_source_bytes": 60546327,
+    "optional_dense_cache_bytes": 77501054,
+    "optional_reranker_logical_snapshot_bytes": 611336475
+  },
+  "control_plane_integration": {
+    "buying_execution": "depth 80 with eligible guarded filtering in the fixed integration fixture",
+    "browsing_execution": "depth 120 without hard filtering in the fixed integration fixture",
+    "candidate_aware_clarification": "Candidate evidence changes the fixed fixture question from use_case to material",
+    "shared_seam": "Retriever.retrieve(RetrievalRequest) -> RetrievalResult",
+    "route_weight_semantics_changed": false
+  },
+  "deterministic_failure_fixtures": {
+    "dense_query": "tests.test_dense_fallback.DenseFallbackTest.test_query_time_dense_failure_reaches_lexical_fallback",
+    "cache_missing": "tests.test_dense_fallback.DenseFallbackTest.test_missing_cache_reaches_deterministic_lexical_fallback",
+    "cache_corrupt": "tests.test_dense_fallback.DenseFallbackTest.test_corrupt_metadata_reaches_lexical_fallback",
+    "fusion_route": "tests.test_fusion.FusionRetrieverTest.test_missing_requested_route_returns_valid_degraded_result_with_reason",
+    "ranking_or_expensive_stage": "tests.test_reranker.RerankingRetrieverTest.test_backend_failure_preserves_exact_pre_rerank_candidates",
+    "control_plane_retrieval": "tests.test_agent_smoke.AgentSmokeTest.test_retrieval_failure_uses_catalog_fallback_without_leaking_exception"
+  },
+  "diagnostic_leakage_policy": "Public validators recursively reject target, target_asin, target_parent_asin, scenario_type, intent_card, behavior, difficulty_bucket, and ground_truth keys.",
+  "holdout_status": "not_run_during_b6",
+  "full_status": "not_run_during_b6"
+}
