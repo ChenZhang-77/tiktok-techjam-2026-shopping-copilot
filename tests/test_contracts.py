@@ -98,6 +98,18 @@ class ContractsTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_retrieval_request({"query": "shoes", "target_asin": "B000"})
 
+    def test_validate_retrieval_request_rejects_nested_label_leakage(self) -> None:
+        with self.assertRaisesRegex(ValueError, "evaluator-only"):
+            validate_retrieval_request(
+                {"query": "shoes", "active_constraints": [{"target_asin": "B000"}]}
+            )
+
+    def test_validate_retrieval_request_scans_json_serializable_tuples(self) -> None:
+        with self.assertRaisesRegex(ValueError, "evaluator-only"):
+            validate_retrieval_request(
+                {"query": "shoes", "active_constraints": ({"target_asin": "B000"},)}
+            )
+
     def test_retrieval_result_exports_recommendations(self) -> None:
         result = RetrievalResult(
             candidates=[

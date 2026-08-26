@@ -34,6 +34,13 @@ def _find_forbidden_runtime_keys(value: object) -> set[str]:
     return found
 
 
+def _normalize_json(value: object, subject: str) -> object:
+    try:
+        return json.loads(json.dumps(value, allow_nan=False))
+    except (TypeError, ValueError) as error:
+        raise ValueError(f"{subject} must be JSON-serializable") from error
+
+
 @dataclass(frozen=True)
 class RetrievalRequest:
     session_id: str
@@ -98,7 +105,9 @@ class RetrievalResult:
 
 
 def validate_retrieval_request(payload: dict) -> None:
-    leaked = FORBIDDEN_RETRIEVAL_REQUEST_KEYS & set(payload)
+    if not isinstance(payload, dict):
+        raise ValueError("RetrievalRequest payload must be an object")
+    leaked = _find_forbidden_runtime_keys(_normalize_json(payload, "RetrievalRequest payload"))
     if leaked:
         raise ValueError(f"RetrievalRequest contains evaluator-only fields: {sorted(leaked)}")
 
@@ -150,10 +159,7 @@ def validate_agent_response(
     diagnostics = payload.get("diagnostics")
     if diagnostics is not None and not isinstance(diagnostics, dict):
         raise ValueError("Agent response diagnostics must be an object")
-    try:
-        normalized_diagnostics = json.loads(json.dumps(diagnostics, allow_nan=False))
-    except (TypeError, ValueError) as error:
-        raise ValueError("Agent response diagnostics must be JSON-serializable") from error
+    normalized_diagnostics = _normalize_json(diagnostics, "Agent response diagnostics")
     leaked = _find_forbidden_runtime_keys(normalized_diagnostics)
     if leaked:
         raise ValueError(f"Agent response diagnostics contain evaluator-only fields: {sorted(leaked)}")
