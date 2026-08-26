@@ -1,9 +1,9 @@
 {
   "baseline": "a_control_plane_before_b_integration",
   "agent_source_commit": "2280bf7",
-  "run_code_commit": "1102884",
+  "run_code_commit": "4ea9f32",
   "run_branch": "patryk/track4-experiments",
-  "run_worktree_dirty": true,
+  "run_worktree_dirty": false,
   "environment": {
     "python": "3.12.13",
     "operating_system": "macOS 26.6.1",
@@ -27,9 +27,9 @@
   "result_artifact": "docs/b0_development_results.json",
   "result_artifact_sha256": "6ff63a3585a071d608e4b8de47e94c25b6bcd2d528af78e9a0365ccba343a061",
   "development_report_artifact": "docs/b0_development_report.json",
-  "development_report_artifact_sha256": "15db95316144c02b65ea33b34a86b874393ae7afb4f8daa193a81e3aa3b35d98",
+  "development_report_artifact_sha256": "0c2dbf0119cd8d51eee3c299169d8cc00e50b9fb9c0e9d4cc6672c4ced21282e",
   "evaluation_wall_seconds": 28.62,
-  "development_report_wall_seconds": 33.322862,
+  "development_report_wall_seconds": 33.219614,
   "reported_token_usage": {
     "prompt_tokens": 0,
     "completion_tokens": 0,
