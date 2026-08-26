@@ -16,6 +16,7 @@ from experiments.development_folds import (
 from starter.agent import Agent
 from starter.contracts import validate_agent_response
 from starter.core.response_guard import ALLOWED_ASK_ATTRIBUTES
+from starter.retrieval import HybridRetriever, StructuredConfig
 
 
 class AgentObserver:
@@ -121,6 +122,7 @@ def evaluate_split(
     public_split_path: str | Path,
     development_fold_path: str | Path,
     fold_name: str | None = None,
+    structured_filter: bool | None = None,
 ) -> dict:
     if fold_name and split != "development":
         raise ValueError("A development fold can only be used with the development split")
@@ -138,7 +140,16 @@ def evaluate_split(
 
     initialization_started = time.perf_counter()
     catalog_ids, categories, products = catalog_index(catalog_path)
-    observer = AgentObserver(Agent(catalog_path), catalog_ids=catalog_ids)
+    structured_config = (
+        StructuredConfig()
+        if structured_filter is None
+        else StructuredConfig(enabled=structured_filter)
+    )
+    retriever = HybridRetriever(catalog_path, structured_config=structured_config)
+    observer = AgentObserver(
+        Agent(catalog_path, retriever=retriever),
+        catalog_ids=catalog_ids,
+    )
     initialization_ms = (time.perf_counter() - initialization_started) * 1000.0
     evaluation_started = time.perf_counter()
     result = evaluate(observer, evaluation_samples, catalog_ids, categories, products)
@@ -158,6 +169,7 @@ def evaluate_split(
         "development_fold": fold_name,
         "development_fold_manifest": str(development_fold_path) if split == "development" else None,
         "development_fold_version": development_folds.get("version") if development_folds else None,
+        "structured_filter": structured_config.enabled,
     }
     return result
 
@@ -170,6 +182,22 @@ def main() -> None:
     parser.add_argument("--public-split", default="docs/public_split_v1.json")
     parser.add_argument("--development-fold-manifest", default="docs/development_folds_v1.json")
     parser.add_argument("--fold", choices=("fold_1", "fold_2", "fold_3", "fold_4"))
+    retrieval_mode = parser.add_mutually_exclusive_group()
+    retrieval_mode.add_argument(
+        "--structured-filter",
+        action="store_const",
+        const=True,
+        dest="structured_filter",
+        help="Explicitly enable the retained structured filter (the default).",
+    )
+    retrieval_mode.add_argument(
+        "--lexical-only",
+        action="store_const",
+        const=False,
+        dest="structured_filter",
+        help="Disable structured filtering for the lexical ablation.",
+    )
+    parser.set_defaults(structured_filter=None)
     parser.add_argument("--output", default="results.json")
     args = parser.parse_args()
 
@@ -180,6 +208,7 @@ def main() -> None:
         public_split_path=args.public_split,
         development_fold_path=args.development_fold_manifest,
         fold_name=args.fold,
+        structured_filter=args.structured_filter,
     )
     Path(args.output).write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({key: value for key, value in result.items() if key != "sessions"}, indent=2))

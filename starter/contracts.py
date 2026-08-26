@@ -91,6 +91,9 @@ class RetrievalDiagnostics:
     fallback_used: bool = False
     latency_ms: float | None = None
     notes: list[str] = field(default_factory=list)
+    structured_filter_applied: bool = False
+    relaxed_constraints: list[dict[str, Any]] = field(default_factory=list)
+    filtered_pool_sizes: list[dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return asdict(self)

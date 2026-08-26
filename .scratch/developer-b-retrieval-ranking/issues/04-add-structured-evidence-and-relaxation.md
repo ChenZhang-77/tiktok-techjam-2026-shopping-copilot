@@ -6,7 +6,7 @@ relaxation while preserving broad Browsing recall.
 
 **Blocked by:** 03 — Integrate the Retrieval / Ranking Plane with exact parity.
 
-**Status:** ready-for-agent
+**Status:** in-progress
 
 - [ ] Evidence covers title, categories, features, details, store, description, and parseable price where appropriate.
 - [ ] Sparse price or details fields cannot broadly eliminate the Candidate Pool.
@@ -15,4 +15,3 @@ relaxation while preserving broad Browsing recall.
 - [ ] Fixed Development Set cross-validation and an unfused lexical ablation support any retained behavior.
 
 ## Comments
-

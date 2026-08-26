@@ -16,6 +16,13 @@ from starter.contracts import (
 )
 from starter.core.planner import Strategy
 from starter.core.ranking import rerank_candidates
+from starter.retrieval.structured import (
+    ProductEvidence,
+    StructuredConfig,
+    StructuredOutcome,
+    apply_guarded_filters,
+    structured_matches,
+)
 
 
 TOKEN_RE = re.compile(r"[a-z0-9]+", re.IGNORECASE)
@@ -51,13 +58,21 @@ def _terms(text: str) -> list[str]:
 class HybridRetriever:
     """Deterministic lexical retrieval seam that preserves the A-side ordering."""
 
-    def __init__(self, catalog_path: str | Path = "data/catalog.jsonl") -> None:
+    def __init__(
+        self,
+        catalog_path: str | Path = "data/catalog.jsonl",
+        structured_config: StructuredConfig | None = None,
+    ) -> None:
         started = time.perf_counter()
         self.catalog_path = Path(catalog_path)
         self._connection = sqlite3.connect(":memory:")
         self._catalog_ids: set[str] = set()
         self._fallback_ids: list[str] = []
         self._product_texts: dict[str, str] = {}
+        self._structured_evidence: dict[str, ProductEvidence] = {}
+        self.structured_config = (
+            structured_config if structured_config is not None else StructuredConfig()
+        )
         try:
             self._build_index()
         except Exception:
@@ -102,6 +117,7 @@ class HybridRetriever:
 
                 self._catalog_ids.add(parent_asin)
                 self._fallback_ids.append(parent_asin)
+                self._structured_evidence[parent_asin] = ProductEvidence.from_product(product)
                 evidence = tuple(_text(product.get(field)) for field in EVIDENCE_FIELDS)
                 self._product_texts[parent_asin] = " ".join(evidence)
                 batch.append((parent_asin, *evidence))
@@ -118,7 +134,7 @@ class HybridRetriever:
         unique_terms = list(dict.fromkeys(_terms(request.query)))[:40]
         expression = " OR ".join(f'"{term}"' for term in unique_terms)
         if not expression:
-            return self._result([], [], request, started)
+            return self._result([], [], request, started, StructuredOutcome([]))
 
         rows = self._connection.execute(
             "SELECT parent_asin FROM products WHERE products MATCH ? "
@@ -133,7 +149,22 @@ class HybridRetriever:
             lexical_weight=request.strategy.lexical_weight,
             structured_weight=request.strategy.structured_weight,
         )
-        return self._result(lexical_ids, ranked_ids, request, started)
+        structured_outcome = StructuredOutcome(ranked_ids)
+        if request.strategy.allow_hard_filter:
+            structured_outcome = apply_guarded_filters(
+                ranked_ids,
+                evidence_by_id=self._structured_evidence,
+                constraints=request.active_constraints,
+                top_k=request.top_k,
+                config=self.structured_config,
+            )
+        return self._result(
+            lexical_ids,
+            structured_outcome.ordered_ids,
+            request,
+            started,
+            structured_outcome,
+        )
 
     def _result(
         self,
@@ -141,6 +172,7 @@ class HybridRetriever:
         ranked_ids: list[str],
         request: RetrievalRequest,
         started: float,
+        structured_outcome: StructuredOutcome,
     ) -> RetrievalResult:
         lexical_ranks = {parent_asin: rank for rank, parent_asin in enumerate(lexical_ids, start=1)}
         reranked = ranked_ids != lexical_ids
@@ -153,11 +185,19 @@ class HybridRetriever:
                     "lexical_rank": lexical_ranks[parent_asin],
                     "final_rank": rank,
                     "constraint_reranked": reranked,
+                    "structured_matches": structured_matches(
+                        self._structured_evidence[parent_asin],
+                        request.active_constraints,
+                    ),
                 },
             )
             for rank, parent_asin in enumerate(ranked_ids, start=1)
         ]
         notes = ["constraint_rerank_applied"] if reranked else []
+        if structured_outcome.filter_applied:
+            notes.append("guarded_structured_filter_applied")
+        if structured_outcome.relaxed_constraints:
+            notes.append("structured_filter_relaxed")
         return RetrievalResult(
             candidates=candidates,
             diagnostics=RetrievalDiagnostics(
@@ -166,6 +206,9 @@ class HybridRetriever:
                 fallback_used=False,
                 latency_ms=round((time.perf_counter() - started) * 1000.0, 6),
                 notes=notes,
+                structured_filter_applied=structured_outcome.filter_applied,
+                relaxed_constraints=structured_outcome.relaxed_constraints,
+                filtered_pool_sizes=structured_outcome.pool_sizes,
             ),
         )
 

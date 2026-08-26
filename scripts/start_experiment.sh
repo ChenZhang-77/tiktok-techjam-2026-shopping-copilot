@@ -11,6 +11,8 @@ json_escape() {
 NAME=""
 SPLIT="development"
 FOLD=""
+STRUCTURED_FILTER="true"
+RETRIEVAL_MODE_FLAG=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --split)
@@ -29,9 +31,19 @@ while [[ $# -gt 0 ]]; do
       FOLD="${1#--fold=}"
       shift
       ;;
+    --structured-filter)
+      STRUCTURED_FILTER="true"
+      RETRIEVAL_MODE_FLAG="--structured-filter"
+      shift
+      ;;
+    --lexical-only)
+      STRUCTURED_FILTER="false"
+      RETRIEVAL_MODE_FLAG="--lexical-only"
+      shift
+      ;;
     -h|--help)
-      echo "Usage: ./scripts/start_experiment.sh [experiment-name] [--split development|full|holdout] [--fold fold_1|fold_2|fold_3|fold_4]"
-      echo "Default: development. The public holdout is exposed; use full only for the Final Public Run after freeze."
+      echo "Usage: ./scripts/start_experiment.sh [experiment-name] [--split development|full|holdout] [--fold fold_1|fold_2|fold_3|fold_4] [--structured-filter|--lexical-only]"
+      echo "Default: development with the retained structured filter. Use --lexical-only for ablation. The public holdout is exposed; use full only for the Final Public Run after freeze."
       exit 0
       ;;
     *)
@@ -65,6 +77,10 @@ if [[ -n "$FOLD" ]]; then
     echo "--fold can only be used with --split development." >&2
     exit 1
   fi
+fi
+RETRIEVAL_MODE_TEXT=""
+if [[ -n "$RETRIEVAL_MODE_FLAG" ]]; then
+  RETRIEVAL_MODE_TEXT=" $RETRIEVAL_MODE_FLAG"
 fi
 
 SLUG="$(printf '%s' "$NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
@@ -119,7 +135,8 @@ cat > "$RUN_DIR/metadata.json" <<EOF
   "development_fold": "$(json_escape "$FOLD")",
   "split_manifest": "docs/public_split_v1.json",
   "development_fold_manifest": "docs/development_folds_v1.json",
-  "command": "$(json_escape "./scripts/start_experiment.sh $NAME --split $SPLIT${FOLD:+ --fold $FOLD}")"
+  "structured_filter": $STRUCTURED_FILTER,
+  "command": "$(json_escape "./scripts/start_experiment.sh $NAME --split $SPLIT${FOLD:+ --fold $FOLD}$RETRIEVAL_MODE_TEXT")"
 }
 EOF
 
@@ -148,6 +165,9 @@ EOF
 REPORT_ARGS=(--split "$SPLIT" --output "$RUN_DIR/results.json")
 if [[ -n "$FOLD" ]]; then
   REPORT_ARGS+=(--fold "$FOLD")
+fi
+if [[ -n "$RETRIEVAL_MODE_FLAG" ]]; then
+  REPORT_ARGS+=("$RETRIEVAL_MODE_FLAG")
 fi
 "$PYTHON" -m experiments.evaluation_reporting "${REPORT_ARGS[@]}"
 
