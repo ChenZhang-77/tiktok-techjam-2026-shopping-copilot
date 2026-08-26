@@ -110,6 +110,7 @@ class DevelopmentReportingTest(unittest.TestCase):
             hybrid.return_value,
             config=RerankerConfig(candidate_limit=30),
         )
+        reranker.return_value.close.assert_called_once_with()
         self.assertEqual(report["evaluation"]["retrieval_mode"], "semantic_rerank")
         self.assertTrue(report["evaluation"]["structured_filter"])
         self.assertEqual(report["evaluation"]["reranker_configuration"]["candidate_limit"], 30)

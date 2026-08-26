@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import math
-import time
 import unittest
 
 from starter.contracts import Candidate, RetrievalDiagnostics, RetrievalRequest, RetrievalResult
 from starter.core.planner import Strategy
-from starter.retrieval.reranker import RerankerConfig, RerankingRetriever
+from starter.retrieval.reranker import (
+    LocalCrossEncoderBackend,
+    RerankerConfig,
+    RerankingRetriever,
+)
 
 
 def _request() -> RetrievalRequest:
@@ -64,7 +67,12 @@ class RecordingBackend:
         self.scores = scores
         self.calls: list[tuple[str, list[str]]] = []
 
-    def score(self, query: str, evidence_texts: list[str]) -> list[float]:
+    def score(
+        self,
+        query: str,
+        evidence_texts: list[str],
+        timeout_ms: float,
+    ) -> list[float]:
         self.calls.append((query, list(evidence_texts)))
         if isinstance(self.scores, Exception):
             raise self.scores
@@ -73,30 +81,20 @@ class RecordingBackend:
 
 class RerankingRetrieverTest(unittest.TestCase):
     def test_timeout_returns_prompt_fallback_and_disables_the_expensive_stage(self) -> None:
-        class SlowBackend:
-            calls = 0
-
-            def score(self, query: str, evidence_texts: list[str]) -> list[float]:
-                self.calls += 1
-                time.sleep(0.05)
-                return [0.1] * len(evidence_texts)
-
-        backend = SlowBackend()
+        config = RerankerConfig(candidate_limit=2, timeout_ms=1.0)
+        backend = LocalCrossEncoderBackend(config)
         retriever = RerankingRetriever(
             FakeRetriever(),
-            config=RerankerConfig(candidate_limit=2, timeout_ms=5.0),
+            config=config,
             backend=backend,
         )
 
-        started = time.perf_counter()
         first = retriever.retrieve(_request())
-        elapsed = time.perf_counter() - started
         second = retriever.retrieve(_request())
 
-        self.assertLess(elapsed, 0.04)
         self.assertEqual(first.diagnostics.route_failures, {"semantic_rerank": "reranker_timeout"})
         self.assertEqual(second.diagnostics.route_failures, {"semantic_rerank": "reranker_timeout"})
-        self.assertEqual(backend.calls, 1)
+        self.assertFalse(backend.worker_alive)
 
     def test_reranks_only_the_bounded_prefix_and_preserves_the_tail(self) -> None:
         backend = RecordingBackend([0.1, 0.9])

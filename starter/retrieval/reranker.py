@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import math
+import multiprocessing
 import time
 from dataclasses import dataclass, replace
 from pathlib import Path
-from queue import Empty, Queue
-from threading import Thread
-from typing import Protocol, cast
+from queue import Empty
+from typing import Any, Callable, Protocol
 
 from starter.contracts import RetrievalRequest, RetrievalResult
 
@@ -48,39 +48,136 @@ class RerankerConfig:
 
 
 class RerankerBackend(Protocol):
-    def score(self, query: str, evidence_texts: list[str]) -> list[float]:
+    def score(
+        self,
+        query: str,
+        evidence_texts: list[str],
+        timeout_ms: float,
+    ) -> list[float]:
         ...
 
 
-class LocalCrossEncoderBackend:
-    """Lazy, network-free CrossEncoder scorer pinned to an exact revision."""
+class RerankerTimeoutError(TimeoutError):
+    pass
 
-    def __init__(self, config: RerankerConfig) -> None:
-        self._config = config
-        self._model: object | None = None
 
-    def _load_model(self) -> object:
-        if self._model is None:
-            from sentence_transformers import CrossEncoder
+def _cross_encoder_worker(
+    config: RerankerConfig,
+    requests: Any,
+    responses: Any,
+) -> None:
+    from sentence_transformers import CrossEncoder
 
-            self._model = CrossEncoder(
-                self._config.model_id,
-                revision=self._config.model_revision,
-                cache_folder=str(self._config.model_cache_dir),
-                local_files_only=True,
-                max_length=self._config.max_length,
+    model = CrossEncoder(
+        config.model_id,
+        revision=config.model_revision,
+        cache_folder=str(config.model_cache_dir),
+        local_files_only=True,
+        max_length=config.max_length,
+    )
+    while True:
+        payload = requests.get()
+        if payload is None:
+            return
+        request_id, query, evidence_texts = payload
+        try:
+            scores = model.predict(
+                [(query, evidence_text) for evidence_text in evidence_texts],
+                batch_size=config.batch_size,
+                show_progress_bar=False,
+                convert_to_numpy=True,
             )
-        return self._model
+            responses.put((request_id, True, [float(score) for score in scores]))
+        except Exception as error:
+            responses.put((request_id, False, type(error).__name__))
 
-    def score(self, query: str, evidence_texts: list[str]) -> list[float]:
-        model = self._load_model()
-        scores = model.predict(
-            [(query, evidence_text) for evidence_text in evidence_texts],
-            batch_size=self._config.batch_size,
-            show_progress_bar=False,
-            convert_to_numpy=True,
+
+class LocalCrossEncoderBackend:
+    """Pinned local CrossEncoder isolated in a terminate-on-timeout process."""
+
+    def __init__(
+        self,
+        config: RerankerConfig,
+        *,
+        worker_target: Callable[[RerankerConfig, Any, Any], None] = _cross_encoder_worker,
+    ) -> None:
+        self._config = config
+        self._worker_target = worker_target
+        self._context = multiprocessing.get_context("spawn")
+        self._process: multiprocessing.Process | None = None
+        self._requests: Any = None
+        self._responses: Any = None
+        self._next_request_id = 1
+
+    @property
+    def worker_alive(self) -> bool:
+        return self._process is not None and self._process.is_alive()
+
+    def _start(self) -> None:
+        if self.worker_alive:
+            return
+        self._requests = self._context.Queue()
+        self._responses = self._context.Queue()
+        self._process = self._context.Process(
+            target=self._worker_target,
+            args=(self._config, self._requests, self._responses),
+            name="semantic-reranker",
+            daemon=True,
         )
-        return [float(score) for score in scores]
+        self._process.start()
+
+    def score(
+        self,
+        query: str,
+        evidence_texts: list[str],
+        timeout_ms: float,
+    ) -> list[float]:
+        self._start()
+        request_id = self._next_request_id
+        self._next_request_id += 1
+        self._requests.put((request_id, query, evidence_texts))
+        try:
+            response_id, succeeded, payload = self._responses.get(
+                timeout=timeout_ms / 1000.0
+            )
+        except Empty as error:
+            self._stop(force=True)
+            raise RerankerTimeoutError(
+                "semantic reranker exceeded its time budget and was terminated"
+            ) from error
+        if response_id != request_id:
+            self._stop(force=True)
+            raise RuntimeError("semantic reranker response order is invalid")
+        if not succeeded:
+            raise RuntimeError(f"semantic reranker worker failed: {payload}")
+        return [float(score) for score in payload]
+
+    def _stop(self, *, force: bool) -> None:
+        process = self._process
+        if process is None:
+            return
+        if process.is_alive() and not force and self._requests is not None:
+            self._requests.put(None)
+            process.join(timeout=0.5)
+        if process.is_alive():
+            process.terminate()
+            process.join(timeout=1.0)
+        self._process = None
+        for queue in (self._requests, self._responses):
+            if queue is not None:
+                queue.close()
+                queue.join_thread()
+        self._requests = None
+        self._responses = None
+
+    def close(self) -> None:
+        self._stop(force=False)
+
+    def __del__(self) -> None:
+        try:
+            self._stop(force=True)
+        except Exception:
+            pass
 
 
 class RerankingRetriever:
@@ -110,14 +207,15 @@ class RerankingRetriever:
         if self._disabled_reason is not None:
             return self._fallback(base, started, pool_size, self._disabled_reason)
         try:
-            scores = self._score_with_timeout(
+            scores = self._backend.score(
                 request.query,
                 [candidate.evidence_text or "" for candidate in base.candidates[:pool_size]],
+                self.config.timeout_ms,
             )
             if len(scores) != pool_size or any(not math.isfinite(score) for score in scores):
                 raise ValueError("invalid_reranker_scores")
         except Exception as error:
-            if isinstance(error, TimeoutError):
+            if isinstance(error, RerankerTimeoutError):
                 reason = "reranker_timeout"
                 self._disabled_reason = reason
             elif isinstance(error, ValueError) and str(error) == "invalid_reranker_scores":
@@ -167,27 +265,13 @@ class RerankingRetriever:
             diagnostics=diagnostics,
         )
 
-    def _score_with_timeout(self, query: str, evidence_texts: list[str]) -> list[float]:
-        completed: Queue[tuple[bool, object]] = Queue(maxsize=1)
-
-        def score() -> None:
-            try:
-                completed.put((True, self._backend.score(query, evidence_texts)))
-            except Exception as error:
-                completed.put((False, error))
-
-        worker = Thread(target=score, name="semantic-reranker", daemon=True)
-        worker.start()
-        worker.join(self.config.timeout_ms / 1000.0)
-        if worker.is_alive():
-            raise TimeoutError("semantic reranker exceeded its time budget")
-        try:
-            succeeded, payload = completed.get_nowait()
-        except Empty as error:
-            raise RuntimeError("semantic reranker completed without a result") from error
-        if not succeeded:
-            raise cast(Exception, payload)
-        return list(cast(list[float], payload))
+    def close(self) -> None:
+        close_backend = getattr(self._backend, "close", None)
+        if callable(close_backend):
+            close_backend()
+        close_base = getattr(self._base, "close", None)
+        if callable(close_base):
+            close_base()
 
     def _fallback(
         self,

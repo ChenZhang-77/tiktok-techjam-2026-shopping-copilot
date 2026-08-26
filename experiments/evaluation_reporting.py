@@ -328,7 +328,12 @@ def evaluate_split(
     )
     initialization_ms = (time.perf_counter() - initialization_started) * 1000.0
     evaluation_started = time.perf_counter()
-    result = evaluate(observer, evaluation_samples, catalog_ids, categories, products)
+    try:
+        result = evaluate(observer, evaluation_samples, catalog_ids, categories, products)
+    finally:
+        close_retriever = getattr(retriever, "close", None)
+        if callable(close_retriever):
+            close_retriever()
     evaluation_wall_ms = (time.perf_counter() - evaluation_started) * 1000.0
     result = add_scenario_scores(result)
     result["code_provenance"] = code_provenance()

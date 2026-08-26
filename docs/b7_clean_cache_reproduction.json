@@ -8,6 +8,7 @@
   "candidate_limit": 30,
   "batch_size": 16,
   "max_length": 256,
+  "timeout_ms": 5000.0,
   "runtime_network_access": false,
   "download_allow_patterns": [
     "config.json",
@@ -17,7 +18,7 @@
     "tokenizer_config.json",
     "vocab.txt"
   ],
-  "cache_seconds": 1.644013,
+  "cache_seconds": 2.491505,
   "validation": {
     "local_files_only": true,
     "smoke_score_is_finite": true
