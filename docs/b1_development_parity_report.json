@@ -1334,15 +1334,15 @@
     "internal_fallbacks_note": "B1 Agent diagnostics expose fallback_used at the public boundary."
   },
   "timing": {
-    "initialization_ms": 1319.540583,
-    "evaluation_wall_ms": 32134.470292,
+    "initialization_ms": 1328.236458,
+    "evaluation_wall_ms": 31971.269042,
     "responses": {
       "response_count": 813,
-      "total_ms": 32064.902341,
-      "mean_ms": 39.440224,
-      "p50_ms": 40.470083,
-      "p95_ms": 74.008,
-      "max_ms": 97.410792
+      "total_ms": 31902.637339,
+      "mean_ms": 39.240636,
+      "p50_ms": 40.281416,
+      "p95_ms": 73.98925,
+      "max_ms": 96.549625
     }
   },
   "evaluation": {
