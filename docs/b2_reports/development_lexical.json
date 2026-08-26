@@ -1334,48 +1334,48 @@
     "internal_fallbacks_note": "B1 Agent diagnostics expose fallback_used at the public boundary."
   },
   "timing": {
-    "initialization_ms": 1455.701666,
-    "evaluation_wall_ms": 22782.637167,
+    "initialization_ms": 1450.710583,
+    "evaluation_wall_ms": 23039.554583,
     "responses": {
       "response_count": 820,
-      "total_ms": 22712.819265,
-      "mean_ms": 27.69856,
-      "p50_ms": 29.5485,
-      "p95_ms": 43.222541,
-      "max_ms": 94.518209
+      "total_ms": 22969.074878,
+      "mean_ms": 28.011067,
+      "p50_ms": 29.905042,
+      "p95_ms": 43.527625,
+      "max_ms": 95.997958
     },
     "retrieval": {
       "latency": {
         "response_count": 820,
-        "total_ms": 17356.615542,
-        "mean_ms": 21.166604,
-        "p50_ms": 20.597208,
-        "p95_ms": 40.561834,
-        "max_ms": 85.879833
+        "total_ms": 17516.446064,
+        "mean_ms": 21.36152,
+        "p50_ms": 20.631792,
+        "p95_ms": 41.082708,
+        "max_ms": 87.096291
       },
       "lexical_latency": {
         "response_count": 820,
-        "total_ms": 12260.752534,
-        "mean_ms": 14.952137,
-        "p50_ms": 15.089958,
-        "p95_ms": 26.774417,
-        "max_ms": 40.119083
+        "total_ms": 12338.251577,
+        "mean_ms": 15.046648,
+        "p50_ms": 15.342,
+        "p95_ms": 26.856667,
+        "max_ms": 40.101625
       },
       "constraint_rerank_latency": {
         "response_count": 820,
-        "total_ms": 0.464544,
-        "mean_ms": 0.000567,
+        "total_ms": 0.433839,
+        "mean_ms": 0.000529,
         "p50_ms": 0.0005,
-        "p95_ms": 0.000958,
-        "max_ms": 0.0015
+        "p95_ms": 0.000916,
+        "max_ms": 0.001416
       },
       "structured_filter_latency": {
         "response_count": 820,
-        "total_ms": 0.596091,
-        "mean_ms": 0.000727,
-        "p50_ms": 0.000292,
-        "p95_ms": 0.002334,
-        "max_ms": 0.003583
+        "total_ms": 0.628426,
+        "mean_ms": 0.000766,
+        "p50_ms": 0.000375,
+        "p95_ms": 0.002292,
+        "max_ms": 0.002916
       }
     }
   },

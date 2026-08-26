@@ -374,53 +374,53 @@
     "internal_fallbacks_note": "B1 Agent diagnostics expose fallback_used at the public boundary."
   },
   "timing": {
-    "initialization_ms": 3872.218792,
-    "evaluation_wall_ms": 18110.114958,
+    "initialization_ms": 3505.339625,
+    "evaluation_wall_ms": 17977.787041,
     "responses": {
       "response_count": 203,
-      "total_ms": 18069.581966,
-      "mean_ms": 89.012719,
-      "p50_ms": 79.654125,
-      "p95_ms": 199.699334,
-      "max_ms": 472.535625
+      "total_ms": 17930.792503,
+      "mean_ms": 88.329027,
+      "p50_ms": 81.393209,
+      "p95_ms": 196.182834,
+      "max_ms": 396.455125
     },
     "retrieval": {
       "latency": {
         "response_count": 203,
-        "total_ms": 15574.846882,
-        "mean_ms": 76.723384,
-        "p50_ms": 61.177,
-        "p95_ms": 198.939041,
-        "max_ms": 470.886625
+        "total_ms": 15373.473617,
+        "mean_ms": 75.731397,
+        "p50_ms": 62.157708,
+        "p95_ms": 194.956208,
+        "max_ms": 394.765625
       },
       "lexical_latency": {
         "response_count": 203,
-        "total_ms": 5974.143082,
-        "mean_ms": 29.429276,
-        "p50_ms": 29.443416,
-        "p95_ms": 56.763417,
-        "max_ms": 71.797083
+        "total_ms": 5944.76537,
+        "mean_ms": 29.284558,
+        "p50_ms": 27.96025,
+        "p95_ms": 56.684209,
+        "max_ms": 84.08675
       },
       "constraint_rerank_latency": {
         "response_count": 203,
-        "total_ms": 6985.862831,
-        "mean_ms": 34.413117,
-        "p50_ms": 21.240459,
-        "p95_ms": 108.765125,
-        "max_ms": 154.475
+        "total_ms": 6952.643549,
+        "mean_ms": 34.249476,
+        "p50_ms": 23.152334,
+        "p95_ms": 105.350875,
+        "max_ms": 147.221042
       },
       "structured_filter_latency": {
         "response_count": 203,
-        "total_ms": 88.082242,
-        "mean_ms": 0.433903,
-        "p50_ms": 0.000792,
-        "p95_ms": 2.818083,
-        "max_ms": 9.498708
+        "total_ms": 78.791368,
+        "mean_ms": 0.388135,
+        "p50_ms": 0.000791,
+        "p95_ms": 2.385708,
+        "max_ms": 8.536541
       }
     }
   },
   "resources": {
-    "peak_rss_bytes": 385449984,
+    "peak_rss_bytes": 389038080,
     "peak_rss_kind": "process_peak_rss"
   },
   "evaluation": {

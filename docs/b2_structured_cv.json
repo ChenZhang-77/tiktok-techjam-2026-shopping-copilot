@@ -1,6 +1,6 @@
 {
   "experiment": "b2_guarded_structured_evidence",
-  "run_code_commit": "cdf5f14",
+  "run_code_commit": "eab7e61",
   "run_branch": "patryk/track4-experiments",
   "code_worktree_clean_before_runs": true,
   "dataset": "data/public_set.jsonl",
@@ -36,21 +36,21 @@
     ]
   },
   "raw_reports": {
-    "development_lexical": {"path": "docs/b2_reports/development_lexical.json", "sha256": "7b44d9a11dd0a42ff34bd5d2b5fc75559ba4e4d853bf4807469127595031c00b"},
-    "development_no_guarded_filter": {"path": "docs/b2_reports/development_no_guarded_filter.json", "sha256": "68101a2341ff7af37b84fc9c8b820ba1c8700060288a703980da1eb2db98620b"},
-    "development_structured": {"path": "docs/b2_reports/development_structured.json", "sha256": "677b9db24f1741323009ba4e2cdac82d5a71f301e9915d49ebd6c28af7d68b75"},
-    "fold_1_lexical": {"path": "docs/b2_reports/fold_1_lexical.json", "sha256": "0860b707ac1d1fda83f338ff5d8294c3712a2a5580350ca74f4a1418ab83ae1e"},
-    "fold_1_no_guarded_filter": {"path": "docs/b2_reports/fold_1_no_guarded_filter.json", "sha256": "c4feb023e36bdb1c8a27501ad529256dc7260f4a62490be9dbb74236c12aa515"},
-    "fold_1_structured": {"path": "docs/b2_reports/fold_1_structured.json", "sha256": "d45ffd48a173e845ea6bb76c3d0f8b5d7302298b52608beeb1dc9ee875ea8608"},
-    "fold_2_lexical": {"path": "docs/b2_reports/fold_2_lexical.json", "sha256": "d374d6db68973d2c072ce392edafb52c04275539fff0b4801f89fdc65c801606"},
-    "fold_2_no_guarded_filter": {"path": "docs/b2_reports/fold_2_no_guarded_filter.json", "sha256": "8816408adac7d91507858ac13e08a22b683938b671e752a19cdfc06f47199a59"},
-    "fold_2_structured": {"path": "docs/b2_reports/fold_2_structured.json", "sha256": "7a5965b9ed4b63f36203f9ed6db89ab2a14f185e82e0db2558d96c7af741d024"},
-    "fold_3_lexical": {"path": "docs/b2_reports/fold_3_lexical.json", "sha256": "0dfb8f51f922e6e05e0df065afc8e114c6a60b9b9b298f7a804b840ff13911fc"},
-    "fold_3_no_guarded_filter": {"path": "docs/b2_reports/fold_3_no_guarded_filter.json", "sha256": "09086f4f2340d68b66547214d70eb7dfa2d6e73717badefc3e99d4932e6761b3"},
-    "fold_3_structured": {"path": "docs/b2_reports/fold_3_structured.json", "sha256": "dd641feab46d615f89cf369f5d00c6cfdb5dda15ee236c37e9cad05cfd1adf24"},
-    "fold_4_lexical": {"path": "docs/b2_reports/fold_4_lexical.json", "sha256": "5d1719c8398eacab34f23bf6924d199c7baf1ee302c0af3e91d1575465b35ffe"},
-    "fold_4_no_guarded_filter": {"path": "docs/b2_reports/fold_4_no_guarded_filter.json", "sha256": "345dab06e14026e5624b6e05196454dfb3785a6cbb67707c74b4cb4e45d6de26"},
-    "fold_4_structured": {"path": "docs/b2_reports/fold_4_structured.json", "sha256": "ed4ab03c6325772180ba0d72470ef4936510a09a0c869f14c8d26e182ebed848"}
+    "development_lexical": {"path": "docs/b2_reports/development_lexical.json", "sha256": "f9ce2dcc9e11c11d6ba56c2d91421bd8807e4922ae2ac108eafc428cf6614a55"},
+    "development_no_guarded_filter": {"path": "docs/b2_reports/development_no_guarded_filter.json", "sha256": "f3f279f5de90ce79acbb4be4e91f78e211faf78c0535c80bc3b6298a33b66c8e"},
+    "development_structured": {"path": "docs/b2_reports/development_structured.json", "sha256": "66a7e57351a8346b5af587a4462b4d4838d5196e5e377c25897aae55e6c8f305"},
+    "fold_1_lexical": {"path": "docs/b2_reports/fold_1_lexical.json", "sha256": "e57f3df79120e33acc15cf2e73f6614aab4c210a54ddaea89139a45b4cf75561"},
+    "fold_1_no_guarded_filter": {"path": "docs/b2_reports/fold_1_no_guarded_filter.json", "sha256": "a9765edd030dc4cafc4ac9ebb5534d6ed685dfe5f5556cb6888f4f59fdce0605"},
+    "fold_1_structured": {"path": "docs/b2_reports/fold_1_structured.json", "sha256": "aba88e4c7a7ac73004423281890c39768732d593d658eb81bc4dd9a034b7dacc"},
+    "fold_2_lexical": {"path": "docs/b2_reports/fold_2_lexical.json", "sha256": "57daac4b416fc56110e262a89c11a3496ec6f5fb6d1f1b1e5d57405ad2c19f66"},
+    "fold_2_no_guarded_filter": {"path": "docs/b2_reports/fold_2_no_guarded_filter.json", "sha256": "f479e08855e728253988155d6126b54ed07c981088a935b612ed4d507156e08f"},
+    "fold_2_structured": {"path": "docs/b2_reports/fold_2_structured.json", "sha256": "2c14d9f4586dbd0083b19ae7c34f7be412e6d48a79c0fcd902ded9107781ae33"},
+    "fold_3_lexical": {"path": "docs/b2_reports/fold_3_lexical.json", "sha256": "25280808de5f7660541c16deb88ac87aa560e8c02cf52ef99996f8bf29b98336"},
+    "fold_3_no_guarded_filter": {"path": "docs/b2_reports/fold_3_no_guarded_filter.json", "sha256": "fb2e30670aacd629226139698ee268c8c07b85c59f000414cf459a3526cda806"},
+    "fold_3_structured": {"path": "docs/b2_reports/fold_3_structured.json", "sha256": "22d878b3c3f96dd67264412ddf7bd8829e0ef3abbc6786d85f674f81d53eed75"},
+    "fold_4_lexical": {"path": "docs/b2_reports/fold_4_lexical.json", "sha256": "be73d3201f59aaa43866edae35811ea7dcf1bb24dfb850da6c21a94e56203121"},
+    "fold_4_no_guarded_filter": {"path": "docs/b2_reports/fold_4_no_guarded_filter.json", "sha256": "fe176edc8b07fbc214a47c1d7a0b76739d47f8efa5ad8bdf8d65d53aba80e1d4"},
+    "fold_4_structured": {"path": "docs/b2_reports/fold_4_structured.json", "sha256": "5628d6aca1af9c58a54dd474f5530fe0b2cf679878695d49f662918a4bb3b744"}
   },
   "fixed_cross_validation": {
     "fold_count": 4,
@@ -93,11 +93,11 @@
     }
   },
   "paired_cost_development_160": {
-    "lexical": {"initialization_ms": 1455.701666, "response_mean_ms": 27.69856, "retrieval_mean_ms": 21.166604, "lexical_stage_mean_ms": 14.952137, "constraint_rerank_stage_mean_ms": 0.000567, "structured_filter_stage_mean_ms": 0.000727, "peak_rss_bytes": 583483392},
-    "no_guarded_filter": {"initialization_ms": 1450.148084, "response_mean_ms": 45.128045, "retrieval_mean_ms": 38.050364, "lexical_stage_mean_ms": 14.716298, "constraint_rerank_stage_mean_ms": 17.47692, "structured_filter_stage_mean_ms": 0.000731, "peak_rss_bytes": 583680000},
-    "structured": {"initialization_ms": 1465.236417, "response_mean_ms": 45.525694, "retrieval_mean_ms": 38.400733, "lexical_stage_mean_ms": 14.836661, "constraint_rerank_stage_mean_ms": 17.375111, "structured_filter_stage_mean_ms": 0.304035, "peak_rss_bytes": 583827456},
-    "structured_delta_vs_no_guarded_filter": {"initialization_ms": 15.088333, "response_mean_ms": 0.397649, "retrieval_mean_ms": 0.350369, "structured_filter_stage_mean_ms": 0.303304, "peak_rss_bytes": 147456},
-    "interpretation": "Sequential runs on the same machine show the guarded filter adds about 0.30 ms per retrieval and about 144 KiB process peak RSS over the B1 control. Initialization and end-to-end deltas include ordinary run-to-run noise."
+    "lexical": {"initialization_ms": 1450.710583, "response_mean_ms": 28.011067, "retrieval_mean_ms": 21.36152, "lexical_stage_mean_ms": 15.046648, "constraint_rerank_stage_mean_ms": 0.000529, "structured_filter_stage_mean_ms": 0.000766, "peak_rss_bytes": 583483392},
+    "no_guarded_filter": {"initialization_ms": 1440.27925, "response_mean_ms": 45.059975, "retrieval_mean_ms": 37.972822, "lexical_stage_mean_ms": 14.672447, "constraint_rerank_stage_mean_ms": 17.433638, "structured_filter_stage_mean_ms": 0.000702, "peak_rss_bytes": 583581696},
+    "structured": {"initialization_ms": 1457.603542, "response_mean_ms": 45.222654, "retrieval_mean_ms": 38.196302, "lexical_stage_mean_ms": 14.624924, "constraint_rerank_stage_mean_ms": 17.444242, "structured_filter_stage_mean_ms": 0.298299, "peak_rss_bytes": 583581696},
+    "structured_delta_vs_no_guarded_filter": {"initialization_ms": 17.324292, "response_mean_ms": 0.162679, "retrieval_mean_ms": 0.22348, "structured_filter_stage_mean_ms": 0.297597, "peak_rss_bytes": 0},
+    "interpretation": "Sequential runs on the same machine show the guarded filter adds about 0.30 ms per retrieval and no measured process peak RSS over the B1 control. Initialization and end-to-end deltas include ordinary run-to-run noise."
   },
   "hypothesis": "Guarded cross-field evidence can improve precise Buying and Intent Override ordering without reducing broad Browsing recall; sparse evidence and incompatible hard constraints must relax instead of emptying the candidate pool.",
   "result": "Against the B1 control, all four fixed folds preserve HitRate@10; mean MRR increases by 0.0042955 and mean TechnicalScore by 0.00153875. The full Development Set reproduces the gain with zero observed errors or fallbacks. Pure BM25 is materially weaker and remains an explicit ablation, not the incremental B2 baseline.",
