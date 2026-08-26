@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
+from dataclasses import replace
 from pathlib import Path
 
 from starter.contracts import Candidate, RetrievalDiagnostics, RetrievalRequest, RetrievalResult
@@ -67,6 +68,12 @@ class _RouteProvider:
 
 
 class FusionRetrieverTest(unittest.TestCase):
+    def test_invalid_request_is_rejected_before_route_failures_can_degrade_it(self) -> None:
+        retriever = FusionRetriever(_RouteProvider())
+
+        with self.assertRaisesRegex(ValueError, "top_k"):
+            retriever.retrieve(replace(_request(), top_k=-1))
+
     def test_local_routes_share_catalog_and_degrade_when_dense_cache_is_missing(self) -> None:
         rows = [
             {"parent_asin": "A", "title": "cotton walking shoes"},

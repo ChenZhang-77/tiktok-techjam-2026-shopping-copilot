@@ -127,6 +127,7 @@ class FusionRetriever:
         )
 
     def retrieve(self, request: RetrievalRequest) -> RetrievalResult:
+        HybridRetriever.validate_request(request)
         started = time.perf_counter()
         weights = {
             "lexical": request.strategy.lexical_weight,

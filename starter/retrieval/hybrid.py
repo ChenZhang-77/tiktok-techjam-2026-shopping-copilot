@@ -133,7 +133,7 @@ class HybridRetriever:
         )
 
     def retrieve_routes(self, request: RetrievalRequest) -> dict[str, RetrievalResult]:
-        self._validate_request(request)
+        self.validate_request(request)
         started = time.perf_counter()
         unique_terms = list(dict.fromkeys(_terms(request.query)))[:40]
         expression = " OR ".join(f'"{term}"' for term in unique_terms)
@@ -290,7 +290,7 @@ class HybridRetriever:
         )
 
     @staticmethod
-    def _validate_request(request: RetrievalRequest) -> None:
+    def validate_request(request: RetrievalRequest) -> None:
         if not isinstance(request, RetrievalRequest):
             raise TypeError("request must be a RetrievalRequest")
         if not isinstance(request.session_id, str) or not request.session_id:
