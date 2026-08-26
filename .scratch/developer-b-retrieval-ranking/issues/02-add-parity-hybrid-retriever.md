@@ -7,7 +7,7 @@ constraint-ranking behavior.
 
 **Blocked by:** 01 — Lock the A-side baseline and Development Set protocol.
 
-**Status:** completed
+Status: completed
 
 - [x] The retriever loads exactly 50,000 unique catalog products without mutation.
 - [x] Product evidence preserves the current field order and BM25 field weighting.

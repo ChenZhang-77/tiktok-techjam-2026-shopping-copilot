@@ -6,7 +6,7 @@ real Candidate Pool without depending on retrieval internals.
 
 **Blocked by:** 07 — Rank bounded Candidate Pools.
 
-**Status:** complete
+Status: complete
 
 - [x] Retrieval Diagnostics cover route sizes, overlap, filtering, relaxation, fallbacks, cache state, and stage latency.
 - [x] Buying and Browsing Strategies produce measurably different retrieval execution.

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
+from dataclasses import replace
 from pathlib import Path
 
 from starter.contracts import RetrievalRequest
@@ -66,6 +67,37 @@ def _request() -> RetrievalRequest:
 
 
 class DenseFallbackTest(unittest.TestCase):
+    def test_compatible_cache_rejects_invalid_request_before_backend_query(self) -> None:
+        class FakeBackend:
+            called = False
+
+            def rank(self, query: str, top_n: int) -> list[tuple[int, float]]:
+                self.called = True
+                return []
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "catalog.jsonl"
+            cache = root / "cache"
+            cache.mkdir()
+            _write_catalog(catalog)
+            _write_compatible_cache(cache, catalog)
+            backend = FakeBackend()
+            retriever = DenseRetriever(
+                catalog,
+                config=DenseConfig(cache_dir=cache),
+                backend_factory=lambda _config, _ids: backend,
+            )
+            invalid = replace(
+                _request(),
+                strategy=replace(_request().strategy, retrieval_depth=50_000),
+            )
+
+            with self.assertRaisesRegex(ValueError, "retrieval_depth"):
+                retriever.retrieve(invalid)
+
+            self.assertFalse(backend.called)
+
     def test_query_time_dense_failure_reaches_lexical_fallback(self) -> None:
         class FailingBackend:
             def rank(self, query: str, top_n: int) -> list[tuple[int, float]]:
@@ -221,7 +253,7 @@ class DenseFallbackTest(unittest.TestCase):
             )
             self.assertTrue(first.diagnostics.fallback_used)
             self.assertIn("dense_cache_missing", first.diagnostics.notes)
-            self.assertEqual(first.diagnostics.route, "bm25")
+            self.assertEqual(first.diagnostics.route, "structured")
             snapshot = retriever.configuration_snapshot()
             self.assertEqual(snapshot["cache_status"], "dense_cache_missing")
             self.assertFalse(snapshot["cache_available"])

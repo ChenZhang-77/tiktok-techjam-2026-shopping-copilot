@@ -6,7 +6,7 @@ fixed Development Set cross-validation evidence.
 
 **Blocked by:** 03 — Integrate the Retrieval / Ranking Plane with exact parity.
 
-**Status:** complete
+Status: complete
 
 - [x] Product/query text templates and model revision are recorded.
 - [x] Cache metadata verifies catalog checksum, dimensions, dtype, normalization, and model identity.

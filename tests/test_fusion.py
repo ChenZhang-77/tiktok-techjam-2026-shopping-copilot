@@ -79,6 +79,17 @@ class _FailedRouteProvider:
 
 
 class FusionRetrieverTest(unittest.TestCase):
+    def test_zero_route_weights_use_deterministic_catalog_fallback(self) -> None:
+        retriever = FusionRetriever(_RouteProvider())
+
+        result = retriever.retrieve(
+            _request(lexical_weight=0.0, structured_weight=0.0, semantic_weight=0.0)
+        )
+
+        self.assertEqual([candidate.parent_asin for candidate in result.candidates], ["A", "B", "C"])
+        self.assertTrue(result.diagnostics.fallback_used)
+        self.assertEqual(result.diagnostics.route_failures, {"fusion": "no_active_routes"})
+
     def test_complete_route_failure_fills_a_valid_candidate_pool(self) -> None:
         retriever = FusionRetriever(_FailedRouteProvider())
 

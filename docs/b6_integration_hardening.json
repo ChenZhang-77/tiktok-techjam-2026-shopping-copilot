@@ -54,6 +54,7 @@
     "cache_corrupt": "tests.test_dense_fallback.DenseFallbackTest.test_corrupt_metadata_reaches_lexical_fallback",
     "fusion_route": "tests.test_fusion.FusionRetrieverTest.test_missing_requested_route_returns_valid_degraded_result_with_reason",
     "ranking_or_expensive_stage": "tests.test_reranker.RerankingRetrieverTest.test_backend_failure_preserves_exact_pre_rerank_candidates",
+    "expensive_stage_timeout": "tests.test_reranker.RerankingRetrieverTest.test_timeout_returns_prompt_fallback_and_disables_the_expensive_stage",
     "control_plane_retrieval": "tests.test_agent_smoke.AgentSmokeTest.test_retrieval_failure_uses_catalog_fallback_without_leaking_exception"
   },
   "diagnostic_leakage_policy": "Public validators recursively reject target, target_asin, target_parent_asin, scenario_type, intent_card, behavior, difficulty_bucket, and ground_truth keys.",

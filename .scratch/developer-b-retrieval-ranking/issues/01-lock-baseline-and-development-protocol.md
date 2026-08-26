@@ -7,7 +7,7 @@ Holdout as confirmatory evidence.
 
 **Blocked by:** None — can start immediately.
 
-**Status:** completed
+Status: completed
 
 - [x] The latest A-side main code passes its complete standard-library test suite.
 - [x] The 160-session baseline is reproduced with overall and per-scenario metrics recorded.

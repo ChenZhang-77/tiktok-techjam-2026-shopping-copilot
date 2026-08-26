@@ -56,6 +56,7 @@
     }
   },
   "fixed_cross_validation": {
+    "structured_comparator": "B2 fixed-fold reports, validated against the deduplicated-constraint code path by exact B6 Development-160 session and scenario equality",
     "technical_score_fold_wins": 2,
     "technical_score_fold_losses": 2,
     "mean_delta_semantic_vs_structured": {

@@ -4,7 +4,7 @@ import json
 import re
 import sqlite3
 import time
-from dataclasses import replace
+from collections.abc import Mapping
 from pathlib import Path
 
 from starter.contracts import (
@@ -14,7 +14,7 @@ from starter.contracts import (
     RetrievalResult,
     validate_retrieval_request_object,
 )
-from starter.core.ranking import rerank_candidates
+from starter.core.ranking import RankingScore, rank_candidates
 from starter.retrieval.structured import (
     EVIDENCE_FIELDS,
     ProductEvidence,
@@ -123,11 +123,7 @@ class HybridRetriever:
         self._connection.commit()
 
     def retrieve(self, request: RetrievalRequest) -> RetrievalResult:
-        result = self.retrieve_routes(request)["structured"]
-        return RetrievalResult(
-            candidates=[replace(candidate, source="bm25") for candidate in result.candidates],
-            diagnostics=replace(result.diagnostics, route="bm25"),
-        )
+        return self.retrieve_routes(request)["structured"]
 
     def retrieve_routes(self, request: RetrievalRequest) -> dict[str, RetrievalResult]:
         validate_retrieval_request_object(request)
@@ -190,15 +186,23 @@ class HybridRetriever:
         )
         rerank_started = time.perf_counter()
         if self.constraint_rerank_enabled:
-            ranked_ids = rerank_candidates(
+            ranking_scores = rank_candidates(
                 lexical_ids,
                 product_texts=self._product_texts,
                 active_constraints=request.active_constraints,
                 lexical_weight=request.strategy.lexical_weight,
                 structured_weight=request.strategy.structured_weight,
             )
+            ranked_ids = [item.parent_asin for item in ranking_scores]
         else:
             ranked_ids = list(lexical_ids)
+            ranking_scores = rank_candidates(
+                lexical_ids,
+                product_texts=self._product_texts,
+                active_constraints=[],
+                lexical_weight=1.0,
+                structured_weight=0.0,
+            )
         constraint_rerank_latency_ms = (time.perf_counter() - rerank_started) * 1000.0
         constraint_reranked = ranked_ids != lexical_ids
         structured_outcome = StructuredOutcome(ranked_ids)
@@ -225,6 +229,7 @@ class HybridRetriever:
                 source="structured",
                 route="structured",
                 constraint_reranked=constraint_reranked,
+                ranking_scores={item.parent_asin: item for item in ranking_scores},
                 stage_latencies_ms={
                     "lexical": lexical_latency_ms,
                     "constraint_rerank": constraint_rerank_latency_ms,
@@ -244,6 +249,7 @@ class HybridRetriever:
         source: str,
         route: str,
         constraint_reranked: bool,
+        ranking_scores: Mapping[str, RankingScore] | None = None,
         stage_latencies_ms: dict[str, float],
     ) -> RetrievalResult:
         lexical_ranks = {parent_asin: rank for rank, parent_asin in enumerate(lexical_ids, start=1)}
@@ -264,6 +270,18 @@ class HybridRetriever:
                 ),
                 len(ranked_ids),
             )
+        ranking_scores = ranking_scores or {}
+        score_by_id = {
+            parent_asin: ranking_scores.get(parent_asin)
+            or RankingScore(
+                parent_asin=parent_asin,
+                lexical_rank=lexical_ranks[parent_asin],
+                lexical_score=1.0 / lexical_ranks[parent_asin],
+                constraint_score=0.0,
+                ranking_score=1.0 / lexical_ranks[parent_asin],
+            )
+            for parent_asin in ranked_ids
+        }
         candidates = [
             Candidate(
                 parent_asin=parent_asin,
@@ -273,6 +291,9 @@ class HybridRetriever:
                     "lexical_rank": lexical_ranks[parent_asin],
                     "final_rank": rank,
                     "constraint_reranked": constraint_reranked,
+                    "lexical_score": round(score_by_id[parent_asin].lexical_score, 8),
+                    "constraint_score": round(score_by_id[parent_asin].constraint_score, 8),
+                    "ranking_score": round(score_by_id[parent_asin].ranking_score, 8),
                     "structured_matches": structured_matches(
                         self._structured_evidence[parent_asin],
                         request.active_constraints,

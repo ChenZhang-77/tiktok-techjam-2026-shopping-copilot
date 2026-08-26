@@ -6,7 +6,7 @@ relaxation while preserving broad Browsing recall.
 
 **Blocked by:** 03 — Integrate the Retrieval / Ranking Plane with exact parity.
 
-**Status:** complete
+Status: complete
 
 - [x] Evidence covers title, categories, features, details, store, description, and parseable price where appropriate.
 - [x] Sparse price or details fields cannot broadly eliminate the Candidate Pool.

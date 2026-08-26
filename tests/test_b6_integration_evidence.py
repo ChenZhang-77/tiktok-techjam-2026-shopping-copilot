@@ -49,6 +49,8 @@ class B6IntegrationEvidenceTest(unittest.TestCase):
         for metric in ("hit_rate_at_10", "mrr", "mttc", "recommended_technical_score"):
             self.assertEqual(self.report[metric], retained[metric])
             self.assertEqual(self.record["development_160"][metric], retained[metric])
+        self.assertEqual(self.report["sessions"], retained["sessions"])
+        self.assertEqual(self.report["scenario_metrics"], retained["scenario_metrics"])
 
     def test_report_records_route_filter_cache_failure_and_cost_diagnostics(self) -> None:
         diagnostics = self.report["retrieval_diagnostics"]
@@ -94,7 +96,7 @@ class B6IntegrationEvidenceTest(unittest.TestCase):
         self.assertFalse(_keys(response["diagnostics"]) & FORBIDDEN)
 
     def test_failure_matrix_and_split_boundary_are_frozen(self) -> None:
-        self.assertEqual(len(self.record["deterministic_failure_fixtures"]), 6)
+        self.assertEqual(len(self.record["deterministic_failure_fixtures"]), 7)
         self.assertEqual(self.record["holdout_status"], "not_run_during_b6")
         self.assertEqual(self.record["full_status"], "not_run_during_b6")
         self.assertFalse(self.record["control_plane_integration"]["route_weight_semantics_changed"])

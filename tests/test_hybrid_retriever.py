@@ -262,7 +262,7 @@ class HybridRetrieverTest(unittest.TestCase):
             self.assertGreaterEqual(retriever.initialization_ms, 0.0)
             self.assertGreaterEqual(first.diagnostics.latency_ms, 0.0)
             for rank, candidate in enumerate(first.candidates, start=1):
-                self.assertEqual(candidate.source, "bm25")
+                self.assertEqual(candidate.source, "structured")
                 self.assertEqual(candidate.diagnostics["final_rank"], rank)
                 self.assertFalse(
                     {"ground_truth", "target_asin", "scenario_type"} & set(candidate.diagnostics)

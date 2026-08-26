@@ -7,7 +7,7 @@ and Development Set metrics.
 
 **Blocked by:** 02 — Add a parity Hybrid Retriever.
 
-**Status:** completed
+Status: completed
 
 - [x] Agent responses satisfy the existing contract and smoke tests through the new seam.
 - [x] The legacy embedded retrieval path is removed only after all callers migrate.

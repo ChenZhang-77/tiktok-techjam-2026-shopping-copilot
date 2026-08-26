@@ -77,6 +77,13 @@ class B5SemanticEvidenceTest(unittest.TestCase):
             0,
         )
 
+    def test_old_fold_comparator_is_equivalent_to_the_deduplicated_constraint_path(self) -> None:
+        b2 = json.loads((ROOT / "docs/b2_reports/development_structured.json").read_text())
+        b6 = json.loads((ROOT / "docs/b6_development_integration.json").read_text())
+        self.assertEqual(b6["sessions"], b2["sessions"])
+        self.assertEqual(b6["scenario_metrics"], b2["scenario_metrics"])
+        self.assertIn("exact B6", self.record["fixed_cross_validation"]["structured_comparator"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -7,7 +7,13 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Callable, Mapping, Protocol, Sequence
 
-from starter.contracts import Candidate, RetrievalDiagnostics, RetrievalRequest, RetrievalResult
+from starter.contracts import (
+    Candidate,
+    RetrievalDiagnostics,
+    RetrievalRequest,
+    RetrievalResult,
+    validate_retrieval_request_object,
+)
 from starter.retrieval.hybrid import HybridRetriever
 from starter.retrieval.structured import EVIDENCE_FIELDS, evidence_text
 
@@ -174,6 +180,7 @@ class DenseRetriever:
         return None
 
     def retrieve(self, request: RetrievalRequest) -> RetrievalResult:
+        validate_retrieval_request_object(request)
         if self._backend is not None:
             started = time.perf_counter()
             try:

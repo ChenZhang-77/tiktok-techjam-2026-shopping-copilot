@@ -106,6 +106,67 @@ paths degrade to the deterministic structured/BM25 route. The B3 development
 result is retained only as an input to the B4 fusion ablation; dense-only is not
 the default path.
 
+## Retrieval / Ranking Configuration
+
+The frozen B-side runtime default is the local structured path:
+
+```text
+distilled current query
+  -> field-weighted SQLite FTS5 BM25 Candidate Pool
+  -> explicit hard/soft constraint ranking
+  -> guarded cross-field filtering with deterministic relaxation/fill
+  -> Candidate provenance and RetrievalDiagnostics
+```
+
+It requires no model download, API key, external vector database, or generated
+disk cache. Missing optional routes and expensive-stage failures fall back to
+this deterministic ordering.
+
+Dense retrieval, weighted RRF fusion, and a bounded top-30 CrossEncoder were
+measured as development ablations and rejected as runtime defaults. Their
+evidence and keep/reject decisions are recorded in `docs/b3_dense_benchmark.json`,
+`docs/b4_fusion_cv.json`, and `docs/b5_semantic_rerank_cv.json`.
+
+To reproduce the optional B5 semantic experiment on a clean machine, cache only
+the six runtime files for the pinned model revision, then run development data:
+
+```bash
+.venv/bin/python scripts/cache_reranker.py --allow-model-download
+.venv/bin/python -m experiments.evaluation_reporting \
+  --split development --semantic-rerank --rerank-limit 30 \
+  --output results-semantic-development.json
+```
+
+After the first command, runtime loading is local-only. A missing or failing
+CrossEncoder returns the exact pre-rerank Candidate order.
+
+## B-side Verification
+
+From a clean checkout with the catalog downloaded and the Python 3.12 virtual
+environment installed:
+
+```bash
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python -m experiments.evaluation_reporting \
+  --split development --structured-filter \
+  --output results-structured-development.json
+```
+
+Failure behavior can be reproduced without deleting a real cache:
+
+```bash
+.venv/bin/python -m unittest \
+  tests.test_dense_fallback \
+  tests.test_fusion \
+  tests.test_reranker \
+  tests.test_agent_smoke -v
+```
+
+The public 40-session holdout is already exposed by earlier A-side full runs and
+is not confirmatory. B0-B6 did not inspect it. The full 200 command is reserved
+for the single Final Public Run after the frozen commit; do not use that result
+for subsequent tuning.
+
 ## Recommended Experiment Run
 
 For normal development, prefer the named experiment script:

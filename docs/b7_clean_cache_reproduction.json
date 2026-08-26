@@ -1,0 +1,25 @@
+{
+  "model_id": "cross-encoder/ms-marco-MiniLM-L2-v2",
+  "model_revision": "1b5cd67b15209f24824c50370e0397743aa9b787",
+  "model_cache_dir": "/private/tmp/shopping-copilot-b7-reranker-cache",
+  "snapshot_path": "<external-cache>/1b5cd67b15209f24824c50370e0397743aa9b787",
+  "snapshot_size_bytes": 63416932,
+  "snapshot_file_count": 6,
+  "candidate_limit": 30,
+  "batch_size": 16,
+  "max_length": 256,
+  "runtime_network_access": false,
+  "download_allow_patterns": [
+    "config.json",
+    "model.safetensors",
+    "special_tokens_map.json",
+    "tokenizer.json",
+    "tokenizer_config.json",
+    "vocab.txt"
+  ],
+  "cache_seconds": 1.644013,
+  "validation": {
+    "local_files_only": true,
+    "smoke_score_is_finite": true
+  }
+}

@@ -6,7 +6,7 @@ the Track 4 specification, and provide a defensible integration handoff.
 
 **Blocked by:** 08 — Harden Control Plane integration.
 
-**Status:** ready-for-agent
+Status: in-progress
 
 - [ ] Retained features have overall and per-scenario ablations plus keep/reject decisions.
 - [ ] Setup, cache, evaluation, fallback, and clean-start commands are reproducible.
@@ -17,3 +17,8 @@ the Track 4 specification, and provide a defensible integration handoff.
 
 ## Comments
 
+- 2026-08-26: B7 started with `structured` frozen as the runtime default. The
+  review fixed point is Developer A's last pre-B commit `2280bf7`, and the
+  pre-freeze reviewed head is `316ffe5`. Holdout and Full remain untouched
+  while Standards/Spec review, clean-cache reproduction, and the final test
+  gate are completed.

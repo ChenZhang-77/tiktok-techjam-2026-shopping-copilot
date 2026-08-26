@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 
 
 ATTRIBUTE_WEIGHTS = {
@@ -16,6 +17,15 @@ ATTRIBUTE_WEIGHTS = {
     "budget": 0.20,
 }
 TOKEN_RE = re.compile(r"[a-z0-9]+", re.I)
+
+
+@dataclass(frozen=True)
+class RankingScore:
+    parent_asin: str
+    lexical_rank: int
+    lexical_score: float
+    constraint_score: float
+    ranking_score: float
 
 
 def _tokens(value: str) -> set[str]:
@@ -64,6 +74,34 @@ def _deduplicate_constraints(
     return [item for _, item in strongest.values()]
 
 
+def rank_candidates(
+    candidate_ids: Sequence[str],
+    *,
+    product_texts: Mapping[str, str],
+    active_constraints: Sequence[Mapping[str, object]],
+    lexical_weight: float,
+    structured_weight: float,
+) -> list[RankingScore]:
+    constraints = _deduplicate_constraints(active_constraints)
+    scored: list[RankingScore] = []
+    for rank, parent_asin in enumerate(candidate_ids):
+        lexical_score = 1.0 / (rank + 1)
+        structured_score = sum(_constraint_score(product_texts.get(parent_asin, ""), item) for item in constraints)
+        score = lexical_weight * lexical_score + structured_weight * structured_score
+        scored.append(
+            RankingScore(
+                parent_asin=parent_asin,
+                lexical_rank=rank + 1,
+                lexical_score=lexical_score,
+                constraint_score=structured_score,
+                ranking_score=score,
+            )
+        )
+    if constraints and structured_weight > 0:
+        scored.sort(key=lambda item: (-item.ranking_score, item.lexical_rank))
+    return scored
+
+
 def rerank_candidates(
     candidate_ids: Sequence[str],
     *,
@@ -72,15 +110,13 @@ def rerank_candidates(
     lexical_weight: float,
     structured_weight: float,
 ) -> list[str]:
-    constraints = _deduplicate_constraints(active_constraints)
-    if not constraints or structured_weight <= 0:
-        return list(candidate_ids)
-
-    scored: list[tuple[float, int, str]] = []
-    for rank, parent_asin in enumerate(candidate_ids):
-        lexical_score = 1.0 / (rank + 1)
-        structured_score = sum(_constraint_score(product_texts.get(parent_asin, ""), item) for item in constraints)
-        score = lexical_weight * lexical_score + structured_weight * structured_score
-        scored.append((score, -rank, parent_asin))
-    scored.sort(reverse=True)
-    return [parent_asin for _, _, parent_asin in scored]
+    return [
+        item.parent_asin
+        for item in rank_candidates(
+            candidate_ids,
+            product_texts=product_texts,
+            active_constraints=active_constraints,
+            lexical_weight=lexical_weight,
+            structured_weight=structured_weight,
+        )
+    ]

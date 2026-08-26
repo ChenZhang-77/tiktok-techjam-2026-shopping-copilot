@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import time
 import unittest
 
 from starter.contracts import Candidate, RetrievalDiagnostics, RetrievalRequest, RetrievalResult
@@ -71,6 +72,32 @@ class RecordingBackend:
 
 
 class RerankingRetrieverTest(unittest.TestCase):
+    def test_timeout_returns_prompt_fallback_and_disables_the_expensive_stage(self) -> None:
+        class SlowBackend:
+            calls = 0
+
+            def score(self, query: str, evidence_texts: list[str]) -> list[float]:
+                self.calls += 1
+                time.sleep(0.05)
+                return [0.1] * len(evidence_texts)
+
+        backend = SlowBackend()
+        retriever = RerankingRetriever(
+            FakeRetriever(),
+            config=RerankerConfig(candidate_limit=2, timeout_ms=5.0),
+            backend=backend,
+        )
+
+        started = time.perf_counter()
+        first = retriever.retrieve(_request())
+        elapsed = time.perf_counter() - started
+        second = retriever.retrieve(_request())
+
+        self.assertLess(elapsed, 0.04)
+        self.assertEqual(first.diagnostics.route_failures, {"semantic_rerank": "reranker_timeout"})
+        self.assertEqual(second.diagnostics.route_failures, {"semantic_rerank": "reranker_timeout"})
+        self.assertEqual(backend.calls, 1)
+
     def test_reranks_only_the_bounded_prefix_and_preserves_the_tail(self) -> None:
         backend = RecordingBackend([0.1, 0.9])
         retriever = RerankingRetriever(

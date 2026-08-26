@@ -170,7 +170,11 @@ class FusionRetriever:
             "dense": request.strategy.semantic_weight,
         }
         active_routes = tuple(route for route in ROUTE_ORDER if weights[route] > 0)
-        batch = self._route_provider.retrieve_routes(request, active_routes)
+        batch = (
+            self._route_provider.retrieve_routes(request, active_routes)
+            if active_routes
+            else RouteBatch(results={}, failures={"fusion": "no_active_routes"})
+        )
         fusion_started = time.perf_counter()
         failures = dict(batch.failures)
         for route in active_routes:

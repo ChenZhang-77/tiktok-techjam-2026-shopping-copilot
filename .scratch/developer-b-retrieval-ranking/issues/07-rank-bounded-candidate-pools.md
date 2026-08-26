@@ -6,7 +6,7 @@ the pre-rerank order as the deterministic fallback.
 
 **Blocked by:** 06 — Fuse Retrieval Routes with Candidate Provenance.
 
-**Status:** complete
+Status: complete
 
 - [x] Hard and soft constraints remain distinct and current explicit intent dominates profile evidence.
 - [x] Ranking does not double-count equivalent evidence without measurement.

@@ -77,6 +77,11 @@ class StructuredRetrievalTest(unittest.TestCase):
             )
             self.assertEqual(routes["lexical"].candidates[0].source, "lexical")
             self.assertEqual(routes["structured"].candidates[0].source, "structured")
+            self.assertGreater(
+                routes["structured"].candidates[0].diagnostics["constraint_score"],
+                routes["structured"].candidates[1].diagnostics["constraint_score"],
+            )
+            self.assertIn("ranking_score", routes["structured"].candidates[0].diagnostics)
             self.assertEqual(
                 [candidate.parent_asin for candidate in retriever.retrieve(request).candidates],
                 ["B", "A"],

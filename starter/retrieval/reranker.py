@@ -4,7 +4,9 @@ import math
 import time
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Protocol
+from queue import Empty, Queue
+from threading import Thread
+from typing import Protocol, cast
 
 from starter.contracts import RetrievalRequest, RetrievalResult
 
@@ -21,6 +23,7 @@ class RerankerConfig:
     model_cache_dir: Path = Path("models/huggingface/hub")
     batch_size: int = 16
     max_length: int = 256
+    timeout_ms: float = 5000.0
 
     def __post_init__(self) -> None:
         if (
@@ -35,6 +38,13 @@ class RerankerConfig:
         ):
             if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
                 raise ValueError(f"{field_name} must be a positive integer")
+        if (
+            isinstance(self.timeout_ms, bool)
+            or not isinstance(self.timeout_ms, (int, float))
+            or not math.isfinite(self.timeout_ms)
+            or self.timeout_ms <= 0
+        ):
+            raise ValueError("timeout_ms must be a finite positive number")
 
 
 class RerankerBackend(Protocol):
@@ -86,6 +96,7 @@ class RerankingRetriever:
         self._base = base_retriever
         self.config = config if config is not None else RerankerConfig()
         self._backend = backend if backend is not None else LocalCrossEncoderBackend(self.config)
+        self._disabled_reason: str | None = None
         self.catalog_ids = base_retriever.catalog_ids
         self.fallback_ids = base_retriever.fallback_ids
 
@@ -96,19 +107,23 @@ class RerankingRetriever:
             return base
 
         started = time.perf_counter()
+        if self._disabled_reason is not None:
+            return self._fallback(base, started, pool_size, self._disabled_reason)
         try:
-            scores = self._backend.score(
+            scores = self._score_with_timeout(
                 request.query,
                 [candidate.evidence_text or "" for candidate in base.candidates[:pool_size]],
             )
             if len(scores) != pool_size or any(not math.isfinite(score) for score in scores):
                 raise ValueError("invalid_reranker_scores")
         except Exception as error:
-            reason = (
-                "invalid_reranker_scores"
-                if isinstance(error, ValueError) and str(error) == "invalid_reranker_scores"
-                else "reranker_error"
-            )
+            if isinstance(error, TimeoutError):
+                reason = "reranker_timeout"
+                self._disabled_reason = reason
+            elif isinstance(error, ValueError) and str(error) == "invalid_reranker_scores":
+                reason = "invalid_reranker_scores"
+            else:
+                reason = "reranker_error"
             return self._fallback(base, started, pool_size, reason)
 
         indexed = list(enumerate(zip(base.candidates[:pool_size], scores), start=1))
@@ -152,6 +167,28 @@ class RerankingRetriever:
             diagnostics=diagnostics,
         )
 
+    def _score_with_timeout(self, query: str, evidence_texts: list[str]) -> list[float]:
+        completed: Queue[tuple[bool, object]] = Queue(maxsize=1)
+
+        def score() -> None:
+            try:
+                completed.put((True, self._backend.score(query, evidence_texts)))
+            except Exception as error:
+                completed.put((False, error))
+
+        worker = Thread(target=score, name="semantic-reranker", daemon=True)
+        worker.start()
+        worker.join(self.config.timeout_ms / 1000.0)
+        if worker.is_alive():
+            raise TimeoutError("semantic reranker exceeded its time budget")
+        try:
+            succeeded, payload = completed.get_nowait()
+        except Empty as error:
+            raise RuntimeError("semantic reranker completed without a result") from error
+        if not succeeded:
+            raise cast(Exception, payload)
+        return list(cast(list[float], payload))
+
     def _fallback(
         self,
         base: RetrievalResult,
@@ -192,6 +229,7 @@ class RerankingRetriever:
             "model_cache_dir": str(self.config.model_cache_dir),
             "batch_size": self.config.batch_size,
             "max_length": self.config.max_length,
+            "timeout_ms": self.config.timeout_ms,
             "runtime_network_access": False,
             "failure_fallback": "exact_pre_rerank_candidate_order",
         }

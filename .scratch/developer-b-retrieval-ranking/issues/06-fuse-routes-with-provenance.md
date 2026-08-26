@@ -6,7 +6,7 @@ evidence and tolerating unavailable Routes.
 
 **Blocked by:** 04 — Add structured evidence and safe relaxation; 05 — Benchmark a reproducible dense Route.
 
-**Status:** complete
+Status: complete
 
 - [x] Fusion parameters are centralized configuration rather than scattered constants.
 - [x] Candidates are deduplicated by catalog-valid parent ASIN with stable tie-breaking.
