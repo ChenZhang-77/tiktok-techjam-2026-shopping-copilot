@@ -214,6 +214,11 @@ def evaluate_split(
         "development_fold_version": development_folds.get("version") if development_folds else None,
         "retrieval_mode": retrieval_mode,
         "structured_filter": structured_config.enabled,
+        "fallback_configuration": (
+            {"retrieval_mode": "structured", "structured_filter": True}
+            if retrieval_mode == "dense"
+            else None
+        ),
     }
     return result
 

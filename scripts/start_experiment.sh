@@ -94,8 +94,12 @@ if [[ -n "$FOLD" ]]; then
   fi
 fi
 RETRIEVAL_MODE_TEXT=""
+FALLBACK_CONFIGURATION="null"
 if [[ -n "$RETRIEVAL_MODE_FLAG" ]]; then
   RETRIEVAL_MODE_TEXT=" $RETRIEVAL_MODE_FLAG"
+fi
+if [[ "$RETRIEVAL_MODE" == "dense" ]]; then
+  FALLBACK_CONFIGURATION='{"retrieval_mode":"structured","structured_filter":true}'
 fi
 
 SLUG="$(printf '%s' "$NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
@@ -152,6 +156,7 @@ cat > "$RUN_DIR/metadata.json" <<EOF
   "development_fold_manifest": "docs/development_folds_v1.json",
   "retrieval_mode": "$(json_escape "$RETRIEVAL_MODE")",
   "structured_filter": $STRUCTURED_FILTER,
+  "fallback_configuration": $FALLBACK_CONFIGURATION,
   "command": "$(json_escape "./scripts/start_experiment.sh $NAME --split $SPLIT${FOLD:+ --fold $FOLD}$RETRIEVAL_MODE_TEXT")"
 }
 EOF

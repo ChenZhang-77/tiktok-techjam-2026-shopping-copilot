@@ -29,6 +29,11 @@ class B3DenseEvidenceTest(unittest.TestCase):
             self.assertEqual(hashlib.sha256(artifact.read_bytes()).hexdigest(), item["sha256"])
             report = self.reports[name]
             self.assertEqual(report["evaluation"]["retrieval_mode"], "dense")
+            self.assertFalse(report["evaluation"]["structured_filter"])
+            self.assertEqual(
+                report["evaluation"]["fallback_configuration"],
+                {"retrieval_mode": "structured", "structured_filter": True},
+            )
             self.assertEqual(report["evaluation"]["split"], "development")
             self.assertEqual(
                 set(report["scenario_metrics"]),
