@@ -1327,7 +1327,7 @@
     }
   ],
   "code_provenance": {
-    "commit": "efdf5c8",
+    "commit": "2fec159",
     "worktree_clean": true
   },
   "observed_run_counts": {
@@ -1387,61 +1387,61 @@
     "route_failure_counts": {}
   },
   "timing": {
-    "initialization_ms": 1452.402958,
-    "evaluation_wall_ms": 41166.862292,
+    "initialization_ms": 1416.899416,
+    "evaluation_wall_ms": 40218.193167,
     "responses": {
       "response_count": 787,
-      "total_ms": 41098.039081,
-      "mean_ms": 52.221142,
-      "p50_ms": 46.755,
-      "p95_ms": 95.163125,
-      "max_ms": 3154.087
+      "total_ms": 40157.611745,
+      "mean_ms": 51.02619,
+      "p50_ms": 46.123583,
+      "p95_ms": 91.608334,
+      "max_ms": 2961.330583
     },
     "retrieval": {
       "latency": {
         "response_count": 787,
-        "total_ms": 36553.19428,
-        "mean_ms": 46.446244,
-        "p50_ms": 37.212291,
-        "p95_ms": 93.299625,
-        "max_ms": 3139.254458
+        "total_ms": 35679.382244,
+        "mean_ms": 45.335937,
+        "p50_ms": 36.578959,
+        "p95_ms": 90.104333,
+        "max_ms": 2946.352833
       },
       "lexical_route_latency": {
         "response_count": 787,
-        "total_ms": 14631.951278,
-        "mean_ms": 18.59206,
-        "p50_ms": 17.844083,
-        "p95_ms": 36.401667,
-        "max_ms": 74.043209
+        "total_ms": 14434.049809,
+        "mean_ms": 18.340597,
+        "p50_ms": 17.530916,
+        "p95_ms": 35.757459,
+        "max_ms": 129.75825
       },
       "structured_route_latency": {
         "response_count": 787,
-        "total_ms": 30157.744095,
-        "mean_ms": 38.319878,
-        "p50_ms": 32.733916,
-        "p95_ms": 86.819,
-        "max_ms": 120.55825
+        "total_ms": 29837.678822,
+        "mean_ms": 37.913188,
+        "p50_ms": 32.311042,
+        "p95_ms": 84.696291,
+        "max_ms": 163.067791
       },
       "fusion_latency": {
         "response_count": 787,
-        "total_ms": 304.690751,
-        "mean_ms": 0.387155,
-        "p50_ms": 0.304625,
-        "p95_ms": 0.376208,
-        "max_ms": 98.690167
+        "total_ms": 183.934914,
+        "mean_ms": 0.233717,
+        "p50_ms": 0.270834,
+        "p95_ms": 0.330333,
+        "max_ms": 0.706833
       },
       "dense_route_latency": {
         "response_count": 531,
-        "total_ms": 5972.858746,
-        "mean_ms": 11.248322,
-        "p50_ms": 5.15825,
-        "p95_ms": 7.848125,
-        "max_ms": 3107.80675
+        "total_ms": 5568.397807,
+        "mean_ms": 10.486625,
+        "p50_ms": 4.859875,
+        "p95_ms": 7.2855,
+        "max_ms": 2916.131834
       }
     }
   },
   "resources": {
-    "peak_rss_bytes": 1070530560,
+    "peak_rss_bytes": 1097252864,
     "peak_rss_kind": "process_peak_rss"
   },
   "evaluation": {
@@ -1458,6 +1458,7 @@
     "dense_configuration": {
       "cache_dir": "embeddings/minilm-l6-v2-v1",
       "cache_schema_version": 1,
+      "cache_status": "compatible",
       "cache_available": true,
       "cache_size_bytes": 77501054,
       "build_seconds": 255.086887,
@@ -1470,7 +1471,8 @@
       "query_text_template": "distilled-query-v1"
     },
     "fallback_configuration": {
-      "unavailable_route": "degrade_to_available_routes"
+      "unavailable_route": "degrade_to_available_routes",
+      "all_routes_failed": "catalog_fallback_up_to_retrieval_depth"
     }
   }
 }

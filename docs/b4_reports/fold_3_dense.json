@@ -367,7 +367,7 @@
     }
   ],
   "code_provenance": {
-    "commit": "efdf5c8",
+    "commit": "2fec159",
     "worktree_clean": true
   },
   "observed_run_counts": {
@@ -383,37 +383,37 @@
     "route_failure_counts": {}
   },
   "timing": {
-    "initialization_ms": 1399.968708,
-    "evaluation_wall_ms": 5077.637875,
+    "initialization_ms": 1375.393083,
+    "evaluation_wall_ms": 4952.450583,
     "responses": {
       "response_count": 326,
-      "total_ms": 5054.491867,
-      "mean_ms": 15.504576,
-      "p50_ms": 6.275708,
-      "p95_ms": 17.30975,
-      "max_ms": 1902.857292
+      "total_ms": 4933.381,
+      "mean_ms": 15.133071,
+      "p50_ms": 5.655417,
+      "p95_ms": 16.877,
+      "max_ms": 1895.114375
     },
     "retrieval": {
       "latency": {
         "response_count": 326,
-        "total_ms": 3464.241925,
-        "mean_ms": 10.626509,
-        "p50_ms": 4.786875,
-        "p95_ms": 5.812125,
-        "max_ms": 1901.797
+        "total_ms": 3342.86375,
+        "mean_ms": 10.254183,
+        "p50_ms": 4.446875,
+        "p95_ms": 5.24725,
+        "max_ms": 1894.070208
       },
       "dense_latency": {
         "response_count": 326,
-        "total_ms": 3464.241925,
-        "mean_ms": 10.626509,
-        "p50_ms": 4.786875,
-        "p95_ms": 5.812125,
-        "max_ms": 1901.797
+        "total_ms": 3342.86375,
+        "mean_ms": 10.254183,
+        "p50_ms": 4.446875,
+        "p95_ms": 5.24725,
+        "max_ms": 1894.070208
       }
     }
   },
   "resources": {
-    "peak_rss_bytes": 1101594624,
+    "peak_rss_bytes": 1102381056,
     "peak_rss_kind": "process_peak_rss"
   },
   "evaluation": {
@@ -430,6 +430,7 @@
     "dense_configuration": {
       "cache_dir": "embeddings/minilm-l6-v2-v1",
       "cache_schema_version": 1,
+      "cache_status": "compatible",
       "cache_available": true,
       "cache_size_bytes": 77501054,
       "build_seconds": 255.086887,

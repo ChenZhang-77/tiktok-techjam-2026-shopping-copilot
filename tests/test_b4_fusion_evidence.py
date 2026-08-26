@@ -51,7 +51,14 @@ class B4FusionEvidenceTest(unittest.TestCase):
                 )
             if expected_mode in {"fusion", "dense"}:
                 dense = report["evaluation"]["dense_configuration"]
-                for field in ("model_id", "model_revision", "dimension", "cache_size_bytes", "build_seconds"):
+                for field in (
+                    "model_id",
+                    "model_revision",
+                    "dimension",
+                    "cache_status",
+                    "cache_size_bytes",
+                    "build_seconds",
+                ):
                     self.assertEqual(dense[field], self.record["dense_configuration"][field])
             observed = report["observed_run_counts"]
             self.assertEqual(observed["respond_exceptions"], 0)
