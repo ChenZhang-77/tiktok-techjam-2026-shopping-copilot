@@ -1,0 +1,109 @@
+{
+  "stage": "B5",
+  "run_code_commit": "70876a5",
+  "experiment": {
+    "base_candidate_pool": "retained_structured",
+    "semantic_reranker": "cross-encoder/ms-marco-MiniLM-L2-v2",
+    "model_revision": "1b5cd67b15209f24824c50370e0397743aa9b787",
+    "candidate_limit": 30,
+    "runtime_network_access": false,
+    "failure_fallback": "exact_pre_rerank_candidate_order"
+  },
+  "raw_reports": {
+    "development": {
+      "path": "docs/b5_reports/development_semantic.json",
+      "sha256": "cc3daa4d30fed1e717517fb74e39f05dddcb0c934eb41080f25b7f1a3e6b7a44"
+    },
+    "fold_1": {
+      "path": "docs/b5_reports/fold_1_semantic.json",
+      "sha256": "6e79c37a48ea28bde79f7d37d5c20fe9fe86e23e016d847b3197eeb6d7e5bcdf"
+    },
+    "fold_2": {
+      "path": "docs/b5_reports/fold_2_semantic.json",
+      "sha256": "d58703e36b763328b9b4ef99f751cbd166a71ce491767f31e37905b7d351ef3e"
+    },
+    "fold_3": {
+      "path": "docs/b5_reports/fold_3_semantic.json",
+      "sha256": "4bd8cca1f92b8aad05e66d0ad9572141303870e72bb535d961e3c723ff95424f"
+    },
+    "fold_4": {
+      "path": "docs/b5_reports/fold_4_semantic.json",
+      "sha256": "d604e95c6f9665d4abb2265629224f36fc389f70b99d776187fadf6564a23b94"
+    }
+  },
+  "development_160": {
+    "structured": {
+      "hit_rate_at_10": 0.7625,
+      "mrr": 0.526989,
+      "mttc": 5.30625,
+      "recommended_technical_score": 0.653222
+    },
+    "semantic_rerank": {
+      "hit_rate_at_10": 0.78125,
+      "mrr": 0.484162,
+      "mttc": 4.96875,
+      "recommended_technical_score": 0.656499
+    },
+    "delta_semantic_vs_structured": {
+      "hit_rate_at_10": 0.01875,
+      "mrr": -0.042827,
+      "mttc": -0.3375,
+      "recommended_technical_score": 0.003277
+    },
+    "hit_changes": {
+      "gained": 10,
+      "lost": 7
+    }
+  },
+  "fixed_cross_validation": {
+    "technical_score_fold_wins": 2,
+    "technical_score_fold_losses": 2,
+    "mean_delta_semantic_vs_structured": {
+      "hit_rate_at_10": 0.01875,
+      "mrr": -0.042827,
+      "mttc": -0.3375,
+      "recommended_technical_score": 0.003277
+    }
+  },
+  "scenario_delta_semantic_vs_structured": {
+    "boundary": {
+      "hit_rate_at_10": 0.0,
+      "mrr": -0.0625,
+      "mttc": -0.5,
+      "recommended_technical_score": -0.00875
+    },
+    "browsing": {
+      "hit_rate_at_10": 0.03125,
+      "mrr": -0.046336,
+      "mttc": -0.46875,
+      "recommended_technical_score": 0.011099
+    },
+    "buying": {
+      "hit_rate_at_10": 0.0625,
+      "mrr": -0.021894,
+      "mttc": -0.59375,
+      "recommended_technical_score": 0.036557
+    },
+    "intent_override": {
+      "hit_rate_at_10": -0.125,
+      "mrr": -0.082738,
+      "mttc": 0.75,
+      "recommended_technical_score": -0.102321
+    }
+  },
+  "operational_cost": {
+    "semantic_rerank_mean_ms": 70.588982,
+    "semantic_rerank_p50_ms": 70.932875,
+    "semantic_rerank_p95_ms": 73.086292,
+    "semantic_rerank_cold_start_max_ms": 1865.752458,
+    "semantic_peak_rss_bytes": 1297104896,
+    "structured_peak_rss_bytes": 583581696,
+    "logical_model_snapshot_bytes": 611336475
+  },
+  "decision": "reject_semantic_rerank_as_runtime_default_retain_as_reproducible_optional_ablation",
+  "decision_reason": "The +0.003277 aggregate score delta split 2 wins and 2 losses, reduced MRR by 0.042827, regressed intent_override by 0.102321, and added about 70.59 ms per retrieval plus substantial memory/cache cost.",
+  "runtime_default": "structured",
+  "dead_complexity_policy": "No model, pool-size, score-blending, or fusion-plus-reranker variants were added; the isolated adapter remains only for reproducibility and expensive-stage fallback coverage.",
+  "holdout_status": "not_run_during_b5",
+  "full_status": "not_run_during_b5"
+}
