@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import math
 import re
 import sqlite3
 import time
@@ -13,9 +12,8 @@ from starter.contracts import (
     RetrievalDiagnostics,
     RetrievalRequest,
     RetrievalResult,
-    validate_retrieval_request,
+    validate_retrieval_request_object,
 )
-from starter.core.planner import Strategy
 from starter.core.ranking import rerank_candidates
 from starter.retrieval.structured import (
     EVIDENCE_FIELDS,
@@ -35,7 +33,6 @@ STOPWORDS = {
 }
 BM25_FIELD_WEIGHTS = (0.0, 6.0, 4.0, 2.5, 2.5, 1.5, 1.0)
 BM25_EXPRESSION = f"bm25(products, {', '.join(str(weight) for weight in BM25_FIELD_WEIGHTS)})"
-MAX_RETRIEVAL_DEPTH = 500
 
 
 def _terms(text: str) -> list[str]:
@@ -133,7 +130,7 @@ class HybridRetriever:
         )
 
     def retrieve_routes(self, request: RetrievalRequest) -> dict[str, RetrievalResult]:
-        self.validate_request(request)
+        validate_retrieval_request_object(request)
         started = time.perf_counter()
         unique_terms = list(dict.fromkeys(_terms(request.query)))[:40]
         expression = " OR ".join(f'"{term}"' for term in unique_terms)
@@ -288,57 +285,3 @@ class HybridRetriever:
                 },
             ),
         )
-
-    @staticmethod
-    def validate_request(request: RetrievalRequest) -> None:
-        if not isinstance(request, RetrievalRequest):
-            raise TypeError("request must be a RetrievalRequest")
-        if not isinstance(request.session_id, str) or not request.session_id:
-            raise ValueError("session_id must be a non-empty string")
-        if isinstance(request.turn, bool) or not isinstance(request.turn, int) or not 1 <= request.turn <= 10:
-            raise ValueError("turn must be an integer from 1 to 10")
-        if isinstance(request.top_k, bool) or not isinstance(request.top_k, int) or not 1 <= request.top_k <= 100:
-            raise ValueError("top_k must be an integer from 1 to 100")
-        if not isinstance(request.query, str):
-            raise ValueError("query must be a string")
-        if request.intent not in {"buying", "browsing"}:
-            raise ValueError("intent must be buying or browsing")
-        if not isinstance(request.strategy, Strategy):
-            raise ValueError("strategy must be a Strategy")
-        if request.strategy.intent != request.intent:
-            raise ValueError("strategy intent must match request intent")
-        if (
-            isinstance(request.strategy.retrieval_depth, bool)
-            or not isinstance(request.strategy.retrieval_depth, int)
-            or not 1 <= request.strategy.retrieval_depth <= MAX_RETRIEVAL_DEPTH
-        ):
-            raise ValueError(
-                f"strategy retrieval_depth must be an integer from 1 to {MAX_RETRIEVAL_DEPTH}"
-            )
-        for value in (
-            request.strategy.lexical_weight,
-            request.strategy.structured_weight,
-            request.strategy.semantic_weight,
-        ):
-            if (
-                isinstance(value, bool)
-                or not isinstance(value, (int, float))
-                or not math.isfinite(value)
-                or value < 0
-            ):
-                raise ValueError("strategy weights must be finite non-negative numbers")
-        if not isinstance(request.active_constraints, list) or not all(
-            isinstance(item, dict) for item in request.active_constraints
-        ):
-            raise ValueError("active_constraints must be a list of objects")
-        for field_name, values in (
-            ("no_preference_attributes", request.no_preference_attributes),
-            ("asked_attributes", request.asked_attributes),
-        ):
-            if not isinstance(values, list) or not all(isinstance(item, str) for item in values):
-                raise ValueError(f"{field_name} must be a list of strings")
-        if not isinstance(request.rejected_constraints, list) or not all(
-            isinstance(item, dict) for item in request.rejected_constraints
-        ):
-            raise ValueError("rejected_constraints must be a list of objects")
-        validate_retrieval_request(request.to_dict())

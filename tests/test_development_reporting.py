@@ -10,7 +10,7 @@ from experiments.evaluation_reporting import (
     code_provenance,
     evaluate_split,
 )
-from starter.retrieval import FusionConfig
+from starter.retrieval import DenseConfig, FusionConfig
 
 
 class _StubAgent:
@@ -36,6 +36,25 @@ class _InvalidStubAgent(_StubAgent):
         }
 
 
+class _RouteDiagnosticsStubAgent(_StubAgent):
+    def respond(self, session_id: str, user_message: str, turn: int, top_k: int) -> dict:
+        return {
+            "message": "ok",
+            "ask_attribute": None,
+            "recommendations": [],
+            "diagnostics": {
+                "fallback_used": True,
+                "retrieval": {
+                    "latency_ms": 3.0,
+                    "stage_latencies_ms": {"fusion": 0.25},
+                    "route_candidate_counts": {"lexical": 10, "dense": 8},
+                    "route_overlap_counts": {"lexical|dense": 4},
+                    "route_failures": {"structured": "route_error"},
+                },
+            },
+        }
+
+
 class _SubtlyInvalidStubAgent(_StubAgent):
     def respond(self, session_id: str, user_message: str, turn: int, top_k: int) -> dict:
         return {
@@ -48,6 +67,17 @@ class _SubtlyInvalidStubAgent(_StubAgent):
 
 
 class DevelopmentReportingTest(unittest.TestCase):
+    def test_aggregates_route_candidate_overlap_and_failure_diagnostics(self) -> None:
+        observer = AgentObserver(_RouteDiagnosticsStubAgent(), catalog_ids=set())
+
+        observer.respond("session", "query", 1, 10)
+        diagnostics = observer.retrieval_diagnostics()
+
+        self.assertEqual(diagnostics["route_candidate_counts"]["lexical"]["mean"], 10.0)
+        self.assertEqual(diagnostics["route_candidate_counts"]["dense"]["max"], 8)
+        self.assertEqual(diagnostics["route_overlap_counts"]["lexical|dense"]["mean"], 4.0)
+        self.assertEqual(diagnostics["route_failure_counts"], {"structured:route_error": 1})
+
     def test_fusion_mode_uses_central_rrf_config_and_records_degraded_route_policy(self) -> None:
         empty_result = {"scenario_metrics": {}}
         with (
@@ -80,10 +110,17 @@ class DevelopmentReportingTest(unittest.TestCase):
         from_catalog.assert_called_once_with(
             "catalog.jsonl",
             config=FusionConfig(rrf_k=10.0),
+            dense_config=DenseConfig(),
         )
         self.assertEqual(report["evaluation"]["retrieval_mode"], "fusion")
         self.assertEqual(report["evaluation"]["fusion_rrf_k"], 10.0)
         self.assertTrue(report["evaluation"]["structured_filter"])
+        self.assertEqual(
+            report["evaluation"]["dense_configuration"]["model_id"],
+            "sentence-transformers/all-MiniLM-L6-v2",
+        )
+        self.assertEqual(report["evaluation"]["dense_configuration"]["dimension"], 384)
+        self.assertIn("cache_size_bytes", report["evaluation"]["dense_configuration"])
         self.assertEqual(
             report["evaluation"]["fallback_configuration"],
             {"unavailable_route": "degrade_to_available_routes"},

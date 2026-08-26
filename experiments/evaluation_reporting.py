@@ -20,12 +20,47 @@ from starter.agent import Agent
 from starter.contracts import validate_agent_response
 from starter.core.response_guard import ALLOWED_ASK_ATTRIBUTES
 from starter.retrieval import (
+    DenseConfig,
     DenseRetriever,
     FusionConfig,
     FusionRetriever,
     HybridRetriever,
     StructuredConfig,
 )
+from starter.retrieval.dense import (
+    CACHE_SCHEMA_VERSION,
+    PRODUCT_TEXT_TEMPLATE,
+    QUERY_TEXT_TEMPLATE,
+)
+
+
+def dense_run_configuration(config: DenseConfig) -> dict:
+    metadata_path = config.cache_dir / "metadata.json"
+    metadata: dict = {}
+    try:
+        loaded = json.loads(metadata_path.read_text(encoding="utf-8"))
+        if isinstance(loaded, dict):
+            metadata = loaded
+    except (OSError, ValueError):
+        pass
+    cache_files = [
+        config.cache_dir / name
+        for name in ("metadata.json", "ids.json", "vectors.npy")
+    ]
+    return {
+        "cache_dir": str(config.cache_dir),
+        "cache_schema_version": CACHE_SCHEMA_VERSION,
+        "cache_available": all(path.is_file() for path in cache_files),
+        "cache_size_bytes": sum(path.stat().st_size for path in cache_files if path.is_file()),
+        "build_seconds": metadata.get("build_seconds"),
+        "model_id": config.model_id,
+        "model_revision": config.model_revision,
+        "dimension": config.dimension,
+        "dtype": config.dtype,
+        "normalized": config.normalized,
+        "product_text_template": PRODUCT_TEXT_TEMPLATE,
+        "query_text_template": QUERY_TEXT_TEMPLATE,
+    }
 
 
 def code_provenance() -> dict:
@@ -57,6 +92,9 @@ class AgentObserver:
         self._response_latencies_ms: list[float] = []
         self._retrieval_latencies_ms: list[float] = []
         self._retrieval_stage_latencies_ms: dict[str, list[float]] = {}
+        self._route_candidate_counts: dict[str, list[int]] = {}
+        self._route_overlap_counts: dict[str, list[int]] = {}
+        self._route_failure_counts: dict[str, int] = {}
 
     def reset(self, session_id: str, user_profile: dict) -> None:
         self._agent.reset(session_id, user_profile)
@@ -87,6 +125,21 @@ class AgentObserver:
                         self._retrieval_stage_latencies_ms.setdefault(str(stage), []).append(
                             float(value)
                         )
+            for field_name, destination in (
+                ("route_candidate_counts", self._route_candidate_counts),
+                ("route_overlap_counts", self._route_overlap_counts),
+            ):
+                values = retrieval.get(field_name)
+                if isinstance(values, dict):
+                    for name, value in values.items():
+                        if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+                            destination.setdefault(str(name), []).append(value)
+            failures = retrieval.get("route_failures")
+            if isinstance(failures, dict):
+                for route, reason in failures.items():
+                    if isinstance(reason, str):
+                        key = f"{route}:{reason}"
+                        self._route_failure_counts[key] = self._route_failure_counts.get(key, 0) + 1
         return response
 
     def _is_valid_response(self, response: object, top_k: int) -> bool:
@@ -151,6 +204,29 @@ class AgentObserver:
         )
         return timings
 
+    @staticmethod
+    def _count_summary(values: list[int]) -> dict:
+        return {
+            "response_count": len(values),
+            "total": sum(values),
+            "mean": round(sum(values) / len(values), 6),
+            "min": min(values),
+            "max": max(values),
+        }
+
+    def retrieval_diagnostics(self) -> dict:
+        return {
+            "route_candidate_counts": {
+                route: self._count_summary(values)
+                for route, values in self._route_candidate_counts.items()
+            },
+            "route_overlap_counts": {
+                pair: self._count_summary(values)
+                for pair, values in self._route_overlap_counts.items()
+            },
+            "route_failure_counts": dict(self._route_failure_counts),
+        }
+
 
 def add_scenario_scores(result: dict) -> dict:
     report = copy.deepcopy(result)
@@ -203,13 +279,15 @@ def evaluate_split(
     catalog_ids, categories, products = catalog_index(catalog_path)
     structured_filter_enabled = retrieval_mode in {"structured", "fusion"}
     structured_config = StructuredConfig(enabled=structured_filter_enabled)
+    dense_config = DenseConfig()
     if retrieval_mode == "fusion":
         retriever = FusionRetriever.from_catalog(
             catalog_path,
             config=FusionConfig(rrf_k=fusion_rrf_k),
+            dense_config=dense_config,
         )
     elif retrieval_mode == "dense":
-        retriever = DenseRetriever(catalog_path)
+        retriever = DenseRetriever(catalog_path, config=dense_config)
     else:
         retriever = HybridRetriever(
             catalog_path,
@@ -227,6 +305,7 @@ def evaluate_split(
     result = add_scenario_scores(result)
     result["code_provenance"] = code_provenance()
     result["observed_run_counts"] = observer.counts()
+    result["retrieval_diagnostics"] = observer.retrieval_diagnostics()
     result["timing"] = {
         "initialization_ms": round(initialization_ms, 6),
         "evaluation_wall_ms": round(evaluation_wall_ms, 6),
@@ -249,6 +328,11 @@ def evaluate_split(
         "retrieval_mode": retrieval_mode,
         "structured_filter": structured_filter_enabled,
         "fusion_rrf_k": fusion_rrf_k if retrieval_mode == "fusion" else None,
+        "dense_configuration": (
+            dense_run_configuration(dense_config)
+            if retrieval_mode in {"dense", "fusion"}
+            else None
+        ),
         "fallback_configuration": (
             {"retrieval_mode": "structured", "structured_filter": True}
             if retrieval_mode == "dense"

@@ -7,7 +7,13 @@ from itertools import combinations
 from pathlib import Path
 from typing import Protocol
 
-from starter.contracts import Candidate, RetrievalDiagnostics, RetrievalRequest, RetrievalResult
+from starter.contracts import (
+    Candidate,
+    RetrievalDiagnostics,
+    RetrievalRequest,
+    RetrievalResult,
+    validate_retrieval_request_object,
+)
 from starter.retrieval.dense import DenseConfig, DenseRetriever
 from starter.retrieval.hybrid import HybridRetriever
 
@@ -33,6 +39,15 @@ class FusionConfig:
 class RouteBatch:
     results: dict[str, RetrievalResult]
     failures: dict[str, str]
+
+
+@dataclass
+class _FusionEntry:
+    score: float
+    first_seen: int
+    evidence_text: str | None
+    route_ranks: dict[str, int]
+    route_scores: dict[str, float]
 
 
 class RouteProvider(Protocol):
@@ -127,7 +142,7 @@ class FusionRetriever:
         )
 
     def retrieve(self, request: RetrievalRequest) -> RetrievalResult:
-        HybridRetriever.validate_request(request)
+        validate_retrieval_request_object(request)
         started = time.perf_counter()
         weights = {
             "lexical": request.strategy.lexical_weight,
@@ -142,7 +157,7 @@ class FusionRetriever:
             if route not in batch.results and route not in failures:
                 failures[route] = "route_unavailable"
 
-        fused: dict[str, dict] = {}
+        fused: dict[str, _FusionEntry] = {}
         route_ids: dict[str, set[str]] = {}
         next_seen = 0
         for route in active_routes:
@@ -156,21 +171,21 @@ class FusionRetriever:
                     continue
                 seen_on_route.add(parent_asin)
                 if parent_asin not in fused:
-                    fused[parent_asin] = {
-                        "score": 0.0,
-                        "first_seen": next_seen,
-                        "evidence_text": candidate.evidence_text,
-                        "route_ranks": {},
-                        "route_scores": {},
-                    }
+                    fused[parent_asin] = _FusionEntry(
+                        score=0.0,
+                        first_seen=next_seen,
+                        evidence_text=candidate.evidence_text,
+                        route_ranks={},
+                        route_scores={},
+                    )
                     next_seen += 1
                 entry = fused[parent_asin]
-                entry["score"] += weights[route] / (self.config.rrf_k + rank)
-                entry["route_ranks"][route] = rank
+                entry.score += weights[route] / (self.config.rrf_k + rank)
+                entry.route_ranks[route] = rank
                 if candidate.score is not None:
-                    entry["route_scores"][route] = candidate.score
-                if not entry["evidence_text"] and candidate.evidence_text:
-                    entry["evidence_text"] = candidate.evidence_text
+                    entry.route_scores[route] = candidate.score
+                if not entry.evidence_text and candidate.evidence_text:
+                    entry.evidence_text = candidate.evidence_text
             route_ids[route] = seen_on_route
 
         overlap_counts = {
@@ -180,23 +195,36 @@ class FusionRetriever:
 
         ordered = sorted(
             fused.items(),
-            key=lambda item: (-item[1]["score"], item[1]["first_seen"], item[0]),
+            key=lambda item: (-item[1].score, item[1].first_seen, item[0]),
         )
         candidates = [
             Candidate(
                 parent_asin=parent_asin,
-                score=round(entry["score"], 8),
+                score=round(entry.score, 8),
                 source="fusion",
-                evidence_text=entry["evidence_text"],
+                evidence_text=entry.evidence_text,
                 diagnostics={
-                    "route_ranks": dict(entry["route_ranks"]),
-                    "route_scores": dict(entry["route_scores"]),
+                    "route_ranks": dict(entry.route_ranks),
+                    "route_scores": dict(entry.route_scores),
                     "fusion_rank": rank,
-                    "fusion_score": round(entry["score"], 8),
+                    "fusion_score": round(entry.score, 8),
                 },
             )
             for rank, (parent_asin, entry) in enumerate(ordered, start=1)
         ]
+        catalog_fallback_used = not candidates and bool(failures)
+        if catalog_fallback_used:
+            candidates = [
+                Candidate(
+                    parent_asin=parent_asin,
+                    source="catalog_fallback",
+                    diagnostics={"fusion_rank": rank},
+                )
+                for rank, parent_asin in enumerate(
+                    self.fallback_ids[: request.strategy.retrieval_depth],
+                    start=1,
+                )
+            ]
         completed = time.perf_counter()
         total_latency_ms = (completed - started) * 1000.0
         fusion_latency_ms = (completed - fusion_started) * 1000.0
@@ -216,7 +244,7 @@ class FusionRetriever:
                 notes=[
                     f"route_failed:{route}:{reason}"
                     for route, reason in failures.items()
-                ],
+                ] + (["all_routes_failed_catalog_fallback"] if catalog_fallback_used else []),
                 stage_latencies_ms=stage_latencies_ms,
                 route_candidate_counts={
                     route: len(ids) for route, ids in route_ids.items()

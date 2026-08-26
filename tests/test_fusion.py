@@ -67,7 +67,28 @@ class _RouteProvider:
         )
 
 
+class _FailedRouteProvider:
+    catalog_ids = frozenset({"A", "B", "C"})
+    fallback_ids = ("A", "B", "C")
+
+    def retrieve_routes(self, request: RetrievalRequest, routes: tuple[str, ...]) -> RouteBatch:
+        return RouteBatch(
+            results={},
+            failures={route: "route_error" for route in routes},
+        )
+
+
 class FusionRetrieverTest(unittest.TestCase):
+    def test_complete_route_failure_fills_a_valid_candidate_pool(self) -> None:
+        retriever = FusionRetriever(_FailedRouteProvider())
+
+        result = retriever.retrieve(_request())
+
+        self.assertEqual([candidate.parent_asin for candidate in result.candidates], ["A", "B", "C"])
+        self.assertTrue(all(candidate.source == "catalog_fallback" for candidate in result.candidates))
+        self.assertTrue(result.diagnostics.fallback_used)
+        self.assertIn("all_routes_failed_catalog_fallback", result.diagnostics.notes)
+
     def test_invalid_request_is_rejected_before_route_failures_can_degrade_it(self) -> None:
         retriever = FusionRetriever(_RouteProvider())
 
