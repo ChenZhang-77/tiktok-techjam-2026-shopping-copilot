@@ -1,8 +1,8 @@
 {
   "experiment": "b2_guarded_structured_evidence",
-  "run_code_commit": "e8fbbbb",
+  "run_code_commit": "cdf5f14",
   "run_branch": "patryk/track4-experiments",
-  "run_worktree_dirty": false,
+  "code_worktree_clean_before_runs": true,
   "dataset": "data/public_set.jsonl",
   "dataset_sha256": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579",
   "catalog": "data/catalog.jsonl",
@@ -10,10 +10,14 @@
   "split": "development",
   "split_version": "public-split-v1",
   "development_fold_version": "development-folds-v1",
+  "modes": {
+    "lexical": "Pure SQLite FTS5 BM25; constraint reranking and guarded filtering are disabled.",
+    "no_guarded_filter": "B1 control: BM25 plus the existing constraint reranker; guarded filtering is disabled.",
+    "structured": "Retained B2 path: B1 control plus guarded cross-field filtering and relaxation."
+  },
   "commands": {
-    "retained_default": "python3 -m experiments.evaluation_reporting --split development --output /tmp/b2-development-clean.json",
-    "fold_lexical_ablation": "python3 -m experiments.evaluation_reporting --split development --fold <fold_1..fold_4> --lexical-only --output <output.json>",
-    "fold_structured": "python3 -m experiments.evaluation_reporting --split development --fold <fold_1..fold_4> --structured-filter --output <output.json>"
+    "fold": "python3 -m experiments.evaluation_reporting --split development --fold <fold_1..fold_4> <--lexical-only|--no-guarded-filter|--structured-filter> --output <report.json>",
+    "development": "python3 -m experiments.evaluation_reporting --split development <--lexical-only|--no-guarded-filter|--structured-filter> --output <report.json>"
   },
   "structured_config": {
     "enabled_by_default": true,
@@ -31,79 +35,73 @@
       "price_when_parseable"
     ]
   },
+  "raw_reports": {
+    "development_lexical": {"path": "docs/b2_reports/development_lexical.json", "sha256": "7b44d9a11dd0a42ff34bd5d2b5fc75559ba4e4d853bf4807469127595031c00b"},
+    "development_no_guarded_filter": {"path": "docs/b2_reports/development_no_guarded_filter.json", "sha256": "68101a2341ff7af37b84fc9c8b820ba1c8700060288a703980da1eb2db98620b"},
+    "development_structured": {"path": "docs/b2_reports/development_structured.json", "sha256": "677b9db24f1741323009ba4e2cdac82d5a71f301e9915d49ebd6c28af7d68b75"},
+    "fold_1_lexical": {"path": "docs/b2_reports/fold_1_lexical.json", "sha256": "0860b707ac1d1fda83f338ff5d8294c3712a2a5580350ca74f4a1418ab83ae1e"},
+    "fold_1_no_guarded_filter": {"path": "docs/b2_reports/fold_1_no_guarded_filter.json", "sha256": "c4feb023e36bdb1c8a27501ad529256dc7260f4a62490be9dbb74236c12aa515"},
+    "fold_1_structured": {"path": "docs/b2_reports/fold_1_structured.json", "sha256": "d45ffd48a173e845ea6bb76c3d0f8b5d7302298b52608beeb1dc9ee875ea8608"},
+    "fold_2_lexical": {"path": "docs/b2_reports/fold_2_lexical.json", "sha256": "d374d6db68973d2c072ce392edafb52c04275539fff0b4801f89fdc65c801606"},
+    "fold_2_no_guarded_filter": {"path": "docs/b2_reports/fold_2_no_guarded_filter.json", "sha256": "8816408adac7d91507858ac13e08a22b683938b671e752a19cdfc06f47199a59"},
+    "fold_2_structured": {"path": "docs/b2_reports/fold_2_structured.json", "sha256": "7a5965b9ed4b63f36203f9ed6db89ab2a14f185e82e0db2558d96c7af741d024"},
+    "fold_3_lexical": {"path": "docs/b2_reports/fold_3_lexical.json", "sha256": "0dfb8f51f922e6e05e0df065afc8e114c6a60b9b9b298f7a804b840ff13911fc"},
+    "fold_3_no_guarded_filter": {"path": "docs/b2_reports/fold_3_no_guarded_filter.json", "sha256": "09086f4f2340d68b66547214d70eb7dfa2d6e73717badefc3e99d4932e6761b3"},
+    "fold_3_structured": {"path": "docs/b2_reports/fold_3_structured.json", "sha256": "dd641feab46d615f89cf369f5d00c6cfdb5dda15ee236c37e9cad05cfd1adf24"},
+    "fold_4_lexical": {"path": "docs/b2_reports/fold_4_lexical.json", "sha256": "5d1719c8398eacab34f23bf6924d199c7baf1ee302c0af3e91d1575465b35ffe"},
+    "fold_4_no_guarded_filter": {"path": "docs/b2_reports/fold_4_no_guarded_filter.json", "sha256": "345dab06e14026e5624b6e05196454dfb3785a6cbb67707c74b4cb4e45d6de26"},
+    "fold_4_structured": {"path": "docs/b2_reports/fold_4_structured.json", "sha256": "ed4ab03c6325772180ba0d72470ef4936510a09a0c869f14c8d26e182ebed848"}
+  },
   "fixed_cross_validation": {
     "fold_count": 4,
     "samples_per_fold": 40,
     "folds": {
       "fold_1": {
-        "lexical": {"hit_rate_at_10": 0.725, "mrr": 0.434306, "mttc": 5.35, "recommended_technical_score": 0.605792},
-        "structured": {"hit_rate_at_10": 0.725, "mrr": 0.438472, "mttc": 5.35, "recommended_technical_score": 0.607042},
-        "delta": {"hit_rate_at_10": 0.0, "mrr": 0.004166, "mttc": 0.0, "recommended_technical_score": 0.00125}
+        "lexical": {"hit_rate_at_10": 0.675, "mrr": 0.418185, "mttc": 5.65, "efficiency": 0.535, "recommended_technical_score": 0.569956},
+        "no_guarded_filter": {"hit_rate_at_10": 0.725, "mrr": 0.434306, "mttc": 5.35, "efficiency": 0.565, "recommended_technical_score": 0.605792},
+        "structured": {"hit_rate_at_10": 0.725, "mrr": 0.438472, "mttc": 5.35, "efficiency": 0.565, "recommended_technical_score": 0.607042}
       },
       "fold_2": {
-        "lexical": {"hit_rate_at_10": 0.775, "mrr": 0.62003, "mttc": 5.45, "recommended_technical_score": 0.684509},
-        "structured": {"hit_rate_at_10": 0.775, "mrr": 0.62003, "mttc": 5.45, "recommended_technical_score": 0.684509},
-        "delta": {"hit_rate_at_10": 0.0, "mrr": 0.0, "mttc": 0.0, "recommended_technical_score": 0.0}
+        "lexical": {"hit_rate_at_10": 0.725, "mrr": 0.540089, "mttc": 5.5, "efficiency": 0.55, "recommended_technical_score": 0.634527},
+        "no_guarded_filter": {"hit_rate_at_10": 0.775, "mrr": 0.62003, "mttc": 5.45, "efficiency": 0.555, "recommended_technical_score": 0.684509},
+        "structured": {"hit_rate_at_10": 0.775, "mrr": 0.62003, "mttc": 5.45, "efficiency": 0.555, "recommended_technical_score": 0.684509}
       },
       "fold_3": {
-        "lexical": {"hit_rate_at_10": 0.8, "mrr": 0.537282, "mttc": 4.7, "recommended_technical_score": 0.687185},
-        "structured": {"hit_rate_at_10": 0.8, "mrr": 0.54756, "mttc": 4.65, "recommended_technical_score": 0.691268},
-        "delta": {"hit_rate_at_10": 0.0, "mrr": 0.010278, "mttc": -0.05, "recommended_technical_score": 0.004083}
+        "lexical": {"hit_rate_at_10": 0.775, "mrr": 0.539375, "mttc": 4.675, "efficiency": 0.6325, "recommended_technical_score": 0.675813},
+        "no_guarded_filter": {"hit_rate_at_10": 0.8, "mrr": 0.537282, "mttc": 4.7, "efficiency": 0.63, "recommended_technical_score": 0.687185},
+        "structured": {"hit_rate_at_10": 0.8, "mrr": 0.54756, "mttc": 4.65, "efficiency": 0.635, "recommended_technical_score": 0.691268}
       },
       "fold_4": {
-        "lexical": {"hit_rate_at_10": 0.75, "mrr": 0.499157, "mttc": 5.775, "recommended_technical_score": 0.629247},
-        "structured": {"hit_rate_at_10": 0.75, "mrr": 0.501895, "mttc": 5.775, "recommended_technical_score": 0.630069},
-        "delta": {"hit_rate_at_10": 0.0, "mrr": 0.002738, "mttc": 0.0, "recommended_technical_score": 0.000822}
+        "lexical": {"hit_rate_at_10": 0.7, "mrr": 0.445754, "mttc": 5.8, "efficiency": 0.52, "recommended_technical_score": 0.587726},
+        "no_guarded_filter": {"hit_rate_at_10": 0.75, "mrr": 0.499157, "mttc": 5.775, "efficiency": 0.5225, "recommended_technical_score": 0.629247},
+        "structured": {"hit_rate_at_10": 0.75, "mrr": 0.501895, "mttc": 5.775, "efficiency": 0.5225, "recommended_technical_score": 0.630069}
       }
     },
-    "mean_delta": {
-      "hit_rate_at_10": 0.0,
-      "mrr": 0.004296,
-      "mttc": -0.0125,
-      "recommended_technical_score": 0.001539
-    },
-    "scenario_result": "Browsing and Boundary are unchanged in every fold. Buying improves in folds 1, 3, and 4 and is unchanged in fold 2. Intent Override is unchanged except for a small fold 4 MRR gain."
+    "mean_structured_delta_vs_lexical": {"hit_rate_at_10": 0.04375, "mrr": 0.0411385, "mttc": -0.1, "efficiency": 0.01, "recommended_technical_score": 0.0362165},
+    "mean_structured_delta_vs_no_guarded_filter": {"hit_rate_at_10": 0.0, "mrr": 0.0042955, "mttc": -0.0125, "efficiency": 0.00125, "recommended_technical_score": 0.00153875},
+    "scenario_evidence": "Every raw fold report records numeric Boundary, Browsing, Buying, and Intent Override metrics with sample counts. Relative to no_guarded_filter, Boundary and Browsing are unchanged in all folds; Buying improves in folds 1, 3, and 4 and is unchanged in fold 2; Intent Override changes only in fold 4."
   },
   "development_160": {
-    "lexical_reference": {
-      "hit_rate_at_10": 0.7625,
-      "mrr": 0.522693,
-      "mttc": 5.31875,
-      "efficiency": 0.568125,
-      "recommended_technical_score": 0.651683
-    },
-    "structured_retained": {
-      "hit_rate_at_10": 0.7625,
-      "mrr": 0.526989,
-      "mttc": 5.30625,
-      "efficiency": 0.569375,
-      "recommended_technical_score": 0.653222
-    },
-    "delta": {
-      "hit_rate_at_10": 0.0,
-      "mrr": 0.004296,
-      "mttc": -0.0125,
-      "efficiency": 0.00125,
-      "recommended_technical_score": 0.001539
-    },
-    "observed_run_counts": {
-      "respond_exceptions": 0,
-      "invalid_response_payloads": 0,
-      "reported_fallbacks": 0,
-      "internal_fallbacks": 0
-    },
-    "structured_response_timing_ms": {
-      "response_count": 811,
-      "mean": 45.405103,
-      "p50": 44.840709,
-      "p95": 87.224459,
-      "max": 119.655583
+    "lexical": {"hit_rate_at_10": 0.71875, "mrr": 0.485851, "mttc": 5.40625, "efficiency": 0.559375, "recommended_technical_score": 0.617005},
+    "no_guarded_filter": {"hit_rate_at_10": 0.7625, "mrr": 0.522693, "mttc": 5.31875, "efficiency": 0.568125, "recommended_technical_score": 0.651683},
+    "structured": {"hit_rate_at_10": 0.7625, "mrr": 0.526989, "mttc": 5.30625, "efficiency": 0.569375, "recommended_technical_score": 0.653222},
+    "structured_delta_vs_no_guarded_filter": {"hit_rate_at_10": 0.0, "mrr": 0.004296, "mttc": -0.0125, "efficiency": 0.00125, "recommended_technical_score": 0.001539},
+    "observed_failures_by_mode": {
+      "lexical": {"respond_exceptions": 0, "invalid_response_payloads": 0, "reported_fallbacks": 0, "internal_fallbacks": 0},
+      "no_guarded_filter": {"respond_exceptions": 0, "invalid_response_payloads": 0, "reported_fallbacks": 0, "internal_fallbacks": 0},
+      "structured": {"respond_exceptions": 0, "invalid_response_payloads": 0, "reported_fallbacks": 0, "internal_fallbacks": 0}
     }
   },
+  "paired_cost_development_160": {
+    "lexical": {"initialization_ms": 1455.701666, "response_mean_ms": 27.69856, "retrieval_mean_ms": 21.166604, "lexical_stage_mean_ms": 14.952137, "constraint_rerank_stage_mean_ms": 0.000567, "structured_filter_stage_mean_ms": 0.000727, "peak_rss_bytes": 583483392},
+    "no_guarded_filter": {"initialization_ms": 1450.148084, "response_mean_ms": 45.128045, "retrieval_mean_ms": 38.050364, "lexical_stage_mean_ms": 14.716298, "constraint_rerank_stage_mean_ms": 17.47692, "structured_filter_stage_mean_ms": 0.000731, "peak_rss_bytes": 583680000},
+    "structured": {"initialization_ms": 1465.236417, "response_mean_ms": 45.525694, "retrieval_mean_ms": 38.400733, "lexical_stage_mean_ms": 14.836661, "constraint_rerank_stage_mean_ms": 17.375111, "structured_filter_stage_mean_ms": 0.304035, "peak_rss_bytes": 583827456},
+    "structured_delta_vs_no_guarded_filter": {"initialization_ms": 15.088333, "response_mean_ms": 0.397649, "retrieval_mean_ms": 0.350369, "structured_filter_stage_mean_ms": 0.303304, "peak_rss_bytes": 147456},
+    "interpretation": "Sequential runs on the same machine show the guarded filter adds about 0.30 ms per retrieval and about 144 KiB process peak RSS over the B1 control. Initialization and end-to-end deltas include ordinary run-to-run noise."
+  },
   "hypothesis": "Guarded cross-field evidence can improve precise Buying and Intent Override ordering without reducing broad Browsing recall; sparse evidence and incompatible hard constraints must relax instead of emptying the candidate pool.",
-  "result": "All four fixed folds preserve HitRate@10. Mean MRR increases by 0.004296 and mean TechnicalScore by 0.001539; the full Development Set reproduces those gains with zero observed errors or fallbacks.",
+  "result": "Against the B1 control, all four fixed folds preserve HitRate@10; mean MRR increases by 0.0042955 and mean TechnicalScore by 0.00153875. The full Development Set reproduces the gain with zero observed errors or fallbacks. Pure BM25 is materially weaker and remains an explicit ablation, not the incremental B2 baseline.",
   "decision": "retain_guarded_structured_filter_as_default",
-  "lexical_ablation": "retained_via_explicit_--lexical-only",
   "holdout_status": "not_run_during_b2",
   "full_status": "not_run_during_b2"
 }
