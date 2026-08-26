@@ -30,17 +30,15 @@ def code_provenance() -> dict:
             capture_output=True,
             text=True,
         ).stdout.strip()
-        unstaged = subprocess.run(
-            ["git", "diff", "--quiet", "--ignore-submodules", "--"],
-            check=False,
-        ).returncode
-        staged = subprocess.run(
-            ["git", "diff", "--cached", "--quiet", "--ignore-submodules", "--"],
-            check=False,
-        ).returncode
+        status = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=all"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout
     except (OSError, subprocess.CalledProcessError):
         return {"commit": None, "worktree_clean": False}
-    return {"commit": commit or None, "worktree_clean": unstaged == 0 and staged == 0}
+    return {"commit": commit or None, "worktree_clean": not status.strip()}
 
 
 class AgentObserver:

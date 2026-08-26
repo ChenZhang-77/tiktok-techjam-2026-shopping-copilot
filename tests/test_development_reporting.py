@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import unittest
+from subprocess import CompletedProcess
+from unittest.mock import patch
 
-from experiments.evaluation_reporting import AgentObserver, add_scenario_scores
+from experiments.evaluation_reporting import AgentObserver, add_scenario_scores, code_provenance
 
 
 class _StubAgent:
@@ -40,6 +42,17 @@ class _SubtlyInvalidStubAgent(_StubAgent):
 
 
 class DevelopmentReportingTest(unittest.TestCase):
+    @patch("experiments.evaluation_reporting.subprocess.run")
+    def test_code_provenance_marks_untracked_files_dirty(self, run: object) -> None:
+        run.side_effect = [
+            CompletedProcess([], 0, stdout="abc1234\n"),
+            CompletedProcess([], 0, stdout="?? local_config.py\n"),
+        ]
+
+        provenance = code_provenance()
+
+        self.assertEqual(provenance, {"commit": "abc1234", "worktree_clean": False})
+
     def test_counts_an_observably_invalid_public_payload(self) -> None:
         observer = AgentObserver(_InvalidStubAgent(), catalog_ids={"VALID"})
 
