@@ -109,6 +109,14 @@ class B3DenseEvidenceTest(unittest.TestCase):
             set(self.cache_metadata["generated_artifact_sha256"]),
             {"metadata.json", "ids.json", "vectors.npy"},
         )
+        self.assertEqual(
+            self.cache_metadata["ids_sha256"],
+            self.cache_metadata["generated_artifact_sha256"]["ids.json"],
+        )
+        self.assertEqual(
+            self.cache_metadata["vectors_sha256"],
+            self.cache_metadata["generated_artifact_sha256"]["vectors.npy"],
+        )
         self.assertTrue(self.cache_metadata["generated_cache_policy"].startswith("not_committed"))
 
     def test_decision_keeps_dense_bounded_to_b4_and_preserves_final_split_boundary(self) -> None:

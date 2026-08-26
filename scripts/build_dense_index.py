@@ -41,6 +41,11 @@ def main() -> None:
     parser.add_argument("--cache-dir", default="embeddings/minilm-l6-v2-v1")
     parser.add_argument("--model-cache-dir", default="models/huggingface/hub")
     parser.add_argument("--batch-size", type=int, default=128)
+    parser.add_argument(
+        "--allow-model-download",
+        action="store_true",
+        help="Allow the pinned model revision to be downloaded into the local model cache.",
+    )
     args = parser.parse_args()
 
     import numpy as np
@@ -62,7 +67,7 @@ def main() -> None:
         config.model_id,
         revision=config.model_revision,
         cache_folder=str(config.model_cache_dir),
-        local_files_only=True,
+        local_files_only=not args.allow_model_download,
     )
     vectors = model.encode(
         texts,
@@ -99,6 +104,8 @@ def main() -> None:
         "build_seconds": round(build_seconds, 6),
         "vectors_bytes": vectors_path.stat().st_size,
         "ids_bytes": ids_path.stat().st_size,
+        "ids_sha256": file_sha256(ids_path),
+        "vectors_sha256": file_sha256(vectors_path),
         "approximate_vector_memory_bytes": int(vectors.nbytes),
         "platform": os.uname().sysname + "-" + os.uname().machine,
     }

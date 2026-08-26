@@ -18,10 +18,12 @@
   "build_seconds": 255.086887,
   "vectors_bytes": 76800128,
   "ids_bytes": 700001,
+  "ids_sha256": "4ef7a2d6107a76dd806971572fc4c266fd7600565297fe6f3eaf93b1593b961a",
+  "vectors_sha256": "4c7a5cd71a0fc819ef0d69d5eea08ad1ce9e83a0d35b8109df3a759e81733ffc",
   "approximate_vector_memory_bytes": 76800000,
   "platform": "Darwin-arm64",
   "generated_artifact_sha256": {
-    "metadata.json": "7ae4aded8d4e1fa4faea6ba0b7793447ade6a4d9f2bd8c1cafee56756adbb0b6",
+    "metadata.json": "bc2ab239f829aaee7647e76d1f8d3ee3951f83a8d74559affd44a75bf7ae3ca1",
     "ids.json": "4ef7a2d6107a76dd806971572fc4c266fd7600565297fe6f3eaf93b1593b961a",
     "vectors.npy": "4c7a5cd71a0fc819ef0d69d5eea08ad1ce9e83a0d35b8109df3a759e81733ffc"
   },

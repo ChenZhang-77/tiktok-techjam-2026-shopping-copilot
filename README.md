@@ -45,11 +45,15 @@ submission/                       final packaging notes
 visualizer/                       local dialogue and metric inspection page
 ```
 
-Large data files are intentionally not committed:
+Large generated runtime files are intentionally not committed:
 
 - `data/catalog.jsonl.gz`
 - `data/catalog.jsonl`
-- generated embeddings, indexes, checkpoints, and result files
+- generated embeddings, indexes, checkpoints, and local `experiments/runs/`
+
+Curated public-development evidence may be checked in under `docs/` when its
+hashes, split boundary, and decision are covered by an evidence test. It must
+not contain private evaluation data.
 
 ## Quickstart
 
@@ -74,6 +78,33 @@ Run the official weak starter baseline:
 ```
 
 The command writes `results.json`. The first target is to reproduce the official baseline in `docs/baseline_results.json`.
+
+## Optional Local Dense Benchmark
+
+The B3 semantic route is a measured experiment, not the default retriever. It
+uses Python 3.12 and the exact package versions in `requirements-dense.txt`:
+
+```bash
+python3.12 -m venv .venv
+.venv/bin/python -m pip install -r requirements-dense.txt
+.venv/bin/python -m scripts.build_dense_index --allow-model-download --batch-size 128
+```
+
+`--allow-model-download` is needed only to acquire the pinned
+`sentence-transformers/all-MiniLM-L6-v2` revision on a clean machine. Subsequent
+cache rebuilds are offline and omit that flag:
+
+```bash
+.venv/bin/python -m scripts.build_dense_index --batch-size 128
+.venv/bin/python -m experiments.evaluation_reporting --split development --dense-only
+```
+
+The generated model and embedding caches remain ignored. Runtime validation
+checks the catalog, model revision, dimensions, dtype, normalization, ID order,
+and artifact hashes. Missing, incompatible, corrupt, or query-failing dense
+paths degrade to the deterministic structured/BM25 route. The B3 development
+result is retained only as an input to the B4 fusion ablation; dense-only is not
+the default path.
 
 ## Recommended Experiment Run
 

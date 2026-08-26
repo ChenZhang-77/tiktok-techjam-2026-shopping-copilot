@@ -123,9 +123,7 @@ class DenseRetriever:
                 )
                 if (
                     not isinstance(payload, list)
-                    or len(payload) != len(self.catalog_ids)
-                    or len(set(payload)) != len(payload)
-                    or set(payload) != set(self.catalog_ids)
+                    or payload != list(self.fallback_ids)
                 ):
                     raise ValueError("dense ids are incompatible")
                 self._ids = [str(item) for item in payload]
@@ -158,16 +156,32 @@ class DenseRetriever:
         }
         if any(payload.get(key) != value for key, value in expected.items()):
             return "dense_cache_incompatible"
-        if not (self.config.cache_dir / "ids.json").is_file():
+        ids_path = self.config.cache_dir / "ids.json"
+        vectors_path = self.config.cache_dir / "vectors.npy"
+        if not ids_path.is_file():
             return "dense_cache_corrupt"
-        if not (self.config.cache_dir / "vectors.npy").is_file():
+        if not vectors_path.is_file():
+            return "dense_cache_corrupt"
+        try:
+            artifact_hashes = {
+                "ids_sha256": file_sha256(ids_path),
+                "vectors_sha256": file_sha256(vectors_path),
+            }
+        except OSError:
+            return "dense_cache_corrupt"
+        if any(payload.get(key) != value for key, value in artifact_hashes.items()):
             return "dense_cache_corrupt"
         return None
 
     def retrieve(self, request: RetrievalRequest) -> RetrievalResult:
         if self._backend is not None:
             started = time.perf_counter()
-            ranked = self._backend.rank(request.query, request.strategy.retrieval_depth)
+            try:
+                ranked = self._backend.rank(request.query, request.strategy.retrieval_depth)
+            except Exception:
+                self._backend = None
+                self._unavailable_reason = "dense_query_failed"
+                return self._fallback_result(request, self._unavailable_reason)
             latency_ms = (time.perf_counter() - started) * 1000.0
             candidates = [
                 Candidate(
@@ -190,8 +204,13 @@ class DenseRetriever:
                     stage_latencies_ms={"dense": round(latency_ms, 6)},
                 ),
             )
+        return self._fallback_result(
+            request,
+            self._unavailable_reason or "dense_route_unavailable",
+        )
+
+    def _fallback_result(self, request: RetrievalRequest, reason: str) -> RetrievalResult:
         result = self._lexical.retrieve(request)
-        reason = self._unavailable_reason or "dense_route_unavailable"
         diagnostics = replace(
             result.diagnostics,
             fallback_used=True,
