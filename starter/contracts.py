@@ -20,6 +20,19 @@ FORBIDDEN_RETRIEVAL_REQUEST_KEYS = {
 }
 
 
+def _find_forbidden_runtime_keys(value: object) -> set[str]:
+    found: set[str] = set()
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if key in FORBIDDEN_RETRIEVAL_REQUEST_KEYS:
+                found.add(key)
+            found.update(_find_forbidden_runtime_keys(item))
+    elif isinstance(value, list):
+        for item in value:
+            found.update(_find_forbidden_runtime_keys(item))
+    return found
+
+
 @dataclass(frozen=True)
 class RetrievalRequest:
     session_id: str
@@ -136,3 +149,6 @@ def validate_agent_response(
     diagnostics = payload.get("diagnostics")
     if diagnostics is not None and not isinstance(diagnostics, dict):
         raise ValueError("Agent response diagnostics must be an object")
+    leaked = _find_forbidden_runtime_keys(diagnostics)
+    if leaked:
+        raise ValueError(f"Agent response diagnostics contain evaluator-only fields: {sorted(leaked)}")

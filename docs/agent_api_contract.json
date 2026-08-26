@@ -65,6 +65,12 @@
       },
       "diagnostics": {
         "type": "object",
+        "description": "Debug data only; evaluator-only fields are forbidden at every nesting depth.",
+        "propertyNames": {
+          "not": {
+            "enum": ["ground_truth", "target", "target_asin", "target_parent_asin", "scenario_type", "difficulty_bucket", "intent_card", "behavior"]
+          }
+        },
         "additionalProperties": true
       }
     },
