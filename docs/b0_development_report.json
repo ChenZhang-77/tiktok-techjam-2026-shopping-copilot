@@ -1334,15 +1334,15 @@
     "internal_fallbacks_note": "Not observable through the A-side public Agent interface."
   },
   "timing": {
-    "initialization_ms": 1413.596291,
-    "evaluation_wall_ms": 31806.018042,
+    "initialization_ms": 1418.644833,
+    "evaluation_wall_ms": 31937.207791,
     "responses": {
       "response_count": 813,
-      "total_ms": 31763.501732,
-      "mean_ms": 39.069498,
-      "p50_ms": 40.034292,
-      "p95_ms": 73.248166,
-      "max_ms": 96.371375
+      "total_ms": 31891.172306,
+      "mean_ms": 39.226534,
+      "p50_ms": 40.011709,
+      "p95_ms": 73.69225,
+      "max_ms": 97.191625
     }
   },
   "evaluation": {

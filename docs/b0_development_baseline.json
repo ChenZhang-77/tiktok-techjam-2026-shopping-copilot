@@ -1,7 +1,7 @@
 {
   "baseline": "a_control_plane_before_b_integration",
   "agent_source_commit": "2280bf7",
-  "run_code_commit": "4ea9f32",
+  "run_code_commit": "ffcc6a0",
   "run_branch": "patryk/track4-experiments",
   "run_worktree_dirty": false,
   "environment": {
@@ -27,9 +27,9 @@
   "result_artifact": "docs/b0_development_results.json",
   "result_artifact_sha256": "6ff63a3585a071d608e4b8de47e94c25b6bcd2d528af78e9a0365ccba343a061",
   "development_report_artifact": "docs/b0_development_report.json",
-  "development_report_artifact_sha256": "0c2dbf0119cd8d51eee3c299169d8cc00e50b9fb9c0e9d4cc6672c4ced21282e",
+  "development_report_artifact_sha256": "9bdcd9ec5627bb06611cb366f362391625c5b703678aa240e09c686fb73cb4af",
   "evaluation_wall_seconds": 28.62,
-  "development_report_wall_seconds": 33.219614,
+  "development_report_wall_seconds": 33.355853,
   "reported_token_usage": {
     "prompt_tokens": 0,
     "completion_tokens": 0,
