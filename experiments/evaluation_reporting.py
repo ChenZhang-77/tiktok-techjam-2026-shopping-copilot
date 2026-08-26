@@ -5,6 +5,7 @@ import copy
 import json
 import math
 import resource
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -19,6 +20,27 @@ from starter.agent import Agent
 from starter.contracts import validate_agent_response
 from starter.core.response_guard import ALLOWED_ASK_ATTRIBUTES
 from starter.retrieval import DenseRetriever, HybridRetriever, StructuredConfig
+
+
+def code_provenance() -> dict:
+    try:
+        commit = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        unstaged = subprocess.run(
+            ["git", "diff", "--quiet", "--ignore-submodules", "--"],
+            check=False,
+        ).returncode
+        staged = subprocess.run(
+            ["git", "diff", "--cached", "--quiet", "--ignore-submodules", "--"],
+            check=False,
+        ).returncode
+    except (OSError, subprocess.CalledProcessError):
+        return {"commit": None, "worktree_clean": False}
+    return {"commit": commit or None, "worktree_clean": unstaged == 0 and staged == 0}
 
 
 class AgentObserver:
@@ -192,6 +214,7 @@ def evaluate_split(
     result = evaluate(observer, evaluation_samples, catalog_ids, categories, products)
     evaluation_wall_ms = (time.perf_counter() - evaluation_started) * 1000.0
     result = add_scenario_scores(result)
+    result["code_provenance"] = code_provenance()
     result["observed_run_counts"] = observer.counts()
     result["timing"] = {
         "initialization_ms": round(initialization_ms, 6),

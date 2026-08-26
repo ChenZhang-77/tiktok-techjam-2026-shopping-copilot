@@ -114,6 +114,27 @@ class DenseFallbackTest(unittest.TestCase):
             self.assertTrue(result.diagnostics.fallback_used)
             self.assertIn("dense_cache_corrupt", result.diagnostics.notes)
 
+    def test_eof_while_loading_vectors_reaches_lexical_fallback(self) -> None:
+        def raise_eof(_config: DenseConfig, _ids: object) -> object:
+            raise EOFError("truncated vectors")
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "catalog.jsonl"
+            cache = root / "cache"
+            cache.mkdir()
+            _write_catalog(catalog)
+            _write_compatible_cache(cache, catalog)
+
+            result = DenseRetriever(
+                catalog,
+                config=DenseConfig(cache_dir=cache),
+                backend_factory=raise_eof,
+            ).retrieve(_request())
+
+            self.assertTrue(result.diagnostics.fallback_used)
+            self.assertIn("dense_cache_corrupt", result.diagnostics.notes)
+
     def test_corrupt_metadata_reaches_lexical_fallback(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

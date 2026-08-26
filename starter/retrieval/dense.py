@@ -129,7 +129,7 @@ class DenseRetriever:
                 self._ids = [str(item) for item in payload]
                 factory = backend_factory or NumpySentenceBackend
                 self._backend = factory(self.config, self._ids)
-            except (ImportError, OSError, UnicodeError, ValueError, json.JSONDecodeError):
+            except (EOFError, ImportError, OSError, UnicodeError, ValueError, json.JSONDecodeError):
                 self._unavailable_reason = "dense_cache_corrupt"
 
     def _validate_cache_metadata(self) -> str | None:

@@ -28,6 +28,8 @@ class B3DenseEvidenceTest(unittest.TestCase):
             artifact = ROOT / item["path"]
             self.assertEqual(hashlib.sha256(artifact.read_bytes()).hexdigest(), item["sha256"])
             report = self.reports[name]
+            self.assertEqual(report["code_provenance"]["commit"], self.record["run_code_commit"])
+            self.assertTrue(report["code_provenance"]["worktree_clean"])
             self.assertEqual(report["evaluation"]["retrieval_mode"], "dense")
             self.assertFalse(report["evaluation"]["structured_filter"])
             self.assertEqual(
