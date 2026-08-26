@@ -138,6 +138,14 @@ class RerankingRetriever:
             notes=[*base.diagnostics.notes, "semantic_rerank_applied"],
             stage_latencies_ms=stage_latencies,
             rerank_pool_size=pool_size,
+            cache_state={
+                **base.diagnostics.cache_state,
+                "semantic_reranker": "local_only_ready",
+            },
+            ranking_pool_sizes={
+                **base.diagnostics.ranking_pool_sizes,
+                "semantic_rerank": pool_size,
+            },
         )
         return RetrievalResult(
             candidates=[*reranked, *base.candidates[pool_size:]],
@@ -165,6 +173,14 @@ class RerankingRetriever:
             stage_latencies_ms=stage_latencies,
             route_failures=failures,
             rerank_pool_size=pool_size,
+            cache_state={
+                **base.diagnostics.cache_state,
+                "semantic_reranker": "failed",
+            },
+            ranking_pool_sizes={
+                **base.diagnostics.ranking_pool_sizes,
+                "semantic_rerank": pool_size,
+            },
         )
         return RetrievalResult(candidates=base.candidates, diagnostics=diagnostics)
 

@@ -50,6 +50,11 @@ class _RouteDiagnosticsStubAgent(_StubAgent):
                     "route_candidate_counts": {"lexical": 10, "dense": 8},
                     "route_overlap_counts": {"lexical|dense": 4},
                     "route_failures": {"structured": "route_error"},
+                    "structured_filter_applied": True,
+                    "relaxed_constraints": [{"attribute": "material"}],
+                    "filtered_pool_sizes": [{"before": 10, "after": 4}],
+                    "cache_state": {"dense": "dense_cache_missing"},
+                    "rerank_pool_size": 30,
                 },
             },
         }
@@ -123,6 +128,11 @@ class DevelopmentReportingTest(unittest.TestCase):
         self.assertEqual(diagnostics["route_candidate_counts"]["dense"]["max"], 8)
         self.assertEqual(diagnostics["route_overlap_counts"]["lexical|dense"]["mean"], 4.0)
         self.assertEqual(diagnostics["route_failure_counts"], {"structured:route_error": 1})
+        self.assertEqual(diagnostics["structured_filter_applied_responses"], 1)
+        self.assertEqual(diagnostics["relaxed_constraint_responses"], 1)
+        self.assertEqual(diagnostics["filtered_pool_step_count"], 1)
+        self.assertEqual(diagnostics["cache_state_counts"], {"dense:dense_cache_missing": 1})
+        self.assertEqual(diagnostics["rerank_pool_size"]["mean"], 30.0)
 
     def test_fusion_mode_uses_central_rrf_config_and_records_degraded_route_policy(self) -> None:
         empty_result = {"scenario_metrics": {}}

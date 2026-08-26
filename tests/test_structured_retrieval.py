@@ -123,6 +123,26 @@ class StructuredRetrievalTest(unittest.TestCase):
             )
             self.assertTrue(result.diagnostics.structured_filter_applied)
             self.assertEqual(
+                result.diagnostics.route_candidate_counts,
+                {"lexical": 20, "structured": 20},
+            )
+            self.assertEqual(
+                result.diagnostics.route_overlap_counts,
+                {"lexical|structured": 20},
+            )
+            self.assertEqual(
+                result.diagnostics.cache_state,
+                {"lexical_index": "memory_ready", "structured_evidence": "memory_ready"},
+            )
+            self.assertEqual(
+                result.diagnostics.ranking_pool_sizes,
+                {
+                    "pre_constraint_rerank": 20,
+                    "post_constraint_rerank": 20,
+                    "post_structured_filter": 10,
+                },
+            )
+            self.assertEqual(
                 result.diagnostics.relaxed_constraints,
                 [{"attribute": "material", "value": "leather", "confidence": 0.8}],
             )

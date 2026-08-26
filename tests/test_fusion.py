@@ -120,6 +120,7 @@ class FusionRetrieverTest(unittest.TestCase):
         self.assertEqual(set(candidate.parent_asin for candidate in result.candidates), {"A", "B", "C"})
         self.assertEqual(result.diagnostics.route_candidate_counts, {"lexical": 3, "structured": 3})
         self.assertEqual(result.diagnostics.route_failures, {"dense": "dense_cache_missing"})
+        self.assertEqual(result.diagnostics.cache_state["dense"], "dense_cache_missing")
         self.assertTrue(result.diagnostics.fallback_used)
 
     def test_rrf_deduplicates_candidates_and_preserves_every_route_rank(self) -> None:

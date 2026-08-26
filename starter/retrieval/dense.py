@@ -202,6 +202,8 @@ class DenseRetriever:
                     latency_ms=round(latency_ms, 6),
                     notes=["dense_cache_hit"],
                     stage_latencies_ms={"dense": round(latency_ms, 6)},
+                    cache_state={"dense": "compatible"},
+                    ranking_pool_sizes={"dense": len(candidates)},
                 ),
             )
         return self._fallback_result(
@@ -246,5 +248,6 @@ class DenseRetriever:
             result.diagnostics,
             fallback_used=True,
             notes=[*result.diagnostics.notes, reason],
+            cache_state={**result.diagnostics.cache_state, "dense": reason},
         )
         return RetrievalResult(candidates=result.candidates, diagnostics=diagnostics)

@@ -64,6 +64,11 @@ class AgentObserver:
         self._route_candidate_counts: dict[str, list[int]] = {}
         self._route_overlap_counts: dict[str, list[int]] = {}
         self._route_failure_counts: dict[str, int] = {}
+        self._structured_filter_applied_responses = 0
+        self._relaxed_constraint_responses = 0
+        self._filtered_pool_step_count = 0
+        self._cache_state_counts: dict[str, int] = {}
+        self._rerank_pool_sizes: list[int] = []
 
     def reset(self, session_id: str, user_profile: dict) -> None:
         self._agent.reset(session_id, user_profile)
@@ -109,6 +114,27 @@ class AgentObserver:
                     if isinstance(reason, str):
                         key = f"{route}:{reason}"
                         self._route_failure_counts[key] = self._route_failure_counts.get(key, 0) + 1
+            if retrieval.get("structured_filter_applied") is True:
+                self._structured_filter_applied_responses += 1
+            relaxed = retrieval.get("relaxed_constraints")
+            if isinstance(relaxed, list) and relaxed:
+                self._relaxed_constraint_responses += 1
+            pool_steps = retrieval.get("filtered_pool_sizes")
+            if isinstance(pool_steps, list):
+                self._filtered_pool_step_count += len(pool_steps)
+            cache_state = retrieval.get("cache_state")
+            if isinstance(cache_state, dict):
+                for stage, state in cache_state.items():
+                    if isinstance(state, str):
+                        key = f"{stage}:{state}"
+                        self._cache_state_counts[key] = self._cache_state_counts.get(key, 0) + 1
+            rerank_pool_size = retrieval.get("rerank_pool_size")
+            if (
+                isinstance(rerank_pool_size, int)
+                and not isinstance(rerank_pool_size, bool)
+                and rerank_pool_size > 0
+            ):
+                self._rerank_pool_sizes.append(rerank_pool_size)
         return response
 
     def _is_valid_response(self, response: object, top_k: int) -> bool:
@@ -194,6 +220,15 @@ class AgentObserver:
                 for pair, values in self._route_overlap_counts.items()
             },
             "route_failure_counts": dict(self._route_failure_counts),
+            "structured_filter_applied_responses": self._structured_filter_applied_responses,
+            "relaxed_constraint_responses": self._relaxed_constraint_responses,
+            "filtered_pool_step_count": self._filtered_pool_step_count,
+            "cache_state_counts": dict(self._cache_state_counts),
+            "rerank_pool_size": (
+                self._count_summary(self._rerank_pool_sizes)
+                if self._rerank_pool_sizes
+                else None
+            ),
         }
 
 

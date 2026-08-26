@@ -90,6 +90,75 @@ def _write_catalog(path: Path) -> None:
 
 
 class AgentSmokeTest(unittest.TestCase):
+    def test_buying_and_browsing_execute_different_candidate_pool_plans(self) -> None:
+        rows = [
+            {
+                "parent_asin": f"B{index:03d}",
+                "title": "black leather walking shoes",
+                "features": ["daily walking"],
+            }
+            for index in range(50)
+        ] + [
+            {
+                "parent_asin": f"W{index:03d}",
+                "title": "white canvas walking shoes",
+                "features": ["daily walking"],
+            }
+            for index in range(50)
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            catalog_path = Path(directory) / "catalog.jsonl"
+            catalog_path.write_text(
+                "".join(json.dumps(row) + "\n" for row in rows),
+                encoding="utf-8",
+            )
+            agent = Agent(catalog_path)
+            agent.reset("buying", {})
+            agent.reset("browsing", {})
+
+            buying = agent.respond("buying", "I need black leather walking shoes", 1, 10)
+            browsing = agent.respond("browsing", "I am browsing shoes ideas", 1, 10)
+
+        buying_retrieval = buying["diagnostics"]["retrieval"]
+        browsing_retrieval = browsing["diagnostics"]["retrieval"]
+        self.assertEqual(buying["diagnostics"]["strategy"]["intent"], "buying")
+        self.assertEqual(browsing["diagnostics"]["strategy"]["intent"], "browsing")
+        self.assertTrue(buying_retrieval["structured_filter_applied"])
+        self.assertFalse(browsing_retrieval["structured_filter_applied"])
+        self.assertEqual(buying_retrieval["route_candidate_counts"]["lexical"], 80)
+        self.assertEqual(buying_retrieval["route_candidate_counts"]["structured"], 80)
+        self.assertEqual(buying_retrieval["ranking_pool_sizes"]["post_structured_filter"], 50)
+        self.assertEqual(browsing_retrieval["route_candidate_counts"]["lexical"], 100)
+        self.assertEqual(browsing_retrieval["route_candidate_counts"]["structured"], 100)
+
+    def test_candidate_pool_evidence_reaches_agent_clarification(self) -> None:
+        def make_agent(*, include_evidence: bool) -> Agent:
+            retriever = _RecordingRetriever()
+
+            def retrieve(request: RetrievalRequest) -> RetrievalResult:
+                retriever.requests.append(request)
+                evidence = ("leather product", "cotton product") if include_evidence else ("", "")
+                return RetrievalResult(
+                    candidates=[
+                        Candidate(parent_asin="A", evidence_text=evidence[0]),
+                        Candidate(parent_asin="B", evidence_text=evidence[1]),
+                    ],
+                    diagnostics=RetrievalDiagnostics(route="fixture", candidate_count=2),
+                )
+
+            retriever.retrieve = retrieve
+            return Agent(retriever=retriever)
+
+        evidence_agent = make_agent(include_evidence=True)
+        empty_agent = make_agent(include_evidence=False)
+        evidence_agent.reset("evidence", {})
+        empty_agent.reset("empty", {})
+
+        with_evidence = evidence_agent.respond("evidence", "Show me some product ideas", 1, 2)
+        without_evidence = empty_agent.respond("empty", "Show me some product ideas", 1, 2)
+
+        self.assertEqual(with_evidence["ask_attribute"], "material")
+        self.assertEqual(without_evidence["ask_attribute"], "use_case")
     def test_explicit_falsey_retriever_is_not_replaced(self) -> None:
         retriever = _FalseyRetriever()
 

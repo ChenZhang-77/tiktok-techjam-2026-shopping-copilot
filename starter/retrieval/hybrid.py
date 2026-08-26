@@ -247,6 +247,23 @@ class HybridRetriever:
         stage_latencies_ms: dict[str, float],
     ) -> RetrievalResult:
         lexical_ranks = {parent_asin: rank for rank, parent_asin in enumerate(lexical_ids, start=1)}
+        route_candidate_counts = {"lexical": len(lexical_ids)}
+        route_overlap_counts: dict[str, int] = {}
+        if route == "structured":
+            route_candidate_counts["structured"] = len(ranked_ids)
+            route_overlap_counts["lexical|structured"] = len(
+                set(lexical_ids) & set(ranked_ids)
+            )
+        filtered_pool_size = len(ranked_ids)
+        if structured_outcome.filter_applied:
+            filtered_pool_size = next(
+                (
+                    int(step["after"])
+                    for step in reversed(structured_outcome.pool_sizes)
+                    if isinstance(step.get("after"), int)
+                ),
+                len(ranked_ids),
+            )
         candidates = [
             Candidate(
                 parent_asin=parent_asin,
@@ -282,6 +299,17 @@ class HybridRetriever:
                 filtered_pool_sizes=structured_outcome.pool_sizes,
                 stage_latencies_ms={
                     name: round(value, 6) for name, value in stage_latencies_ms.items()
+                },
+                route_candidate_counts=route_candidate_counts,
+                route_overlap_counts=route_overlap_counts,
+                cache_state={
+                    "lexical_index": "memory_ready",
+                    "structured_evidence": "memory_ready",
+                },
+                ranking_pool_sizes={
+                    "pre_constraint_rerank": len(lexical_ids),
+                    "post_constraint_rerank": len(lexical_ids),
+                    "post_structured_filter": filtered_pool_size,
                 },
             ),
         )

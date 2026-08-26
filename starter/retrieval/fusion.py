@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from itertools import combinations
 from pathlib import Path
 from typing import Protocol
@@ -46,6 +46,7 @@ class FusionConfig:
 class RouteBatch:
     results: dict[str, RetrievalResult]
     failures: dict[str, str]
+    cache_state: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -118,7 +119,16 @@ class LocalRouteProvider:
                         ),
                         "dense_route_degraded",
                     )
-        return RouteBatch(results=results, failures=failures)
+        dense_status = self._dense.configuration_snapshot()["cache_status"]
+        return RouteBatch(
+            results=results,
+            failures=failures,
+            cache_state={
+                "lexical_index": "memory_ready",
+                "structured_evidence": "memory_ready",
+                "dense": str(dense_status),
+            },
+        )
 
     def dense_configuration(self) -> dict:
         return self._dense.configuration_snapshot()
@@ -261,6 +271,11 @@ class FusionRetriever:
                 },
                 route_overlap_counts=overlap_counts,
                 route_failures=failures,
+                cache_state=dict(batch.cache_state),
+                ranking_pool_sizes={
+                    **{f"{route}_route": len(ids) for route, ids in route_ids.items()},
+                    "fusion": len(candidates),
+                },
             ),
         )
 

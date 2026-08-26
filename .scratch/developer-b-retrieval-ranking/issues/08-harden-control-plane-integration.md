@@ -6,7 +6,7 @@ real Candidate Pool without depending on retrieval internals.
 
 **Blocked by:** 07 — Rank bounded Candidate Pools.
 
-**Status:** ready-for-agent
+**Status:** in-progress
 
 - [ ] Retrieval Diagnostics cover route sizes, overlap, filtering, relaxation, fallbacks, cache state, and stage latency.
 - [ ] Buying and Browsing Strategies produce measurably different retrieval execution.
@@ -17,3 +17,9 @@ real Candidate Pool without depending on retrieval internals.
 
 ## Comments
 
+- 2026-08-26: B6 started after rejecting semantic reranking as the runtime
+  default. The retained structured path is being instrumented at the shared
+  `Retriever.retrieve` seam with route/pool sizes, overlap, filter/relaxation,
+  cache state, fallback reasons, and per-stage latency. Agent integration tests
+  exercise distinct Buying/Browsing plans and compare candidate-aware
+  clarification with and without Candidate Pool evidence.
