@@ -163,9 +163,10 @@ Failure behavior can be reproduced without deleting a real cache:
 ```
 
 The public 40-session holdout is already exposed by earlier A-side full runs and
-is not confirmatory. B0-B6 did not inspect it. The full 200 command is reserved
-for the single Final Public Run after the frozen commit; do not use that result
-for subsequent tuning.
+is not confirmatory. B0-B6 did not inspect it. The single Full-200 Final Public
+Run was completed from frozen commit `98d3325` and is recorded in
+`docs/b7_final_public_run.json`; do not repeat it or use that result for
+subsequent tuning.
 
 ## Recommended Experiment Run
 

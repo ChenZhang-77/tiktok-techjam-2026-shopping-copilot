@@ -58,7 +58,7 @@ class B7FreezeEvidenceTest(unittest.TestCase):
         self.assertTrue(cache["validation"]["local_files_only"])
         self.assertTrue(cache["validation"]["smoke_score_is_finite"])
 
-    def test_review_has_no_blocker_and_final_run_is_still_pending(self) -> None:
+    def test_pre_run_freeze_snapshot_has_no_blocker_and_records_pending_run(self) -> None:
         review = self.manifest["review"]
         self.assertEqual(review["standards_hard_findings"], 0)
         self.assertEqual(review["spec_findings"], 0)

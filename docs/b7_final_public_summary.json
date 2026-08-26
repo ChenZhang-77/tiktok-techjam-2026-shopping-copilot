@@ -1,0 +1,71 @@
+{
+  "stage": "B7",
+  "status": "complete",
+  "branch": "patryk/track4-experiments",
+  "behavior_commit": "5b66df5",
+  "freeze_commit": "98d3325",
+  "report": {
+    "path": "docs/b7_final_public_run.json",
+    "sha256": "13ffaa619149e27f068961b66079ed494639e3d1a90645ae8bfa064b46a05b3b",
+    "split": "full",
+    "sample_count": 200,
+    "retrieval_mode": "structured",
+    "structured_filter": true,
+    "code_commit": "98d3325",
+    "worktree_clean": true
+  },
+  "metrics": {
+    "hit_rate_at_10": 0.765,
+    "mrr": 0.517355,
+    "mttc": 5.375,
+    "efficiency": 0.5625,
+    "recommended_technical_score": 0.650207
+  },
+  "scenario_metrics": {
+    "boundary": {
+      "hit_rate_at_10": 0.8,
+      "mrr": 0.72,
+      "recommended_technical_score": 0.712
+    },
+    "browsing": {
+      "hit_rate_at_10": 0.8,
+      "mrr": 0.546126,
+      "recommended_technical_score": 0.683838
+    },
+    "buying": {
+      "hit_rate_at_10": 0.75,
+      "mrr": 0.45619,
+      "recommended_technical_score": 0.628107
+    },
+    "intent_override": {
+      "hit_rate_at_10": 0.7,
+      "mrr": 0.53619,
+      "recommended_technical_score": 0.598857
+    }
+  },
+  "runtime": {
+    "initialization_ms": 1240.895875,
+    "evaluation_wall_ms": 43856.0285,
+    "retrieval_mean_ms": 36.53833,
+    "retrieval_p50_ms": 31.906667,
+    "retrieval_p95_ms": 82.305792,
+    "peak_rss_bytes": 575340544,
+    "prompt_tokens": 0,
+    "completion_tokens": 0
+  },
+  "reliability": {
+    "respond_exceptions": 0,
+    "invalid_response_payloads": 0,
+    "reported_fallbacks": 0,
+    "internal_fallbacks": 0,
+    "structured_filter_applied_responses": 213,
+    "relaxed_constraint_responses": 2
+  },
+  "protocol": {
+    "single_final_public_run": true,
+    "separate_holdout_run": false,
+    "post_run_tuning": false,
+    "confirmatory": false,
+    "limitation": "The 40-session public holdout was exposed by earlier A-side full runs; this Full-200 result is a final public snapshot, not sealed confirmatory evidence."
+  }
+}
