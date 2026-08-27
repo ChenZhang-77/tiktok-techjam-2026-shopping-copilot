@@ -199,12 +199,13 @@ category/hard/soft/semantic/residual/excluded evidence, but renders only the
 existing single `RetrievalRequest.query`; the shared schema is unchanged.
 Rejected and overridden terms must never render positive.
 
-A11 Extraction and Scope Hardening is retained at runtime code commit
-`4ed5560`, with the R0 tracing fix at `b0c953d`. Retain only the bounded slice:
-catalog-derived multi-word categories, clause-scoped positive/negative/
-no-preference extraction, and numeric/hyphen disambiguation. Do not re-enable
-the rejected broad feature vocabulary, low-confidence feature expiry, or
-QueryPlan residual cleanup. Catalog brand expansion remains deferred. The
+A11 Extraction and Scope Hardening is retained at reviewed runtime code commit
+`4a3fe6c`, with the earlier R0 tracing fix at `b0c953d`. Retain only the bounded
+slice: catalog-derived multi-word categories, clause/list-scoped positive,
+negative, and no-preference extraction, numeric/hyphen disambiguation, and
+catalog-path consistency for injected retrievers. The combined broad candidate
+was rejected; its feature-vocabulary, feature-expiry, brand, and residual-cleanup
+components lack independent hash-bound evidence and remain unproven. The
 shared request schema and question policy are unchanged. See
 `docs/a11_extraction_scope_evidence.md`. The next module is AB1 Shared Contract
 and Active-Route Semantics Freeze; B9 remains blocked until AB1 passes.

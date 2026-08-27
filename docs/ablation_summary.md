@@ -21,7 +21,7 @@ Development-160 results:
 | Weighted RRF, k=10 | 0.75000 | 0.486620 | 5.16875 | 0.637611 | Reject as default |
 | Semantic rerank, Top 30 | 0.78125 | 0.484162 | 4.96875 | 0.656499 | Reject globally; retain experiment |
 | A11 broad extraction candidate | 0.72500 | 0.479085 | 5.61250 | 0.613976 | Reject |
-| A11 bounded extraction scope | 0.88125 | 0.534308 | 4.38125 | 0.733292 | Retain |
+| A11 bounded extraction scope | 0.86250 | 0.545568 | 4.67500 | 0.721420 | Retain |
 
 The current retained runtime combines the structured retrieval path with the
 bounded A11 Control Plane extraction change. A11 passed all four fixed folds;
@@ -29,14 +29,16 @@ the broad extraction alternative did not.
 
 ## Why Bounded A11 Extraction Was Retained
 
-Catalog-derived multi-word categories, clause-scoped positive/negative/
-no-preference evidence, and numeric/hyphen disambiguation gained 22 Development
-sessions and lost three. All four fixed-fold technical scores improved.
+Catalog-derived multi-word categories, clause/list-scoped positive/negative/
+no-preference evidence, numeric/hyphen disambiguation, and injected catalog
+path consistency gained 19 Development sessions and lost three. All four
+fixed-fold technical scores improved.
 
-Broad catalog feature matching, low-confidence feature expiry, and QueryPlan
-residual cleanup were rejected during ablation. Catalog brand expansion remains
-deferred. Boundary technical score fell by `0.039896`, so the retained decision
-is strong but not scenario-uniform. Evidence:
+The combined broad candidate was rejected during ablation. Its catalog feature,
+feature-expiry, brand, and QueryPlan residual-cleanup components do not have
+independent hash-bound reports, so their individual effects remain unproven.
+Boundary technical score fell by `0.057083`, so the retained decision is strong
+but not scenario-uniform. Evidence:
 `docs/a11_extraction_scope_evidence.md`.
 
 ## Why Structured Was Retained

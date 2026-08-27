@@ -43,9 +43,20 @@ class A11ExtractionScopeEvidenceTest(unittest.TestCase):
             path = ROOT / report.get("report", report.get("path"))
             self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), report["sha256"])
 
-        self.assertEqual(self.candidate["code_provenance"]["commit"], "4ed5560")
+        self.assertEqual(self.candidate["code_provenance"]["commit"], "4a3fe6c")
         self.assertTrue(self.candidate["code_provenance"]["worktree_clean"])
         self.assertEqual(self.candidate["evaluation"]["split"], "development")
+        for report in [
+            self.record["failure_audit"],
+            *self.record["fold_reports"].values(),
+        ]:
+            payload = json.loads(
+                (ROOT / report.get("report", report.get("path"))).read_text(
+                    encoding="utf-8"
+                )
+            )
+            self.assertEqual(payload["code_provenance"]["commit"], "4a3fe6c")
+            self.assertTrue(payload["code_provenance"]["worktree_clean"])
         self.assertFalse(self.record["evaluation_boundary"]["full_or_holdout_used"])
         self.assertFalse(self.record["evaluation_boundary"]["target_information_in_runtime"])
 
@@ -72,7 +83,14 @@ class A11ExtractionScopeEvidenceTest(unittest.TestCase):
         )
         self.assertEqual(self.record["candidate"]["gained_session_ids"], gained)
         self.assertEqual(self.record["candidate"]["lost_session_ids"], lost)
-        self.assertEqual((len(gained), len(lost)), (22, 3))
+        self.assertEqual((len(gained), len(lost)), (19, 3))
+        session_bytes = json.dumps(
+            self.candidate["sessions"], sort_keys=True, separators=(",", ":")
+        ).encode()
+        self.assertEqual(
+            hashlib.sha256(session_bytes).hexdigest(),
+            self.record["candidate"]["session_outcome_sha256"],
+        )
 
         for index in range(1, 5):
             fold_name = f"fold_{index}"
@@ -107,6 +125,9 @@ class A11ExtractionScopeEvidenceTest(unittest.TestCase):
         self.assertFalse(self.record["evaluation_boundary"]["shared_contract_changed"])
         self.assertFalse(self.record["evaluation_boundary"]["question_policy_changed"])
         self.assertIn("broad_catalog_feature_vocabulary", self.record["rejected_or_deferred_scope"])
+        for disposition in self.record["rejected_or_deferred_scope"].values():
+            if disposition.startswith("not retained"):
+                self.assertIn("unproven", disposition)
         self.assertLess(self.record["scenario_score_deltas"]["boundary"], 0.0)
         self.assertEqual(
             self.record["next_module"],

@@ -2,8 +2,9 @@
 
 ## Decision
 
-Retain the bounded A11 candidate at runtime code commit `4ed5560`, with the R0
-tracing fix at `b0c953d`. The retained change is deterministic, A-owned, and
+Retain the reviewed bounded A11 candidate at clean runtime code commit
+`4a3fe6c`; the earlier R0 tracing fix remains in its history at `b0c953d`. The
+retained change is deterministic, A-owned, and
 keeps the existing `RetrievalRequest.query` contract and clarification policy.
 
 The retained scope is intentionally smaller than the original A11 list:
@@ -12,47 +13,54 @@ The retained scope is intentionally smaller than the original A11 list:
 - prevent `I'm`, model/dimension numbers, and hyphenated phrases such as
   `low-top` from becoming false size/category constraints;
 - separate positive, negative, and no-preference clauses before extraction;
+- keep comma-delimited negative and no-preference lists inside their clause,
+  while preventing catalog phrases from crossing punctuation or masked spans;
+- use the same supported attribute inventory for positive and rejected
+  constraints, including explicit brand and budget evidence;
 - recognize `use_case` and `other` no-preference replies;
-- preserve catalog context when the evaluation harness injects a real
-  catalog-backed retriever.
+- derive catalog context from the actual injected catalog-backed retriever and
+  reject an explicitly conflicting catalog path.
 
 Broad catalog feature extraction, catalog brand matching, low-confidence
-feature expiry, and QueryPlan residual cleanup are not retained. The broad
-candidate at `0589799` regressed Development-160 to HR `0.725`, MRR `0.479085`,
-MTTC `5.6125`, and score `0.613976`. Subsequent ablation showed that feature
-expiry and broad feature vocabulary were unsafe. The existing A10b residual
-renderer remains unchanged.
+feature expiry, and QueryPlan residual cleanup are not retained. The combined
+broad candidate at `0589799` regressed Development-160 to HR `0.725`, MRR
+`0.479085`, MTTC `5.6125`, and score `0.613976`. That report supports rejecting
+the combination only; no independent hash-bound report isolates the effect of
+each component. Their individual effects therefore remain unproven. The
+existing A10b residual renderer remains unchanged.
 
 ## Development-160 result
 
 | Metric | A10b baseline | A11 retained | Delta |
 | --- | ---: | ---: | ---: |
-| HitRate@10 | 0.762500 | 0.881250 | +0.118750 |
-| MRR | 0.529812 | 0.534308 | +0.004496 |
-| MTTC | 5.350000 | 4.381250 | -0.968750 |
-| Efficiency | 0.565000 | 0.661875 | +0.096875 |
-| Technical score | 0.653194 | 0.733292 | +0.080098 |
+| HitRate@10 | 0.762500 | 0.862500 | +0.100000 |
+| MRR | 0.529812 | 0.545568 | +0.015756 |
+| MTTC | 5.350000 | 4.675000 | -0.675000 |
+| Efficiency | 0.565000 | 0.632500 | +0.067500 |
+| Technical score | 0.653194 | 0.721420 | +0.068226 |
 
-There are 22 gained sessions and 3 lost sessions. No response exception,
+There are 19 gained sessions and 3 lost sessions. No response exception,
 invalid payload, or fallback was observed. No Full-200 or holdout run was used.
 
 ## Fixed-fold gate
 
 | Fold | Baseline score | A11 score | Delta |
 | --- | ---: | ---: | ---: |
-| fold_1 | 0.608196 | 0.711342 | +0.103146 |
-| fold_2 | 0.683092 | 0.749810 | +0.066718 |
-| fold_3 | 0.691051 | 0.770167 | +0.079116 |
-| fold_4 | 0.630435 | 0.701851 | +0.071416 |
+| fold_1 | 0.608196 | 0.714592 | +0.106396 |
+| fold_2 | 0.683092 | 0.729780 | +0.046688 |
+| fold_3 | 0.691051 | 0.761646 | +0.070595 |
+| fold_4 | 0.630435 | 0.679664 | +0.049229 |
 
 All four fixed folds improve in technical score. This is the decisive keep
-gate; the earlier candidate with feature expiry failed fold 4 and was removed.
+gate. Earlier exploratory components were removed before this clean retained
+run; their individual effects were not preserved as independent hash-bound
+evidence.
 
 ## Scenario trade-off
 
 Buying and Intent Override improve strongly, Browsing improves modestly, and
-Boundary regresses in technical score by `0.039896`. Boundary HitRate remains
-`0.875` and MTTC improves by `0.75`, but rank quality falls. This eight-session
+Boundary regresses in technical score by `0.057083`. Boundary HitRate remains
+`0.875`, while MRR falls and MTTC is `0.625` turns worse. This eight-session
 slice is a known risk and must not be hidden by the aggregate result.
 
 ## Updated offline failure audit
@@ -61,25 +69,25 @@ The target-aware audit remains offline-only. It uses Development targets to
 classify misses and writes no target ASIN into runtime state, requests,
 diagnostics, configuration, or this summary.
 
-- Misses: `38 -> 19`
-- Primary Extraction misses: `6 -> 5`
-- Remaining primary causes: Extraction `5`, Intent / Strategy Routing `12`,
+- Misses: `38 -> 22`
+- Primary Extraction misses: `6 -> 4`
+- Remaining primary causes: Extraction `4`, Intent / Strategy Routing `16`,
   State / Override `2`
 
-The small Extraction-count reduction is not inconsistent with the large score
-gain: many newly hit sessions previously had downstream causal labels, and the
-new category evidence also changes rank and time-to-correct behavior. The five
-remaining Extraction misses are dominated by catalog feature phrases such as
-material composition, sole/shaft details, and care instructions. Broadly
-enabling those phrases failed the clean Development gate, so they remain open.
+The Extraction-count reduction is not inconsistent with the aggregate score
+gain: newly hit sessions can previously have downstream causal labels, and the
+new category evidence also changes rank and time-to-correct behavior. Four
+primary Extraction misses remain. Broader extraction alternatives lack
+independent hash-bound evidence, so they remain open rather than being assigned
+an isolated causal conclusion.
 
 ## Cost and compatibility
 
 - Shared A/B schema: unchanged.
 - Question policy: unchanged.
 - Model/network/token cost: none.
-- Initialization: `1320.31 ms -> 1569.08 ms` in the recorded runs.
-- Peak RSS: approximately unchanged (`579,010,560 -> 578,355,200` bytes).
+- Initialization: `1320.31 ms -> 1625.76 ms` in the recorded runs.
+- Peak RSS: approximately unchanged (`579,010,560 -> 578,338,816` bytes).
 - Response latency is not directly comparable because A11 reaches correct
   products in fewer turns; no latency regression was observed in the report.
 

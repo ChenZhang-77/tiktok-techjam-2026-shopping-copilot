@@ -5,8 +5,8 @@
     "owner": "developer_a_control_plane",
     "hypothesis": "Deterministic catalog-derived multi-word categories plus clause-scoped extraction and numeric disambiguation improve retrieval without changing the A/B contract.",
     "decision": "retain_bounded_extraction_scope",
-    "runtime_code_commit": "4ed5560",
-    "offline_audit_commit": "b0c953d"
+    "runtime_code_commit": "4a3fe6c",
+    "offline_audit_commit": "4a3fe6c"
   },
   "retained_scope": [
     "catalog-derived multi-word category vocabulary",
@@ -17,10 +17,10 @@
     "catalog context preserved for injected catalog-backed retrievers"
   ],
   "rejected_or_deferred_scope": {
-    "broad_catalog_feature_vocabulary": "rejected after a clean Development-160 regression",
-    "catalog_brand_vocabulary": "deferred because the isolated Development probe changed no outcomes and single-word stores created ambiguity",
-    "low_confidence_feature_expiry": "rejected because it caused a fold-4 regression",
-    "query_plan_residual_cleanup": "rejected because the existing A10b residual path performed better",
+    "broad_catalog_feature_vocabulary": "not retained; it was evaluated only inside the rejected combined broad candidate, so its isolated effect is unproven",
+    "catalog_brand_vocabulary": "not retained; an exploratory probe changed no Development outcomes, but no independent hash-bound report was retained, so the effect remains unproven and deferred",
+    "low_confidence_feature_expiry": "not retained; exploratory fold observations were not preserved as independent hash-bound evidence, so the isolated effect is unproven",
+    "query_plan_residual_cleanup": "not retained; it was evaluated within exploratory combinations without an independent hash-bound report, so the isolated effect is unproven",
     "lightweight_model_parser": "not attempted because deterministic behavior passed the keep gate"
   },
   "evaluation_boundary": {
@@ -45,74 +45,74 @@
   },
   "candidate": {
     "report": "docs/a11_reports/development_scoped_extraction.json",
-    "sha256": "6caa76122e7d9ed29e64ae8df8facab9e88f0035bcba5491569331722040772f",
-    "session_outcome_sha256": "033cb1883b79fb9b30785681e0e73b4df98891c173ecddd3860c5a98d7b4318f",
-    "clean_code_commit": "4ed5560",
+    "sha256": "f3197a8cb903116f9afd0a38d45ed239e656bc77f64648eb4ecf3c94f507c76b",
+    "session_outcome_sha256": "41f7a9dede01e03439a76615adca62cbac1181619970d9ff345dca00608a5621",
+    "clean_code_commit": "4a3fe6c",
     "metrics": {
-      "hit_rate_at_10": 0.88125,
-      "mrr": 0.534308,
-      "mttc": 4.38125,
-      "efficiency": 0.661875,
-      "recommended_technical_score": 0.733292
+      "hit_rate_at_10": 0.8625,
+      "mrr": 0.545568,
+      "mttc": 4.675,
+      "efficiency": 0.6325,
+      "recommended_technical_score": 0.72142
     },
     "delta": {
-      "hit_rate_at_10": 0.11875,
-      "mrr": 0.004496,
-      "mttc": -0.96875,
-      "efficiency": 0.096875,
-      "recommended_technical_score": 0.080098
+      "hit_rate_at_10": 0.1,
+      "mrr": 0.015756,
+      "mttc": -0.675,
+      "efficiency": 0.0675,
+      "recommended_technical_score": 0.068226
     },
     "gained_session_ids": [
       "public_0011", "public_0022", "public_0026", "public_0028",
-      "public_0045", "public_0047", "public_0054", "public_0065",
-      "public_0071", "public_0083", "public_0088", "public_0089",
-      "public_0100", "public_0103", "public_0148", "public_0149",
+      "public_0045", "public_0047", "public_0065", "public_0071",
+      "public_0088", "public_0089", "public_0103", "public_0148",
+      "public_0149", "public_0153",
       "public_0170", "public_0178", "public_0183", "public_0188",
-      "public_0195", "public_0198"
+      "public_0198"
     ],
     "lost_session_ids": ["public_0093", "public_0111", "public_0130"],
     "reported_fallbacks": 0
   },
   "scenario_score_deltas": {
-    "boundary": -0.039896,
-    "browsing": 0.031964,
-    "buying": 0.124935,
-    "intent_override": 0.128894
+    "boundary": -0.057083,
+    "browsing": 0.027102,
+    "buying": 0.095782,
+    "intent_override": 0.146186
   },
   "fixed_fold_score_deltas": {
-    "fold_1": 0.103146,
-    "fold_2": 0.066718,
-    "fold_3": 0.079116,
-    "fold_4": 0.071416
+    "fold_1": 0.106396,
+    "fold_2": 0.046688,
+    "fold_3": 0.070595,
+    "fold_4": 0.049229
   },
   "fold_reports": {
     "fold_1": {
       "path": "docs/a11_reports/fold_1_scoped_extraction.json",
-      "sha256": "3fe6e0b6a8f4061b7067aea008941ad92f627cf3452ac97681bab2ea6ce35c37"
+      "sha256": "0c61606cf3664a39c0c663cd62ffc68a8daa8e0c1b76e1118c5affa6d09c1386"
     },
     "fold_2": {
       "path": "docs/a11_reports/fold_2_scoped_extraction.json",
-      "sha256": "13288b8f77a617977a3704653edb512780250a736863212c999777196d28dad2"
+      "sha256": "c0e40e49ac1c530393cd64a82436a436a7bf9e4a4514c7a8b959c2e1d1662288"
     },
     "fold_3": {
       "path": "docs/a11_reports/fold_3_scoped_extraction.json",
-      "sha256": "777998dc331598fcef12dfb8862dde104cf5ea3f0d5fc3d3180031c76ebc72a9"
+      "sha256": "5d7bc35805b15a5f9806ee563dffbc008812a3f9ab271fd835b15e2ff83ea50f"
     },
     "fold_4": {
       "path": "docs/a11_reports/fold_4_scoped_extraction.json",
-      "sha256": "08b1c5f68ec4a1c56e4a7870c124a4dc7a2b5bde68a141da7ad710d2d3f19b94"
+      "sha256": "41ed10f2130647f84952d68bbd955d3776e757746f8b5a3e47af6d6b11e14525"
     }
   },
   "failure_audit": {
     "path": "docs/a11_reports/development_failure_audit.json",
-    "sha256": "c0e985cd899c82a08ef015538a633bf010ef4be899b0035062ab33e9d0df8101",
+    "sha256": "21bff09b12b30fe65d06a7f745a9bd145725dffb18c35e3e5140e89fb3bf9740",
     "miss_count_before": 38,
-    "miss_count_after": 19,
+    "miss_count_after": 22,
     "primary_extraction_before": 6,
-    "primary_extraction_after": 5,
+    "primary_extraction_after": 4,
     "remaining_primary_causes": {
-      "extraction": 5,
-      "intent_strategy_routing": 12,
+      "extraction": 4,
+      "intent_strategy_routing": 16,
       "state_override": 2
     }
   },
@@ -128,8 +128,8 @@
     }
   },
   "known_risks": [
-    "Boundary technical score fell by 0.039896 despite unchanged HitRate and improved MTTC.",
-    "Five primary Extraction misses remain, mainly catalog feature phrases that were unsafe to enable broadly.",
+    "Boundary technical score fell by 0.057083 despite unchanged HitRate; MTTC is 0.625 turns worse than the A10b baseline in this eight-session slice.",
+    "Four primary Extraction misses remain; broader extraction alternatives do not have independent hash-bound evidence and remain unproven.",
     "Catalog vocabulary adds deterministic initialization work but does not add model, token, or network cost."
   ],
   "next_module": "AB1 Shared Contract and Active-Route Semantics Freeze"

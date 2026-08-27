@@ -78,7 +78,7 @@ HitRate/MTTC. A10a Candidate Question Value was subsequently tested, rejected,
 and reverted because its partial-evidence post-feature ranking regressed every
 main metric. A10b was then retained at `9560344` with exact Development session
 parity and no shared schema change. A11 was retained as a bounded deterministic
-slice at `4ed5560`: Development score rose to `0.733292` and all four folds
+slice at `4a3fe6c`: Development score rose to `0.721420` and all four folds
 improved, without a shared schema or question-policy change. The next executable
 module is the shared AB1 contract and active-route semantics freeze.
 The retained A8 confidence is an A-owned ordinal stability signal with
@@ -445,18 +445,19 @@ positive FTS terms.
 
 ## A11 - Extraction and Scope Hardening
 
-**Status: retained as a bounded slice at `4ed5560`.** The retained behavior is
-catalog-derived multi-word category extraction, clause-scoped positive/
-negative/no-preference evidence, and numeric/hyphen disambiguation. It gained
-22 Development sessions, lost three, improved all four fixed-fold technical
-scores, and raised overall score from `0.653194` to `0.733292`.
+**Status: retained as a bounded slice at `4a3fe6c`.** The retained behavior is
+catalog-derived multi-word category extraction, clause/list-scoped positive/
+negative/no-preference evidence, numeric/hyphen disambiguation, and injected
+catalog-path consistency. It gained 19 Development sessions, lost three,
+improved all four fixed-fold technical scores, and raised overall score from
+`0.653194` to `0.721420`.
 
-The broad feature vocabulary candidate, low-confidence feature expiry, and
-QueryPlan residual cleanup were rejected during ablation. Catalog brand
-expansion is deferred because it had no Development outcome effect and created
-single-word ambiguity. Do not resurrect those behaviors without a new isolated
-experiment. Boundary technical score fell by `0.039896`; preserve this risk in
-handoffs. Full evidence: `docs/a11_extraction_scope_evidence.md`.
+The combined broad candidate was rejected during ablation. Catalog feature,
+feature-expiry, brand, and QueryPlan residual-cleanup components lack
+independent hash-bound reports, so their individual effects remain unproven.
+Do not resurrect those behaviors without a new isolated experiment. Boundary
+technical score fell by `0.057083`; preserve this risk in handoffs. Full
+evidence: `docs/a11_extraction_scope_evidence.md`.
 
 Prioritize R0-supported failures:
 

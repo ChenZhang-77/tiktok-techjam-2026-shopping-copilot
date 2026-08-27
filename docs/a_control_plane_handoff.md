@@ -13,7 +13,7 @@ For a new A-side Codex conversation, read:
 
 Current reality: A and B are integrated; the stable seam is
 `HybridRetriever.retrieve(request: RetrievalRequest) -> RetrievalResult`; the
-bounded A11 runtime reached Development score `0.733292` with all four folds
+bounded A11 runtime reached Development score `0.721420` with all four folds
 positive. Do not repeat the obsolete “B not integrated”, “40 tests”, or
 pre-A11 status from the historical handoff.
 

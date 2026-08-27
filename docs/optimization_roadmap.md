@@ -247,13 +247,14 @@ then an AB1-coordinated contract change with compatibility tests.
 
 ### A11 - Extraction and scope hardening
 
-**Status: retained as a bounded deterministic slice at `4ed5560`.** Catalog-
-derived multi-word categories, clause-scoped positive/negative/no-preference
-extraction, and numeric/hyphen disambiguation improved Development technical
-score from `0.653194` to `0.733292`; all four fixed folds improved. Broad
-catalog feature extraction, feature expiry, and QueryPlan residual cleanup were
-rejected, while catalog brand expansion remains unproven and deferred. Boundary
-technical score regressed by `0.039896` and remains a disclosed risk. See
+**Status: retained as a bounded deterministic slice at `4a3fe6c`.** Catalog-
+derived multi-word categories, clause/list-scoped positive/negative/
+no-preference extraction, numeric/hyphen disambiguation, and injected catalog
+path consistency improved Development technical score from `0.653194` to
+`0.721420`; all four fixed folds improved. The combined broad candidate was
+rejected, but its feature, expiry, brand, and residual-cleanup components remain
+individually unproven. Boundary technical score regressed by `0.057083` and
+remains a disclosed risk. See
 `docs/a11_extraction_scope_evidence.md`.
 
 Do not add a lightweight model parser now: the deterministic slice passed the

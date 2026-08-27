@@ -24,11 +24,11 @@ runtime:
 
 | Metric | Result |
 | --- | ---: |
-| HitRate@10 | 0.88125 |
-| MRR | 0.534308 |
-| MTTC | 4.38125 |
-| Efficiency | 0.661875 |
-| TechnicalScore | 0.733292 |
+| HitRate@10 | 0.86250 |
+| MRR | 0.545568 |
+| MTTC | 4.67500 |
+| Efficiency | 0.632500 |
+| TechnicalScore | 0.721420 |
 
 Historical Full-200 public snapshot:
 
@@ -123,7 +123,7 @@ Development-160:
 | Pure lexical | 0.71875 | 0.485851 | 0.617005 | Reject as default |
 | Retained structured path | 0.76250 | 0.526989 | 0.653222 | Retain |
 | A11 broad extraction candidate | 0.72500 | 0.479085 | 0.613976 | Reject |
-| A11 bounded extraction scope | 0.88125 | 0.534308 | 0.733292 | Retain |
+| A11 bounded extraction scope | 0.86250 | 0.545568 | 0.721420 | Retain |
 | Dense only | 0.33750 | 0.160501 | 0.272650 | Reject as default |
 | Weighted RRF, k=10 | 0.75000 | 0.486620 | 0.637611 | Reject as default |
 | Semantic rerank, Top 30 | 0.78125 | 0.484162 | 0.656499 | Reject globally; keep experiment |
@@ -292,10 +292,13 @@ query string. Development-160 metrics and all session outcomes are unchanged.
 See [`docs/a10b_query_plan_evidence.md`](docs/a10b_query_plan_evidence.md).
 A11 now retains bounded catalog-derived multi-word category extraction,
 clause-scoped positive/negative/no-preference evidence, and numeric/hyphen
-disambiguation. Development-160 improved to HR `0.88125`, MRR `0.534308`, MTTC
-`4.38125`, and technical score `0.733292`; all four fixed folds improved. Broad
-feature extraction and feature expiry were rejected, and Boundary rank quality
-remains a disclosed risk. See
+disambiguation. Review fixes also keep comma-delimited negative/no-preference
+lists scoped, prevent catalog phrases from crossing punctuation, and bind
+injected retrievers to their actual catalog. Development-160 improved to HR
+`0.8625`, MRR `0.545568`, MTTC `4.675`, and technical score `0.721420`; all four
+fixed folds improved. The combined broad candidate was rejected, while its
+individual components remain unproven without independent evidence. Boundary
+quality remains a disclosed risk. See
 [`docs/a11_extraction_scope_evidence.md`](docs/a11_extraction_scope_evidence.md).
 The dependency-ordered next module is AB1 Shared Contract and Active-Route
 Semantics Freeze.
@@ -328,8 +331,8 @@ hard filters, duplicate/invalid ASINs, and Candidate Pool shortages.
   not a calibrated retrieval gate; two primary State / Override misses remain.
 - Clarification remains priority-biased and does not yet have a complete
   should-ask uncertainty gate.
-- Five primary Development Extraction misses remain, mainly catalog feature
-  phrases; broad feature-vocabulary extraction failed the keep gate.
+- Four primary Development Extraction misses remain. Broader extraction
+  alternatives remain unproven without independent hash-bound evidence.
 - Profile ranking is disabled at weight 0.0.
 - Dense/fusion/semantic paths are not the default runtime.
 - The retained runtime therefore does not yet literally satisfy the

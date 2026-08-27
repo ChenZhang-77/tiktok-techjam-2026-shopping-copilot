@@ -1,10 +1,10 @@
 {
   "sample_count": 40,
-  "hit_rate_at_10": 0.85,
-  "mrr": 0.526171,
-  "mttc": 5.05,
-  "efficiency": 0.595,
-  "recommended_technical_score": 0.701851,
+  "hit_rate_at_10": 0.825,
+  "mrr": 0.510546,
+  "mttc": 5.3,
+  "efficiency": 0.57,
+  "recommended_technical_score": 0.679664,
   "reported_token_usage": {
     "prompt_tokens": 0,
     "completion_tokens": 0,
@@ -21,27 +21,27 @@
     },
     "browsing": {
       "sample_count": 16,
-      "hit_rate_at_10": 0.875,
-      "mrr": 0.534276,
-      "mttc": 4.375,
-      "efficiency": 0.6625,
-      "recommended_technical_score": 0.730283
+      "hit_rate_at_10": 0.8125,
+      "mrr": 0.509276,
+      "mttc": 4.9375,
+      "efficiency": 0.60625,
+      "recommended_technical_score": 0.680283
     },
     "buying": {
       "sample_count": 16,
       "hit_rate_at_10": 0.875,
-      "mrr": 0.590873,
+      "mrr": 0.575248,
       "mttc": 5.0,
       "efficiency": 0.6,
-      "recommended_technical_score": 0.734762
+      "recommended_technical_score": 0.730074
     },
     "intent_override": {
       "sample_count": 6,
       "hit_rate_at_10": 0.666667,
-      "mrr": 0.322222,
-      "mttc": 6.833333,
-      "efficiency": 0.416667,
-      "recommended_technical_score": 0.513333
+      "mrr": 0.326389,
+      "mttc": 7.0,
+      "efficiency": 0.4,
+      "recommended_technical_score": 0.51125
     }
   },
   "sessions": [
@@ -58,8 +58,8 @@
       "scenario_type": "buying",
       "hit": true,
       "first_hit_turn": 2,
-      "best_rank": 2,
-      "reciprocal_rank": 0.5
+      "best_rank": 4,
+      "reciprocal_rank": 0.25
     },
     {
       "sample_id": "public_0006",
@@ -225,7 +225,7 @@
       "sample_id": "public_0115",
       "scenario_type": "browsing",
       "hit": true,
-      "first_hit_turn": 3,
+      "first_hit_turn": 2,
       "best_rank": 7,
       "reciprocal_rank": 0.14285714285714285
     },
@@ -329,9 +329,9 @@
       "sample_id": "public_0184",
       "scenario_type": "browsing",
       "hit": true,
-      "first_hit_turn": 2,
-      "best_rank": 10,
-      "reciprocal_rank": 0.1
+      "first_hit_turn": 5,
+      "best_rank": 5,
+      "reciprocal_rank": 0.2
     },
     {
       "sample_id": "public_0187",
@@ -352,22 +352,22 @@
     {
       "sample_id": "public_0195",
       "scenario_type": "browsing",
-      "hit": true,
-      "first_hit_turn": 4,
-      "best_rank": 2,
-      "reciprocal_rank": 0.5
+      "hit": false,
+      "first_hit_turn": null,
+      "best_rank": null,
+      "reciprocal_rank": 0.0
     },
     {
       "sample_id": "public_0198",
       "scenario_type": "intent_override",
       "hit": true,
-      "first_hit_turn": 5,
-      "best_rank": 10,
-      "reciprocal_rank": 0.1
+      "first_hit_turn": 6,
+      "best_rank": 8,
+      "reciprocal_rank": 0.125
     }
   ],
   "code_provenance": {
-    "commit": "4ed5560",
+    "commit": "4a3fe6c",
     "worktree_clean": true
   },
   "observed_run_counts": {
@@ -380,87 +380,87 @@
   "retrieval_diagnostics": {
     "route_candidate_counts": {
       "lexical": {
-        "response_count": 196,
-        "total": 18520,
-        "mean": 94.489796,
+        "response_count": 205,
+        "total": 19460,
+        "mean": 94.926829,
         "min": 60,
         "max": 120
       },
       "structured": {
-        "response_count": 196,
-        "total": 18520,
-        "mean": 94.489796,
+        "response_count": 205,
+        "total": 19460,
+        "mean": 94.926829,
         "min": 60,
         "max": 120
       }
     },
     "route_overlap_counts": {
       "lexical|structured": {
-        "response_count": 196,
-        "total": 18520,
-        "mean": 94.489796,
+        "response_count": 205,
+        "total": 19460,
+        "mean": 94.926829,
         "min": 60,
         "max": 120
       }
     },
     "route_failure_counts": {},
-    "structured_filter_applied_responses": 61,
+    "structured_filter_applied_responses": 64,
     "relaxed_constraint_responses": 2,
-    "filtered_pool_step_count": 98,
+    "filtered_pool_step_count": 106,
     "cache_state_counts": {
-      "lexical_index:memory_ready": 196,
-      "structured_evidence:memory_ready": 196
+      "lexical_index:memory_ready": 205,
+      "structured_evidence:memory_ready": 205
     },
     "rerank_pool_size": null
   },
   "timing": {
-    "initialization_ms": 1569.271625,
-    "evaluation_wall_ms": 4864.137416,
+    "initialization_ms": 1573.65925,
+    "evaluation_wall_ms": 5068.017958,
     "responses": {
-      "response_count": 196,
-      "total_ms": 4840.698794,
-      "mean_ms": 24.697443,
-      "p50_ms": 23.581083,
-      "p95_ms": 41.745791,
-      "max_ms": 60.28525
+      "response_count": 205,
+      "total_ms": 5044.441961,
+      "mean_ms": 24.607034,
+      "p50_ms": 23.72925,
+      "p95_ms": 41.686666,
+      "max_ms": 60.836292
     },
     "retrieval": {
       "latency": {
-        "response_count": 196,
-        "total_ms": 4121.705504,
-        "mean_ms": 21.02911,
-        "p50_ms": 19.885584,
-        "p95_ms": 37.705334,
-        "max_ms": 55.004125
+        "response_count": 205,
+        "total_ms": 4253.076539,
+        "mean_ms": 20.746715,
+        "p50_ms": 20.022125,
+        "p95_ms": 37.357833,
+        "max_ms": 55.333958
       },
       "lexical_latency": {
-        "response_count": 196,
-        "total_ms": 2137.007709,
-        "mean_ms": 10.903101,
-        "p50_ms": 10.900917,
-        "p95_ms": 17.136458,
-        "max_ms": 32.011708
+        "response_count": 205,
+        "total_ms": 2241.786707,
+        "mean_ms": 10.935545,
+        "p50_ms": 11.06325,
+        "p95_ms": 17.331625,
+        "max_ms": 32.249708
       },
       "constraint_rerank_latency": {
-        "response_count": 196,
-        "total_ms": 1106.979332,
-        "mean_ms": 5.647854,
-        "p50_ms": 5.01325,
-        "p95_ms": 13.012542,
-        "max_ms": 16.095208
+        "response_count": 205,
+        "total_ms": 1120.460911,
+        "mean_ms": 5.465663,
+        "p50_ms": 4.8905,
+        "p95_ms": 13.114625,
+        "max_ms": 15.958917
       },
       "structured_filter_latency": {
-        "response_count": 196,
-        "total_ms": 91.121213,
-        "mean_ms": 0.464904,
+        "response_count": 205,
+        "total_ms": 90.049538,
+        "mean_ms": 0.439266,
         "p50_ms": 0.000125,
-        "p95_ms": 2.2095,
-        "max_ms": 2.943708
+        "p95_ms": 2.13825,
+        "max_ms": 2.835625
       }
     }
   },
   "resources": {
-    "peak_rss_bytes": 575979520,
+    "peak_rss_bytes": 576372736,
     "peak_rss_kind": "process_peak_rss"
   },
   "evaluation": {

@@ -51,26 +51,26 @@ any runtime behavior change does.
 
 ## Verified Development Result
 
-The retained runtime after bounded A11 extraction at code commit `4ed5560`
-(plus offline tracing fix `b0c953d`) was reproduced on the fixed
+The retained runtime after reviewed bounded A11 extraction at clean code commit
+`4a3fe6c` (including the earlier tracing fix `b0c953d`) was reproduced on the fixed
 Development-160 split with the structured default:
 
 | Metric | Development-160 |
 | --- | ---: |
-| HitRate@10 | 0.88125 |
-| MRR | 0.534308 |
-| MTTC | 4.38125 |
-| Efficiency | 0.661875 |
-| TechnicalScore | 0.733292 |
+| HitRate@10 | 0.86250 |
+| MRR | 0.545568 |
+| MTTC | 4.67500 |
+| Efficiency | 0.632500 |
+| TechnicalScore | 0.721420 |
 
 Scenario diagnostics:
 
 | Scenario | Samples | HitRate@10 | MRR | MTTC | TechnicalScore |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Boundary | 8 | 0.875000 | 0.592014 | 5.375000 | 0.727604 |
-| Browsing | 64 | 0.890625 | 0.505202 | 4.250000 | 0.731873 |
-| Buying | 64 | 0.875000 | 0.541853 | 4.015625 | 0.739743 |
-| Intent Override | 24 | 0.875000 | 0.572569 | 5.375000 | 0.721771 |
+| Boundary | 8 | 0.875000 | 0.576389 | 6.000000 | 0.710417 |
+| Browsing | 64 | 0.875000 | 0.535869 | 4.562500 | 0.727011 |
+| Buying | 64 | 0.843750 | 0.517591 | 4.328125 | 0.710590 |
+| Intent Override | 24 | 0.875000 | 0.635764 | 5.458333 | 0.739063 |
 
 Observed reliability was zero response exceptions, invalid payloads, reported
 fallbacks, and internal fallbacks. All four fixed folds improved in technical
@@ -159,9 +159,9 @@ The next optimization phase starts from diagnosis, not from another model:
    actually executed by an injected retriever; AB1 must freeze this semantic.
 2. Clarification normally asks `feature` before using candidate partition
    evidence and does not first decide whether a question is needed.
-3. Five primary Extraction misses remain, mainly catalog feature phrases.
-   Broad feature-vocabulary extraction and low-confidence feature expiry were
-   tested but failed the keep gate.
+3. Four primary Extraction misses remain. The combined broad extraction
+   candidate failed the keep gate, but its individual components do not have
+   independent hash-bound evidence and remain unproven.
 4. `rejected_constraints` crosses the A/B seam but the retained B path does not
    yet use it as a calibrated negative ranking signal.
 5. The semantic reranker has useful scenario-specific signals, but global
@@ -247,21 +247,22 @@ metrics, and 160 session outcomes exactly match the baseline. See
 
 ## A11 Result
 
-A11 is retained as a bounded deterministic slice at runtime code commit
-`4ed5560`, with the R0 catalog-context tracing fix at `b0c953d`. It adds
+A11 is retained as a bounded deterministic slice at reviewed runtime code
+commit `4a3fe6c`, with the earlier R0 tracing fix at `b0c953d`. It adds
 catalog-derived multi-word categories, clause-scoped positive/negative/
 no-preference extraction, and numeric/hyphen disambiguation. It does not change
 the shared A/B schema, QueryPlan residual renderer, or clarification policy.
 
 Development-160 improved from HR `0.7625`, MRR `0.529812`, MTTC `5.35`, and
-score `0.653194` to HR `0.88125`, MRR `0.534308`, MTTC `4.38125`, and score
-`0.733292`. All four fixed folds improved; 22 sessions were gained and three
-lost. Boundary score fell by `0.039896`, while its HitRate stayed flat and MTTC
-improved, so Boundary rank quality remains a disclosed risk. The updated
-offline audit has 19 misses and five primary Extraction misses.
+score `0.653194` to HR `0.8625`, MRR `0.545568`, MTTC `4.675`, and score
+`0.721420`. All four fixed folds improved; 19 sessions were gained and three
+lost. Boundary score fell by `0.057083`, while its HitRate stayed flat and MTTC
+worsened by `0.625`, so Boundary quality remains a disclosed risk. The updated
+offline audit has 22 misses and four primary Extraction misses.
 
-The broad catalog feature candidate, feature expiry, and residual cleanup were
-rejected. Catalog brand expansion remains deferred. See
+The combined broad candidate was rejected. Feature-vocabulary, feature-expiry,
+brand, and residual-cleanup components remain individually unproven because no
+independent hash-bound reports were retained. See
 `docs/a11_extraction_scope_evidence.md`.
 
 ## Next Decision
