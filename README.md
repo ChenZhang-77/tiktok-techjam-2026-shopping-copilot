@@ -1,63 +1,166 @@
-# TikTok TechJam 2026 - Track 4 Shopping Copilot
+# TikTok TechJam 2026 - Adaptive Shopping Copilot
 
-Private team workspace for Track 4, **Shopping Copilot: AI Conversational Search and Recommendations**.
+An evidence-driven conversational shopping Agent for Track 4: **Shopping
+Copilot: AI Conversational Search and Recommendations**.
 
-This repository is based on the official participant kit:
+The Agent maintains current shopping intent across a multi-turn conversation,
+distinguishes targeted Buying from open-ended Browsing, retrieves products from
+a frozen 50,000-item Amazon catalog, ranks candidates with explicit constraint
+evidence, and returns safe recommendations with an optional clarification.
 
-- Official repo: https://github.com/TechJam2026/techjam-conversational-search
-- Release: https://github.com/TechJam2026/techjam-conversational-search/releases/tag/participant-kit
-- Competition spec: `docs/competition_specification.md`
-- Submission rules: `docs/submission_rules.md`
+The project is intentionally lightweight: the retained runtime requires no
+external API, hosted model, vector database, or token budget. Dense retrieval,
+fusion, and semantic reranking were implemented and measured as reproducible
+experiments, then disabled by default because their tradeoffs were not robust.
 
-## Goal
+## Current Status
 
-Build a multi-turn shopping agent that finds a hidden target product from a frozen 50,000-item Amazon catalog within at most 10 turns.
+The verified integrated checkout and next optimization decision are documented
+in [`docs/current_status.md`](docs/current_status.md). The project-wide route is
+[`docs/optimization_roadmap.md`](docs/optimization_roadmap.md).
 
-The local score is measured on 200 public development sessions:
+Verified Development-160 result for the retained structured runtime:
 
-- `HitRate@10`
-- `MRR`
-- `MTTC`
-- `TechnicalScore = 0.50 * HitRate@10 + 0.30 * MRR + 0.20 * Efficiency`
-
-The official weak BM25 starter baseline is:
-
-| Metric | Value |
+| Metric | Result |
 | --- | ---: |
-| HitRate@10 | 0.125 |
-| MRR | 0.068034 |
-| MTTC | 9.81 |
-| TechnicalScore | 0.10671 |
+| HitRate@10 | 0.7625 |
+| MRR | 0.526989 |
+| MTTC | 5.30625 |
+| Efficiency | 0.569375 |
+| TechnicalScore | 0.653222 |
 
-## Repository Contents
+Historical Full-200 public snapshot:
+
+| Metric | Result |
+| --- | ---: |
+| HitRate@10 | 0.765000 |
+| MRR | 0.517355 |
+| MTTC | 5.375000 |
+| TechnicalScore | 0.650207 |
+
+The Full-200 result is not a sealed validation result. The public holdout had
+already been exposed, so later work must be selected only with fixed
+Development-160 cross-validation. The organizer's private 800 sessions remain
+the external generalization test.
+
+## Problem Framing
+
+Static keyword search cannot reliably handle a customer who starts vague,
+adds constraints over several turns, rejects a suggestion, or changes their
+mind. The Track 4 task rewards three outcomes together:
+
+- **Coverage:** is the target product in the Top 10?
+- **Precision:** how highly is it ranked?
+- **Efficiency:** how many turns are needed to find it?
+
+The system therefore treats each turn as a decision cycle:
 
 ```text
-data/public_set.jsonl             200 public development sessions
-docs/                             official participant docs and scoring config
-evaluator/local_evaluator.py      official local evaluator
-starter/agent.py                  editable weak BM25 baseline
-scripts/download_catalog.sh       downloads official catalog release asset
-scripts/run_baseline.sh           runs the local evaluator
-scripts/start_experiment.sh       runs one named experiment and opens its visualizer
-docs/public_split_v1.json         fixed public-set development/holdout split
-experiments/                      team experiment notes
-submission/                       final packaging notes
-visualizer/                       local dialogue and metric inspection page
+What is still true?
+  -> Is the customer Buying or Browsing?
+  -> How should this turn search and rank?
+  -> Are the current recommendations sufficiently focused?
+  -> If not, which one question would reduce uncertainty most?
 ```
 
-Large generated runtime files are intentionally not committed:
+## Retained Runtime
 
-- `data/catalog.jsonl.gz`
-- `data/catalog.jsonl`
-- generated embeddings, indexes, checkpoints, and local `experiments/runs/`
+```text
+user message
+  -> SessionState and context update
+  -> current Buying/Browsing Strategy
+  -> distilled query from active constraints
+  -> in-memory SQLite FTS5 field-weighted Candidate Pool
+  -> cross-field hard/soft constraint ranking
+  -> guarded structured filtering
+  -> deterministic relaxation and fill
+  -> clarification decision
+  -> response guard
+```
 
-Curated public-development evidence may be checked in under `docs/` when its
-hashes, split boundary, and decision are covered by an evidence test. It must
-not contain private evaluation data.
+Important behaviors:
+
+- active, overridden, rejected, and no-preference evidence is separated,
+- stale values are excluded from the distilled query after Intent Override,
+- hard filtering is allowed only with adequate confidence and coverage,
+- sparse filters relax rather than emptying the Candidate Pool,
+- valid recommendations are normally returned alongside a question,
+- invalid/duplicate ASINs and schema errors are guarded,
+- optional retrieval/ranking failures degrade to deterministic local behavior.
+
+The stable integration seam is:
+
+```text
+HybridRetriever.retrieve(request: RetrievalRequest) -> RetrievalResult
+```
+
+Shared types and leakage validation are in `starter/contracts.py`.
+
+## Track 4 Alignment
+
+| Track 4 pillar | Project behavior |
+| --- | --- |
+| Intent Routing and Hybrid Pipeline | Buying/Browsing changes Strategy depth, weights, filtering, and clarification; alternative semantic routes are measured, not assumed |
+| Multi-Turn Scenario Evolution | Session state accumulates constraints, tracks no-preference/rejection, and deactivates stale intent on override |
+| Dynamic Context Programming | The Agent rebuilds the query from active state and records Strategy, Candidate, relaxation, and fallback diagnostics |
+| Product and Efficiency Metrics | Development evaluation reports HitRate@10, MRR, MTTC, Efficiency, scenario results, latency, memory, and failures |
+
+The next optimization phase makes intent persistence and proactive guidance
+more genuinely candidate-aware. See the roadmap rather than inferring that each
+planned behavior is already implemented.
+
+## What the Ablations Showed
+
+Development-160:
+
+| Variant | HitRate@10 | MRR | TechnicalScore | Decision |
+| --- | ---: | ---: | ---: | --- |
+| Official weak BM25 | 0.12500 | 0.068034 | 0.106710 | Comparison |
+| Pure lexical | 0.71875 | 0.485851 | 0.617005 | Reject as default |
+| Retained structured path | 0.76250 | 0.526989 | 0.653222 | Retain |
+| Dense only | 0.33750 | 0.160501 | 0.272650 | Reject as default |
+| Weighted RRF, k=10 | 0.75000 | 0.486620 | 0.637611 | Reject as default |
+| Semantic rerank, Top 30 | 0.78125 | 0.484162 | 0.656499 | Reject globally; keep experiment |
+
+Semantic reranking gained recall in some Buying/Browsing sessions but reduced
+MRR, regressed Intent Override, split the folds 2/2, and added substantial
+latency and memory. The next defensible semantic experiment is conditional and
+constraint-preserving, after A-side intent is stabilized.
+
+See [`docs/ablation_summary.md`](docs/ablation_summary.md) for decisions and the
+bound JSON reports under `docs/` for numerical provenance.
+
+## Repository Layout
+
+```text
+starter/                              Agent, Control Plane, retrieval/ranking
+evaluator/                            official deterministic local evaluator
+experiments/                          split and reporting infrastructure
+tests/                                behavior, contract, fallback, evidence tests
+scripts/                              catalog, cache, experiment, visualizer helpers
+visualizer/                           local dialogue and metric inspection UI
+docs/current_status.md                verified state and next decision
+docs/optimization_roadmap.md          project-wide blockers-first route
+docs/ablation_summary.md              human-readable keep/reject evidence
+docs/workstreams/                     standalone A and B routes
+docs/demo_and_submission_plan.md      delivery, demo, packaging, rehearsal
+submission/                           final minimal package work area
+data/public_set.jsonl                 200 public sessions
+```
+
+Generated catalog, model, embedding, cache, and experiment-run files are
+ignored by Git.
 
 ## Quickstart
 
-Use Python 3.10 or newer.
+Requirements:
+
+- Python 3.10 or newer for the default standard-library runtime.
+- The official frozen catalog release.
+- Python 3.12 plus `requirements-dense.txt` only for optional semantic
+  experiments.
+
+Clone and enter the repository:
 
 ```bash
 git clone https://github.com/ChenZhang-77/tiktok-techjam-2026-shopping-copilot.git
@@ -65,246 +168,174 @@ cd tiktok-techjam-2026-shopping-copilot
 python3 --version
 ```
 
-Download the official catalog:
+Download and verify the official catalog:
 
 ```bash
 ./scripts/download_catalog.sh
 ```
 
-Run the official weak starter baseline:
-
-```bash
-./scripts/run_baseline.sh
-```
-
-The command writes `results.json`. The first target is to reproduce the official baseline in `docs/baseline_results.json`.
-
-## Optional Local Dense Benchmark
-
-The B3 semantic route is a measured experiment, not the default retriever. It
-uses Python 3.12 and the exact package versions in `requirements-dense.txt`:
-
-```bash
-python3.12 -m venv .venv
-.venv/bin/python -m pip install -r requirements-dense.txt
-.venv/bin/python -m scripts.build_dense_index --allow-model-download --batch-size 128
-```
-
-`--allow-model-download` is needed only to acquire the pinned
-`sentence-transformers/all-MiniLM-L6-v2` revision on a clean machine. Subsequent
-cache rebuilds are offline and omit that flag:
-
-```bash
-.venv/bin/python -m scripts.build_dense_index --batch-size 128
-.venv/bin/python -m experiments.evaluation_reporting --split development --dense-only
-```
-
-The generated model and embedding caches remain ignored. Runtime validation
-checks the catalog, model revision, dimensions, dtype, normalization, ID order,
-and artifact hashes. Missing, incompatible, corrupt, or query-failing dense
-paths degrade to the deterministic structured/BM25 route. The B3 development
-result is retained only as an input to the B4 fusion ablation; dense-only is not
-the default path.
-
-## Retrieval / Ranking Configuration
-
-The frozen B-side runtime default is the local structured path:
-
-```text
-distilled current query
-  -> field-weighted SQLite FTS5 BM25 Candidate Pool
-  -> explicit hard/soft constraint ranking
-  -> guarded cross-field filtering with deterministic relaxation/fill
-  -> Candidate provenance and RetrievalDiagnostics
-```
-
-It requires no model download, API key, external vector database, or generated
-disk cache. Missing optional routes and expensive-stage failures fall back to
-this deterministic ordering.
-
-Dense retrieval, weighted RRF fusion, and a bounded top-30 CrossEncoder were
-measured as development ablations and rejected as runtime defaults. Their
-evidence and keep/reject decisions are recorded in `docs/b3_dense_benchmark.json`,
-`docs/b4_fusion_cv.json`, and `docs/b5_semantic_rerank_cv.json`.
-
-To reproduce the optional B5 semantic experiment on a clean machine, cache only
-the six runtime files for the pinned model revision, then run development data:
-
-```bash
-.venv/bin/python scripts/cache_reranker.py --allow-model-download
-.venv/bin/python -m experiments.evaluation_reporting \
-  --split development --semantic-rerank --rerank-limit 30 \
-  --output results-semantic-development.json
-```
-
-After the first command, runtime loading is local-only. A missing or failing
-CrossEncoder returns the exact pre-rerank Candidate order.
-
-## B-side Verification
-
-From a clean checkout with the catalog downloaded and the Python 3.12 virtual
-environment installed:
+Run the complete test suite:
 
 ```bash
 .venv/bin/python -m unittest discover -s tests -v
+```
+
+If no project virtual environment is present, the default runtime uses only
+the Python standard library:
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+Run an ordinary Development-160 evaluation:
+
+```bash
 .venv/bin/python -m experiments.evaluation_reporting \
   --split development --structured-filter \
-  --output results-structured-development.json
+  --output /private/tmp/shopping-copilot-development.json
 ```
 
-Failure behavior can be reproduced without deleting a real cache:
+Do not use `--split full` or `--split holdout` for optimization.
+
+## Named Experiments and Visualizer
+
+For an isolated named development run:
 
 ```bash
-.venv/bin/python -m unittest \
-  tests.test_dense_fallback \
-  tests.test_fusion \
-  tests.test_reranker \
-  tests.test_agent_smoke -v
+./scripts/start_experiment.sh experiment-name --split development
 ```
 
-The public 40-session holdout is already exposed by earlier A-side full runs and
-is not confirmatory. B0-B6 did not inspect it. The single Full-200 Final Public
-Run was completed from frozen commit `98d3325` and is recorded in
-`docs/b7_final_public_run.json`; do not repeat it or use that result for
-subsequent tuning.
-
-## Recommended Experiment Run
-
-For normal development, prefer the named experiment script:
+An optional fold can be selected:
 
 ```bash
-./scripts/start_experiment.sh baseline-bm25 --split development
+./scripts/start_experiment.sh experiment-name \
+  --split development --fold fold_1
 ```
 
-Replace `baseline-bm25` with a short name for the change being tested, such as:
+Generated runs are written under ignored `experiments/runs/` directories and
+can be inspected with the local visualizer.
 
-```bash
-./scripts/start_experiment.sh stateful-memory --split development
-./scripts/start_experiment.sh slot-extraction-v1 --split development
-```
-
-The supported splits are:
-
-```text
-development: 160 public sessions for ordinary iteration
-holdout:     40 exposed public sessions; do not use for B-stage selection
-full:        all 200 public sessions for one final non-confirmatory report
-```
-
-The A-side baseline was already evaluated on the full public set before B-stage
-work began, so the original holdout is no longer sealed. B-stage feature
-selection uses fixed cross-validation within the 160-session development split;
-see `docs/development_folds_v1.json` and ADR-0001. Do not run holdout or full
-evaluation during ordinary B development.
-
-Run an individual development validation fold with:
-
-```bash
-./scripts/start_experiment.sh experiment-name --split development --fold fold_1
-```
-
-Each run creates a separate ignored local folder:
-
-```text
-experiments/runs/YYYY-MM-DD-HHMM-experiment-name-split/
-```
-
-That folder contains:
-
-- `results.json`: metrics for that run
-- `agent_snapshot.py`: the `starter/agent.py` code used for that run
-- `metadata.json`: run name, time, branch, and commit
-- `public_split_v1.json`: copied split manifest when present
-- `notes.md`: experiment notes template
-
-The script also starts the local visualizer and opens the run-specific URL automatically.
-
-## Dialogue Visualizer
-
-The visualizer is a debugging tool for inspecting one public session at a time. It does not replace the official evaluator and does not modify `evaluator/local_evaluator.py`.
+Manual visualizer:
 
 ```bash
 python3 visualizer/server.py
 ```
 
-Then open:
+Open `http://127.0.0.1:8765`.
 
-```text
-http://127.0.0.1:8765
+The visualizer may show target and scoring information to a human reviewer.
+That information is evaluator-only and is never a valid Agent or retrieval
+input. A public demo must clearly separate the Agent-visible view from the
+evaluator/debug view.
+
+## Optional Semantic Experiments
+
+Install pinned optional dependencies in a Python 3.12 environment:
+
+```bash
+python3.12 -m venv .venv
+.venv/bin/python -m pip install -r requirements-dense.txt
 ```
 
-It shows overall metrics for the selected experiment, current customer metadata, target product, customer messages, Agent messages, `ask_attribute`, Top 10 recommendations, and hit/rank status for each turn. Use the Experiment dropdown to switch between saved local runs.
+Dense benchmark cache:
 
-The current BM25 baseline usually has `ask_attribute = null`; after improving `starter/agent.py`, the same page will show the improved multi-turn behavior.
-
-## Development Plan
-
-Step 1: reproduce the official baseline.
-
-- Clone this repo.
-- Download `catalog.jsonl.gz` from the official GitHub release.
-- Decompress it into `data/catalog.jsonl`.
-- Run `python3 -m evaluator.local_evaluator`.
-- Confirm the score matches `docs/baseline_results.json`.
-
-Step 2: improve the agent.
-
-Start by editing `starter/agent.py`. Recommended upgrade order:
-
-1. Add conversation state per `session_id`.
-2. Extract structured slots from each user message: category, material, color, size, style, brand, budget, feature, use case.
-3. Detect scenario behavior: buying, browsing, intent override, boundary/no-preference.
-4. Add metadata-aware retrieval and reranking on top of BM25.
-5. Add adaptive clarification: ask useful questions only when they can reduce the candidate set.
-6. Optional: add embeddings or a lightweight reranker, with an offline fallback.
-
-Do not modify `evaluator/` when reporting scores.
-
-## Submission Interface
-
-The submitted agent must export:
-
-```python
-class Agent:
-    def reset(self, session_id: str, user_profile: dict) -> None:
-        ...
-
-    def respond(self, session_id: str, user_message: str, turn: int, top_k: int) -> dict:
-        return {
-            "message": "Do you have a material preference?",
-            "ask_attribute": "material",
-            "recommendations": [{"parent_asin": "B000..."}],
-            "usage": {"prompt_tokens": 0, "completion_tokens": 0},
-        }
+```bash
+.venv/bin/python -m scripts.build_dense_index \
+  --allow-model-download --batch-size 128
 ```
 
-`ask_attribute` must be one of:
+Semantic reranker cache and Development-160 experiment:
 
-```text
-category, material, color, size, style, brand, budget, feature, use_case, other, null
+```bash
+.venv/bin/python scripts/cache_reranker.py --allow-model-download
+.venv/bin/python -m experiments.evaluation_reporting \
+  --split development --semantic-rerank --rerank-limit 30 \
+  --output /private/tmp/shopping-copilot-semantic-development.json
 ```
 
-Only the first 10 valid unique `parent_asin` values are scored.
+Model downloads are cache-preparation actions, not ordinary runtime behavior.
+After preparation, loading is local-only and failures return the exact
+pre-rerank order.
 
-## Data Policy
+## Current Optimization Route
 
-The catalog and sessions are derived from Amazon Reviews 2023 by McAuley Lab, UCSD. Keep the official attribution in `DATA_ATTRIBUTION.md`.
+The next technical route is:
+
+1. classify Development-160 misses as recall, ranking, state, dialogue, or
+   extraction failures,
+2. stabilize intent across clarification replies,
+3. add a should-ask over-generality gate,
+4. rank questions by candidate partition value,
+5. pass stable non-label diagnostics across the A/B seam,
+6. test rejected-constraint ranking,
+7. test conditional, constraint-preserving semantic reranking only when failure
+   analysis supports it,
+8. freeze the simplest robust development configuration,
+9. complete public documentation, demo, and the submission package.
+
+See [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md) and the A/B
+workstream documents for experiment gates and ownership.
+
+## Reliability and Cost
+
+Historical retained Development-160 evidence:
+
+| Measure | Value |
+| --- | ---: |
+| Initialization | about 1.25 s |
+| Mean retrieval latency | about 36.87 ms |
+| p95 retrieval latency | about 82.69 ms |
+| Peak RSS | about 574 MB |
+| Prompt/completion tokens | 0 / 0 |
+| Response exceptions | 0 |
+| Invalid response payloads | 0 |
+
+Required fallback behavior includes missing/corrupt dense cache, missing fusion
+routes, semantic backend errors, invalid scores, timeout termination, empty
+hard filters, duplicate/invalid ASINs, and Candidate Pool shortages.
+
+## Limitations
+
+- The historical public holdout is exposed and cannot support a sealed claim.
+- Current intent inference is still too current-utterance-sensitive.
+- Clarification remains priority-biased and does not yet have a complete
+  should-ask uncertainty gate.
+- Rule-based extraction has vocabulary and negation-scope limits.
+- Profile ranking is disabled at weight 0.0.
+- Dense/fusion/semantic paths are not the default runtime.
+- Public sessions are deterministic simulations derived from product metadata,
+  not real shopping conversations.
+- Private organizer evaluation is the remaining external test of paraphrase and
+  user generalization.
+
+## Data, Safety, and Attribution
+
+The competition catalog and sessions are derived from Amazon Reviews 2023 by
+McAuley Lab, UCSD. See [`DATA_ATTRIBUTION.md`](DATA_ATTRIBUTION.md).
 
 Do not commit:
 
-- private evaluation data
-- API keys or `.env`
-- downloaded catalog files
-- generated embeddings or model checkpoints unless they are small and license-safe
-- output files that contain secrets or private test artifacts
+- private evaluation data,
+- target-linked rules or public-answer hardcoding,
+- API keys, tokens, or `.env`,
+- downloaded catalogs,
+- generated embeddings/model caches/checkpoints,
+- unlicensed trademarks or copyrighted demo assets.
 
-## Remote GPU
+## Demo, Submission, and Contributions
 
-The official BM25 baseline does not need GPU. A remote GPU can be useful later for:
+The completion route is in
+[`docs/demo_and_submission_plan.md`](docs/demo_and_submission_plan.md). The
+final deliverables must include an independently runnable Agent package, a
+public GitHub repository, Devpost description, public YouTube demo, limitations,
+cost/latency, attribution, and named team member contributions.
 
-- generating product embeddings
-- running local sentence-transformer / E5 / BGE models
-- running a local reranker
-- experimenting with a small local LLM for slot extraction
+Do not invent contribution claims. Record each person's actual experiments,
+code, documentation, validation, and demo work before submission.
 
-Any GPU-dependent path must document setup, dependencies, expected memory, and CPU/offline fallback behavior.
+## For Coding Agents
+
+Read [`AGENTS.md`](AGENTS.md), then `docs/current_status.md`, the optimization
+roadmap, and exactly one selected workstream document. Work one experiment at a
+time and leave a reproducible handoff with tests, development evidence,
+gains/regressions, decision, and next smallest step.

@@ -46,12 +46,22 @@ Use the Experiment dropdown to switch between the current workspace and saved ex
 
 ## What It Shows
 
-- One selected public session at a time.
-- Overall metrics for the selected experiment.
-- Current customer's target product and session result.
-- Customer message for each turn.
-- Agent message and `ask_attribute`.
-- Top 10 recommendations with product title, price, categories, and target hit highlight.
-- Final hit/miss, first hit turn, and target rank.
+The page contains two different information classes:
 
-The baseline agent currently does not ask clarifying questions, so `ask_attribute` will usually be `null`. After improving `starter/agent.py`, the same visualizer will show the new multi-turn behavior.
+- **Agent View**: customer messages, agent message, `ask_attribute`, active
+  state, distilled query, route diagnostics, and Top 10 recommendations.
+- **Evaluator View**: target product, target highlight/rank, final hit/miss,
+  first-hit turn, and aggregate experiment metrics.
+
+Evaluator View exists only for offline analysis. Target ASIN, target rank,
+hit/miss labels, and future turns must never flow into agent state, retrieval,
+ranking, prompts, or routing. Keep the two views visibly labeled in screenshots
+and demo recordings.
+
+The integrated agent may ask a clarification when the control plane judges that
+its expected information gain is worth the extra turn. A `null`
+`ask_attribute` is therefore a decision, not evidence that questioning is
+unimplemented.
+
+See `../docs/demo_and_submission_plan.md` for the rehearsed demo flow and
+submission safety checklist.

@@ -1,476 +1,429 @@
-# Developer A Workstream - Agent / Control Plane
-
-## 1. How to use this document
-
-This is the standalone workstream brief for Developer A or a new coding-agent
-conversation taking over the Agent / Control Plane.
-
-This is the current implementation-phase allocation, not a permanent statement
-about team members. If ownership changes, update both workstream documents and
-the shared handoff status together.
-
-At the start of a new conversation:
-
-1. confirm the current Git branch and working tree,
-2. read AGENTS.md completely,
-3. read this document,
-4. read README.md, docs/competition_specification.md,
-   docs/agent_api_contract.json, docs/evaluation_config.json, and
-   starter/agent.py,
-5. confirm the shared contracts with Developer B before changing them,
-6. work on a feature/experiment branch, never directly on main,
-7. do not push, merge, or open a PR unless the user explicitly asks.
-
-AGENTS.md and the official participant kit override this document if they
-conflict.
-
-## 2. Mission
-
-Developer A owns the user-dialogue side of the system:
-
-    What did the user say?
-      -> What do they currently mean?
-      -> How should this turn search?
-      -> What should the Agent ask next?
-      -> Is the final response valid?
-
-The goal is a deterministic, inspectable Control Plane that maintains current
-intent, produces a useful retrieval request for Developer B's plane, and safely
-orchestrates the public Agent API.
-
-Developer A optimizes primarily for:
-
-- correct multi-turn state,
-- Intent Override behavior,
-- Boundary / no-preference behavior,
-- useful proactive clarification,
-- lower MTTC / higher Efficiency,
-- reliable orchestration and fallbacks.
-
-## 3. Primary ownership
-
-### 3.1 SessionState
-
-Maintain one isolated state per session_id.
-
-State must cover:
-
-- current turn,
-- raw history for audit,
-- current Buying/Browsing intent,
-- active constraints,
-- overridden/rejected constraints,
-- no-preference attributes,
-- attributes already asked,
-- user_profile as a weak prior,
-- previous distilled query,
-- previous candidate IDs,
-- previous strategy and relevant diagnostics,
-- whether an Intent Override has occurred.
-
-Do not use raw full-history concatenation as the retrieval query.
-
-Suggested helper behavior:
-
-- return active constraints,
-- find constraints by attribute,
-- deactivate conflicting attributes,
-- mark no-preference,
-- check whether an attribute was already asked,
-- record the previous strategy and candidate summary.
-
-### 3.2 Context and constraint extraction
-
-Extract or preserve:
-
-- category,
-- material,
-- color,
-- size,
-- style,
-- brand,
-- budget,
-- feature,
-- use_case.
-
-For each extracted value preserve:
-
-- raw value,
-- normalized value,
-- source turn,
-- source text,
-- confidence,
-- hard versus soft status,
-- active/inactive status.
-
-If classification is uncertain, preserve the raw phrase as soft feature
-evidence. Do not discard potentially useful text.
-
-Catalog price and explicit details keys are sparse. Do not turn uncertain
-budget, material, color, brand, style, or size signals into broad hard filters.
-
-### 3.3 Intent Override
-
-When the user changes their mind:
-
-1. identify the new constraint or phrase,
-2. deactivate conflicting old values,
-3. preserve old values for audit,
-4. rebuild the distilled query from active state,
-5. discard stale candidate continuity,
-6. set an override event for planning and telemetry.
-
-The query sent to retrieval must never contain both old and new conflicting
-values.
-
-### 3.4 Boundary and no preference
-
-When a user says an attribute does not matter:
-
-1. record the attribute in no-preference state,
-2. deactivate a conflicting soft constraint when appropriate,
-3. do not ask the same attribute again,
-4. continue using the remaining evidence,
-5. still return valid recommendations when candidates exist.
-
-### 3.5 Buying / Browsing Router
-
-Infer the route only from observable messages and state.
-
-Buying evidence may include:
-
-- concrete must-have constraints,
-- explicit size, material, color, brand, or budget,
-- several specific active constraints,
-- high-confidence category plus requirement.
-
-Browsing evidence may include:
-
-- broad or exploratory wording,
-- a vague use case,
-- few concrete constraints,
-- low-confidence or diverse candidate evidence.
-
-The router is not complete unless its output changes real execution through the
-Strategy contract.
-
-### 3.6 Strategy Planner
-
-Produce a Strategy for Developer B's retrieval/ranking plane.
-
-The Strategy should be able to express:
-
-- Buying or Browsing intent,
-- lexical, semantic, and structured route contributions,
-- retrieval and rerank depth,
-- hard-filter permission,
-- filter confidence/relaxation policy,
-- clarification requirement,
-- preferred ask_attribute,
-- fallback/degraded mode,
-- a short human-readable reason.
-
-Exact fields and defaults are shared contracts. Coordinate changes with
-Developer B before implementation.
-
-Developer A owns when and why per-turn Strategy values change. Developer B owns
-the retrieval/fusion mechanics and supplies evidence-backed default values or
-safe ranges. Neither side changes route-weight semantics alone.
-
-### 3.7 Clarification
-
-Clarification is a P1 capability, not a decorative final feature.
-
-Default policy:
-
-1. use candidate evidence to choose feature or material when informative,
-2. use color, style, size, use_case, brand, budget, or category only when
-   current state and candidate diversity justify it,
-3. use other when no typed attribute is clearly useful,
-4. never repeat an exhausted/no-preference attribute,
-5. normally return current best recommendations and one useful question
-   together.
-
-Do not restore the old fixed question orders:
-
-    category -> budget -> size -> material -> feature
-    use_case -> style -> feature -> material
-
-Current public data shows those orders waste turns. Do not hardcode public
-sample IDs, target values, or simulator-specific answers.
-
-For over-general requests:
-
-- detect a large or low-confidence candidate pool,
-- use RetrievalDiagnostics to choose a partitioning question,
-- avoid adding retrieval branches that only add noise,
-- record why clarification was selected.
-
-### 3.8 Response Guard
-
-Before returning from Agent.respond:
-
-- message is a string,
-- ask_attribute is allowed or None,
-- recommendations is a list,
-- every ASIN exists in the frozen catalog,
-- duplicate ASINs are removed without reordering,
-- no more than top_k items are returned,
-- fill toward top_k from a safe fallback pool when possible,
-- usage is validated only when present,
-- safe fallbacks prevent avoidable exceptions.
-
-### 3.9 starter/agent.py orchestration
-
-Developer A is the primary owner of starter/agent.py.
-
-It should orchestrate:
-
-    state update
-      -> intent route
-      -> strategy plan
-      -> distilled query
-      -> Developer B retrieval
-      -> Developer B ranking
-      -> clarification
-      -> response guard
-      -> state/telemetry record
-
-Keep retrieval and ranking internals out of starter/agent.py.
-
-## 4. Files owned by this workstream
-
-These are target locations, created only when the responsibility is real:
-
-    starter/agent.py
-    starter/contracts.py
-    starter/core/state.py
-    starter/core/context_engine.py
-    starter/core/intent_router.py
-    starter/core/planner.py
-    starter/core/query_builder.py
-    starter/core/clarification.py
-    starter/core/response_guard.py
-    starter/utils/telemetry.py
-
-    tests/test_state.py
-    tests/test_override.py
-    tests/test_boundary.py
-    tests/test_clarification.py
-    tests/test_response_guard.py
-    tests/test_agent_smoke.py
-
-Do not create every file up front. Start with the smallest vertical slice and
-split modules only when responsibilities become real.
-
-## 5. Explicit non-ownership
+# Developer A Optimization Route - Control Plane
+
+## Purpose
+
+This is the standalone route for a fresh Codex conversation working on the
+Agent / Control Plane. It describes current responsibilities and blockers, not
+permission to implement every item.
+
+Developer A's question is:
+
+```text
+What is still true about the customer's intent?
+  -> Should the current route change?
+  -> What evidence should retrieval receive?
+  -> Are recommendations focused enough?
+  -> If not, which one question is worth another turn?
+```
+
+## New-Conversation Startup
+
+Read, in order:
+
+1. `AGENTS.md`
+2. `docs/current_status.md`
+3. `docs/optimization_roadmap.md`
+4. this document
+5. `starter/agent.py`
+6. `starter/core/state.py`
+7. `starter/core/context_engine.py`
+8. `starter/core/planner.py`
+9. `starter/core/query_builder.py`
+10. `starter/core/clarification.py`
+11. `starter/core/response_guard.py`
+12. `starter/contracts.py`
+13. the focused tests named by the selected experiment
+
+Then report:
+
+```text
+Branch and HEAD:
+Working tree:
+Selected A experiment:
+Diagnosed failure class:
+Expected files:
+B-side dependency or contract impact:
+Focused tests:
+Development-only evaluation:
+```
+
+Do not edit code when the user asks only for a review, diagnosis, or plan.
+
+## Current Integrated State
+
+The integrated checkout and verified metrics are in `docs/current_status.md`.
+The current Control Plane already provides:
+
+- isolated SessionState objects,
+- raw/audited conversation history,
+- active, overridden, rejected, and no-preference state,
+- common category/material/color/size/style/brand/budget/feature/use-case
+  extraction,
+- Intent Override and category-level context reset,
+- Buying/Browsing Strategy generation,
+- active-state query distillation,
+- non-repeating clarification with Candidate evidence,
+- public response guard,
+- Control Plane diagnostics,
+- the stable `RetrievalRequest`/`RetrievalResult` seam.
+
+The next phase does not rebuild these capabilities. It targets decision quality
+and private-set robustness.
+
+## Ownership
+
+Developer A owns:
+
+- `starter/agent.py` orchestration,
+- `starter/core/state.py`,
+- `starter/core/context_engine.py`,
+- `starter/core/planner.py`,
+- `starter/core/query_builder.py`,
+- `starter/core/clarification.py`,
+- `starter/core/response_guard.py`,
+- `starter/core/diagnostics.py`,
+- Control Plane tests,
+- when and why per-turn Strategy values change.
 
 Developer A does not own:
 
-- BM25 internals,
-- catalog indexing,
-- dense model/index/cache implementation,
-- RRF or other fusion internals,
-- constraint score internals,
-- semantic reranker implementation,
+- catalog loading or indexing,
+- BM25/FTS internals,
+- structured/dense/fusion mechanics,
+- ranking score implementation,
+- semantic model/cache execution,
 - retrieval latency/cache optimization.
 
-Developer A may use a retrieval stub while Developer B works independently.
-Do not implement a second competing retrieval stack inside Control Plane files.
+Developer A may use Retriever fixtures. Do not build a second retrieval stack
+inside Control Plane files.
 
-## 6. Shared contract with Developer B
+## Shared Contract
 
-The two workstreams must agree on these concepts before parallel work.
+Current public seam:
 
-### 6.1 Inputs A sends to B
+```text
+HybridRetriever.retrieve(request: RetrievalRequest) -> RetrievalResult
+```
 
-At minimum:
+Developer A constructs `RetrievalRequest` with:
 
+- `session_id`, `turn`, `top_k`,
 - distilled query,
-- active constraints with confidence and hard/soft status,
-- Buying/Browsing intent,
+- current intent,
 - Strategy,
-- top_k,
-- current session/turn context needed for diagnostics.
+- active constraints,
+- no-preference attributes,
+- rejected constraints,
+- asked attributes.
 
-Do not send:
+Do not send SessionState itself or any evaluator-only label. Consume Candidate
+and RetrievalDiagnostics without importing B implementation internals.
 
-- ground_truth,
-- target ASIN,
-- scenario_type,
-- difficulty_bucket,
-- intent_card,
-- evaluator-only behavior.
+Before changing the contract or Strategy semantics:
 
-### 6.2 Results B returns to A
+1. state why the existing fields cannot support the experiment,
+2. notify Developer B,
+3. add contract tests,
+4. keep changes backward-compatible when possible,
+5. update the B workstream and `docs/current_status.md`,
+6. never change route-weight meaning unilaterally.
 
-At minimum:
+## Diagnosed A-Side Bottlenecks
 
-- ranked Candidate list,
-- RetrievalDiagnostics,
-- fallback/degraded-mode information,
-- enough score/rank provenance for debugging.
+### 1. Current-utterance intent instability
 
-Useful stable seam:
+`Agent.respond` replaces `state.intent` with an inference based on the current
+message and current extraction. A normal clarification reply with one soft
+constraint can move a previously specific Buying session back to Browsing.
 
-    HybridRetriever.retrieve(query, state, strategy)
-        -> candidates, diagnostics
+### 2. Clarification has no complete should-ask gate
 
-Optional ranking seam:
+The current policy normally asks whenever an attribute is available. It does
+not first decide whether recommendations are sufficiently concentrated.
 
-    Reranker.rank(query, state, candidates, strategy)
-        -> ranked_candidates
+### 3. `feature` is selected before candidate partition evidence
 
-### 6.3 Contract-change rule
+Candidate-aware scoring exists, but `feature` is normally preferred before the
+candidate-value calculation. This can overfit the public simulator's high
+feature availability.
 
-Before changing a shared type or interface:
+### 4. Rule and scope limitations
 
-1. describe the need and expected caller impact,
-2. update or add contract tests,
-3. notify Developer B,
-4. avoid simultaneous edits to the same shared file,
-5. keep the change small and backward-compatible when possible.
+Extraction uses static vocabulary and regexes. Known example: "I do not care
+about color, but I prefer nylon" can incorrectly mark material as no-preference
+because the no-preference expression is not scoped to one clause.
 
-## 7. Implementation order
+### 5. Query evidence is flattened into one string
 
-### A0 - Shared baseline and contracts
+Exact constraints, semantic phrases, current wording, and negative evidence are
+not represented as separate conceptual components.
 
-- Reconfirm official baseline.
-- Agree on SessionState, Constraint, Strategy, Candidate, and
-  RetrievalDiagnostics seams.
-- Use Python 3.10+.
-- Confirm the development split; do not inspect sealed holdout.
+### 6. Previous diagnostics are recorded more than used
 
-### A1 - Stateful lexical vertical slice
+Candidate stability, filter relaxation, route failure, and repeated uncertainty
+do not yet drive a complete next-turn policy.
 
-- Keep official BM25 behavior through a stub/stable retriever.
-- Add state accumulation.
-- Add query distillation.
-- Add override and no-preference behavior.
-- Add response guard.
-- Preserve baseline parity where intended.
+## Blocking Order
 
-### A2 - Data-aware clarification
+```text
+R0 failure taxonomy
+  -> A8 stateful intent
+      -> A9 should-ask gate
+          -> A10 question value and query components
+              -> A11 extraction/scope hardening
+                  -> A12 profile ablation
+```
 
-- Add asked/no-preference tracking.
-- Ask candidate-aware feature/material first when informative.
-- Add other fallback.
-- Return recommendations and clarification together.
-- Inspect traces with the local visualizer.
+Do not start A12 before the explicit-intent path is stable.
 
-### A3 - Router and planner
+## A8 - Stateful Intent Persistence
 
-- Add observable Buying/Browsing routing.
-- Make route output change Strategy.
-- Add over-generality behavior.
-- Record human-readable planning reasons.
+### Hypothesis
 
-### A4 - Integration with Developer B
+Intent hysteresis based on previous intent, accumulated constraints, explicit
+exploration language, and override events will improve Buying and Intent
+Override without damaging Browsing.
 
-- Replace retrieval stub with HybridRetriever.
-- Pass only shared-contract data.
-- Consume diagnostics for clarification/adaptation.
-- Test dense/reranker failure paths.
+### Desired behavior
 
-### A5 - Evaluation and hardening
+- A clarification reply does not flip intent by default.
+- Browsing becomes Buying only when concrete evidence accumulates.
+- Buying becomes Browsing only on explicit relaxation/exploration evidence.
+- Override triggers re-evaluation and an explainable reason.
+- `Strategy.reason` records why intent was kept or changed.
 
-- Run focused tests.
-- Evaluate on development.
-- Use development cross-validation for keep/revert decisions.
-- Keep sealed holdout unopened until final freeze.
-- Record MTTC/Efficiency changes and scenario diagnostics.
+An implementation may add intent confidence/evidence, but do not enlarge State
+until tests require a real field.
 
-## 8. Required tests
+### Expected files
 
-At minimum:
+- `starter/core/context_engine.py`
+- `starter/core/state.py` only if persistent evidence is required
+- `starter/core/planner.py` only if Strategy consumes confidence
+- `starter/agent.py` orchestration wiring
+- `tests/test_context_engine.py`
+- `tests/test_state.py`
+- `tests/test_planner.py`
+- `tests/test_agent_smoke.py`
 
-- reset creates isolated state,
-- two constraints accumulate without duplication,
-- provenance and source turn are preserved,
-- hard and soft evidence remain distinguishable,
-- Intent Override deactivates stale intent,
-- distilled query excludes overridden values,
-- no-preference is recorded,
-- an exhausted attribute is not asked again,
-- clarification does not suppress valid recommendations,
-- router output changes Strategy,
-- illegal ask_attribute is corrected,
-- duplicate/invalid ASINs are removed,
-- fallback candidates fill toward top_k,
-- multi-turn Agent responses satisfy the public API,
-- exceptions from Developer B's optional stages reach a safe response.
+### Required tests
 
-Tests must never read or depend on ground_truth.
+- Buying remains Buying after one soft clarification answer.
+- Browsing becomes Buying after sufficient specific constraints.
+- Explicit exploration can keep/restore Browsing.
+- Override removes stale context and re-evaluates intent.
+- State and diagnostics contain no evaluator labels.
+- Buying/Browsing still execute observably different Strategies.
 
-## 9. Evaluation and manual review
+### Keep gate
 
-Use named development experiments:
+- Route behavior is more stable and explainable.
+- Development folds support the overall/scenario tradeoff.
+- Buying or Intent Override improves without a material Browsing regression.
+- No public-simulator sample or target-specific logic is introduced.
 
-    ./scripts/start_experiment.sh control-state-v1
-    ./scripts/start_experiment.sh clarification-v1
-    ./scripts/start_experiment.sh router-v1
+### Revert gate
 
-For each run record:
+- Intent becomes sticky and ignores real customer changes.
+- Fold evidence is unstable.
+- Browsing recall/efficiency materially regresses.
+- The solution requires sample-specific exceptions.
 
-- hypothesis,
-- code/config change,
-- development subset,
-- overall and per-scenario metrics,
-- MTTC/Efficiency effect,
-- fallback/error counts,
-- keep/revert decision.
+## A9 - Should-Ask Over-Generality Gate
 
-Use the visualizer for public-set debugging only. It may show target labels to a
-human reviewer, but Agent runtime must receive only reset/respond inputs.
+### Hypothesis
 
-Do not tune from the sealed holdout or repeatedly inspect the full 200.
+Separating "should ask" from "what to ask" will reduce wasted turns and MTTC
+while preserving early-hit opportunity.
 
-## 10. Handoff to Developer B
+### Candidate evidence
 
-Provide:
+Use only non-label information such as:
 
-- current shared contracts,
-- fixture SessionState objects,
-- example Buying and Browsing Strategies,
-- distilled-query examples,
-- active/overridden/no-preference examples,
-- expected diagnostics fields,
-- failing integration tests or open questions,
-- branch and commit SHA used for the handoff.
+- Candidate Pool size,
+- top-score/rank margin when calibrated,
+- active-constraint coverage,
+- Candidate stability across turns,
+- attribute partition availability,
+- turn number,
+- no-preference/exhausted attributes,
+- filter relaxation or degraded mode.
 
-Developer B should be able to test retrieval/ranking without importing
-Control Plane implementation internals.
+### Desired behavior
 
-## 11. Definition of done for A
+- Return recommendations even when asking.
+- Ask only when the pool is genuinely broad/low-confidence and a useful
+  attribute exists.
+- Allow `ask_attribute=None` before turn 10 when another question has low value.
+- Never repeat an asked or no-preference attribute.
+- Record a short reason for ask/no-ask.
 
-Developer A's workstream is ready for integration when:
+### Expected files
 
-- starter/agent.py remains small orchestration code,
-- SessionState is isolated and deterministic,
-- active state handles accumulation, override, and no-preference,
-- query construction uses active state only,
-- Buying/Browsing routing changes Strategy,
-- clarification is candidate-aware and non-repetitive,
-- valid recommendations are returned alongside clarification when possible,
-- Response Guard enforces the public contract,
-- Developer B can integrate through stable seams,
-- focused tests pass,
-- development metrics and visual traces are recorded,
-- no evaluator/data/label leakage exists,
-- no changes were committed directly to, merged into, or pushed to main.
+- `starter/core/clarification.py`
+- `starter/agent.py`
+- `starter/core/diagnostics.py`
+- possibly `starter/contracts.py` only after A/B coordination
+- `tests/test_clarification.py`
+- `tests/test_agent_smoke.py`
 
-## 12. New-conversation status template
+### Required tests
 
-At the end of a work session, leave:
+- concentrated candidates produce no question,
+- broad candidates with useful partitions produce one question,
+- no useful partition produces no question or safe `other`,
+- final turn never asks,
+- recommendation output remains valid,
+- no-preference and previously asked attributes stay unavailable.
 
-    Branch:
-    Commit:
-    Gate:
-    Completed:
-    Tests:
-    Development metrics:
-    Visual traces inspected:
-    Shared-contract changes:
-    Waiting on Developer B:
-    Known risks:
-    Next smallest step:
+### Keep gate
+
+- MTTC/Efficiency improves on stable development folds,
+- HitRate does not materially fall from lost clarification information,
+- question count and repeated/no-value questions fall,
+- behavior is based on Candidate evidence, not public sample availability.
+
+## A10 - Question Value and Query Components
+
+### Hypothesis
+
+Ranking attributes by candidate coverage, value diversity, and expected pool
+reduction will generalize better than unconditional `feature` priority.
+
+Conceptual score:
+
+```text
+QuestionValue(attribute)
+  = candidate coverage
+  * value diversity
+  * expected pool reduction
+  * answer usefulness prior
+  - asked/no-preference/exhaustion penalty
+```
+
+The answer-usefulness prior must not be a hardcoded public-sample table.
+
+For query distillation, preserve conceptual components:
+
+```text
+category/exact terms
+active hard terms
+active soft terms
+semantic feature/use-case phrase
+rejected/overridden terms
+```
+
+Do not blindly append the full current utterance after its evidence has been
+captured in state. Negative terms must not become positive FTS terms.
+
+### Keep gate
+
+- Candidate questions are explainable from current evidence.
+- MTTC improves without recall loss.
+- Query traces exclude stale, rejected, duplicated, and excessive low-confidence
+  phrases.
+
+## A11 - Extraction and Scope Hardening
+
+Prioritize R0-supported failures:
+
+- catalog-derived category and brand vocabulary,
+- multi-word values and normalized synonyms,
+- clause-scoped no-preference and negation,
+- `avoid`, `without`, `anything but`, and mixed positive/negative clauses,
+- budget/size/model-number ambiguity,
+- override scope and replacement attributes,
+- bounded lifetime/length for low-confidence feature phrases.
+
+Use deterministic changes first. A lightweight model parser is optional only
+for low-confidence input and must have token/cost accounting, timeout, and the
+existing deterministic fallback. It must win development cross-validation.
+
+## A12 - Profile Ablation
+
+The profile is a weak anonymized prior, not a user identity or hard constraint.
+
+Rules:
+
+- run only after A8-A11,
+- use a small soft signal only in vague/low-constraint Browsing,
+- explicit current intent always wins,
+- override never resurrects a profile preference as active intent,
+- report a direct `profile_weight=0.0` comparison,
+- retain zero when fold evidence is weak.
+
+Do not claim cross-session long-term memory; the evaluator supplies isolated
+sessions without stable identity.
+
+## Required Invariants Across All A Work
+
+- one isolated state per `session_id`,
+- provenance/source turn preserved,
+- inactive/rejected values excluded from positive query,
+- category override clears conflicting product context,
+- no-preference attributes are not asked again,
+- valid recommendations can accompany clarification,
+- Agent output stays schema-valid under B failure,
+- no target/ground-truth/scenario/evaluator data crosses the seam,
+- current explicit intent outranks profile evidence,
+- all behavior is deterministic unless stochasticity is explicitly measured.
+
+## Evaluation
+
+Focused tests depend on the experiment. Before keeping a slice:
+
+```bash
+.venv/bin/python -m unittest \
+  tests.test_state \
+  tests.test_context_engine \
+  tests.test_planner \
+  tests.test_query_builder \
+  tests.test_clarification \
+  tests.test_response_guard \
+  tests.test_agent_smoke -v
+
+.venv/bin/python -m unittest discover -s tests -v
+```
+
+Evaluate only Development-160 and its fixed folds. Report:
+
+- overall score,
+- four scenario scores,
+- intent switch count/reasons,
+- question count and useful-question proxy,
+- repeated/no-preference violations,
+- gained/lost sessions,
+- latency/fallback impact.
+
+Do not run Full/Holdout.
+
+## Handoff to Developer B
+
+For a retained A change, provide:
+
+- exact `RetrievalRequest` examples for stable Buying, Browsing, and Override,
+- Strategy and reason examples,
+- query component examples,
+- active/rejected/no-preference fixtures,
+- required new diagnostics, if any,
+- contract test results,
+- branch/commit and development evidence,
+- explicit statement of unchanged route-weight semantics or a coordinated
+  contract decision.
+
+## End-of-Session Template
+
+```text
+Branch and commit:
+A experiment:
+Failure class:
+Behavior changed:
+Files changed:
+Focused/full tests:
+Development folds and scenarios:
+Question/intent diagnostics:
+Keep/revert decision:
+B dependency or shared-contract impact:
+Known risks:
+Next smallest step:
+```

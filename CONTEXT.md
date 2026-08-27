@@ -50,6 +50,45 @@ Non-label operational evidence about route availability, pool sizes, filtering,
 fallbacks, latency, and candidate overlap.
 _Avoid_: evaluator diagnostics, target data
 
+**Intent Confidence**:
+An agent-side estimate of how stable and specific the current intent is, based
+only on the conversation observed so far. It may guide questioning or retrieval
+depth but must not use evaluator labels.
+_Avoid_: probability of target hit, evaluation confidence
+
+**Over-Generality**:
+A state in which the current intent leaves too many materially different
+candidate interpretations for reliable ranking.
+_Avoid_: simply having many search results
+
+**Question Value**:
+The expected reduction in decision-relevant uncertainty from asking one
+clarifying question, weighed against its extra-turn cost.
+_Avoid_: always ask when an attribute is missing
+
+**Candidate Stability**:
+How little the leading Candidate Pool changes under small, valid changes to the
+query or active state. Low stability may justify clarification or a guarded
+fallback.
+_Avoid_: deterministic execution
+
+**Conditional Route**:
+An optional retrieval or reranking route activated only for a declared,
+observable subset of agent-side states and backed by a deterministic fallback.
+_Avoid_: globally enabled experiment
+
+**Retained Runtime**:
+The configuration enabled by default after passing the declared development
+gate. For the current checkpoint, this is lexical retrieval plus structured
+scoring.
+_Avoid_: every implemented path
+
+**Rejected Ablation**:
+An implemented experiment whose measured development tradeoff did not justify
+retaining it in the default runtime. Its code or reports are not evidence that
+the method is active.
+_Avoid_: failed implementation
+
 ## Evaluation language
 
 **Development Set**:
@@ -66,6 +105,11 @@ _Avoid_: sealed holdout, validation set
 The single full 200-session evaluation run performed after the B configuration
 is frozen for public reporting, not for further tuning.
 _Avoid_: holdout validation
+
+**Historical Final Public Result**:
+The recorded full-200 result for a previously frozen configuration. It is useful
+for transparent reporting but cannot become a new optimization target.
+_Avoid_: fresh confirmation, unseen test result
 
 **Private Evaluation**:
 The organizer's unseen 800-session evaluation and the only remaining fully

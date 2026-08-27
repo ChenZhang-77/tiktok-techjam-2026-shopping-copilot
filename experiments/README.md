@@ -62,12 +62,21 @@ Recommended note format:
 ## Notes
 ```
 
-Suggested experiment sequence:
+The original B1-B7 build sequence is complete. Do not restart it or assume that
+implemented experimental routes should be enabled. The current optimization
+sequence is:
 
-1. `baseline-bm25`: reproduce official score.
-2. `stateful-bm25`: use accumulated user messages across turns.
-3. `slot-extraction`: extract material/color/size/style/brand/budget/use_case.
-4. `metadata-rerank`: combine BM25 with structured field matching.
-5. `adaptive-questions`: ask high-value attributes only when the candidate set is broad.
-6. `embedding-retrieval`: add local embedding retrieval with an offline index.
-7. `hybrid-rerank`: blend BM25, embeddings, metadata, and session state.
+1. `r0-failure-taxonomy`: classify misses as state, question, query, recall,
+   ranking, or timing failures without changing behavior.
+2. `a8-state-confidence`: repair state/scope errors and expose stable confidence.
+3. `a9-question-value`: improve the ask-or-retrieve decision.
+4. `a10-query-builder`: make query construction state-aware and auditable.
+5. `ab1-contract-freeze`: freeze shared diagnostics and route semantics.
+6. `b8-rejected-constraints`: test confidence-gated negative evidence.
+7. `b9-conditional-semantic`: route semantic help only to justified buckets.
+8. `b10-protected-rerank`: protect strong structured matches while reranking a
+   bounded tail.
+
+Run lexical recall or adaptive-depth work only if the R0 taxonomy supports it.
+See `../docs/optimization_roadmap.md` and the A/B workstream documents for
+hypotheses, dependencies, and keep/revert gates.

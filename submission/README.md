@@ -1,27 +1,41 @@
-# Submission Notes
+# Submission Packaging Workspace
 
-The official submission should contain:
+This directory is a staging area, not proof that the final competition package
+is complete. Follow `../docs/demo_and_submission_plan.md` for the full delivery
+route and `../docs/current_status.md` for verified claims.
 
-- one Python agent entry file exporting `Agent`
-- any local helper modules
-- setup instructions
-- a short report describing method, model choice, cost, latency, limitations, and team contributions
-
-Recommended final layout:
+## Target package
 
 ```text
 submission/
+  README.md
   agent.py
   requirements.txt
-  README.md
-  src/
+  src/                 # only when required by imports
 ```
 
-Before final packaging:
+## Package only after the runtime is frozen
 
-- Do not modify `evaluator/` for reported scores.
-- Do not include private evaluation data.
-- Do not include API keys, `.env`, tokens, or credentials.
-- Disclose any external model/API dependency.
-- Provide an offline fallback if possible.
-- Confirm the agent returns valid `message`, `ask_attribute`, `recommendations`, and `usage`.
+1. Copy the retained implementation and only its required local modules.
+2. Pin or document every required dependency.
+3. Document model/cache setup, latency, memory, cost, and deterministic fallback.
+4. Add the exact clean-start command and response-schema smoke test.
+5. Verify the final archive from a fresh temporary directory.
+
+## Required checks
+
+- `Agent` imports and instantiates without developer-machine state.
+- Responses contain valid `message`, `ask_attribute`, `recommendations`, and
+  `usage` fields.
+- Recommendations are unique, catalog-valid `parent_asin` values.
+- No evaluator modification, target leakage, future-turn access, or private
+  evaluation data is present.
+- No secrets, `.env`, tokens, credentials, absolute local paths, generated run
+  output, or unnecessary caches are packaged.
+- External models, APIs, licenses, and offline behavior are disclosed.
+- Metrics use the same dataset labels and caveats as the root README.
+- Team contributions are factual and evidence-backed.
+
+Do not call the public 40-session slice sealed or unseen. Do not claim dense,
+RRF, or semantic reranking as part of the default runtime unless a later frozen
+configuration actually retains them.
