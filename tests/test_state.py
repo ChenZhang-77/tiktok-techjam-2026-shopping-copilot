@@ -3,9 +3,24 @@ from __future__ import annotations
 import unittest
 
 from starter.core.state import SessionState
+from starter.core.context_engine import IntentAssessment
 
 
 class SessionStateTest(unittest.TestCase):
+    def test_intent_assessment_persists_the_complete_cross_turn_decision(self) -> None:
+        state = SessionState(session_id="s1", user_profile={})
+        assessment = IntentAssessment(
+            intent="buying",
+            confidence=0.9,
+            evidence=("current_hard_constraint",),
+            source_turn=2,
+            transition_reason="accumulated",
+        )
+
+        state.set_intent_assessment(assessment)
+
+        self.assertIs(state.intent_assessment, assessment)
+        self.assertEqual(state.intent, "buying")
     def test_history_accumulates_and_records_agent_response(self) -> None:
         state = SessionState(session_id="s1", user_profile={"summary": "test"})
 

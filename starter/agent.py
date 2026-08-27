@@ -9,8 +9,8 @@ from starter.core.context_engine import (
     detect_no_preference_attributes,
     detect_override,
     detect_rejected_constraints,
+    assess_intent,
     extract_constraints,
-    infer_intent,
 )
 from starter.core.diagnostics import state_diagnostics
 from starter.core.planner import Strategy, StrategyConfig, plan_strategy
@@ -106,13 +106,28 @@ class Agent:
         if state is not None:
             state.record_user_turn(turn, user_message)
             constraints = extract_constraints(user_message, turn)
+            override = detect_override(user_message)
+            no_preference_attributes = detect_no_preference_attributes(user_message)
+            rejected_constraints = detect_rejected_constraints(user_message, turn)
             state.apply_user_context(
                 constraints=constraints,
-                override=detect_override(user_message),
-                no_preference_attributes=detect_no_preference_attributes(user_message),
-                rejected_constraints=detect_rejected_constraints(user_message, turn),
+                override=override,
+                no_preference_attributes=no_preference_attributes,
+                rejected_constraints=rejected_constraints,
             )
-            state.intent = infer_intent(user_message, constraints)
+            state.set_intent_assessment(
+                assess_intent(
+                    user_message,
+                    constraints,
+                    active_constraints=state.active_constraints,
+                    turn=turn,
+                    previous=state.intent_assessment,
+                    override=override,
+                    no_preference_attributes=tuple(
+                        sorted(state.no_preference_attributes)
+                    ),
+                )
+            )
             strategy = plan_strategy(state, turn=turn, top_k=top_k, config=self.strategy_config)
             state.previous_strategy = strategy.to_dict()
             query_text = build_distilled_query(user_message, state.active_constraints)

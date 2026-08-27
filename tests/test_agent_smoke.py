@@ -90,6 +90,51 @@ def _write_catalog(path: Path) -> None:
 
 
 class AgentSmokeTest(unittest.TestCase):
+    def test_buying_intent_persists_after_a_no_preference_reply(self) -> None:
+        retriever = _RecordingRetriever()
+        agent = Agent(retriever=retriever)
+        agent.reset("intent-persistence", {})
+
+        first = agent.respond(
+            "intent-persistence",
+            "I need black leather shoes",
+            1,
+            2,
+        )
+        second = agent.respond(
+            "intent-persistence",
+            "I don't have an additional preference for size.",
+            2,
+            2,
+        )
+
+        self.assertEqual([request.intent for request in retriever.requests], ["buying", "buying"])
+        self.assertEqual(second["diagnostics"]["intent_assessment"]["intent"], "buying")
+        self.assertEqual(
+            second["diagnostics"]["intent_assessment"]["transition_reason"],
+            "retained",
+        )
+        self.assertEqual(first["diagnostics"]["intent_assessment"]["source_turn"], 1)
+        self.assertEqual(second["diagnostics"]["intent_assessment"]["source_turn"], 1)
+
+    def test_browsing_route_changes_only_after_specific_evidence(self) -> None:
+        retriever = _RecordingRetriever()
+        agent = Agent(retriever=retriever)
+        agent.reset("intent-accumulation", {})
+
+        agent.respond("intent-accumulation", "I'm just browsing shoes ideas", 1, 2)
+        second = agent.respond(
+            "intent-accumulation",
+            "Black leather would work",
+            2,
+            2,
+        )
+
+        self.assertEqual([request.intent for request in retriever.requests], ["browsing", "buying"])
+        self.assertEqual(
+            second["diagnostics"]["strategy"]["intent"],
+            second["diagnostics"]["intent_assessment"]["intent"],
+        )
     def test_buying_and_browsing_execute_different_candidate_pool_plans(self) -> None:
         rows = [
             {

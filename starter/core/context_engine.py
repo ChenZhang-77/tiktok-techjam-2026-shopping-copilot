@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from typing import Literal
 
 
 MATERIALS = {
@@ -45,6 +46,53 @@ REJECTION_WINDOW_RE = re.compile(
     r"\b(?:not|avoid|without|except|exclude|don't want|do not want|anything except|anything but)\b[^.?!;]*",
     re.I,
 )
+EXPLORATION_RE = re.compile(
+    r"\b(?:browse|browsing|explore|exploring|just looking|not sure|ideas|open to options)\b",
+    re.I,
+)
+INTENT_RELAXATION_RE = re.compile(
+    r"\b(?:no|do not|don't)\s+(?:have\s+)?(?:an\s+)?(?:additional\s+)?preference\b",
+    re.I,
+)
+CONCRETE_INTENT_ATTRIBUTES = {
+    "brand",
+    "budget",
+    "category",
+    "color",
+    "material",
+    "size",
+    "style",
+    "use_case",
+}
+TRANSITION_REASONS = {"retained", "accumulated", "relaxed", "explicit_override"}
+
+
+@dataclass(frozen=True)
+class IntentAssessment:
+    intent: Literal["buying", "browsing"]
+    confidence: float
+    evidence: tuple[str, ...]
+    source_turn: int
+    transition_reason: str
+
+    def __post_init__(self) -> None:
+        if self.intent not in {"buying", "browsing"}:
+            raise ValueError("intent must be buying or browsing")
+        if not 0.0 <= self.confidence <= 1.0:
+            raise ValueError("confidence must be between 0 and 1")
+        if self.source_turn < 1:
+            raise ValueError("source_turn must be positive")
+        if self.transition_reason not in TRANSITION_REASONS:
+            raise ValueError("invalid transition_reason")
+
+    def to_dict(self) -> dict:
+        return {
+            "intent": self.intent,
+            "confidence": self.confidence,
+            "evidence": list(self.evidence),
+            "source_turn": self.source_turn,
+            "transition_reason": self.transition_reason,
+        }
 
 
 @dataclass(frozen=True)
@@ -193,11 +241,182 @@ def detect_rejected_constraints(user_message: str, turn: int) -> list[dict]:
 
 
 def infer_intent(user_message: str, constraints: list[dict]) -> str:
-    text = str(user_message or "").lower()
-    has_hard_constraint = any(bool(item.get("hard")) for item in constraints)
-    concrete_count = sum(1 for item in constraints if item.get("attribute") != "feature")
-    if has_hard_constraint or concrete_count >= 2:
-        return "buying"
-    if any(marker in text for marker in ("exploring", "browse", "browsing", "not sure", "ideas", "recommend")):
-        return "browsing"
-    return "browsing"
+    turn = max(
+        (
+            int(item.get("source_turn") or 1)
+            for item in constraints
+            if not isinstance(item.get("source_turn"), bool)
+        ),
+        default=1,
+    )
+    return assess_intent(
+        user_message,
+        constraints,
+        active_constraints=constraints,
+        turn=turn,
+        previous=None,
+        override=False,
+    ).intent
+
+
+def _active_concrete_attributes(constraints: list[dict]) -> tuple[str, ...]:
+    return tuple(
+        sorted(
+            {
+                str(item.get("attribute"))
+                for item in constraints
+                if item.get("active", True)
+                and str(item.get("attribute")) in CONCRETE_INTENT_ATTRIBUTES
+            }
+        )
+    )
+
+
+def assess_intent(
+    user_message: str,
+    constraints: list[dict],
+    *,
+    active_constraints: list[dict],
+    turn: int,
+    previous: IntentAssessment | None,
+    override: bool,
+    no_preference_attributes: tuple[str, ...] = (),
+) -> IntentAssessment:
+    """Assess intent from conversation evidence with explicit cross-turn hysteresis."""
+
+    text = str(user_message or "")
+    explicit_exploration = EXPLORATION_RE.search(text) is not None
+    explicit_relaxation = INTENT_RELAXATION_RE.search(text) is not None
+    current_attributes = _active_concrete_attributes(constraints)
+    active_attributes = _active_concrete_attributes(active_constraints)
+    has_current_hard = any(
+        bool(item.get("hard"))
+        and str(item.get("attribute")) in CONCRETE_INTENT_ATTRIBUTES
+        for item in constraints
+    )
+    sufficient_specific_evidence = bool(current_attributes) and (
+        has_current_hard or len(active_attributes) >= 2 or len(current_attributes) >= 2
+    )
+    evidence: list[str] = []
+    if explicit_exploration:
+        evidence.append("explicit_exploration")
+    if explicit_relaxation:
+        evidence.append("explicit_preference_relaxation")
+    if has_current_hard:
+        evidence.append("current_hard_constraint")
+    if current_attributes:
+        evidence.append(f"current_concrete_attributes:{','.join(current_attributes)}")
+    if active_attributes:
+        evidence.append(f"active_concrete_attributes:{','.join(active_attributes)}")
+    if override:
+        evidence.append("override_seen")
+    normalized_no_preference = tuple(sorted(set(no_preference_attributes)))
+    if normalized_no_preference:
+        evidence.append(
+            f"no_preference_attributes:{','.join(normalized_no_preference)}"
+        )
+
+    if override:
+        if explicit_exploration:
+            intent = "browsing"
+            confidence = 0.92
+        elif sufficient_specific_evidence:
+            intent = "buying"
+            confidence = 0.90 if has_current_hard else 0.84
+        elif previous is not None:
+            intent = previous.intent
+            confidence = previous.confidence
+            evidence.append(f"previous_intent:{previous.intent}")
+        else:
+            intent = "browsing"
+            confidence = 0.60
+        return IntentAssessment(
+            intent=intent,
+            confidence=confidence,
+            evidence=tuple(evidence),
+            source_turn=turn,
+            transition_reason="explicit_override",
+        )
+
+    if previous is not None and previous.intent == "buying":
+        if explicit_exploration:
+            return IntentAssessment(
+                intent="browsing",
+                confidence=0.90,
+                evidence=tuple(evidence),
+                source_turn=turn,
+                transition_reason="relaxed",
+            )
+        if previous.transition_reason == "explicit_override" and explicit_relaxation:
+            return IntentAssessment(
+                intent="browsing",
+                confidence=0.72,
+                evidence=tuple(evidence),
+                source_turn=turn,
+                transition_reason="relaxed",
+            )
+        if (
+            not current_attributes
+            and (
+                len(normalized_no_preference) >= 2
+                or (explicit_relaxation and turn - previous.source_turn >= 2)
+            )
+        ):
+            return IntentAssessment(
+                intent="browsing",
+                confidence=0.72,
+                evidence=tuple(evidence),
+                source_turn=turn,
+                transition_reason="relaxed",
+            )
+        evidence.append("previous_intent:buying")
+        evidence.append("retained_without_explicit_relaxation")
+        return IntentAssessment(
+            intent="buying",
+            confidence=previous.confidence,
+            evidence=tuple(evidence),
+            source_turn=previous.source_turn,
+            transition_reason="retained",
+        )
+
+    if previous is not None and previous.intent == "browsing":
+        if sufficient_specific_evidence and not explicit_exploration:
+            return IntentAssessment(
+                intent="buying",
+                confidence=0.88 if has_current_hard else 0.82,
+                evidence=tuple(evidence),
+                source_turn=turn,
+                transition_reason="accumulated",
+            )
+        evidence.append("previous_intent:browsing")
+        return IntentAssessment(
+            intent="browsing",
+            confidence=max(previous.confidence, 0.65),
+            evidence=tuple(evidence),
+            source_turn=previous.source_turn,
+            transition_reason="retained",
+        )
+
+    if explicit_exploration:
+        return IntentAssessment(
+            intent="browsing",
+            confidence=0.90,
+            evidence=tuple(evidence),
+            source_turn=turn,
+            transition_reason="relaxed",
+        )
+    if sufficient_specific_evidence:
+        return IntentAssessment(
+            intent="buying",
+            confidence=0.90 if has_current_hard else 0.82,
+            evidence=tuple(evidence),
+            source_turn=turn,
+            transition_reason="accumulated",
+        )
+    return IntentAssessment(
+        intent="browsing",
+        confidence=0.60,
+        evidence=tuple(evidence or ["insufficient_specific_evidence"]),
+        source_turn=turn,
+        transition_reason="accumulated",
+    )

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import unittest
 
+from starter.core.context_engine import IntentAssessment
 from starter.core.planner import StrategyConfig, plan_strategy
 from starter.core.state import SessionState
 
@@ -49,6 +50,22 @@ class PlannerTest(unittest.TestCase):
         self.assertEqual(strategy.lexical_weight, 0.8)
         self.assertEqual(strategy.structured_weight, 0.2)
 
+    def test_strategy_reason_exposes_persisted_intent_transition(self) -> None:
+        state = SessionState(session_id="s1", user_profile={})
+        state.set_intent_assessment(
+            IntentAssessment(
+                intent="buying",
+                confidence=0.84,
+                evidence=("active_concrete_attributes:color,material",),
+                source_turn=2,
+                transition_reason="accumulated",
+            )
+        )
+
+        strategy = plan_strategy(state, turn=2, top_k=10)
+
+        self.assertIn("accumulated", strategy.reason)
+        self.assertIn("confidence=0.84", strategy.reason)
 
 if __name__ == "__main__":
     unittest.main()

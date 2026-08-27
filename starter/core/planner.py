@@ -49,6 +49,12 @@ def plan_strategy(state: SessionState, *, turn: int, top_k: int, config: Strateg
     intent = state.intent or "browsing"
     active_count = sum(1 for item in state.active_constraints if item.get("active", True))
     has_hard = any(bool(item.get("hard")) for item in state.active_constraints if item.get("active", True))
+    assessment = state.intent_assessment
+    assessment_reason = (
+        f"{assessment.transition_reason}, confidence={assessment.confidence:.2f}"
+        if assessment is not None
+        else "legacy intent"
+    )
 
     if intent == "buying":
         depth = max(top_k, config.buying_depth_constrained if active_count >= 2 else config.buying_depth_sparse)
@@ -61,7 +67,9 @@ def plan_strategy(state: SessionState, *, turn: int, top_k: int, config: Strateg
             allow_hard_filter=has_hard and active_count >= 2,
             clarification_enabled=turn < 10,
             fallback_mode="lexical",
-            reason=f"buying intent with {active_count} active constraints",
+            reason=(
+                f"buying intent ({assessment_reason}) with {active_count} active constraints"
+            ),
         )
 
     depth = max(top_k, config.browsing_depth_sparse if active_count <= 1 else config.browsing_depth_constrained)
@@ -74,5 +82,7 @@ def plan_strategy(state: SessionState, *, turn: int, top_k: int, config: Strateg
         allow_hard_filter=False,
         clarification_enabled=turn < 10,
         fallback_mode="broad_lexical",
-        reason=f"browsing intent with {active_count} active constraints",
+        reason=(
+            f"browsing intent ({assessment_reason}) with {active_count} active constraints"
+        ),
     )
