@@ -74,9 +74,8 @@ A8 Stateful Intent Persistence is retained at `83a6bcd`. AB0 DecisionEvidence
 Availability is retained at `3988b8b`; it defines every proposed signal and
 fallback without changing ask behavior or the shared contract. A9 Should-Ask
 Over-Generality Gate was tested, rejected, and reverted because it worsened
-HitRate/MTTC. The next executable module is
-A10a Candidate Question Value. A10a was subsequently tested, rejected, and
-reverted because even the safe post-feature full-pool ranking regressed every
+HitRate/MTTC. A10a Candidate Question Value was subsequently tested, rejected,
+and reverted because its partial-evidence post-feature ranking regressed every
 main metric. The next executable module is A10b Internal QueryPlan.
 The retained A8 confidence is an A-owned ordinal stability signal with
 `low`/`medium`/`high` diagnostic bands, not a calibrated probability or B-side
@@ -364,10 +363,12 @@ Do not turn every possible signal into a required input.
 
 **Disposition: rejected and reverted.** Candidate `304a3d6` preserved
 feature-first behavior and only replaced the later Top-K partition ranking with
-full-pool scores. It still regressed HitRate, MRR, MTTC, Efficiency, and score.
-The current partition vocabulary is partial and cannot globally compare all
-allowed question attributes. Revisit only after A11 or AB1 supplies comparable
-evidence. Full record: `docs/a10a_question_value_evidence.md`.
+full-pool scores. Uncovered size/brand/budget/other attributes could not compete
+with any positively scored supported attribute, so the candidate retained a
+missing-as-low confound and regressed HitRate, MRR, MTTC, Efficiency, and score.
+Revisit only after A11 or AB1 supplies comparable evidence and defines how an
+uncovered attribute preserves legacy priority. Full record:
+`docs/a10a_question_value_evidence.md`.
 
 ### Hypothesis
 

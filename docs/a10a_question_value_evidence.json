@@ -20,7 +20,8 @@
     "uncovered_question_attributes": ["feature", "size", "brand", "budget", "other"],
     "status": "partial_not_comparable_across_all_question_attributes",
     "source": "starter.core.clarification.CANDIDATE_TERMS",
-    "consequence": "Full candidate-question-value ranking cannot safely replace feature priority until A owns comparable evidence or B adds coordinated field semantics through AB1."
+    "candidate_missing_evidence_handling": "Feature retained legacy priority, but after feature was exhausted size, brand, budget, and other could not compete with any supported attribute having a positive score; missing evidence was therefore implicitly low.",
+    "consequence": "Full candidate-question-value ranking cannot safely replace legacy priority until A owns comparable evidence or B adds coordinated field semantics through AB1."
   },
   "reports": {
     "baseline": {
@@ -69,6 +70,6 @@
   "full_status": "not run during A10a",
   "keep_gate": "Candidate questions are explainable, MTTC improves without recall loss, and query construction remains unchanged.",
   "decision": "reject_and_revert",
-  "revisit_gate": "Comparable evidence exists for feature, size, brand, budget, and other through A11 or an AB1-coordinated B diagnostic, followed by a new Development experiment.",
+  "revisit_gate": "Comparable evidence exists for feature, size, brand, budget, and other through A11 or an AB1-coordinated B diagnostic; uncovered attributes have an explicit legacy-priority fallback; then run a new Development experiment.",
   "next_module": "A10b Internal QueryPlan"
 }

@@ -184,11 +184,13 @@ question-count claim. Continue with A10a question value; any future A9 variant
 must first retain a hash-bound turn audit.
 
 The A10a full-pool question-value candidate is also rejected and reverted. Its
-safe post-feature variant regressed every main Development metric. Existing
+post-feature variant regressed every main Development metric. Existing
 partition evidence covers only category/material/color/style/use_case, so it
 must not be treated as comparable evidence for feature/size/brand/budget/other.
-Revisit A10a only after A11 provides A-owned coverage or AB1 coordinates missing
-B semantics. The next module is A10b Internal QueryPlan.
+The candidate protected feature priority but still treated the other uncovered
+attributes as implicitly low. Revisit A10a only after A11 provides A-owned
+coverage or AB1 coordinates missing B semantics, plus an explicit fallback for
+uncovered attributes. The next module is A10b Internal QueryPlan.
 
 Dense retrieval, weighted RRF, and the CrossEncoder reranker are optional,
 reproducible experiments with deterministic fallback. They are disabled by

@@ -5,7 +5,7 @@ import json
 import unittest
 from pathlib import Path
 
-from starter.core.clarification import CANDIDATE_TERMS
+from starter.core.clarification import CANDIDATE_TERMS, QUESTION_TEXT
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,6 +45,10 @@ class A10aQuestionValueEvidenceTest(unittest.TestCase):
     def test_partition_coverage_and_runtime_disposition_are_explicit(self) -> None:
         audit = self.record["partition_coverage_audit"]
         self.assertEqual(audit["supported_attributes"], list(CANDIDATE_TERMS))
+        self.assertEqual(
+            audit["uncovered_question_attributes"],
+            [attribute for attribute in QUESTION_TEXT if attribute not in CANDIDATE_TERMS],
+        )
         self.assertEqual(audit["status"], "partial_not_comparable_across_all_question_attributes")
         self.assertEqual(self.record["runtime_disposition"], "reverted")
         self.assertEqual(self.record["decision"], "reject_and_revert")

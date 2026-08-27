@@ -212,13 +212,15 @@ point and has deterministic missing-data behavior.
 
 ### A10a - Candidate question value
 
-**Status: rejected and reverted.** The safe candidate at `304a3d6` preserved
+**Status: rejected and reverted.** The candidate at `304a3d6` preserved
 feature-first behavior and changed only later attribute selection, yet HitRate,
 MRR, MTTC, Efficiency, and technical score all regressed. Current partition
 evidence covers only category/material/color/style/use_case and is not
-comparable with feature/size/brand/budget/other. See
+comparable with feature/size/brand/budget/other; after feature, missing evidence
+was implicitly treated as low value. See
 `docs/a10a_question_value_evidence.md`. Revisit only after A11 supplies
-comparable A-owned evidence or AB1 coordinates missing B semantics.
+comparable A-owned evidence or AB1 coordinates missing B semantics, with an
+explicit legacy-priority fallback for uncovered attributes.
 
 Problem: `feature` is normally selected before candidate partition evidence.
 

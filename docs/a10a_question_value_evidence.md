@@ -31,14 +31,18 @@ The current A-side Candidate vocabulary has comparable partition evidence only
 for `category`, `material`, `color`, `style`, and `use_case`. It has no
 equivalent value for `feature`, `size`, `brand`, `budget`, or `other`.
 Consequently a global ranking would compare supported attributes with missing
-attributes as if missing meant low value. The tested candidate avoided that
-largest error by keeping feature first, but even its narrower full-pool change
-regressed the retained baseline.
+attributes as if missing meant low value. The tested candidate protected only
+`feature` by keeping it first. After feature was exhausted, uncovered
+`size`/`brand`/`budget`/`other` could not compete with any positively scored
+supported attribute. The experiment is therefore rejected both for this
+missing-as-low confound and for its measured regression.
 
 Do not add B-owned product-field semantics to `Candidate.diagnostics`
 unilaterally. A10a can be reconsidered only after A11 provides comparable
 A-owned extraction evidence or AB1 coordinates a typed/ranged/fallback B
 diagnostic for the missing attributes.
+Any revisit must also specify an explicit legacy-priority fallback for an
+uncovered attribute; absence of evidence must not be interpreted as zero value.
 
 ## Evidence Boundary and Next Step
 

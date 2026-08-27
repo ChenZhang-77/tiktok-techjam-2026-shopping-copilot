@@ -222,11 +222,12 @@ claim. The final runtime preserves the pre-A9 question policy. See
 
 ## A10a Result
 
-A10a is rejected and reverted. The safe candidate used full-pool partition
+A10a is rejected and reverted. The candidate used full-pool partition
 scores only after feature was unavailable, but HitRate fell to `0.75625`, MRR
 to `0.520012`, MTTC rose to `5.3625`, and technical score fell to `0.646879`.
 The current partition vocabulary covers only category/material/color/style/
-use_case, so it is not comparable across all allowed question attributes. See
+use_case; uncovered attributes were implicitly treated as low value, so the
+evidence is not comparable across all allowed question attributes. See
 `docs/a10a_question_value_evidence.md`.
 
 ## Next Decision
