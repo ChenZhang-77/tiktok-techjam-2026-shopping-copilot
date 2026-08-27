@@ -40,7 +40,7 @@ Verified on 2026-08-27:
 | Branch at B9 verification | `b/b9-browsing-conditional-dense` |
 | Retained behavior commit | `b620357` |
 | B9 selection data | Development-160 plus four fixed folds only |
-| Latest local full test suite | 257 passed |
+| Latest local full test suite | 261 passed |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | structured retrieval plus gated local dense/RRF for broad Browsing |
 

@@ -38,7 +38,7 @@ likewise disabled at weight 0.0.
 ## Evidence available now
 
 - Retained B9 runtime commit: `b620357`.
-- Current full test suite: `257/257` passing.
+- Current full test suite: `261/261` passing.
 - Development-160: HitRate@10 `0.8625`, MRR `0.547329`, MTTC `4.66875`,
   TechnicalScore `0.722074`.
 - B9 route: dense/fusion executed 102 times; all four folds non-regressing;

@@ -80,17 +80,27 @@ class ConditionalDenseRetriever:
         dense_retriever: Retriever,
         *,
         config: ConditionalDenseConfig | None = None,
-        dense_warmup_status: str = "not_run",
+        dense_warmup_status: str = "ready",
     ) -> None:
-        if base_retriever.catalog_ids != dense_retriever.catalog_ids:
+        if (
+            base_retriever.catalog_ids != dense_retriever.catalog_ids
+            or base_retriever.fallback_ids != dense_retriever.fallback_ids
+        ):
             raise ValueError("base and dense retrievers must share one catalog")
+        base_catalog_path = getattr(base_retriever, "catalog_path", None)
+        dense_catalog_path = getattr(dense_retriever, "catalog_path", None)
+        if (
+            base_catalog_path is not None
+            and dense_catalog_path is not None
+            and Path(base_catalog_path).resolve() != Path(dense_catalog_path).resolve()
+        ):
+            raise ValueError("base and dense retrievers must share one catalog path")
         self._base = base_retriever
         self._dense = dense_retriever
         self.config = config if config is not None else ConditionalDenseConfig()
         self.catalog_ids = base_retriever.catalog_ids
         self.fallback_ids = base_retriever.fallback_ids
         self._dense_warmup_status = dense_warmup_status
-        base_catalog_path = getattr(base_retriever, "catalog_path", None)
         if base_catalog_path is not None:
             self.catalog_path = Path(base_catalog_path)
 
@@ -164,8 +174,14 @@ class ConditionalDenseRetriever:
         dense_executed = bool(
             dense is not None and "dense" in dense.diagnostics.executed_routes
         )
+        raw_dense_latency = dense.diagnostics.latency_ms if dense is not None else None
         dense_latency = (
-            float(dense.diagnostics.latency_ms or 0.0) if dense is not None else 0.0
+            float(raw_dense_latency)
+            if isinstance(raw_dense_latency, (int, float))
+            and not isinstance(raw_dense_latency, bool)
+            and math.isfinite(raw_dense_latency)
+            and raw_dense_latency >= 0
+            else 0.0
         )
         route_failures = dict(base.diagnostics.route_failures)
         if dense is not None:
@@ -225,6 +241,12 @@ class ConditionalDenseRetriever:
                 ),
             )
 
+        if self._dense_warmup_status != "ready":
+            return self._base_fallback(
+                base,
+                reason=self._dense_warmup_status,
+            )
+
         try:
             dense = self._dense.retrieve(request)
         except Exception:
@@ -235,10 +257,19 @@ class ConditionalDenseRetriever:
                 "dense_route_degraded",
             )
             return self._base_fallback(base, reason=reason, dense=dense)
+        dense_latency = dense.diagnostics.latency_ms
         if (
-            float(dense.diagnostics.latency_ms or 0.0)
-            > self.config.max_accepted_dense_latency_ms
+            isinstance(dense_latency, bool)
+            or not isinstance(dense_latency, (int, float))
+            or not math.isfinite(dense_latency)
+            or dense_latency < 0
         ):
+            return self._base_fallback(
+                base,
+                reason="dense_latency_invalid",
+                dense=dense,
+            )
+        if dense_latency > self.config.max_accepted_dense_latency_ms:
             return self._base_fallback(
                 base,
                 reason="dense_latency_budget_exceeded",
@@ -391,6 +422,9 @@ class ConditionalDenseRetriever:
         return dict(snapshot())
 
     def close(self) -> None:
+        close_dense = getattr(self._dense, "close", None)
+        if callable(close_dense) and self._dense is not self._base:
+            close_dense()
         close_base = getattr(self._base, "close", None)
         if callable(close_base):
             close_base()

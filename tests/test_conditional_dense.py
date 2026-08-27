@@ -307,6 +307,81 @@ class ConditionalDenseRetrieverTest(unittest.TestCase):
                 agent.context_vocabulary.category_terms,
             )
 
+    def test_known_warmup_failure_skips_dense_without_repeating_base_work(self) -> None:
+        base = FakeRetriever(_result("structured", ["A", "B", "C", "D"]))
+        dense = FakeRetriever(_result("structured", ["D", "C", "B", "A"]))
+        retriever = ConditionalDenseRetriever(
+            base,
+            dense,
+            config=ConditionalDenseConfig(min_base_candidates=3),
+            dense_warmup_status="dense_cache_missing",
+        )
+
+        result = retriever.retrieve(_request())
+
+        self.assertEqual(len(base.requests), 1)
+        self.assertEqual(dense.requests, [])
+        self.assertEqual(result.candidates, base.result.candidates)
+        self.assertEqual(
+            result.diagnostics.route_failures,
+            {"dense": "dense_cache_missing"},
+        )
+
+    def test_constructor_rejects_mismatched_catalog_order_or_path(self) -> None:
+        base = FakeRetriever(_result("structured", ["A", "B", "C"]))
+        dense = FakeRetriever(_result("dense", ["C", "B", "A"]))
+        dense.fallback_ids = tuple(reversed(base.fallback_ids))
+        with self.assertRaises(ValueError):
+            ConditionalDenseRetriever(base, dense)
+
+        base = FakeRetriever(_result("structured", ["A", "B", "C"]))
+        dense = FakeRetriever(_result("dense", ["C", "B", "A"]))
+        base.catalog_path = Path("catalog-a.jsonl")
+        dense.catalog_path = Path("catalog-b.jsonl")
+        with self.assertRaises(ValueError):
+            ConditionalDenseRetriever(base, dense)
+
+    def test_missing_or_nonfinite_dense_latency_uses_exact_base_fallback(self) -> None:
+        for latency in (None, float("nan"), float("inf"), -1.0):
+            with self.subTest(latency=latency):
+                dense_result = replace(
+                    _result("dense", ["D", "C", "E"]),
+                    diagnostics=replace(
+                        _result("dense", ["D", "C", "E"]).diagnostics,
+                        latency_ms=latency,
+                    ),
+                )
+                retriever, base, _dense = self._retriever(
+                    dense_result=dense_result
+                )
+
+                result = retriever.retrieve(_request())
+
+                self.assertEqual(result.candidates, base.result.candidates)
+                self.assertTrue(result.diagnostics.fallback_used)
+                self.assertEqual(
+                    result.diagnostics.route_failures,
+                    {"dense": "dense_latency_invalid"},
+                )
+
+    def test_close_releases_distinct_base_and_dense_retrievers(self) -> None:
+        class ClosingFakeRetriever(FakeRetriever):
+            def __init__(self, result: RetrievalResult) -> None:
+                super().__init__(result)
+                self.close_calls = 0
+
+            def close(self) -> None:
+                self.close_calls += 1
+
+        base = ClosingFakeRetriever(_result("structured", ["A", "B", "C"]))
+        dense = ClosingFakeRetriever(_result("dense", ["C", "B", "A"]))
+        retriever = ConditionalDenseRetriever(base, dense)
+
+        retriever.close()
+
+        self.assertEqual(base.close_calls, 1)
+        self.assertEqual(dense.close_calls, 1)
+
 
 if __name__ == "__main__":
     unittest.main()

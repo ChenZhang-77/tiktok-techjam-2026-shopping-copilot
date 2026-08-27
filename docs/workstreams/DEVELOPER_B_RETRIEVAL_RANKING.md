@@ -22,7 +22,7 @@ user explicitly requests it.
 ## Current integrated state
 
 - Retained B9 runtime commit: `b620357`.
-- Current full test suite: `257/257` passing.
+- Current full test suite: `261/261` passing.
 - Retained default route: structured scoring, plus pinned local dense/RRF only
   behind the broad-Browsing gate.
 - Global dense/RRF and CrossEncoder remain rejected experiments; an LLM ranker
