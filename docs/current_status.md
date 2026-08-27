@@ -197,7 +197,7 @@ bounded decision and rejected variants are recorded in
 
 ## AB0 Result
 
-AB0 is retained at clean code commit `a37fd61`. The A-side adapter computes
+AB0 is retained at clean code commit `3988b8b`. The A-side adapter computes
 bounded full-pool size, Top-K stability, constraint coverage, attribute
 partition, relaxation/degradation, and turn/exhaustion summaries before
 clarification. Raw Candidate IDs/text are not serialized, and the shared A/B

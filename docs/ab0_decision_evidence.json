@@ -4,7 +4,7 @@
   "hypothesis": "A compact label-free adapter can make full-pool decision evidence available to clarification without changing ask/no-ask behavior or the shared A/B contract.",
   "failure_class_addressed": "Question Policy prerequisite",
   "primary_behavior_changed": "Evidence plumbing and compact diagnostics only; the clarification policy does not consume DecisionEvidence in AB0.",
-  "run_code_commit": "a37fd61",
+  "run_code_commit": "3988b8b",
   "baseline_code_commit": "83a6bcd",
   "code_worktree_clean_before_run": true,
   "shared_contract_change": "none",
@@ -39,7 +39,7 @@
     "route_failure_count": {"producer": "len(RetrievalDiagnostics.route_failures)", "type_range": "int >= 0", "lifecycle": "current turn", "fallback": "0", "ownership": "B meaning, A adapter", "seam": "existing diagnostics"},
     "exhausted_attributes": {"producer": "asked_attributes union no_preference_attributes", "type_range": "sorted tuple of allowed attribute strings", "lifecycle": "cross-turn SessionState", "fallback": "empty tuple", "ownership": "A", "seam": "A diagnostic summary only"}
   },
-  "raw_report": {"path": "docs/ab0_reports/development_structured.json", "sha256": "143b68fea1530bd4eadb95ceb38b7610de01eb4f51d375d6d794cfab8b555bc5"},
+  "raw_report": {"path": "docs/ab0_reports/development_structured.json", "sha256": "e0a473b3c5b208175c4ca1d2ecffd052c81882cde15ca96331e4bf4991fba430"},
   "comparator_report": {"path": "docs/a8_reports/development_structured.json", "sha256": "6eecbc6cfd6f137c6ebdb4aff5b9f4863cda7200e2b2c88463d75532b1b1c5c7"},
   "development_160": {
     "candidate": {"hit_rate_at_10": 0.7625, "mrr": 0.529812, "mttc": 5.35, "efficiency": 0.565, "recommended_technical_score": 0.653194},
@@ -54,11 +54,11 @@
   "development_folds": "not run because AB0 changes no dialogue policy and exact Development-160 dialogue traces match the A8 baseline",
   "observed_cost": {
     "baseline_response_mean_ms": 44.345104,
-    "candidate_response_mean_ms": 41.386995,
+    "candidate_response_mean_ms": 41.175526,
     "baseline_retrieval_mean_ms": 37.546419,
-    "candidate_retrieval_mean_ms": 37.482606,
+    "candidate_retrieval_mean_ms": 37.275073,
     "baseline_peak_rss_bytes": 569016320,
-    "candidate_peak_rss_bytes": 578813952,
+    "candidate_peak_rss_bytes": 578584576,
     "interpretation": "Sequential clean runs show no material retained regression; timing and process peak differences are not treated as paired causal estimates."
   },
   "rejected_variant": {"commit": "5dc1f01", "response_mean_ms": 131.738869, "reason": "Repeated per-term regular-expression compilation over the full pool caused unacceptable latency; replaced by one token scan per Candidate plus bounded phrase matching."},

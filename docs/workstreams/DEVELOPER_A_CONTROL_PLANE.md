@@ -71,7 +71,7 @@ The next phase does not rebuild these capabilities. It targets decision quality
 and private-set robustness.
 
 A8 Stateful Intent Persistence is retained at `83a6bcd`. AB0 DecisionEvidence
-Availability is retained at `a37fd61`; it defines every proposed signal and
+Availability is retained at `3988b8b`; it defines every proposed signal and
 fallback without changing ask behavior or the shared contract. The next
 executable module is A9 Should-Ask Over-Generality Gate.
 The retained A8 confidence is an A-owned ordinal stability signal with

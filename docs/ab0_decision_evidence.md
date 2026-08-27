@@ -2,7 +2,7 @@
 
 ## Decision
 
-Retain the A-side `DecisionEvidence` adapter at code commit `a37fd61`. It
+Retain the A-side `DecisionEvidence` adapter at code commit `3988b8b`. It
 summarizes the complete `RetrievalResult` and cross-turn A state before
 clarification, without changing the clarification policy or the shared
 `RetrievalRequest` / `RetrievalResult` schema.
@@ -27,15 +27,18 @@ coordinated calibration establishes shared semantics.
 `current_candidate_depth` is the unique Retriever result prefix up to the
 current `top_k`; `previous_candidate_depth` is the previous guarded returned
 prefix truncated to the current `top_k`. Stability is unavailable if the
-current retrieval or previous response was degraded, so A9 cannot compare
-unlike fallback paths as though they were stable.
+current retrieval or previous response was degraded, including current
+response-fill shortages and a prior nested `decision_evidence.degraded` state,
+so A9 cannot compare unlike fallback paths as though they were stable. The
+stability, score-margin, and constraint-coverage statuses are closed enums
+shared by runtime constants and the machine-readable inventory.
 
 The complete per-field producer/type/range/lifecycle/fallback/ownership table
 is machine-readable in `docs/ab0_decision_evidence.json`.
 
 ## Behavior Parity
 
-The clean Development-160 report at `a37fd61` exactly matches the retained A8
+The clean Development-160 report at `3988b8b` exactly matches the retained A8
 report on overall metrics, all scenario metrics, and all 160 session outcomes:
 HitRate@10 `0.7625`, MRR `0.529812`, MTTC `5.35`, and technical score
 `0.653194`.
@@ -55,8 +58,8 @@ were not run.
 
 ## Cost and Rejected Variant
 
-The final clean run observed mean response latency `41.39 ms`, mean retrieval
-latency `37.48 ms`, peak RSS `578,813,952` bytes, zero exceptions, zero invalid
+The final clean run observed mean response latency `41.18 ms`, mean retrieval
+latency `37.28 ms`, peak RSS `578,584,576` bytes, zero exceptions, zero invalid
 payloads, and zero fallbacks. Sequential timing is noisy, so this is not a
 claim that AB0 improves latency.
 
