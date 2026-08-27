@@ -16,7 +16,8 @@ class PlannerTest(unittest.TestCase):
             {"attribute": "color", "normalized_value": "black", "hard": True},
         ])
 
-        strategy = plan_strategy(state, turn=2, top_k=10)
+        candidate = StrategyConfig(adaptive_depth_enabled=True)
+        strategy = plan_strategy(state, turn=2, top_k=10, config=candidate)
 
         self.assertEqual(strategy.intent, "buying")
         self.assertEqual(strategy.retrieval_depth, 80)
@@ -85,13 +86,37 @@ class PlannerTest(unittest.TestCase):
             ]
         )
 
-        strategy = plan_strategy(state, turn=2, top_k=10)
+        candidate = StrategyConfig(adaptive_depth_enabled=True)
+        strategy = plan_strategy(state, turn=2, top_k=10, config=candidate)
 
         self.assertEqual(strategy.retrieval_depth, 60)
         self.assertIn("depth policy=adaptive_narrow", strategy.reason)
 
-        large_response = plan_strategy(state, turn=2, top_k=100)
+        large_response = plan_strategy(state, turn=2, top_k=100, config=candidate)
         self.assertEqual(large_response.retrieval_depth, 100)
+
+    def test_adaptive_depth_is_opt_in_and_default_preserves_b9(self) -> None:
+        state = SessionState(session_id="s1", user_profile={})
+        state.set_intent_assessment(
+            IntentAssessment(
+                intent="buying",
+                confidence=0.90,
+                evidence=("active_concrete_attributes:color,material",),
+                source_turn=2,
+                transition_reason="accumulated",
+            )
+        )
+        state.apply_user_context(
+            constraints=[
+                {"attribute": "material", "normalized_value": "leather", "hard": True},
+                {"attribute": "color", "normalized_value": "black", "hard": True},
+            ]
+        )
+
+        strategy = plan_strategy(state, turn=2, top_k=10)
+
+        self.assertEqual(strategy.retrieval_depth, 80)
+        self.assertIn("depth policy=intent_constraint_default", strategy.reason)
 
     def test_medium_confidence_and_missing_assessment_preserve_fixed_fallback(self) -> None:
         constrained = [
@@ -113,7 +138,11 @@ class PlannerTest(unittest.TestCase):
         legacy.intent = "buying"
         legacy.apply_user_context(constraints=constrained)
 
-        self.assertEqual(plan_strategy(medium, turn=1, top_k=10).retrieval_depth, 80)
+        candidate = StrategyConfig(adaptive_depth_enabled=True)
+        self.assertEqual(
+            plan_strategy(medium, turn=1, top_k=10, config=candidate).retrieval_depth,
+            80,
+        )
         self.assertEqual(plan_strategy(legacy, turn=1, top_k=10).retrieval_depth, 80)
 
 if __name__ == "__main__":

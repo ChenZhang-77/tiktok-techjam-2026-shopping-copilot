@@ -7,6 +7,7 @@ from starter.core.state import SessionState
 
 @dataclass(frozen=True)
 class StrategyConfig:
+    adaptive_depth_enabled: bool = False
     buying_depth_sparse: int = 60
     buying_depth_constrained: int = 80
     browsing_depth_sparse: int = 120
@@ -62,7 +63,8 @@ def plan_strategy(state: SessionState, *, turn: int, top_k: int, config: Strateg
             else config.buying_depth_sparse
         )
         if (
-            assessment is not None
+            config.adaptive_depth_enabled
+            and assessment is not None
             and assessment.confidence_band == "high"
             and active_count >= 2
         ):

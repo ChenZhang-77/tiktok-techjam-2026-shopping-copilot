@@ -18,6 +18,7 @@ from experiments.development_folds import (
 )
 from starter.agent import Agent
 from starter.contracts import validate_agent_response
+from starter.core.planner import StrategyConfig
 from starter.core.response_guard import ALLOWED_ASK_ATTRIBUTES
 from starter.retrieval import (
     ConditionalDenseConfig,
@@ -322,6 +323,7 @@ def evaluate_split(
     rerank_candidate_limit: int = 30,
     conditional_dense_config: ConditionalDenseConfig | None = None,
     constraint_reranker_config: RerankerConfig | None = None,
+    strategy_config: StrategyConfig | None = None,
 ) -> dict:
     if fold_name and split != "development":
         raise ValueError("A development fold can only be used with the development split")
@@ -426,7 +428,7 @@ def evaluate_split(
         else None
     )
     observer = AgentObserver(
-        Agent(catalog_path, retriever=retriever),
+        Agent(catalog_path, strategy_config=strategy_config, retriever=retriever),
         catalog_ids=catalog_ids,
     )
     initialization_ms = (time.perf_counter() - initialization_started) * 1000.0
@@ -463,6 +465,10 @@ def evaluate_split(
         "development_fold_version": development_folds.get("version") if development_folds else None,
         "retrieval_mode": retrieval_mode,
         "structured_filter": structured_filter_enabled,
+        "adaptive_depth_enabled": bool(
+            strategy_config is not None
+            and strategy_config.adaptive_depth_enabled
+        ),
         "fusion_rrf_k": fusion_rrf_k if retrieval_mode == "fusion" else None,
         "conditional_dense_configuration": conditional_dense_configuration,
         "reranker_configuration": reranker_configuration,
@@ -620,6 +626,11 @@ def main() -> None:
         default=250.0,
     )
     parser.add_argument("--output", default="results.json")
+    parser.add_argument(
+        "--adaptive-depth",
+        action="store_true",
+        help="Opt into the exploratory B12 A-owned adaptive-depth mapping.",
+    )
     args = parser.parse_args()
 
     constraint_reranker_config = None
@@ -651,6 +662,9 @@ def main() -> None:
             ),
         ),
         constraint_reranker_config=constraint_reranker_config,
+        strategy_config=StrategyConfig(
+            adaptive_depth_enabled=args.adaptive_depth,
+        ),
     )
     Path(args.output).write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({key: value for key, value in result.items() if key != "sessions"}, indent=2))
