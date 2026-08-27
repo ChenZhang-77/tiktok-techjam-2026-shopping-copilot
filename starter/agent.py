@@ -6,11 +6,13 @@ from typing import Protocol
 from starter.contracts import RetrievalRequest, RetrievalResult
 from starter.core.clarification import choose_clarification
 from starter.core.context_engine import (
+    CatalogVocabulary,
     detect_no_preference_attributes,
     detect_override,
     detect_rejected_constraints,
     assess_intent,
     extract_constraints,
+    searchable_context_text,
 )
 from starter.core.diagnostics import state_diagnostics
 from starter.core.decision_evidence import build_decision_evidence
@@ -40,7 +42,12 @@ class Agent:
     ) -> None:
         self.catalog_path = Path(catalog_path)
         self.strategy_config = strategy_config or StrategyConfig()
-        self.retriever = retriever if retriever is not None else HybridRetriever(self.catalog_path)
+        if retriever is None:
+            self.context_vocabulary = CatalogVocabulary.from_catalog(self.catalog_path)
+            self.retriever = HybridRetriever(self.catalog_path)
+        else:
+            self.context_vocabulary = CatalogVocabulary.empty()
+            self.retriever = retriever
         self._sessions: dict[str, SessionState] = {}
         self._catalog_ids = set(self.retriever.catalog_ids)
         self._fallback_ids = list(self.retriever.fallback_ids)
@@ -103,10 +110,18 @@ class Agent:
         strategy = None
         if state is not None:
             state.record_user_turn(turn, user_message)
-            constraints = extract_constraints(user_message, turn)
+            constraints = extract_constraints(
+                user_message,
+                turn,
+                vocabulary=self.context_vocabulary,
+            )
             override = detect_override(user_message)
             no_preference_attributes = detect_no_preference_attributes(user_message)
-            rejected_constraints = detect_rejected_constraints(user_message, turn)
+            rejected_constraints = detect_rejected_constraints(
+                user_message,
+                turn,
+                vocabulary=self.context_vocabulary,
+            )
             state.apply_user_context(
                 constraints=constraints,
                 override=override,
@@ -129,7 +144,7 @@ class Agent:
             strategy = plan_strategy(state, turn=turn, top_k=top_k, config=self.strategy_config)
             state.previous_strategy = strategy.to_dict()
             query_plan = build_query_plan(
-                user_message,
+                searchable_context_text(user_message),
                 state.active_constraints,
                 rejected_constraints=state.rejected_constraints,
                 overridden_constraints=state.overridden_constraints,

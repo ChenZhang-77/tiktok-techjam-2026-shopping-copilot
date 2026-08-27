@@ -272,6 +272,45 @@ class AgentSmokeTest(unittest.TestCase):
         self.assertEqual(response["recommendations"], [{"parent_asin": "A"}, {"parent_asin": "B"}])
         self.assertEqual(response["diagnostics"]["retrieval"]["route"], "bm25")
 
+    def test_agent_builds_catalog_vocabulary_for_multi_word_query_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            catalog_path = Path(directory) / "catalog.jsonl"
+            _write_catalog(catalog_path)
+            agent = Agent(catalog_path)
+            agent.reset("catalog-context", {})
+
+            response = agent.respond(
+                "catalog-context",
+                "I need black leather shoes.",
+                1,
+                2,
+            )
+
+        self.assertIn(
+            "black leather",
+            response["diagnostics"]["query_plan"]["semantic_terms"],
+        )
+
+    def test_agent_query_excludes_no_preference_and_negative_clause_text(self) -> None:
+        retriever = _RecordingRetriever()
+        agent = Agent(retriever=retriever)
+        agent.reset("scoped-query", {})
+        agent.respond("scoped-query", "I need blue leather shoes.", 1, 2)
+
+        response = agent.respond(
+            "scoped-query",
+            "I don't care about material, but waterproof is important; avoid black.",
+            2,
+            2,
+        )
+
+        query = retriever.requests[-1].query.lower()
+        self.assertIn("waterproof", query)
+        self.assertNotIn("don't care", query)
+        self.assertNotIn("material", query)
+        self.assertNotIn("black", query)
+        self.assertIn("black", response["diagnostics"]["query_plan"]["excluded_terms"])
+
     def test_retrieval_failure_uses_catalog_fallback_without_leaking_exception(self) -> None:
         retriever = _RecordingRetriever(fail=True)
         agent = Agent(retriever=retriever)

@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 
 from starter.core.context_engine import (
+    CatalogVocabulary,
     IntentAssessment,
     assess_intent,
     detect_no_preference_attributes,
@@ -10,6 +11,7 @@ from starter.core.context_engine import (
     detect_rejected_constraints,
     extract_constraints,
     infer_intent,
+    searchable_context_text,
 )
 from starter.core.state import SessionState
 
@@ -37,6 +39,70 @@ class ContextEngineTest(unittest.TestCase):
         self.assertEqual(constraints[0]["attribute"], "feature")
         self.assertFalse(constraints[0]["hard"])
 
+    def test_numeric_and_hyphenated_product_details_are_not_sizes_or_categories(self) -> None:
+        constraints = extract_constraints(
+            "I'm looking for low-top shoes with a platform height of 0.5 inches.",
+            1,
+        )
+
+        values = {
+            (item["attribute"], item["normalized_value"])
+            for item in constraints
+        }
+        self.assertIn(("category", "shoes"), values)
+        self.assertNotIn(("category", "top"), values)
+        self.assertFalse(any(attribute == "size" for attribute, _ in values))
+
+    def test_catalog_vocabulary_extracts_multi_word_product_evidence(self) -> None:
+        vocabulary = CatalogVocabulary.from_products([
+            {
+                "categories": ["Shoes", "Trail Running Shoes"],
+                "store": "New Balance",
+                "features": ["100% Synthetic", "Rubber sole"],
+            }
+        ])
+
+        constraints = extract_constraints(
+            "New Balance trail running shoes with 100% synthetic and a rubber sole.",
+            1,
+            vocabulary=vocabulary,
+        )
+        values = {
+            (item["attribute"], item["normalized_value"])
+            for item in constraints
+        }
+
+        self.assertIn(("category", "trail running shoes"), values)
+        self.assertIn(("brand", "new balance"), values)
+        self.assertIn(("feature", "100 synthetic"), values)
+        self.assertIn(("feature", "rubber sole"), values)
+
+    def test_single_word_catalog_brand_requires_an_explicit_brand_signal(self) -> None:
+        vocabulary = CatalogVocabulary.from_products([
+            {"store": "Sole", "features": ["Rubber sole"]},
+            {"store": "Nike", "features": []},
+        ])
+
+        implicit = extract_constraints(
+            "I want a rubber sole.",
+            1,
+            vocabulary=vocabulary,
+        )
+        explicit = extract_constraints(
+            "I want shoes from Nike.",
+            1,
+            vocabulary=vocabulary,
+        )
+
+        self.assertNotIn(
+            ("brand", "sole"),
+            {(item["attribute"], item["normalized_value"]) for item in implicit},
+        )
+        self.assertIn(
+            ("brand", "nike"),
+            {(item["attribute"], item["normalized_value"]) for item in explicit},
+        )
+
     def test_session_state_accumulates_constraints_without_duplicates(self) -> None:
         state = SessionState(session_id="s1", user_profile={})
         state.add_constraints(extract_constraints("I need black leather shoes", 1))
@@ -51,12 +117,86 @@ class ContextEngineTest(unittest.TestCase):
         self.assertEqual(detect_no_preference_attributes("I don't care about material."), ["material"])
         self.assertEqual(detect_no_preference_attributes("Color does not matter."), ["color"])
 
+    def test_no_preference_control_reply_is_not_extracted_as_a_feature(self) -> None:
+        message = "I don't have an additional preference for use_case or other."
+
+        self.assertEqual(extract_constraints(message, 3), [])
+        self.assertEqual(
+            detect_no_preference_attributes(message),
+            ["use_case", "other"],
+        )
+
+    def test_searchable_context_removes_no_preference_and_negative_clauses(self) -> None:
+        message = (
+            "I don't care about material, but waterproof blue shoes are important; "
+            "avoid black."
+        )
+
+        searchable = searchable_context_text(message)
+
+        self.assertIn("waterproof blue shoes are important", searchable)
+        self.assertNotIn("don't care", searchable.lower())
+        self.assertNotIn("material", searchable.lower())
+        self.assertNotIn("black", searchable.lower())
+
+    def test_no_preference_attribute_detection_is_clause_scoped(self) -> None:
+        self.assertEqual(
+            detect_no_preference_attributes(
+                "I don't care about material, but color is important."
+            ),
+            ["material"],
+        )
+
     def test_detects_rejected_constraints(self) -> None:
         rejected = detect_rejected_constraints("Any color is fine except black, and avoid leather.", 3)
         by_attribute = {item["attribute"]: item["normalized_value"] for item in rejected}
 
         self.assertEqual(by_attribute["color"], "black")
         self.assertEqual(by_attribute["material"], "leather")
+
+    def test_mixed_positive_and_negative_clauses_keep_evidence_in_its_scope(self) -> None:
+        message = "Blue shoes are good, but anything but black, and without leather."
+
+        active = {
+            (item["attribute"], item["normalized_value"])
+            for item in extract_constraints(message, 2)
+        }
+        rejected = {
+            (item["attribute"], item["normalized_value"])
+            for item in detect_rejected_constraints(message, 2)
+        }
+
+        self.assertIn(("color", "blue"), active)
+        self.assertIn(("category", "shoes"), active)
+        self.assertNotIn(("color", "black"), active)
+        self.assertNotIn(("material", "leather"), active)
+        self.assertEqual(
+            rejected,
+            {("color", "black"), ("material", "leather")},
+        )
+
+    def test_catalog_feature_in_negative_clause_is_auditable_but_not_active(self) -> None:
+        vocabulary = CatalogVocabulary.from_products([
+            {"features": ["Canvas upper", "Rubber sole"]}
+        ])
+        message = "I want a canvas upper, but avoid a rubber sole."
+
+        active = {
+            (item["attribute"], item["normalized_value"])
+            for item in extract_constraints(message, 2, vocabulary=vocabulary)
+        }
+        rejected = {
+            (item["attribute"], item["normalized_value"])
+            for item in detect_rejected_constraints(
+                message,
+                2,
+                vocabulary=vocabulary,
+            )
+        }
+
+        self.assertIn(("feature", "canvas upper"), active)
+        self.assertNotIn(("feature", "rubber sole"), active)
+        self.assertIn(("feature", "rubber sole"), rejected)
 
     def test_intent_infers_buying_from_hard_constraints(self) -> None:
         self.assertEqual(
