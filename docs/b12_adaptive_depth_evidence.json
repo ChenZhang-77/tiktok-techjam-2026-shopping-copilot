@@ -1,0 +1,154 @@
+{
+  "version": "b12-v1",
+  "experiment": {
+    "id": "B12",
+    "owners": [
+      "developer_a_control_plane",
+      "developer_b_retrieval_ranking"
+    ],
+    "hypothesis": "A can map its persisted ordinal intent assessment into the existing bounded Strategy.retrieval_depth field so narrow high-confidence Buying retrieves fewer candidates without teaching B a second confidence policy.",
+    "runtime_code_commit": "0f47710",
+    "decision": "retain_bounded_A_owned_adaptive_depth"
+  },
+  "policy": {
+    "decision_owner": "A_control_plane",
+    "adaptive_gate": {
+      "intent": "buying",
+      "intent_confidence_band": "high",
+      "minimum_active_constraints": 2
+    },
+    "adaptive_depth_floor": "min(buying_depth_sparse, buying_depth_constrained)",
+    "default_configured_floor": 60,
+    "effective_depth": "max(top_k, selected_depth_floor)",
+    "reason_label": "adaptive_narrow",
+    "fixed_fallback": "When IntentAssessment is unavailable or the adaptive gate is false, preserve the prior intent-and-active-constraint mapping.",
+    "B_consumption": "B reads only the validated bounded request.strategy.retrieval_depth value; raw IntentAssessment and confidence do not cross the seam.",
+    "calibration_boundary": "IntentAssessment confidence remains an A-owned ordinal stability band, not a calibrated probability."
+  },
+  "evaluation_boundary": {
+    "selection_split": "Development-160",
+    "fixed_folds": "development-folds-v1",
+    "full_or_holdout_used": false,
+    "target_information_in_runtime": false,
+    "target_information_used_offline": true,
+    "offline_target_use": "Development-only metric and session comparison; no evaluator field crossed SessionState, Strategy, RetrievalRequest, diagnostics, retrieval, or ranking."
+  },
+  "baseline": {
+    "name": "B9 conditional dense",
+    "report": "docs/b9_reports/development_conditional_dense.json",
+    "sha256": "02510624bc55e283e23efada06eee6a132ca170d7e3aa32b644430bd7dcdbef4",
+    "metrics": {
+      "hit_rate_at_10": 0.8625,
+      "mrr": 0.547329,
+      "mttc": 4.66875,
+      "efficiency": 0.633125,
+      "recommended_technical_score": 0.722074
+    }
+  },
+  "candidate": {
+    "report": "docs/b12_reports/development_adaptive_depth.json",
+    "sha256": "36786020d334ff9fd3a56f1d3177f60add73052eaf1d31e216e9046b6e488e20",
+    "clean_code_commit": "0f47710",
+    "metrics": {
+      "hit_rate_at_10": 0.86875,
+      "mrr": 0.549735,
+      "mttc": 4.60625,
+      "efficiency": 0.639375,
+      "recommended_technical_score": 0.72717
+    },
+    "delta_vs_b9": {
+      "hit_rate_at_10": 0.00625,
+      "mrr": 0.002406,
+      "mttc": -0.0625,
+      "efficiency": 0.00625,
+      "recommended_technical_score": 0.005096
+    },
+    "session_changes": {
+      "changed": 3,
+      "gained_hits": 1,
+      "lost_hits": 0,
+      "changed_sample_ids": [
+        "public_0135",
+        "public_0178",
+        "public_0195"
+      ]
+    }
+  },
+  "scenario_deltas": {
+    "buying_technical_score": 0.000085,
+    "browsing_technical_score": 0.012656,
+    "intent_override_technical_score": 0.0,
+    "boundary_technical_score": 0.0
+  },
+  "fold_reports": {
+    "fold_1": {
+      "path": "docs/b12_reports/fold_1_adaptive_depth.json",
+      "sha256": "b44c9f7ddc380cb4c74a08a42204e0e62d382bbcdc4a7e5568ee2f9ea800d893",
+      "hit_rate_delta": 0.0,
+      "mrr_delta": -0.002083,
+      "technical_score_delta": -0.000625
+    },
+    "fold_2": {
+      "path": "docs/b12_reports/fold_2_adaptive_depth.json",
+      "sha256": "ed8b06cc968e2553187d3ee388952143d8a43a057aeec528984308fe2ef97781",
+      "hit_rate_delta": 0.0,
+      "mrr_delta": 0.0,
+      "technical_score_delta": 0.0
+    },
+    "fold_3": {
+      "path": "docs/b12_reports/fold_3_adaptive_depth.json",
+      "sha256": "8f95915904d6cb7f209863b23894253e1327896c016c559be191da247f9247f0",
+      "hit_rate_delta": 0.0,
+      "mrr_delta": 0.0,
+      "technical_score_delta": 0.0
+    },
+    "fold_4": {
+      "path": "docs/b12_reports/fold_4_adaptive_depth.json",
+      "sha256": "62f1a9fd41d083ddb5aad3527cf8cbaf0eef1f1ad389c1fdf281b46386b556b4",
+      "hit_rate_delta": 0.025,
+      "mrr_delta": 0.011706,
+      "technical_score_delta": 0.021012
+    }
+  },
+  "cost": {
+    "baseline_lexical_candidate_mean": 95.144828,
+    "candidate_lexical_candidate_mean": 88.994413,
+    "candidate_mean_delta": -6.150415,
+    "baseline_retrieval_mean_ms": 21.733536,
+    "candidate_retrieval_mean_ms": 21.0696,
+    "baseline_retrieval_p95_ms": 40.439958,
+    "candidate_retrieval_p95_ms": 39.020583,
+    "baseline_peak_rss_bytes": 1109049344,
+    "candidate_peak_rss_bytes": 1109295104,
+    "timing_interpretation": "Candidate-count reduction is deterministic. Latency and RSS are separate single-process runs and are directional observations, not controlled causal estimates."
+  },
+  "runtime_observations": {
+    "response_count": 716,
+    "dense_executed_turns": 102,
+    "fusion_executed_turns": 102,
+    "respond_exceptions": 0,
+    "invalid_response_payloads": 0,
+    "reported_fallbacks": 0,
+    "route_failures": 0
+  },
+  "verification": {
+    "red_test": "High-confidence narrow Buying returned depth 80 before the candidate and expected 60.",
+    "focused_planner_tests": "6/6",
+    "full_tests_after_evidence": "283/283",
+    "targeted_properties": [
+      "A owns the confidence-band decision and B consumes only Strategy.retrieval_depth",
+      "the adaptive rule requires Buying, high ordinal confidence, and at least two active constraints",
+      "effective depth remains max(top_k, selected floor)",
+      "medium confidence and missing IntentAssessment preserve the prior fixed mapping",
+      "the free-form Strategy reason records adaptive_narrow but is not a B-side gate"
+    ]
+  },
+  "decision_rationale": [
+    "All aggregate quality metrics improved and one Development session gained a hit while none lost a hit.",
+    "Mean lexical and structured candidate depth fell by 6.150415 candidates per executed retrieval response.",
+    "Fold 1 has a small disclosed MRR and TechnicalScore regression, folds 2 and 3 are exact parity, and fold 4 improves materially.",
+    "The gain is concentrated in three sessions and should not be described as universal fold improvement.",
+    "The policy preserves A/B ownership, uses the existing bounded Strategy field, and has an exact legacy fallback."
+  ],
+  "next_module": "R4 integrated selection and freeze"
+}

@@ -202,8 +202,12 @@ class AgentSmokeTest(unittest.TestCase):
         self.assertEqual(browsing["diagnostics"]["strategy"]["intent"], "browsing")
         self.assertTrue(buying_retrieval["structured_filter_applied"])
         self.assertFalse(browsing_retrieval["structured_filter_applied"])
-        self.assertEqual(buying_retrieval["route_candidate_counts"]["lexical"], 80)
-        self.assertEqual(buying_retrieval["route_candidate_counts"]["structured"], 80)
+        self.assertEqual(buying_retrieval["route_candidate_counts"]["lexical"], 60)
+        self.assertEqual(buying_retrieval["route_candidate_counts"]["structured"], 60)
+        self.assertIn(
+            "depth policy=adaptive_narrow",
+            buying["diagnostics"]["strategy"]["reason"],
+        )
         self.assertEqual(buying_retrieval["ranking_pool_sizes"]["post_structured_filter"], 50)
         self.assertEqual(browsing_retrieval["route_candidate_counts"]["lexical"], 100)
         self.assertEqual(browsing_retrieval["route_candidate_counts"]["structured"], 100)

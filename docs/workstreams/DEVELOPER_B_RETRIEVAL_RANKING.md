@@ -21,14 +21,14 @@ user explicitly requests it.
 
 ## Current integrated state
 
-- Retained B9 runtime commit: `7f520ba`.
-- Current full test suite: `277/277` passing.
+- Retained B9 route commit: `7f520ba`; retained B12 depth commit: `0f47710`.
+- Current full test suite: `283/283` passing.
 - Retained default route: structured scoring, plus pinned local dense/RRF only
   behind the broad-Browsing gate.
 - Global dense/RRF and CrossEncoder remain rejected experiments; an LLM ranker
   has not been implemented.
-- Development-160 result: HitRate@10 `0.8625`, MRR `0.547329`, MTTC `4.66875`,
-  TechnicalScore `0.722074`.
+- Development-160 result: HitRate@10 `0.86875`, MRR `0.549735`, MTTC `4.60625`,
+  TechnicalScore `0.727170`.
 
 The authoritative status and caveats live in `docs/current_status.md`.
 
@@ -221,12 +221,15 @@ Avoid broad expansions that inflate the pool without improving final ranks.
 
 ## B12 — Adaptive candidate depth
 
-**Status: not started; prerequisite failed.** The typed
-`Strategy.retrieval_depth` already crosses the seam and B obeys it, but A
-currently derives it only from intent and active-constraint count. A8 explicitly
-marks its ordinal confidence as unavailable for a B-side gate, and AB1 did not
-define confidence-to-depth semantics. B must not invent that policy. Evidence:
-`docs/b12_prerequisite_evidence.md`.
+**Status: retained at `0f47710`.** A maps high-confidence narrow Buying to the
+smaller existing Buying depth floor and preserves `top_k` as a hard lower
+bound. Missing/medium assessments and non-gated requests preserve the previous
+fixed mapping. B consumes only `Strategy.retrieval_depth`; it does not inspect
+raw confidence or parse `Strategy.reason`. Development-160 TechnicalScore rose
+from `0.722074` to `0.727170`, with one gained hit and none lost, while mean
+lexical/structured candidate depth fell from `95.144828` to `88.994413`.
+Fold 1 regressed by `0.000625`, folds 2/3 were parity, and fold 4 gained
+`0.021012`. Evidence: `docs/b12_adaptive_depth_evidence.md`.
 
 Run only after A8 has a stable IntentAssessment and AB1 defines the exact gate
 or Strategy field B consumes. B must not invent a second intent-confidence

@@ -250,10 +250,11 @@ TechnicalScore gate; the B9 default remains exact at `93b5b19`. See
 `docs/b10a_constraint_rerank_evidence.md`. B10b is not justified without new R0
 evidence. B11 is also not started: the current R0 refresh finds zero
 retrieval/ranking primary causes and retained-depth recall of 157/160. See
-`docs/b11_prerequisite_evidence.md`. B12 is also not started: the existing
-typed depth varies by intent and constraint count, but A8 confidence is not an
-authorized B gate and AB1 did not define confidence-to-depth semantics. See
-`docs/b12_prerequisite_evidence.md`.
+`docs/b11_prerequisite_evidence.md`. B12 is retained at `0f47710`: A owns a
+bounded high-confidence narrow-Buying mapping into the existing
+`Strategy.retrieval_depth`, while B consumes only that typed value. The
+Development gain is concentrated: fold 1 regresses slightly, folds 2/3 are
+parity, and fold 4 improves. See `docs/b12_adaptive_depth_evidence.md`.
 
 The current optimization order is defined in
 `docs/optimization_roadmap.md`. Diagnose failures before introducing another

@@ -37,13 +37,13 @@ Verified on 2026-08-27:
 
 | Item | Value |
 | --- | --- |
-| Branch at B9 verification | `b/b9-browsing-conditional-dense` |
-| Retained behavior commit | `7f520ba` |
-| B9 selection data | Development-160 plus four fixed folds only |
+| Branch at B12 verification | `b/b12-prerequisite-audit` |
+| Retained behavior commit | `0f47710` |
+| B12 selection data | Development-160 plus four fixed folds only |
 | B10a experiment branch | `b/b10a-constraint-preserving-crossencoder` |
-| Latest local full test suite | 277 passed |
+| Latest local full test suite | 283 passed |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
-| Default runtime | structured retrieval plus gated local dense/RRF for broad Browsing |
+| Default runtime | B9 gated dense/RRF plus A-owned bounded adaptive depth for narrow high-confidence Buying |
 
 Branch and remote facts can drift. Re-check them before reporting or changing
 the repository. Do not fetch, push, merge, or open a PR unless the user asks.
@@ -52,32 +52,34 @@ any runtime behavior change does.
 
 ## Verified Development Result
 
-The retained runtime after bounded A11 extraction and B9 conditional dense at
-clean runtime commit `7f520ba` was reproduced on the fixed Development-160
-split:
+The retained runtime after bounded A11 extraction, B9 conditional dense, and
+B12 adaptive depth at clean runtime commit `0f47710` was reproduced on the
+fixed Development-160 split:
 
 | Metric | Development-160 |
 | --- | ---: |
-| HitRate@10 | 0.86250 |
-| MRR | 0.547329 |
-| MTTC | 4.66875 |
-| Efficiency | 0.633125 |
-| TechnicalScore | 0.722074 |
+| HitRate@10 | 0.86875 |
+| MRR | 0.549735 |
+| MTTC | 4.60625 |
+| Efficiency | 0.639375 |
+| TechnicalScore | 0.727170 |
 
 Scenario diagnostics:
 
 | Scenario | Samples | HitRate@10 | MRR | MTTC | TechnicalScore |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | Boundary | 8 | 0.875000 | 0.576389 | 6.000000 | 0.710417 |
-| Browsing | 64 | 0.875000 | 0.540272 | 4.546875 | 0.728644 |
-| Buying | 64 | 0.843750 | 0.517591 | 4.328125 | 0.710590 |
+| Browsing | 64 | 0.890625 | 0.548084 | 4.421875 | 0.741300 |
+| Buying | 64 | 0.843750 | 0.515792 | 4.296875 | 0.710675 |
 | Intent Override | 24 | 0.875000 | 0.635764 | 5.458333 | 0.739063 |
 
 Observed reliability was zero response exceptions, invalid payloads, reported
-fallbacks, and route failures. Dense and fusion executed 102 times; only
-Browsing changed relative to AB1, and all four fixed folds were non-regressing.
-The bound artifact is `docs/b9_reports/development_conditional_dense.json`; the
-decision record is `docs/b9_conditional_dense_evidence.md`.
+fallbacks, and route failures. Dense and fusion executed 102 times. Relative to
+B9, B12 changed three sessions, gained one hit, and lost none. Fold 1 regressed
+by `0.000625`, folds 2/3 were parity, and fold 4 gained `0.021012`; do not claim
+universal fold improvement. The bound artifact is
+`docs/b12_reports/development_adaptive_depth.json`; the decision record is
+`docs/b12_adaptive_depth_evidence.md`.
 
 ## Historical Final Public Result
 
@@ -317,11 +319,13 @@ session outcomes. See `docs/b10a_constraint_rerank_evidence.md`.
 B10b is recorded as not justified without new R0 evidence. A refreshed R0
 audit then rejected B11's entry condition: all 22 misses have upstream primary
 causes, retrieval/ranking has zero, and retained lexical depth covers 157/160
-targets. See `docs/b11_prerequisite_evidence.md`. B12 is also not started: the
-typed depth already crosses the seam, but A8 confidence is not authorized as a
-B gate and AB1 did not define confidence-to-depth semantics. See
-`docs/b12_prerequisite_evidence.md`. Score margin remains forbidden as a gate.
-The complete dependency order lives only in `docs/optimization_roadmap.md`.
+targets. See `docs/b11_prerequisite_evidence.md`. B12 is retained at `0f47710`:
+A owns the confidence-band-to-depth decision and B consumes only the existing
+bounded Strategy field. Its aggregate TechnicalScore is `0.727170`; one fold
+regresses slightly, two are parity, and one improves. See
+`docs/b12_adaptive_depth_evidence.md`. Score margin remains forbidden as a
+gate. The complete dependency order lives only in
+`docs/optimization_roadmap.md`.
 
 If submission is imminent, skip new behavior work and execute the delivery
 track in `docs/demo_and_submission_plan.md`.

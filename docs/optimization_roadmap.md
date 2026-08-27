@@ -407,13 +407,14 @@ of conversational filler.
 
 ### B12 - Adaptive depth
 
-**Status: not started; prerequisite failed.** The current A-owned planner
-already sends a bounded `Strategy.retrieval_depth`, but maps only intent and
-active-constraint count. A8's ordinal confidence is explicitly not an
-authorized B-side gate, and AB1 did not freeze confidence-to-depth semantics.
-No runtime experiment is valid until A defines that mapping through the
-existing Strategy field in an A/B-coordinated slice. See
-`docs/b12_prerequisite_evidence.md`.
+**Status: retained at `0f47710`.** A owns one bounded mapping from its existing
+ordinal confidence band into the existing `Strategy.retrieval_depth`: narrow,
+high-confidence Buying uses the smaller configured Buying floor, with
+`top_k` still a hard lower bound. B receives no raw confidence and continues to
+consume only the validated depth. Development-160 improved on every aggregate
+quality metric while mean lexical/structured pool depth fell by `6.150415`.
+Fold 1 regressed slightly, folds 2/3 were parity, and fold 4 improved. See
+`docs/b12_adaptive_depth_evidence.md`.
 
 Run only after the diagnostics loop exists. Clear Buying can be shallower and
 more precise; ambiguous Browsing may go deeper; over-general pools should stop

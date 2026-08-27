@@ -25,11 +25,14 @@ Development-160 results:
 | AB1 route-execution semantics | 0.86250 | 0.545568 | 4.67500 | 0.721420 | Retain parity/observability |
 | B8 rejected-constraint candidate | 0.86250 | 0.545568 | 4.67500 | 0.721420 | Revert; zero Development activation |
 | B9 broad-Browsing conditional dense | 0.86250 | 0.547329 | 4.66875 | 0.722074 | Retain conditionally |
+| B12 bounded adaptive depth | 0.86875 | 0.549735 | 4.60625 | 0.727170 | Retain with fold caveat |
 
 The current retained runtime combines bounded A11 extraction, AB1 route
-diagnostics, and B9 local dense/RRF behind a narrow broad-Browsing gate. A11
-passed all four fixed folds, AB1 preserved parity, and B9 was non-regressing on
-all four folds.
+diagnostics, B9 local dense/RRF behind a narrow broad-Browsing gate, and B12's
+A-owned bounded depth reduction for narrow high-confidence Buying. A11 passed
+all four fixed folds, AB1 preserved parity, and B9 was non-regressing on all
+four folds. B12 improved aggregate quality and reduced mean candidate depth,
+with a small fold-1 regression, two parity folds, and a material fold-4 gain.
 
 ## Why Bounded A11 Extraction Was Retained
 

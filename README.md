@@ -10,8 +10,9 @@ evidence, and returns safe recommendations with an optional clarification.
 
 The retained runtime requires no external API, hosted model, vector database,
 or token budget. B9 conditionally executes a pinned local MiniLM dense route for
-broad Browsing and otherwise preserves the structured order. Global dense,
-CrossEncoder, and LLM reranking are not enabled.
+broad Browsing and otherwise preserves the structured order. B12 lets the
+A-owned planner use a smaller bounded pool for narrow high-confidence Buying.
+Global dense, CrossEncoder, and LLM reranking are not enabled.
 
 ## Current Status
 
@@ -19,16 +20,16 @@ The verified integrated checkout and next optimization decision are documented
 in [`docs/current_status.md`](docs/current_status.md). The project-wide route is
 [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md).
 
-Verified Development-160 result for the retained bounded A11 plus B9
-conditional-dense runtime:
+Verified Development-160 result for the retained bounded A11, B9
+conditional-dense, and B12 adaptive-depth runtime:
 
 | Metric | Result |
 | --- | ---: |
-| HitRate@10 | 0.86250 |
-| MRR | 0.547329 |
-| MTTC | 4.66875 |
-| Efficiency | 0.633125 |
-| TechnicalScore | 0.722074 |
+| HitRate@10 | 0.86875 |
+| MRR | 0.549735 |
+| MTTC | 4.60625 |
+| Efficiency | 0.639375 |
+| TechnicalScore | 0.727170 |
 
 Historical Full-200 public snapshot:
 
@@ -115,7 +116,9 @@ zero rejection turns. B9 is retained at `7f520ba`: dense and fusion actually
 executed on 102 of 725 retrieval turns, only Browsing outcomes changed, and all
 four fixed folds were non-regressing. B10a then tested Top-3 and Top-5 anchored
 CrossEncoder tails; both reduced MRR and TechnicalScore, so the B9 default is
-unchanged and an actual LLM reranker is not justified by this evidence.
+unchanged and an actual LLM reranker is not justified by this evidence. B12
+then retained an A-owned bounded depth reduction for high-confidence narrow
+Buying; it gained one hit, lost none, and reduced mean candidate depth.
 
 ## What the Ablations Showed
 
@@ -129,6 +132,7 @@ Development-160:
 | A11 broad extraction candidate | 0.72500 | 0.479085 | 0.613976 | Reject |
 | A11 bounded extraction scope | 0.86250 | 0.545568 | 0.721420 | Retain |
 | B9 broad-Browsing conditional dense | 0.86250 | 0.547329 | 0.722074 | Retain conditionally |
+| B12 bounded adaptive depth | 0.86875 | 0.549735 | 0.727170 | Retain with fold caveat |
 | B10a CrossEncoder, Top 3 anchored | 0.87500 | 0.515952 | 0.721411 | Reject as default |
 | B10a CrossEncoder, Top 5 anchored | 0.86875 | 0.524025 | 0.720708 | Reject as default |
 | Dense only | 0.33750 | 0.160501 | 0.272650 | Reject as default |
@@ -321,23 +325,25 @@ available; see
 [`docs/b10a_constraint_rerank_evidence.md`](docs/b10a_constraint_rerank_evidence.md).
 B10b is not justified without new R0 evidence. The refreshed B11 audit found
 zero retrieval/ranking primary misses and 157/160 retained-depth lexical
-recall, so B11 was not started. B12 was also not started: A8 confidence is not
-an authorized B-side gate and AB1 did not define confidence-to-depth semantics.
-See [`docs/b11_prerequisite_evidence.md`](docs/b11_prerequisite_evidence.md)
-and [`docs/b12_prerequisite_evidence.md`](docs/b12_prerequisite_evidence.md).
+recall, so B11 was not started. B12 is retained at `0f47710`: A maps
+high-confidence narrow Buying into the existing bounded depth field, and B
+consumes only that field. Development-160 reached HitRate@10 `0.86875`, MRR
+`0.549735`, MTTC `4.60625`, and TechnicalScore `0.727170`; see
+[`docs/b11_prerequisite_evidence.md`](docs/b11_prerequisite_evidence.md) and
+[`docs/b12_adaptive_depth_evidence.md`](docs/b12_adaptive_depth_evidence.md).
 `AGENTS.md` owns the taxonomy and
 leakage boundary; [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md)
 owns the complete order.
 
 ## Reliability and Cost
 
-Retained B9 Development-160 evidence:
+Retained B9 plus B12 Development-160 evidence:
 
 | Measure | Value |
 | --- | ---: |
 | Initialization | about 3.58 s |
-| Mean retrieval latency | about 21.73 ms |
-| p95 retrieval latency | about 40.44 ms |
+| Mean retrieval latency | about 21.07 ms |
+| p95 retrieval latency | about 39.02 ms |
 | Peak RSS | about 1.109 GB |
 | Dense route mean / p95 | about 4.70 / 5.03 ms |
 | Prompt/completion tokens | 0 / 0 |
@@ -352,7 +358,8 @@ hard filters, duplicate/invalid ASINs, and Candidate Pool shortages.
 
 - The historical public holdout is exposed and cannot support a sealed claim.
 - Stateful intent is retained, but confidence remains an ordinal A-side signal,
-  not a calibrated retrieval gate; two primary State / Override misses remain.
+  not a calibrated probability. B12 uses only its A-owned band for a bounded
+  narrow-Buying depth decision; two primary State / Override misses remain.
 - Clarification remains priority-biased and does not yet have a complete
   should-ask uncertainty gate.
 - Four primary Development Extraction misses remain. Broader extraction
