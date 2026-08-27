@@ -247,7 +247,7 @@ then an AB1-coordinated contract change with compatibility tests.
 
 ### A11 - Extraction and scope hardening
 
-**Status: retained as a bounded deterministic slice at `2163cd1`.** Catalog-
+**Status: retained as a bounded deterministic slice at `c50e69f`.** Catalog-
 derived multi-word categories, clause/list-scoped positive/negative/
 no-preference extraction, numeric/hyphen disambiguation, and injected catalog
 path consistency improved Development technical score from `0.653194` to

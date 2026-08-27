@@ -52,7 +52,7 @@ any runtime behavior change does.
 ## Verified Development Result
 
 The retained runtime after reviewed bounded A11 extraction at clean code commit
-`2163cd1` (including the earlier tracing fix `b0c953d`) was reproduced on the fixed
+`c50e69f` (including the earlier tracing fix `b0c953d`) was reproduced on the fixed
 Development-160 split with the structured default:
 
 | Metric | Development-160 |
@@ -248,7 +248,7 @@ metrics, and 160 session outcomes exactly match the baseline. See
 ## A11 Result
 
 A11 is retained as a bounded deterministic slice at reviewed runtime code
-commit `2163cd1`, with the earlier R0 tracing fix at `b0c953d`. It adds
+commit `c50e69f`, with the earlier R0 tracing fix at `b0c953d`. It adds
 catalog-derived multi-word categories, clause-scoped positive/negative/
 no-preference extraction, and numeric/hyphen disambiguation. It does not change
 the shared A/B schema, QueryPlan residual renderer, or clarification policy.

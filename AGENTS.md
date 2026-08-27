@@ -200,7 +200,7 @@ existing single `RetrievalRequest.query`; the shared schema is unchanged.
 Rejected and overridden terms must never render positive.
 
 A11 Extraction and Scope Hardening is retained at reviewed runtime code commit
-`2163cd1`, with the earlier R0 tracing fix at `b0c953d`. Retain only the bounded
+`c50e69f`, with the earlier R0 tracing fix at `b0c953d`. Retain only the bounded
 slice: catalog-derived multi-word categories, clause/list-scoped positive,
 negative, and no-preference extraction, numeric/hyphen disambiguation, and
 catalog-path consistency for injected retrievers. The combined broad candidate
