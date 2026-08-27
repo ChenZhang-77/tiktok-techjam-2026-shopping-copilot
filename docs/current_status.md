@@ -33,7 +33,7 @@ read-only.
 
 ## Verified Behavior Checkpoint
 
-Verified on 2026-08-27:
+Verified on 2026-08-28:
 
 | Item | Value |
 | --- | --- |
