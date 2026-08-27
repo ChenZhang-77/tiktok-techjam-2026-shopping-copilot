@@ -2,7 +2,7 @@
 
 ## Decision
 
-Retain A8 at code commit `b3c4aeb`. The runtime now persists a complete
+Retain A8 at code commit `83a6bcd`. The runtime now persists a complete
 `IntentAssessment` across turns instead of re-inferring intent from only the
 latest reply. The assessment contains `intent`, an A-owned ordinal stability
 `confidence`, conversation-derived `evidence`, `source_turn`, and one of four transition
@@ -66,8 +66,8 @@ Browsing regression, unchanged HitRate, and no target-specific behavior.
 
 The clean run reports zero response exceptions, invalid payloads, or fallbacks,
 uses zero model tokens, and adds no retrieval/model stage. Its observed mean
-response latency is `44.29 ms`, mean retrieval latency `37.48 ms`, and peak RSS
-`547,454,976` bytes; these are observations, not paired causal cost claims.
+response latency is `44.35 ms`, mean retrieval latency `37.55 ms`, and peak RSS
+`569,016,320` bytes; these are observations, not paired causal cost claims.
 
 Rejected during bounded development experiments:
 

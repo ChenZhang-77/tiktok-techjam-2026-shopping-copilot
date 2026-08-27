@@ -4,7 +4,7 @@
   "failure_class_addressed": "Intent / Strategy Routing",
   "hypothesis": "A persisted IntentAssessment with explicit transition reasons prevents ordinary clarification replies from flipping Buying to Browsing while still allowing accumulated evidence, exploration, and overrides to change route intent.",
   "primary_behavior_changed": "Intent is assessed from current and persisted conversation evidence, stored in SessionState, and exposed through A-side diagnostics; only the transition reason crosses through Strategy.reason.",
-  "run_code_commit": "b3c4aeb",
+  "run_code_commit": "83a6bcd",
   "code_worktree_clean_before_runs": true,
   "dataset": "data/public_set.jsonl",
   "split": "development",
@@ -30,11 +30,11 @@
     "fold": ".venv/bin/python -m experiments.evaluation_reporting --split development --fold <fold_1..fold_4> --structured-filter --output docs/a8_reports/<fold>_structured.json"
   },
   "raw_reports": {
-    "development": {"path": "docs/a8_reports/development_structured.json", "sha256": "52dbca57fbabd2195807d027bdbecdbdb01067c028ae3435bf39c08c77d9c62b"},
-    "fold_1": {"path": "docs/a8_reports/fold_1_structured.json", "sha256": "dc746bb531281452732af9cd00af4d3be2c90a1d4bf899c10cd7272eb26346a0"},
-    "fold_2": {"path": "docs/a8_reports/fold_2_structured.json", "sha256": "c624571a898705de2ba3d1c951b6226031427ba0a4f2171e1d7a404e5a3b3bc5"},
-    "fold_3": {"path": "docs/a8_reports/fold_3_structured.json", "sha256": "fc2f3b7689a7eac94153843548edd9594aa47bf1ae2b771fad74878d30636254"},
-    "fold_4": {"path": "docs/a8_reports/fold_4_structured.json", "sha256": "3cf3d4e63c7e4b99f7ef02f94d409a4d68025eff18d7b35117fb301a21c2ec2b"}
+    "development": {"path": "docs/a8_reports/development_structured.json", "sha256": "6eecbc6cfd6f137c6ebdb4aff5b9f4863cda7200e2b2c88463d75532b1b1c5c7"},
+    "fold_1": {"path": "docs/a8_reports/fold_1_structured.json", "sha256": "08148e9364ccd96e157bafc97de226ad6fe12bb559614d0c5ccae0d147fd3582"},
+    "fold_2": {"path": "docs/a8_reports/fold_2_structured.json", "sha256": "cce541bc8d69041eb7aa5fc4de01dd508676614fc3841ad3a33b0ac6a66670c7"},
+    "fold_3": {"path": "docs/a8_reports/fold_3_structured.json", "sha256": "eb8a8c0ba3cee11d7584a6e1ae875ee08b06453ae1b766a2560887fa248bf482"},
+    "fold_4": {"path": "docs/a8_reports/fold_4_structured.json", "sha256": "66d9b67180697537cec3ced192bac9080695acfa42394c94fa018900246e79d7"}
   },
   "comparator_reports": {
     "development": {"path": "docs/b2_reports/development_structured.json", "sha256": "66a7e57351a8346b5af587a4462b4d4838d5196e5e377c25897aae55e6c8f305"},
@@ -62,9 +62,9 @@
     "interpretation": "Buying improves in three of four folds and Browsing never regresses. Aggregate HitRate is unchanged with no gained or lost sessions. Overall fold deltas straddle zero, and Intent Override regresses slightly, so the retained claim is control-plane stability and explainability with a small Buying ordering gain, not a robust aggregate score improvement."
   },
   "observed_cost_and_reliability": {
-    "response_mean_ms": 44.285991,
-    "retrieval_mean_ms": 37.477245,
-    "peak_rss_bytes": 547454976,
+    "response_mean_ms": 44.345104,
+    "retrieval_mean_ms": 37.546419,
+    "peak_rss_bytes": 569016320,
     "prompt_tokens": 0,
     "completion_tokens": 0,
     "respond_exceptions": 0,

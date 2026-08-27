@@ -182,7 +182,7 @@ the adjacent JSON artifact.
 
 ## A8 Result
 
-A8 is retained at clean code commit `b3c4aeb`. `IntentAssessment` is now a
+A8 is retained at clean code commit `83a6bcd`. `IntentAssessment` is now a
 persistent `SessionState` value with intent, A-owned ordinal confidence,
 evidence, source turn, and an explicit transition reason. A diagnostics expose
 the complete decision while `Strategy.reason` exposes only the transition;

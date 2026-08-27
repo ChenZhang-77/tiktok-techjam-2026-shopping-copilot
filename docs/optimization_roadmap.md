@@ -141,7 +141,7 @@ Detailed ownership, files, tests, and handoff requirements are in
 
 ### A8 - Stateful intent persistence
 
-**Status: retained at `b3c4aeb`.** The persistent assessment and transition
+**Status: retained at `83a6bcd`.** The persistent assessment and transition
 semantics passed focused/full tests. Development HitRate is unchanged, Buying
 improves in three of four folds, Browsing does not regress, and Intent Override
 has a small disclosed regression. See `docs/a8_stateful_intent_evidence.md`.
