@@ -5,8 +5,8 @@
     "owner": "developer_a_control_plane",
     "hypothesis": "Deterministic catalog-derived multi-word categories plus clause-scoped extraction and numeric disambiguation improve retrieval without changing the A/B contract.",
     "decision": "retain_bounded_extraction_scope",
-    "runtime_code_commit": "969c9fa",
-    "offline_audit_commit": "969c9fa"
+    "runtime_code_commit": "350cce2",
+    "offline_audit_commit": "350cce2"
   },
   "retained_scope": [
     "catalog-derived multi-word category vocabulary",
@@ -48,9 +48,9 @@
   },
   "candidate": {
     "report": "docs/a11_reports/development_scoped_extraction.json",
-    "sha256": "967e36857e0b7e21001dce1e98c7d968e84065036a26af7687e5e31deff66d8b",
+    "sha256": "520b2b7a5b49cb668a8d6e05c8ee910b440a6f9415090e39688c8cd7ed0eafcf",
     "session_outcome_sha256": "41f7a9dede01e03439a76615adca62cbac1181619970d9ff345dca00608a5621",
-    "clean_code_commit": "969c9fa",
+    "clean_code_commit": "350cce2",
     "metrics": {
       "hit_rate_at_10": 0.8625,
       "mrr": 0.545568,
@@ -91,24 +91,24 @@
   "fold_reports": {
     "fold_1": {
       "path": "docs/a11_reports/fold_1_scoped_extraction.json",
-      "sha256": "857b133c659573403e513628abc511aa403bb64edb520b354757ea0352cfa72b"
+      "sha256": "7d49e4373560de2f3e0b84b11d8a0c5ea53bcdd608ea742a1fa196cfb96f716b"
     },
     "fold_2": {
       "path": "docs/a11_reports/fold_2_scoped_extraction.json",
-      "sha256": "cc5ba8b846ec8595ae819cfd3d6eda2a23eed5498253f074dae1481ba5d6a24b"
+      "sha256": "63c66d036e69c22c1a1bc4f75e7500a4fd389b638c314861ed679a7af9b836f9"
     },
     "fold_3": {
       "path": "docs/a11_reports/fold_3_scoped_extraction.json",
-      "sha256": "a07e35dcb85567eb325fb3d0e2554081e458e1feeab8f01356da1917e8b5d907"
+      "sha256": "6808cfc64e06a07533486b817c20752e168e150f7b3a504366fefde7f0b40890"
     },
     "fold_4": {
       "path": "docs/a11_reports/fold_4_scoped_extraction.json",
-      "sha256": "441b579d3bdfe53011ab1459a6ab85983d57bae0c336cb82c02b1c8c4cbcb175"
+      "sha256": "48d107f843c6d205acf9f225bcb36a1182e3ced97060e9cff808439b1bebaabc"
     }
   },
   "failure_audit": {
     "path": "docs/a11_reports/development_failure_audit.json",
-    "sha256": "d746d2ee481eca2df59a5adbda9a7f7377652e7199b8326d754a4396ece45793",
+    "sha256": "b6b243da4333ad2013ea3ea39680dcff3bf8824c6312b7097fcaaea59c53059a",
     "miss_count_before": 38,
     "miss_count_after": 22,
     "primary_extraction_before": 6,
