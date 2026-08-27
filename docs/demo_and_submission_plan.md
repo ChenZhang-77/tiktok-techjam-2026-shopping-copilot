@@ -29,9 +29,11 @@ system. They were evaluated and rejected globally; that negative evidence is a
 strength when presented honestly.
 
 Do not imply that the retained runtime satisfies the literal Browsing-dense or
-LLM semantic-ranking pillar. Those routes are reproducible, measured, and
-disabled. If a conditional experiment is not retained, present that outcome as
-an explicit coverage gap. Profile ranking is likewise disabled at weight 0.0.
+LLM semantic-ranking pillar. Dense retrieval and CrossEncoder reranking are
+reproducible, measured, and disabled; an actual LLM ranker has not been
+implemented or measured. If a conditional experiment is not retained, present
+that outcome as an explicit coverage gap. Profile ranking is likewise disabled
+at weight 0.0.
 
 ## Evidence available now
 
