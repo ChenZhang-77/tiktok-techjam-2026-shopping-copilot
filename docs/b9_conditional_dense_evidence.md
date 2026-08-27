@@ -2,7 +2,7 @@
 
 ## Decision
 
-Retain B9 at clean runtime commit `b620357`. The default Agent now executes the
+Retain B9 at clean runtime commit `7f520ba`. The default Agent now executes the
 pinned local dense Route only for broad Browsing requests: Browsing intent,
 positive Strategy dense weight, no more than one active constraint, and at
 least 30 structured candidates. Buying, constrained Browsing, small pools, and
@@ -43,12 +43,12 @@ failures.
 ## Cost and operational boundary
 
 Startup warmup removed the measured 2–3 second first-query model-load spike.
-The retained run measured dense mean/p95 latency of about `4.57/5.03 ms` and
-overall retrieval p95/max of about `40.13/58.30 ms`.
+The retained run measured dense mean/p95 latency of about `4.70/5.03 ms` and
+overall retrieval p95/max of about `40.44/57.35 ms`.
 
 The cost is material and must remain visible:
 
-- initialization rose from about `2.12 s` to `3.63 s`;
+- initialization rose from about `2.12 s` to `3.58 s`;
 - peak process RSS rose from about `563 MB` to `1.109 GB`;
 - the embedding cache is about `77.5 MB`.
 

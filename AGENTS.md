@@ -232,7 +232,7 @@ B8 Rejected-Constraint Ranking was tested at `f53a7ee` and reverted at
 `3952788`. Development-160 contained zero rejected-constraint observations
 across 726 retrieval turns, so exact metric/fold/session parity was non-evidence
 and failed the keep gate. See `docs/b8_rejected_constraint_evidence.md`.
-B9 Browsing-First Conditional Dense Route is retained at `b620357`. The default
+B9 Browsing-First Conditional Dense Route is retained at `7f520ba`. The default
 Agent executes pinned local dense retrieval plus weighted RRF only when the
 typed request is Browsing, Strategy requests dense, at most one active
 constraint exists, and the structured Candidate Pool has at least 30 entries.

@@ -38,7 +38,7 @@ Verified on 2026-08-27:
 | Item | Value |
 | --- | --- |
 | Branch at B9 verification | `b/b9-browsing-conditional-dense` |
-| Retained behavior commit | `b620357` |
+| Retained behavior commit | `7f520ba` |
 | B9 selection data | Development-160 plus four fixed folds only |
 | Latest local full test suite | 262 passed |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
@@ -52,7 +52,7 @@ any runtime behavior change does.
 ## Verified Development Result
 
 The retained runtime after bounded A11 extraction and B9 conditional dense at
-clean runtime commit `b620357` was reproduced on the fixed Development-160
+clean runtime commit `7f520ba` was reproduced on the fixed Development-160
 split:
 
 | Metric | Development-160 |
@@ -290,7 +290,7 @@ targeted tests, but Development-160 contained zero rejected constraints across
 matched AB1 without exercising the variable. This failed the keep gate; see
 `docs/b8_rejected_constraint_evidence.md`.
 
-B9 Browsing-First Conditional Dense Route is retained at `b620357`. Relative to
+B9 Browsing-First Conditional Dense Route is retained at `7f520ba`. Relative to
 AB1, HitRate@10 is unchanged, MRR improves by `0.001761`, MTTC by `0.00625`, and
 TechnicalScore by `0.000654`. Only Browsing changed; three sessions improved,
 one regressed, and no hit was gained or lost. Fold TechnicalScore deltas were
@@ -298,7 +298,7 @@ one regressed, and no hit was gained or lost. Fold TechnicalScore deltas were
 
 The default run observed 102 dense/fusion executions out of 725 retrieval
 turns, zero fallbacks/failures, dense p95 about `5.03 ms`, and overall retrieval
-p95 about `40.13 ms`. Startup rose from about `2.12 s` to `3.63 s`, and peak
+p95 about `40.44 ms`. Startup rose from about `2.12 s` to `3.58 s`, and peak
 RSS from about `563 MB` to `1.109 GB`. This cost is part of the keep decision,
 not hidden overhead. See `docs/b9_conditional_dense_evidence.md`.
 

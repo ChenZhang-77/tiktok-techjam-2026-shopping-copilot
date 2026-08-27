@@ -37,12 +37,12 @@ likewise disabled at weight 0.0.
 
 ## Evidence available now
 
-- Retained B9 runtime commit: `b620357`.
+- Retained B9 runtime commit: `7f520ba`.
 - Current full test suite: `262/262` passing.
 - Development-160: HitRate@10 `0.8625`, MRR `0.547329`, MTTC `4.66875`,
   TechnicalScore `0.722074`.
 - B9 route: dense/fusion executed 102 times; all four folds non-regressing;
-  startup about `3.63 s`, peak RSS about `1.109 GB`.
+  startup about `3.58 s`, peak RSS about `1.109 GB`.
 - Historical full-200 run: HitRate@10 `0.765`, MRR `0.517355`, MTTC `5.375`,
   TechnicalScore `0.650207`.
 

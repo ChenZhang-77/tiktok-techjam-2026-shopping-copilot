@@ -111,7 +111,7 @@ Shared types and leakage validation are in `starter/contracts.py`.
 
 AB1 freezes requested, executed, and fallback Route semantics. B8's bounded
 rejected-constraint candidate was reverted because Development-160 supplied
-zero rejection turns. B9 is retained at `b620357`: dense and fusion actually
+zero rejection turns. B9 is retained at `7f520ba`: dense and fusion actually
 executed on 102 of 725 retrieval turns, only Browsing outcomes changed, and all
 four fixed folds were non-regressing. The next module after B9 review is B10a
 Constraint-Preserving CrossEncoder Rerank.
@@ -311,7 +311,7 @@ executed Routes truthful. See
 B8's exact, confidence-aware penalty passed targeted tests but was reverted
 because all 726 Development turns carried zero rejected constraints. See
 [`docs/b8_rejected_constraint_evidence.md`](docs/b8_rejected_constraint_evidence.md).
-B9 now retains the Browsing-first conditional dense Route at `b620357`; see
+B9 now retains the Browsing-first conditional dense Route at `7f520ba`; see
 [`docs/b9_conditional_dense_evidence.md`](docs/b9_conditional_dense_evidence.md).
 The dependency-ordered next module after B9 review is B10a
 Constraint-Preserving CrossEncoder Rerank.
@@ -325,11 +325,11 @@ Retained B9 Development-160 evidence:
 
 | Measure | Value |
 | --- | ---: |
-| Initialization | about 3.63 s |
-| Mean retrieval latency | about 21.67 ms |
-| p95 retrieval latency | about 40.13 ms |
+| Initialization | about 3.58 s |
+| Mean retrieval latency | about 21.73 ms |
+| p95 retrieval latency | about 40.44 ms |
 | Peak RSS | about 1.109 GB |
-| Dense route mean / p95 | about 4.57 / 5.03 ms |
+| Dense route mean / p95 | about 4.70 / 5.03 ms |
 | Prompt/completion tokens | 0 / 0 |
 | Response exceptions | 0 |
 | Invalid response payloads | 0 |

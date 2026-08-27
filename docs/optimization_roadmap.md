@@ -339,7 +339,7 @@ rejection turns. Do not tune on Full-200 or the exposed holdout.
 
 ### B9 - Browsing-first conditional dense route
 
-**Status: retained at `b620357`.** B9 uses only the existing typed A/B seam:
+**Status: retained at `7f520ba`.** B9 uses only the existing typed A/B seam:
 Browsing intent, positive Strategy dense weight, at most one active constraint,
 and at least 30 structured candidates. It does not parse `Strategy.reason`, use
 score margin, or invent an intent-confidence field. Gate skips, unavailable or

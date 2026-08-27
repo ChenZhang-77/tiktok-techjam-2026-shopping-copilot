@@ -21,7 +21,7 @@ user explicitly requests it.
 
 ## Current integrated state
 
-- Retained B9 runtime commit: `b620357`.
+- Retained B9 runtime commit: `7f520ba`.
 - Current full test suite: `262/262` passing.
 - Retained default route: structured scoring, plus pinned local dense/RRF only
   behind the broad-Browsing gate.
@@ -91,7 +91,7 @@ B8 rejected-constraint ranking
 
 AB1 passed at `a676855`. B8's bounded candidate at `f53a7ee` was reverted at
 `3952788` because all 726 Development retrieval turns carried zero rejected
-constraints. B9 is retained at `b620357`; B10a is the next executable module
+constraints. B9 is retained at `7f520ba`; B10a is the next executable module
 only after B9 dual review.
 
 ## AB0 and AB1 obligations for B
@@ -146,7 +146,7 @@ metadata sparsity causes false penalties, or intent-override performance falls.
 
 ## B9 — Browsing-first conditional dense route
 
-**Status: retained at `b620357`.** The gate requires typed Browsing intent,
+**Status: retained at `7f520ba`.** The gate requires typed Browsing intent,
 positive Strategy dense weight, at most one active constraint, and at least 30
 structured candidates. It does not parse free-form reasons, use score margin,
 or depend on unavailable intent confidence. The `250 ms` bound is a

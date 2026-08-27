@@ -49,7 +49,7 @@ class B9ConditionalDenseEvidenceTest(unittest.TestCase):
                     encoding="utf-8"
                 )
             )
-            self.assertEqual(payload["code_provenance"]["commit"], "b620357")
+            self.assertEqual(payload["code_provenance"]["commit"], "7f520ba")
             self.assertTrue(payload["code_provenance"]["worktree_clean"])
             self.assertEqual(payload["evaluation"]["split"], "development")
         self.assertFalse(self.record["evaluation_boundary"]["full_or_holdout_used"])
@@ -87,6 +87,13 @@ class B9ConditionalDenseEvidenceTest(unittest.TestCase):
                 candidate["recommended_technical_score"],
                 baseline["recommended_technical_score"],
             )
+        session_bytes = json.dumps(
+            self.candidate["sessions"], sort_keys=True, separators=(",", ":")
+        ).encode()
+        self.assertEqual(
+            hashlib.sha256(session_bytes).hexdigest(),
+            self.record["candidate"]["session_outcome_sha256"],
+        )
 
     def test_dense_route_is_actually_executed_without_fallback(self) -> None:
         diagnostics = self.candidate["retrieval_diagnostics"]
@@ -99,6 +106,22 @@ class B9ConditionalDenseEvidenceTest(unittest.TestCase):
 
     def test_cost_is_disclosed_not_hidden(self) -> None:
         cost = self.record["cost"]
+        timing = self.candidate["timing"]
+        self.assertEqual(
+            cost["candidate_initialization_ms"], timing["initialization_ms"]
+        )
+        self.assertEqual(
+            cost["candidate_peak_rss_bytes"],
+            self.candidate["resources"]["peak_rss_bytes"],
+        )
+        self.assertEqual(
+            cost["candidate_dense_p95_ms"],
+            timing["retrieval"]["dense_latency"]["p95_ms"],
+        )
+        self.assertEqual(
+            cost["candidate_retrieval_p95_ms"],
+            timing["retrieval"]["latency"]["p95_ms"],
+        )
         self.assertGreater(
             cost["candidate_peak_rss_bytes"], cost["baseline_peak_rss_bytes"]
         )

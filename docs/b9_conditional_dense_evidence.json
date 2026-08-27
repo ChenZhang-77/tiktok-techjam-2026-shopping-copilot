@@ -4,7 +4,7 @@
     "id": "B9",
     "owner": "developer_b_retrieval_ranking",
     "hypothesis": "A narrow broad-Browsing gate can add diverse dense candidates without changing Buying or Intent Override outcomes.",
-    "runtime_code_commit": "b620357",
+    "runtime_code_commit": "7f520ba",
     "decision": "retain_broad_browsing_conditional_dense"
   },
   "gate": {
@@ -43,8 +43,8 @@
   },
   "candidate": {
     "report": "docs/b9_reports/development_conditional_dense.json",
-    "sha256": "47642e41026772714c80639b2cbf8abfee06c0f901bb24c644fa616ddfab16e9",
-    "clean_code_commit": "b620357",
+    "sha256": "02510624bc55e283e23efada06eee6a132ca170d7e3aa32b644430bd7dcdbef4",
+    "clean_code_commit": "7f520ba",
     "session_outcome_sha256": "da333cbc5d1879ecbde86e133dab6f4b75d8bb3bf10111329a486f9888f859e4",
     "metrics": {
       "hit_rate_at_10": 0.8625,
@@ -87,35 +87,35 @@
   },
   "cost": {
     "baseline_initialization_ms": 2124.346125,
-    "candidate_initialization_ms": 3629.072417,
+    "candidate_initialization_ms": 3579.492208,
     "baseline_peak_rss_bytes": 562872320,
-    "candidate_peak_rss_bytes": 1109377024,
-    "candidate_dense_mean_ms": 4.570372,
-    "candidate_dense_p95_ms": 5.030792,
-    "candidate_retrieval_mean_ms": 21.668122,
-    "candidate_retrieval_p95_ms": 40.130167,
-    "candidate_retrieval_max_ms": 58.2985,
-    "interpretation": "Warmup removes user-visible lazy-load spikes, but startup increases by about 1.5 seconds and peak RSS increases by about 546 MB."
+    "candidate_peak_rss_bytes": 1109049344,
+    "candidate_dense_mean_ms": 4.701189,
+    "candidate_dense_p95_ms": 5.0285,
+    "candidate_retrieval_mean_ms": 21.733536,
+    "candidate_retrieval_p95_ms": 40.439958,
+    "candidate_retrieval_max_ms": 57.354458,
+    "interpretation": "Warmup removes user-visible lazy-load spikes, but startup increases by about 1.46 seconds and peak RSS increases by about 546 MB."
   },
   "fold_reports": {
     "fold_1": {
       "path": "docs/b9_reports/fold_1_conditional_dense.json",
-      "sha256": "c8e73b229ad48c2500fb16ecd4cbb9c6aac3e02eb725a1e8d6dac7913e110e5c",
+      "sha256": "0c17b62ba82a0c6aece803293c405d17a12a58c5272ab733feeb63b3addcef55",
       "technical_score_delta": 0.000238
     },
     "fold_2": {
       "path": "docs/b9_reports/fold_2_conditional_dense.json",
-      "sha256": "364bd4614e75cafd746ef810f1bf6c48a3064552487944fb4668021e362a1233",
+      "sha256": "a9d3fd768f5f660c2b2f479b7b00ec95413ccc26937708c8ef3b3cf641568735",
       "technical_score_delta": 0.0
     },
     "fold_3": {
       "path": "docs/b9_reports/fold_3_conditional_dense.json",
-      "sha256": "e31f8ece51c298d18892f5df984553c804b0e90d4cfcbbba6adf4025c25a3147",
+      "sha256": "fb039d513c27ef3c25b92bc222d356e8c61ddd29d3f6db70b960d7f2456c3651",
       "technical_score_delta": 0.0
     },
     "fold_4": {
       "path": "docs/b9_reports/fold_4_conditional_dense.json",
-      "sha256": "36b2fc8ff98fba306b462b22bd76fc9d1f0949222676a775756d7912b35d2bb9",
+      "sha256": "4edb8017a5878efa98f6104523853e13ea1ea364248e7a6d85db5a6750566ba5",
       "technical_score_delta": 0.002375
     }
   },

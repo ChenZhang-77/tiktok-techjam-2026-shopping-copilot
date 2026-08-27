@@ -160,12 +160,12 @@ Current B9 Development-160 evidence:
 
 | Measure | Value |
 | --- | ---: |
-| Initialization | 3629.072417 ms |
-| Mean retrieval latency | 21.668122 ms |
-| p95 retrieval latency | 40.130167 ms |
-| Max retrieval latency | 58.298500 ms |
-| Dense mean / p95 latency | 4.570372 / 5.030792 ms |
-| Peak RSS | 1109377024 bytes |
+| Initialization | 3579.492208 ms |
+| Mean retrieval latency | 21.733536 ms |
+| p95 retrieval latency | 40.439958 ms |
+| Max retrieval latency | 57.354458 ms |
+| Dense mean / p95 latency | 4.701189 / 5.028500 ms |
+| Peak RSS | 1109049344 bytes |
 | Prompt/completion tokens | 0 / 0 |
 | Response exceptions | 0 |
 | Invalid payloads | 0 |
