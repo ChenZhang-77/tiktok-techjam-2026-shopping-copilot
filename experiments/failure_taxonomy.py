@@ -56,19 +56,21 @@ def classify_miss(turns: list[dict[str, Any]]) -> dict[str, Any]:
     eligible = [turn for turn in turns if turn.get("eligible") is True]
     best_lexical_rank = _minimum_rank(eligible, "target_lexical_rank")
     best_final_rank = _minimum_rank(eligible, "target_final_rank")
-    retrieval_cause = (
-        "retrieval_recall"
-        if best_final_rank is None
-        else "ranking_filtering"
-        if best_final_rank > 10
-        else None
+    retrieval_observed = any(
+        "missing_retrieval_trace" not in turn.get("evaluation_validity_flags", [])
+        for turn in eligible
     )
-    state_flags = sorted(
+    retrieval_cause = None
+    if retrieval_observed:
+        if best_lexical_rank is None:
+            retrieval_cause = "retrieval_recall"
+        elif best_final_rank is None or best_final_rank > 10:
+            retrieval_cause = "ranking_filtering"
+    state_override_flags = sorted(
         {
             str(flag)
             for turn in eligible
-            for field in ("state_override_flags", "state_flags")
-            for flag in turn.get(field, [])
+            for flag in turn.get("state_override_flags", [])
             if str(flag)
         }
     )
@@ -96,8 +98,8 @@ def classify_miss(turns: list[dict[str, Any]]) -> dict[str, Any]:
         )
         if flags:
             evidence[cause] = flags
-    if state_flags:
-        evidence["state_override"] = state_flags
+    if state_override_flags:
+        evidence["state_override"] = state_override_flags
     if missing_disclosed_value_count:
         evidence.setdefault("extraction", []).append(
             f"missing_disclosed_values:{missing_disclosed_value_count}"
@@ -115,7 +117,7 @@ def classify_miss(turns: list[dict[str, Any]]) -> dict[str, Any]:
     if retrieval_cause is not None:
         observed_causes.append(retrieval_cause)
         observed_causes = [cause for cause in CAUSE_ORDER if cause in observed_causes]
-    primary = observed_causes[0] if observed_causes else "retrieval_recall"
+    primary = observed_causes[0] if observed_causes else None
     secondary = [cause for cause in observed_causes if cause != primary]
     evaluation_validity_flags = sorted(
         {
@@ -130,7 +132,7 @@ def classify_miss(turns: list[dict[str, Any]]) -> dict[str, Any]:
         "secondary_causes": secondary,
         "best_lexical_rank": best_lexical_rank,
         "best_final_rank": best_final_rank,
-        "state_flags": state_flags,
+        "state_override_flags": state_override_flags,
         "missing_disclosed_value_count": missing_disclosed_value_count,
         "unproductive_reply_count": unproductive_reply_count,
         "evidence": evidence,
@@ -218,8 +220,11 @@ def _contains_phrase(corpus: str, phrase: object) -> bool:
     return normalized in corpus
 
 
-def _constraint_values(diagnostics: dict[str, Any], fields: Iterable[str]) -> list[str]:
-    values_out: list[str] = []
+def _constraint_records(
+    diagnostics: dict[str, Any],
+    fields: Iterable[str],
+) -> list[tuple[str, str]]:
+    records: list[tuple[str, str]] = []
     for field in fields:
         values = diagnostics.get(field)
         if not isinstance(values, list):
@@ -233,8 +238,48 @@ def _constraint_values(diagnostics: dict[str, Any], fields: Iterable[str]) -> li
                     or ""
                 ).strip()
                 if value:
-                    values_out.append(value)
-    return values_out
+                    records.append((str(item.get("attribute") or ""), value))
+    return records
+
+
+def _expected_constraint(value: object) -> tuple[str, str]:
+    from evaluator.local_evaluator import classify_constraint
+
+    raw = str(value or "").strip()
+    attribute = classify_constraint(raw)
+    payload = raw
+    prefix, separator, remainder = raw.partition(":")
+    normalized_prefix = prefix.strip().lower().replace(" ", "_")
+    if separator and normalized_prefix in {
+        "category",
+        "material",
+        "color",
+        "size",
+        "style",
+        "brand",
+        "budget",
+        "feature",
+        "use_case",
+        "other",
+    }:
+        attribute = normalized_prefix
+        payload = remainder
+    return attribute, _normalized_text(payload)
+
+
+def _matching_records(
+    expected: object,
+    records: Iterable[tuple[str, str]],
+) -> list[tuple[str, str]]:
+    expected_attribute, expected_value = _expected_constraint(expected)
+    matches: list[tuple[str, str]] = []
+    for attribute, value in records:
+        normalized_value = _normalized_text(value)
+        if attribute != expected_attribute or not normalized_value or not expected_value:
+            continue
+        if normalized_value in expected_value or expected_value in normalized_value:
+            matches.append((attribute, value))
+    return matches
 
 
 def _values_corpus(values: Iterable[object]) -> str:
@@ -279,18 +324,29 @@ def audit_session(
         intent = str(intent) if isinstance(intent, str) else None
         retrieval_trace = retrieval_turns.get(turn, {})
         request = retrieval_trace.get("request")
-        result = retrieval_trace.get("result")
-        candidates = list(getattr(result, "candidates", []) or [])
+        routes = retrieval_trace.get("routes")
+        routes = routes if isinstance(routes, dict) else {}
+        lexical_result = routes.get("lexical")
+        final_result = routes.get("structured") or retrieval_trace.get("result")
+        lexical_candidates = list(getattr(lexical_result, "candidates", []) or [])
+        candidates = list(getattr(final_result, "candidates", []) or [])
+        lexical_target_candidate = next(
+            (candidate for candidate in lexical_candidates if candidate.parent_asin == target),
+            None,
+        )
         target_candidate = next(
             (candidate for candidate in candidates if candidate.parent_asin == target),
             None,
         )
         lexical_rank = None
         final_rank = None
-        if target_candidate is not None:
-            raw_lexical_rank = target_candidate.diagnostics.get("lexical_rank")
+        if lexical_target_candidate is not None:
+            raw_lexical_rank = lexical_target_candidate.diagnostics.get("lexical_rank")
             if isinstance(raw_lexical_rank, int) and not isinstance(raw_lexical_rank, bool):
                 lexical_rank = raw_lexical_rank
+            elif lexical_target_candidate in lexical_candidates:
+                lexical_rank = lexical_candidates.index(lexical_target_candidate) + 1
+        if target_candidate is not None:
             raw_final_rank = target_candidate.diagnostics.get("final_rank")
             final_rank = (
                 raw_final_rank
@@ -302,37 +358,39 @@ def audit_session(
 
         message_corpus = _values_corpus(messages)
         disclosed = [value for value in expected_values if _contains_phrase(message_corpus, value)]
-        active_values = _constraint_values(diagnostics, ("active_constraints",))
-        inactive_values = _constraint_values(
+        active_records = _constraint_records(diagnostics, ("active_constraints",))
+        inactive_records = _constraint_records(
             diagnostics,
             ("rejected_constraints", "overridden_constraints"),
         )
-        extracted_corpus = _values_corpus([*active_values, *inactive_values])
-        active_corpus = _values_corpus(active_values)
         query_corpus = _normalized_text(diagnostics.get("distilled_query"))
         missing_disclosed_values = [
             _normalized_text(value)
             for value in disclosed
-            if not _contains_phrase(extracted_corpus, value)
+            if not _matching_records(value, [*active_records, *inactive_records])
         ]
         extraction_flags = [
             f"disclosed_value_not_extracted:{value}"
             for value in missing_disclosed_values
         ]
-        query_construction_flags = [
-            f"active_value_missing_from_query:{_normalized_text(value)}"
-            for value in disclosed
-            if _contains_phrase(active_corpus, value)
-            and not _contains_phrase(query_corpus, value)
-        ]
+        query_construction_flags: list[str] = []
+        for value in disclosed:
+            matched_active = _matching_records(value, active_records)
+            if matched_active and not any(
+                _contains_phrase(query_corpus, record_value)
+                for _, record_value in matched_active
+            ):
+                query_construction_flags.append(
+                    f"active_value_missing_from_query:{_expected_constraint(value)[1]}"
+                )
         query_construction_flags.extend(
             f"inactive_value_present_in_query:{_normalized_text(value)}"
-            for value in inactive_values
+            for _, value in inactive_records
             if _contains_phrase(query_corpus, value)
         )
 
         state_override_flags: list[str] = []
-        if turn >= eligible_start and old_value and _contains_phrase(active_corpus, old_value):
+        if turn >= eligible_start and old_value and _matching_records(old_value, active_records):
             state_override_flags.append("override_old_value_still_active")
         lowered_message = user_message.lower()
         intent_strategy_flags: list[str] = []
@@ -387,7 +445,7 @@ def audit_session(
             )
 
         evaluation_validity_flags: list[str] = []
-        if request is None or result is None:
+        if request is None or lexical_result is None or final_result is None:
             evaluation_validity_flags.append("missing_retrieval_trace")
         audited_turns.append(
             {
@@ -395,6 +453,7 @@ def audit_session(
                 "eligible": turn >= eligible_start,
                 "retrieval_depth": int(retrieval_depth or 0),
                 "candidate_count": len(candidates),
+                "lexical_candidate_count": len(lexical_candidates),
                 "target_lexical_rank": lexical_rank,
                 "target_final_rank": final_rank,
                 "intent": intent,
@@ -409,7 +468,6 @@ def audit_session(
                 "question_policy_flags": question_policy_flags,
                 "response_contract_flags": response_contract_flags,
                 "evaluation_validity_flags": evaluation_validity_flags,
-                "state_flags": state_override_flags,
                 "missing_disclosed_values": len(missing_disclosed_values),
                 "active_constraint_count": len(diagnostics.get("active_constraints", [])),
                 "rejected_constraint_count": len(diagnostics.get("rejected_constraints", [])),
@@ -432,6 +490,11 @@ def audit_session(
 
 def _next_experiment(summary: dict[str, Any]) -> dict[str, str]:
     counts = summary["primary_cause_counts"]
+    if not any(int(counts.get(cause, 0)) for cause in CAUSE_ORDER):
+        return {
+            "id": "R0",
+            "reason": "repair or collect valid failure evidence before changing behavior",
+        }
     dominant = max(
         RECOMMENDATION_PRIORITY,
         key=lambda cause: (
@@ -467,6 +530,7 @@ def build_report(
             **audit["classification"],
         }
         for audit in misses
+        if audit["classification"].get("primary_cause") in CAUSE_ORDER
     ]
     failure_summary = summarize_failures(classifications)
     fold_summary: dict[str, dict[str, Any]] = {}
@@ -489,6 +553,7 @@ def build_report(
                         Counter(
                             str(audit["classification"]["primary_cause"])
                             for audit in selected_misses
+                            if audit["classification"].get("primary_cause") in CAUSE_ORDER
                         ).items()
                     )
                 ),
@@ -499,6 +564,9 @@ def build_report(
         for turn in audit.get("turns", [])
         for flag in turn.get("evaluation_validity_flags", [])
         if str(flag)
+    )
+    unclassified_invalid_miss_count = sum(
+        audit["classification"].get("primary_cause") is None for audit in misses
     )
     return {
         "version": "r0-v2",
@@ -513,6 +581,8 @@ def build_report(
         "sample_count": len(audits),
         "hit_count": len(audits) - len(misses),
         "miss_count": len(misses),
+        "classified_miss_count": len(misses) - unclassified_invalid_miss_count,
+        "unclassified_invalid_miss_count": unclassified_invalid_miss_count,
         "failure_summary": failure_summary,
         "target_recall": target_recall_summary(audits),
         "fold_manifest_version": (
@@ -521,6 +591,51 @@ def build_report(
         "fold_summary": fold_summary,
         "evaluation_validity_counts": dict(sorted(evaluation_validity_counts.items())),
         "baseline_metrics": dict(baseline_metrics or {}),
+        "experiment_record": {
+            "id": "R0",
+            "owner": "shared_offline_diagnostics",
+            "diagnosed_failure_classes": list(CAUSE_ORDER),
+            "primary_behavior_change": "none_offline_analysis_only",
+            "hypothesis": (
+                "Development-160 misses are dominated by an upstream canonical "
+                "failure class that can select the next smallest experiment."
+            ),
+            "comparator": "retained_structured_development_160_baseline_same_runtime",
+            "expected_files": [
+                "experiments/failure_taxonomy.py",
+                "tests/test_failure_taxonomy.py",
+                "tests/test_r0_failure_taxonomy_evidence.py",
+                "docs/r0_development_failure_taxonomy.json",
+                "docs/r0_development_failure_taxonomy.md",
+            ],
+            "focused_tests": [
+                "tests.test_failure_taxonomy",
+                "tests.test_r0_failure_taxonomy_evidence",
+            ],
+            "fixed_development_folds": (
+                fold_manifest.get("version") if isinstance(fold_manifest, dict) else None
+            ),
+            "gained_lost_sessions": {
+                "gained": 0,
+                "lost": 0,
+                "reason": "no runtime behavior comparator",
+            },
+            "operational_impact": {
+                "runtime_latency": "unchanged",
+                "runtime_memory": "unchanged",
+                "runtime_fallbacks": "unchanged",
+                "note": "R0 executes only as an offline audit command.",
+            },
+            "keep_gate": (
+                "Development-160 is complete, folds are fixed, target data stays "
+                "offline, and the canonical primary/secondary rule is reviewable."
+            ),
+            "revert_gate": (
+                "Revert if the audit changes runtime behavior, uses holdout/full for "
+                "selection, leaks a target identifier, or cannot reproduce the folds."
+            ),
+            "decision": "retain_offline_audit_and_follow_dependency_order",
+        },
         "next_experiment": _next_experiment(failure_summary),
         "sessions": audits,
     }
@@ -534,10 +649,11 @@ class _TracingRetriever:
         self.turns_by_session: dict[str, dict[int, dict[str, Any]]] = defaultdict(dict)
 
     def retrieve(self, request: object) -> object:
-        result = self._retriever.retrieve(request)
+        routes = self._retriever.retrieve_routes(request)
+        result = routes["structured"]
         self.turns_by_session[str(request.session_id)][int(request.turn)] = {
             "request": request,
-            "result": result,
+            "routes": routes,
         }
         return result
 
@@ -680,9 +796,26 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         f"- Sessions: {report['sample_count']}",
         f"- Hits: {report['hit_count']}",
-        f"- Misses classified: {report['miss_count']}",
+        f"- Miss sessions: {report['miss_count']}",
+        f"- Behavior-classified misses: {report['classified_miss_count']}",
+        f"- Invalid misses left unclassified: {report['unclassified_invalid_miss_count']}",
         f"- Control Plane primary causes: {owners['control_plane']}",
         f"- Retrieval / Ranking primary causes: {owners['retrieval_ranking']}",
+        "",
+        "## Experiment record",
+        "",
+        "- **ID / owner:** R0 / shared offline diagnostics",
+        "- **Primary behavior change:** none; offline analysis only",
+        f"- **Hypothesis:** {report['experiment_record']['hypothesis']}",
+        "- **Comparator:** retained structured Development-160 baseline, same runtime",
+        "- **Gained / lost sessions:** 0 / 0; no runtime behavior comparator",
+        "- **Latency / memory / fallback impact:** unchanged at runtime",
+        "- **Keep gate:** complete fixed-fold Development evidence, canonical causes,",
+        "  and no target leakage or runtime behavior change",
+        "- **Revert gate:** any target leakage, holdout/full selection, runtime change,",
+        "  or non-reproducible fold assignment",
+        "- **Decision:** Retain offline audit tooling and evidence; follow the roadmap",
+        "  dependency order",
         "",
         "## Primary causes",
         "",

@@ -49,7 +49,7 @@ class FailureTaxonomyTest(unittest.TestCase):
                     "intent": "buying",
                     "ask_attribute": "material",
                     "unproductive_reply": False,
-                    "state_flags": [],
+                    "state_override_flags": [],
                     "missing_disclosed_values": 0,
                 }
             ]
@@ -72,7 +72,7 @@ class FailureTaxonomyTest(unittest.TestCase):
                     "intent": "browsing",
                     "ask_attribute": "feature",
                     "unproductive_reply": False,
-                    "state_flags": ["override_old_value_still_active"],
+                    "state_override_flags": ["override_old_value_still_active"],
                     "missing_disclosed_values": 0,
                 }
             ]
@@ -81,7 +81,7 @@ class FailureTaxonomyTest(unittest.TestCase):
         self.assertEqual(classification["primary_cause"], "state_override")
         self.assertEqual(classification["secondary_causes"], ["retrieval_recall"])
         self.assertEqual(
-            classification["state_flags"],
+            classification["state_override_flags"],
             ["override_old_value_still_active"],
         )
 
@@ -97,7 +97,7 @@ class FailureTaxonomyTest(unittest.TestCase):
                     "intent": "browsing",
                     "ask_attribute": "color",
                     "unproductive_reply": False,
-                    "state_flags": [],
+                    "state_override_flags": [],
                     "missing_disclosed_values": 2,
                 }
             ]
@@ -118,7 +118,7 @@ class FailureTaxonomyTest(unittest.TestCase):
                 "intent": "browsing",
                 "ask_attribute": "feature" if turn == 1 else "brand",
                 "unproductive_reply": turn in {2, 3},
-                "state_flags": [],
+                "state_override_flags": [],
                 "missing_disclosed_values": 0,
             }
             for turn in range(1, 4)
@@ -192,11 +192,28 @@ class FailureTaxonomyTest(unittest.TestCase):
             ]
         )
 
-        self.assertEqual(classification["primary_cause"], "retrieval_recall")
+        self.assertIsNone(classification["primary_cause"])
+        self.assertEqual(classification["secondary_causes"], [])
         self.assertEqual(
             classification["evaluation_validity_flags"],
             ["missing_retrieval_trace"],
         )
+
+    def test_lexical_recall_followed_by_filter_loss_is_ranking_filtering(self) -> None:
+        classification = classify_miss(
+            [
+                {
+                    "turn": 1,
+                    "eligible": True,
+                    "target_lexical_rank": 15,
+                    "target_final_rank": None,
+                }
+            ]
+        )
+
+        self.assertEqual(classification["primary_cause"], "ranking_filtering")
+        self.assertEqual(classification["best_lexical_rank"], 15)
+        self.assertIsNone(classification["best_final_rank"])
 
     def test_summary_separates_control_and_retrieval_causes(self) -> None:
         summary = summarize_failures(
@@ -285,7 +302,12 @@ class FailureTaxonomyTest(unittest.TestCase):
                     },
                 }
             ],
-            retrieval_turns={3: {"request": request, "result": result}},
+            retrieval_turns={
+                3: {
+                    "request": request,
+                    "routes": {"lexical": result, "structured": result},
+                }
+            },
         )
 
         self.assertEqual(audit["classification"]["primary_cause"], "state_override")
@@ -329,7 +351,12 @@ class FailureTaxonomyTest(unittest.TestCase):
                     },
                 }
             ],
-            retrieval_turns={1: {"request": request, "result": result}},
+            retrieval_turns={
+                1: {
+                    "request": request,
+                    "routes": {"lexical": result, "structured": result},
+                }
+            },
         )
 
         turn = audit["turns"][0]
@@ -339,6 +366,52 @@ class FailureTaxonomyTest(unittest.TestCase):
             ["active_value_missing_from_query:leather"],
         )
         self.assertEqual(audit["classification"]["primary_cause"], "query_construction")
+
+    def test_prefixed_color_value_matches_structured_attribute_semantics(self) -> None:
+        request = self._request(turn=1, query="black")
+        result = RetrievalResult(
+            candidates=[],
+            diagnostics=RetrievalDiagnostics(route="structured", candidate_count=0),
+        )
+        audit = audit_session(
+            sample={
+                "sample_id": "prefixed-color-fixture",
+                "scenario_type": "buying",
+                "ground_truth": {"parent_asin": "TARGET"},
+            },
+            evaluation_session={"hit": False, "first_hit_turn": None, "best_rank": None},
+            intent_card={"hard_constraints": ["color: black"], "soft_preferences": []},
+            behavior={},
+            response_turns=[
+                {
+                    "turn": 1,
+                    "user_message": "A key requirement is: color: black.",
+                    "response": {
+                        "ask_attribute": "material",
+                        "recommendations": [],
+                        "diagnostics": {
+                            "intent": "buying",
+                            "active_constraints": [
+                                {"attribute": "color", "value": "black"}
+                            ],
+                            "rejected_constraints": [],
+                            "overridden_constraints": [],
+                            "no_preference_attributes": [],
+                            "distilled_query": "black",
+                        },
+                    },
+                }
+            ],
+            retrieval_turns={
+                1: {
+                    "request": request,
+                    "routes": {"lexical": result, "structured": result},
+                }
+            },
+        )
+
+        self.assertEqual(audit["turns"][0]["extraction_flags"], [])
+        self.assertNotEqual(audit["classification"]["primary_cause"], "extraction")
 
     def test_report_recommends_upstream_work_when_control_failures_dominate(self) -> None:
         base_turn = {
@@ -415,7 +488,18 @@ class FailureTaxonomyTest(unittest.TestCase):
             },
         )
         self.assertEqual(report["fold_manifest_version"], "fixture-folds-v1")
+        self.assertEqual(report["experiment_record"]["id"], "R0")
+        self.assertEqual(
+            report["experiment_record"]["gained_lost_sessions"],
+            {"gained": 0, "lost": 0, "reason": "no runtime behavior comparator"},
+        )
+        self.assertEqual(
+            report["experiment_record"]["decision"],
+            "retain_offline_audit_and_follow_dependency_order",
+        )
         self.assertIn("# R0 Development Failure Taxonomy", markdown)
+        self.assertIn("## Experiment record", markdown)
+        self.assertIn("Retain offline audit tooling and evidence", markdown)
         self.assertIn("| state_override | 1 |", markdown)
         self.assertIn("**A8**", markdown)
         self.assertIn("offline-only", markdown)
@@ -423,6 +507,39 @@ class FailureTaxonomyTest(unittest.TestCase):
             "extract-miss (disclosed_value_not_extracted:leather)",
             markdown,
         )
+
+    def test_report_keeps_invalid_misses_out_of_behavior_counts(self) -> None:
+        audit = {
+            "sample_id": "invalid-miss",
+            "scenario_type": "buying",
+            "hit": False,
+            "first_hit_turn": None,
+            "best_rank": None,
+            "turns": [
+                {
+                    "turn": 1,
+                    "eligible": True,
+                    "evaluation_validity_flags": ["missing_retrieval_trace"],
+                }
+            ],
+            "classification": classify_miss(
+                [
+                    {
+                        "turn": 1,
+                        "eligible": True,
+                        "evaluation_validity_flags": ["missing_retrieval_trace"],
+                    }
+                ]
+            ),
+        }
+
+        report = build_report([audit], provenance={"commit": "abc", "worktree_clean": True})
+
+        self.assertEqual(report["miss_count"], 1)
+        self.assertEqual(report["classified_miss_count"], 0)
+        self.assertEqual(report["unclassified_invalid_miss_count"], 1)
+        self.assertEqual(report["failure_summary"]["primary_cause_counts"], {})
+        self.assertEqual(report["next_experiment"]["id"], "R0")
 
 
 if __name__ == "__main__":
