@@ -232,8 +232,8 @@ without losing useful preference evidence.
 **Status: retained at `9560344`.** The A-owned plan separates category, hard,
 soft, semantic, residual, and excluded evidence while rendering the existing
 single request query. Development overall/scenario metrics and all 160 session
-outcomes exactly match the baseline. Residual text remains conservative because
-A11 later rejected broader residual cleanup. See
+outcomes exactly match the baseline. Residual text remains conservative;
+broader cleanup was not retained, and its isolated effect remains unproven. See
 `docs/a10b_query_plan_evidence.md` and `docs/a11_extraction_scope_evidence.md`.
 
 Problem: the distilled query is one string that can retain noisy phrases.
@@ -247,7 +247,7 @@ then an AB1-coordinated contract change with compatibility tests.
 
 ### A11 - Extraction and scope hardening
 
-**Status: retained as a bounded deterministic slice at `4a3fe6c`.** Catalog-
+**Status: retained as a bounded deterministic slice at `2163cd1`.** Catalog-
 derived multi-word categories, clause/list-scoped positive/negative/
 no-preference extraction, numeric/hyphen disambiguation, and injected catalog
 path consistency improved Development technical score from `0.653194` to

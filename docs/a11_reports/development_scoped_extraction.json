@@ -1327,7 +1327,7 @@
     }
   ],
   "code_provenance": {
-    "commit": "4a3fe6c",
+    "commit": "2163cd1",
     "worktree_clean": true
   },
   "observed_run_counts": {
@@ -1374,48 +1374,48 @@
     "rerank_pool_size": null
   },
   "timing": {
-    "initialization_ms": 1625.760458,
-    "evaluation_wall_ms": 18093.997791,
+    "initialization_ms": 1519.381833,
+    "evaluation_wall_ms": 17890.003916,
     "responses": {
       "response_count": 726,
-      "total_ms": 18017.388269,
-      "mean_ms": 24.817339,
-      "p50_ms": 23.647,
-      "p95_ms": 44.927958,
-      "max_ms": 66.2735
+      "total_ms": 17822.762964,
+      "mean_ms": 24.54926,
+      "p50_ms": 23.460875,
+      "p95_ms": 44.088833,
+      "max_ms": 62.010917
     },
     "retrieval": {
       "latency": {
         "response_count": 726,
-        "total_ms": 15370.789787,
-        "mean_ms": 21.171887,
-        "p50_ms": 20.637291,
-        "p95_ms": 40.70325,
-        "max_ms": 61.368875
+        "total_ms": 15175.849509,
+        "mean_ms": 20.903374,
+        "p50_ms": 20.117541,
+        "p95_ms": 39.6385,
+        "max_ms": 57.353709
       },
       "lexical_latency": {
         "response_count": 726,
-        "total_ms": 8385.229626,
-        "mean_ms": 11.549903,
-        "p50_ms": 11.708417,
-        "p95_ms": 19.664583,
-        "max_ms": 33.085916
+        "total_ms": 8235.047382,
+        "mean_ms": 11.34304,
+        "p50_ms": 11.486333,
+        "p95_ms": 19.288,
+        "max_ms": 31.779375
       },
       "constraint_rerank_latency": {
         "response_count": 726,
-        "total_ms": 3848.060265,
-        "mean_ms": 5.300358,
-        "p50_ms": 4.585916,
-        "p95_ms": 13.472458,
-        "max_ms": 18.04025
+        "total_ms": 3855.031553,
+        "mean_ms": 5.309961,
+        "p50_ms": 4.6305,
+        "p95_ms": 13.711959,
+        "max_ms": 18.063041
       },
       "structured_filter_latency": {
         "response_count": 726,
-        "total_ms": 287.769221,
-        "mean_ms": 0.396376,
-        "p50_ms": 0.000166,
-        "p95_ms": 1.904625,
-        "max_ms": 4.766042
+        "total_ms": 284.291924,
+        "mean_ms": 0.391587,
+        "p50_ms": 0.000125,
+        "p95_ms": 1.881583,
+        "max_ms": 5.055792
       }
     }
   },

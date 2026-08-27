@@ -52,7 +52,7 @@ any runtime behavior change does.
 ## Verified Development Result
 
 The retained runtime after reviewed bounded A11 extraction at clean code commit
-`4a3fe6c` (including the earlier tracing fix `b0c953d`) was reproduced on the fixed
+`2163cd1` (including the earlier tracing fix `b0c953d`) was reproduced on the fixed
 Development-160 split with the structured default:
 
 | Metric | Development-160 |
@@ -239,16 +239,16 @@ evidence is not comparable across all allowed question attributes. See
 A10b is retained at clean code commit `9560344`. The A-owned `QueryPlan`
 separates category, hard, soft, semantic, residual, and excluded evidence while
 still emitting the existing single `RetrievalRequest.query`. Rejected and
-overridden values never render positive; residual text remains until A11 can
-prove broader extraction is safe. A11 later rejected broader residual cleanup,
-so this conservative renderer remains retained. All Development-160 metrics, scenario
+overridden values never render positive. Broader residual cleanup was not
+retained and its isolated effect remains unproven, so the conservative renderer
+remains retained. All Development-160 metrics, scenario
 metrics, and 160 session outcomes exactly match the baseline. See
 `docs/a10b_query_plan_evidence.md`.
 
 ## A11 Result
 
 A11 is retained as a bounded deterministic slice at reviewed runtime code
-commit `4a3fe6c`, with the earlier R0 tracing fix at `b0c953d`. It adds
+commit `2163cd1`, with the earlier R0 tracing fix at `b0c953d`. It adds
 catalog-derived multi-word categories, clause-scoped positive/negative/
 no-preference extraction, and numeric/hyphen disambiguation. It does not change
 the shared A/B schema, QueryPlan residual renderer, or clarification policy.

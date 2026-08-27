@@ -3,7 +3,7 @@
 ## Decision
 
 Retain the reviewed bounded A11 candidate at clean runtime code commit
-`4a3fe6c`; the earlier R0 tracing fix remains in its history at `b0c953d`. The
+`2163cd1`; the earlier R0 tracing fix remains in its history at `b0c953d`. The
 retained change is deterministic, A-owned, and
 keeps the existing `RetrievalRequest.query` contract and clarification policy.
 
@@ -15,6 +15,8 @@ The retained scope is intentionally smaller than the original A11 list:
 - separate positive, negative, and no-preference clauses before extraction;
 - keep comma-delimited negative and no-preference lists inside their clause,
   while preventing catalog phrases from crossing punctuation or masked spans;
+- preserve a category head as positive context when a same-attribute modifier
+  list is rejected, and support controlled ASCII/Unicode possessive boundaries;
 - use the same supported attribute inventory for positive and rejected
   constraints, including explicit brand and budget evidence;
 - recognize `use_case` and `other` no-preference replies;
@@ -86,7 +88,7 @@ an isolated causal conclusion.
 - Shared A/B schema: unchanged.
 - Question policy: unchanged.
 - Model/network/token cost: none.
-- Initialization: `1320.31 ms -> 1625.76 ms` in the recorded runs.
+- Initialization: `1320.31 ms -> 1519.38 ms` in the recorded runs.
 - Peak RSS: approximately unchanged (`579,010,560 -> 578,338,816` bytes).
 - Response latency is not directly comparable because A11 reaches correct
   products in fewer turns; no latency regression was observed in the report.

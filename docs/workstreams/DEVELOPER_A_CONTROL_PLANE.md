@@ -78,7 +78,7 @@ HitRate/MTTC. A10a Candidate Question Value was subsequently tested, rejected,
 and reverted because its partial-evidence post-feature ranking regressed every
 main metric. A10b was then retained at `9560344` with exact Development session
 parity and no shared schema change. A11 was retained as a bounded deterministic
-slice at `4a3fe6c`: Development score rose to `0.721420` and all four folds
+slice at `2163cd1`: Development score rose to `0.721420` and all four folds
 improved, without a shared schema or question-policy change. The next executable
 module is the shared AB1 contract and active-route semantics freeze.
 The retained A8 confidence is an A-owned ordinal stability signal with
@@ -433,9 +433,10 @@ A10c is blocked on A/B agreement, AB1 schema/range/fallback definitions, and
 compatibility tests. Developer A must not add typed components to
 `RetrievalRequest` unilaterally.
 
-The A11 residual-cleanup ablation was rejected. Preserve the A10b conservative
-residual renderer; exact rejected/overridden values must still never become
-positive FTS terms.
+Broader residual cleanup was not retained, and its isolated effect remains
+unproven because no independent hash-bound report exists. Preserve the A10b
+conservative residual renderer; exact rejected/overridden values must still
+never become positive FTS terms.
 
 ### Keep gate
 
@@ -445,7 +446,7 @@ positive FTS terms.
 
 ## A11 - Extraction and Scope Hardening
 
-**Status: retained as a bounded slice at `4a3fe6c`.** The retained behavior is
+**Status: retained as a bounded slice at `2163cd1`.** The retained behavior is
 catalog-derived multi-word category extraction, clause/list-scoped positive/
 negative/no-preference evidence, numeric/hyphen disambiguation, and injected
 catalog-path consistency. It gained 19 Development sessions, lost three,
