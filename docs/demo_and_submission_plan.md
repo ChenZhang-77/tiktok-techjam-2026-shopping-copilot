@@ -18,7 +18,6 @@ The defensible technical story is:
 ```text
 conversation
   -> active intent and constraint state
-  -> A-owned bounded adaptive depth for narrow high-confidence Buying
   -> distilled retrieval request
   -> structured candidates
   -> gated local dense/RRF for broad Browsing, exact structured fallback
@@ -38,18 +37,18 @@ likewise disabled at weight 0.0.
 
 ## Evidence available now
 
-- Retained B9 route commit: `7f520ba`; retained B12 depth commit: `0f47710`.
-- Current full test suite: `283/283` passing.
-- Development-160: HitRate@10 `0.86875`, MRR `0.549735`, MTTC `4.60625`,
-  TechnicalScore `0.727170`.
+- Retained B9 route commit: `7f520ba`; optional B12 code commit: `46a9c53`.
+- Current full test suite: `286/286` passing.
+- Default Development-160: HitRate@10 `0.8625`, MRR `0.547329`, MTTC
+  `4.66875`, TechnicalScore `0.722074`.
 - B9 route: dense/fusion executed 102 times; all four folds non-regressing;
   startup about `3.58 s`, peak RSS about `1.109 GB`.
 - B10a: Top-3 and Top-5 anchored CrossEncoder candidates rejected; the default
   remains B9 and no LLM-ranking claim is allowed.
 - B11: not started because the current R0 refresh finds zero retrieval/ranking
   primary misses; do not claim a lexical-recall refinement.
-- B12: retained A-owned bounded adaptive depth; one fold regressed slightly,
-  two were parity, and one improved. B still consumes no raw confidence.
+- B12: exploratory and disabled by default; favorable aggregate result, but no
+  contemporaneous gate and a gain concentrated in fold 4.
 - Historical full-200 run: HitRate@10 `0.765`, MRR `0.517355`, MTTC `5.375`,
   TechnicalScore `0.650207`.
 

@@ -1,16 +1,36 @@
 {
-  "version": "b12-v1",
+  "version": "b12-v2",
   "experiment": {
     "id": "B12",
-    "owners": [
-      "developer_a_control_plane",
-      "developer_b_retrieval_ranking"
-    ],
+    "owners": ["developer_a_control_plane", "developer_b_retrieval_ranking"],
     "hypothesis": "A can map its persisted ordinal intent assessment into the existing bounded Strategy.retrieval_depth field so narrow high-confidence Buying retrieves fewer candidates without teaching B a second confidence policy.",
-    "runtime_code_commit": "0f47710",
-    "decision": "retain_bounded_A_owned_adaptive_depth"
+    "failure_class": "intent_strategy_routing",
+    "primary_behavior_changed": "Optional A-owned high-confidence narrow-Buying candidate-depth selection",
+    "expected_files": [
+      "starter/core/planner.py",
+      "experiments/evaluation_reporting.py",
+      "tests/test_planner.py",
+      "tests/test_agent_smoke.py",
+      "tests/test_b12_adaptive_depth_evidence.py",
+      "docs/b12_reports/",
+      "docs/b12_adaptive_depth_evidence.json",
+      "docs/b12_adaptive_depth_evidence.md",
+      "project status and roadmap documents"
+    ],
+    "optional_code_commit": "46a9c53",
+    "decision": "do_not_retain_as_default_keep_reproducible_exploratory_option"
+  },
+  "experiment_discipline": {
+    "predeclared_keep_gate_available": false,
+    "predeclared_revert_gate_available": false,
+    "aggregate_run_before_fixed_folds": true,
+    "aggregate_result_used_to_open_fold_evaluation": true,
+    "consequence": "The favorable aggregate result cannot be promoted to a retained default because no contemporaneous keep/revert gate was recorded and the gain is concentrated in fold_4.",
+    "posthoc_thresholds_used_for_selection": false
   },
   "policy": {
+    "default_enabled": false,
+    "experiment_flag": "--adaptive-depth",
     "decision_owner": "A_control_plane",
     "adaptive_gate": {
       "intent": "buying",
@@ -21,7 +41,7 @@
     "default_configured_floor": 60,
     "effective_depth": "max(top_k, selected_depth_floor)",
     "reason_label": "adaptive_narrow",
-    "fixed_fallback": "When IntentAssessment is unavailable or the adaptive gate is false, preserve the prior intent-and-active-constraint mapping.",
+    "fixed_fallback": "With the flag disabled, or when IntentAssessment is unavailable or the adaptive gate is false, preserve the B9 intent-and-active-constraint mapping.",
     "B_consumption": "B reads only the validated bounded request.strategy.retrieval_depth value; raw IntentAssessment and confidence do not cross the seam.",
     "calibration_boundary": "IntentAssessment confidence remains an A-owned ordinal stability band, not a calibrated probability."
   },
@@ -37,118 +57,83 @@
     "name": "B9 conditional dense",
     "report": "docs/b9_reports/development_conditional_dense.json",
     "sha256": "02510624bc55e283e23efada06eee6a132ca170d7e3aa32b644430bd7dcdbef4",
-    "metrics": {
-      "hit_rate_at_10": 0.8625,
-      "mrr": 0.547329,
-      "mttc": 4.66875,
-      "efficiency": 0.633125,
-      "recommended_technical_score": 0.722074
-    }
+    "metrics": {"hit_rate_at_10": 0.8625, "mrr": 0.547329, "mttc": 4.66875, "efficiency": 0.633125, "recommended_technical_score": 0.722074}
+  },
+  "current_default_parity": {
+    "report": "docs/b12_reports/development_default_parity.json",
+    "sha256": "a574a88837346ecb71ee8b969a1c2619357d0dee3ead14c6d994b1975434ea06",
+    "clean_code_commit": "46a9c53",
+    "adaptive_depth_enabled": false,
+    "metrics_equal_b9": true,
+    "scenario_metrics_equal_b9": true,
+    "sessions_equal_b9": true
   },
   "candidate": {
     "report": "docs/b12_reports/development_adaptive_depth.json",
-    "sha256": "36786020d334ff9fd3a56f1d3177f60add73052eaf1d31e216e9046b6e488e20",
-    "clean_code_commit": "0f47710",
-    "metrics": {
-      "hit_rate_at_10": 0.86875,
-      "mrr": 0.549735,
-      "mttc": 4.60625,
-      "efficiency": 0.639375,
-      "recommended_technical_score": 0.72717
-    },
-    "delta_vs_b9": {
-      "hit_rate_at_10": 0.00625,
-      "mrr": 0.002406,
-      "mttc": -0.0625,
-      "efficiency": 0.00625,
-      "recommended_technical_score": 0.005096
-    },
-    "session_changes": {
-      "changed": 3,
-      "gained_hits": 1,
-      "lost_hits": 0,
-      "changed_sample_ids": [
-        "public_0135",
-        "public_0178",
-        "public_0195"
-      ]
-    }
+    "sha256": "7ec8b715574a03985ad50f3d8b547aba093326cf0c8c9b2a7a53a53a218a17c4",
+    "clean_code_commit": "46a9c53",
+    "adaptive_depth_enabled": true,
+    "metrics": {"hit_rate_at_10": 0.86875, "mrr": 0.549735, "mttc": 4.60625, "efficiency": 0.639375, "recommended_technical_score": 0.72717},
+    "delta_vs_b9": {"hit_rate_at_10": 0.00625, "mrr": 0.002406, "mttc": -0.0625, "efficiency": 0.00625, "recommended_technical_score": 0.005096}
   },
   "scenario_deltas": {
-    "buying_technical_score": 0.000085,
-    "browsing_technical_score": 0.012656,
-    "intent_override_technical_score": 0.0,
-    "boundary_technical_score": 0.0
+    "buying": {"hit_rate_at_10": 0.0, "mrr": -0.001799, "mttc": -0.03125, "efficiency": 0.003124, "recommended_technical_score": 0.000085},
+    "browsing": {"hit_rate_at_10": 0.015625, "mrr": 0.007812, "mttc": -0.125, "efficiency": 0.012501, "recommended_technical_score": 0.012656},
+    "intent_override": {"hit_rate_at_10": 0.0, "mrr": 0.0, "mttc": 0.0, "efficiency": 0.0, "recommended_technical_score": 0.0},
+    "boundary": {"hit_rate_at_10": 0.0, "mrr": 0.0, "mttc": 0.0, "efficiency": 0.0, "recommended_technical_score": 0.0}
+  },
+  "session_changes": {
+    "changed": 3,
+    "gained_hits": 1,
+    "lost_hits": 0,
+    "details": {
+      "public_0135": "Buying hit remains turn 2; best rank worsens 4 to 6.",
+      "public_0178": "Buying hit arrives earlier at turn 5 instead of 7; best rank worsens 7 to 9.",
+      "public_0195": "Browsing changes from miss after 10 turns to hit at turn 3, rank 2."
+    },
+    "response_count_difference_explanation": "Candidate has 716 versus 725 responses: public_0195 saves seven turns and public_0178 saves two turns."
   },
   "fold_reports": {
-    "fold_1": {
-      "path": "docs/b12_reports/fold_1_adaptive_depth.json",
-      "sha256": "b44c9f7ddc380cb4c74a08a42204e0e62d382bbcdc4a7e5568ee2f9ea800d893",
-      "hit_rate_delta": 0.0,
-      "mrr_delta": -0.002083,
-      "technical_score_delta": -0.000625
-    },
-    "fold_2": {
-      "path": "docs/b12_reports/fold_2_adaptive_depth.json",
-      "sha256": "ed8b06cc968e2553187d3ee388952143d8a43a057aeec528984308fe2ef97781",
-      "hit_rate_delta": 0.0,
-      "mrr_delta": 0.0,
-      "technical_score_delta": 0.0
-    },
-    "fold_3": {
-      "path": "docs/b12_reports/fold_3_adaptive_depth.json",
-      "sha256": "8f95915904d6cb7f209863b23894253e1327896c016c559be191da247f9247f0",
-      "hit_rate_delta": 0.0,
-      "mrr_delta": 0.0,
-      "technical_score_delta": 0.0
-    },
-    "fold_4": {
-      "path": "docs/b12_reports/fold_4_adaptive_depth.json",
-      "sha256": "62f1a9fd41d083ddb5aad3527cf8cbaf0eef1f1ad389c1fdf281b46386b556b4",
-      "hit_rate_delta": 0.025,
-      "mrr_delta": 0.011706,
-      "technical_score_delta": 0.021012
-    }
+    "fold_1": {"baseline_path": "docs/b9_reports/fold_1_conditional_dense.json", "baseline_sha256": "0c17b62ba82a0c6aece803293c405d17a12a58c5272ab733feeb63b3addcef55", "candidate_path": "docs/b12_reports/fold_1_adaptive_depth.json", "candidate_sha256": "5cb88ba0135000fa437123e5d5a53b916d1734a3ba0179671a6013e38d75585b", "hit_rate_delta": 0.0, "mrr_delta": -0.002083, "mttc_delta": 0.0, "technical_score_delta": -0.000625},
+    "fold_2": {"baseline_path": "docs/b9_reports/fold_2_conditional_dense.json", "baseline_sha256": "a9d3fd768f5f660c2b2f479b7b00ec95413ccc26937708c8ef3b3cf641568735", "candidate_path": "docs/b12_reports/fold_2_adaptive_depth.json", "candidate_sha256": "890a875c759ba184cf871b19391542fc5e07482358dc69a7fe24f420d5bab43f", "hit_rate_delta": 0.0, "mrr_delta": 0.0, "mttc_delta": 0.0, "technical_score_delta": 0.0},
+    "fold_3": {"baseline_path": "docs/b9_reports/fold_3_conditional_dense.json", "baseline_sha256": "fb039d513c27ef3c25b92bc222d356e8c61ddd29d3f6db70b960d7f2456c3651", "candidate_path": "docs/b12_reports/fold_3_adaptive_depth.json", "candidate_sha256": "1eb5dc1a1ce19a26266d76cfce2d6669bd898d44d67c2353fe865ac8c7216c31", "hit_rate_delta": 0.0, "mrr_delta": 0.0, "mttc_delta": 0.0, "technical_score_delta": 0.0},
+    "fold_4": {"baseline_path": "docs/b9_reports/fold_4_conditional_dense.json", "baseline_sha256": "4edb8017a5878efa98f6104523853e13ea1ea364248e7a6d85db5a6750566ba5", "candidate_path": "docs/b12_reports/fold_4_adaptive_depth.json", "candidate_sha256": "dbf41e18a3e73d452fd7c23dbbdb75c04f50de63d6966e1491e0d4b9f129dbb7", "hit_rate_delta": 0.025, "mrr_delta": 0.011706, "mttc_delta": -0.25, "technical_score_delta": 0.021012}
   },
   "cost": {
-    "baseline_lexical_candidate_mean": 95.144828,
-    "candidate_lexical_candidate_mean": 88.994413,
-    "candidate_mean_delta": -6.150415,
-    "baseline_retrieval_mean_ms": 21.733536,
-    "candidate_retrieval_mean_ms": 21.0696,
-    "baseline_retrieval_p95_ms": 40.439958,
-    "candidate_retrieval_p95_ms": 39.020583,
-    "baseline_peak_rss_bytes": 1109049344,
-    "candidate_peak_rss_bytes": 1109295104,
-    "timing_interpretation": "Candidate-count reduction is deterministic. Latency and RSS are separate single-process runs and are directional observations, not controlled causal estimates."
+    "default_response_count": 725,
+    "candidate_response_count": 716,
+    "default_observed_lexical_candidate_mean": 95.144828,
+    "candidate_observed_lexical_candidate_mean": 88.994413,
+    "observed_mean_delta": -6.150415,
+    "interpretation": "Candidate counts are deterministic observations, but the response mix differs because two sessions finish earlier; do not attribute the full aggregate mean reduction to depth selection alone.",
+    "controlled_latency_or_memory_claim": false,
+    "timing_note": "Default and candidate reports were run concurrently; their timing and RSS are not used for a causal cost claim."
   },
   "runtime_observations": {
-    "response_count": 716,
-    "dense_executed_turns": 102,
-    "fusion_executed_turns": 102,
-    "respond_exceptions": 0,
-    "invalid_response_payloads": 0,
-    "reported_fallbacks": 0,
-    "route_failures": 0
+    "candidate_dense_executed_turns": 102,
+    "candidate_fusion_executed_turns": 102,
+    "candidate_respond_exceptions": 0,
+    "candidate_invalid_response_payloads": 0,
+    "candidate_reported_fallbacks": 0,
+    "candidate_route_failures": 0
   },
   "verification": {
-    "red_test": "High-confidence narrow Buying returned depth 80 before the candidate and expected 60.",
-    "focused_planner_tests": "6/6",
-    "full_tests_after_evidence": "283/283",
+    "red_test": "The opt-in high-confidence narrow-Buying test returned depth 80 before the candidate and expected 60.",
+    "full_tests_after_evidence": "286/286",
     "targeted_properties": [
+      "the default flag is false and preserves B9 depth behavior",
       "A owns the confidence-band decision and B consumes only Strategy.retrieval_depth",
-      "the adaptive rule requires Buying, high ordinal confidence, and at least two active constraints",
+      "the optional rule requires Buying, high ordinal confidence, and at least two active constraints",
       "effective depth remains max(top_k, selected floor)",
-      "medium confidence and missing IntentAssessment preserve the prior fixed mapping",
-      "the free-form Strategy reason records adaptive_narrow but is not a B-side gate"
+      "medium confidence and missing IntentAssessment preserve the prior fixed mapping"
     ]
   },
   "decision_rationale": [
-    "All aggregate quality metrics improved and one Development session gained a hit while none lost a hit.",
-    "Mean lexical and structured candidate depth fell by 6.150415 candidates per executed retrieval response.",
-    "Fold 1 has a small disclosed MRR and TechnicalScore regression, folds 2 and 3 are exact parity, and fold 4 improves materially.",
-    "The gain is concentrated in three sessions and should not be described as universal fold improvement.",
-    "The policy preserves A/B ownership, uses the existing bounded Strategy field, and has an exact legacy fallback."
+    "The candidate improves every aggregate metric, gains one hit, and loses no hit.",
+    "Buying MRR regresses and both changed Buying sessions have worse best rank, despite one arriving two turns earlier.",
+    "Fold 1 regresses slightly, folds 2 and 3 are parity, and the positive fold result is concentrated in fold 4.",
+    "No contemporaneous keep/revert gate was recorded before observing results, so a retained-default decision would be post hoc.",
+    "The candidate therefore remains reproducible behind an explicit disabled-by-default flag; B9 remains the default runtime."
   ],
-  "next_module": "R4 integrated selection and freeze"
+  "next_module": "R4 integrated selection and freeze with B9 as the default B route"
 }

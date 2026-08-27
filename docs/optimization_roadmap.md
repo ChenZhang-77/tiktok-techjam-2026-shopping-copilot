@@ -407,13 +407,12 @@ of conversational filler.
 
 ### B12 - Adaptive depth
 
-**Status: retained at `0f47710`.** A owns one bounded mapping from its existing
-ordinal confidence band into the existing `Strategy.retrieval_depth`: narrow,
-high-confidence Buying uses the smaller configured Buying floor, with
-`top_k` still a hard lower bound. B receives no raw confidence and continues to
-consume only the validated depth. Development-160 improved on every aggregate
-quality metric while mean lexical/structured pool depth fell by `6.150415`.
-Fold 1 regressed slightly, folds 2/3 were parity, and fold 4 improved. See
+**Status: exploratory, disabled by default at `46a9c53`.** A owns one bounded
+mapping from its existing ordinal confidence band into the existing
+`Strategy.retrieval_depth`; B receives no raw confidence. The Development-160
+aggregate result is favorable, but no contemporaneous keep/revert gate was
+recorded and the gain is concentrated in fold 4. The candidate is therefore
+available only through `--adaptive-depth`; the B9 default remains exact. See
 `docs/b12_adaptive_depth_evidence.md`.
 
 Run only after the diagnostics loop exists. Clear Buying can be shallower and
