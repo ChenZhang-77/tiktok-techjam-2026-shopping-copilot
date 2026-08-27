@@ -199,9 +199,8 @@ A8 persistent IntentAssessment
 ```
 
 AB1 passed at `a676855`; its shared diagnostics preserve the A-owned Strategy
-request while exposing B-owned execution and fallback. A12 must still either
-run as a time-boxed profile ablation or be explicitly deferred as an open
-Track 4 gap. Do not start A12 before the explicit-intent path is stable.
+request while exposing B-owned execution and fallback. A12 is now explicitly
+deferred for time with `profile_weight=0.0` and the Track 4 profile gap open.
 
 ## A8 - Stateful Intent Persistence
 
@@ -476,6 +475,11 @@ for low-confidence input and must have token/cost accounting, timeout, and the
 existing deterministic fallback. It must win development cross-validation.
 
 ## A12 - Profile Ablation
+
+**Status: deferred for time.** Further A-side optimization was paused before an
+ablation was run. Keep `profile_weight=0.0`; profile value remains unproven and
+the Track 4 long-term-profile gap remains open. This is a disposition, not a
+positive or negative experiment result.
 
 The profile is a weak anonymized prior, not a user identity or hard constraint.
 

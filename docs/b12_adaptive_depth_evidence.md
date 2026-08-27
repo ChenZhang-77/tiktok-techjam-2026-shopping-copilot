@@ -3,7 +3,7 @@
 ## Decision
 
 Do not retain B12 as the default. Keep it as a reproducible exploratory option
-at `46a9c53`, enabled only by `--adaptive-depth`. The ordinary Agent leaves the
+at `82891c8`, enabled only by `--adaptive-depth`. The ordinary Agent leaves the
 flag off and exactly preserves the B9 default.
 
 The candidate has a favorable Development-160 aggregate result, but no
@@ -48,7 +48,7 @@ crosses the seam and B does not parse `Strategy.reason`.
 | Efficiency | 0.633125 | 0.639375 | +0.006250 |
 | TechnicalScore | 0.722074 | 0.727170 | +0.005096 |
 
-The current disabled-by-default run at `46a9c53` matches B9 exactly across
+The current disabled-by-default run at `82891c8` matches B9 exactly across
 aggregate metrics, scenario metrics, and every session.
 
 ## Scenario and session tradeoffs

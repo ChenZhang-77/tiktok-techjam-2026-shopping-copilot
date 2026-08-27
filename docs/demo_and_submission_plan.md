@@ -37,8 +37,8 @@ likewise disabled at weight 0.0.
 
 ## Evidence available now
 
-- Retained B9 route commit: `7f520ba`; optional B12 code commit: `46a9c53`.
-- Current full test suite: `286/286` passing.
+- Retained B9 route commit: `7f520ba`; optional B12 code commit: `82891c8`.
+- Current full test suite: `287/287` passing.
 - Default Development-160: HitRate@10 `0.8625`, MRR `0.547329`, MTTC
   `4.66875`, TechnicalScore `0.722074`.
 - B9 route: dense/fusion executed 102 times; all four folds non-regressing;

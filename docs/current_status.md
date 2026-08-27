@@ -39,9 +39,9 @@ Verified on 2026-08-27:
 | --- | --- |
 | Branch at B12 verification | `b/b12-adaptive-depth` |
 | Retained default behavior commit | `7f520ba` |
-| Optional B12 code/default-parity commit | `46a9c53` |
+| Optional B12 code/default-parity commit | `82891c8` |
 | B10a experiment branch | `b/b10a-constraint-preserving-crossencoder` |
-| Latest local full test suite | 286 passed |
+| Latest local full test suite | 287 passed |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |
 
@@ -53,7 +53,7 @@ any runtime behavior change does.
 ## Verified Development Result
 
 The retained default after bounded A11 extraction and B9 conditional dense was
-reproduced exactly at B12's disabled-by-default code commit `46a9c53` on the
+reproduced exactly at B12's disabled-by-default code commit `82891c8` on the
 fixed Development-160 split:
 
 | Metric | Development-160 |
@@ -319,8 +319,10 @@ session outcomes. See `docs/b10a_constraint_rerank_evidence.md`.
 B10b is recorded as not justified without new R0 evidence. A refreshed R0
 audit then rejected B11's entry condition: all 22 misses have upstream primary
 causes, retrieval/ranking has zero, and retained lexical depth covers 157/160
-targets. See `docs/b11_prerequisite_evidence.md`. B12 is an explicit exploratory
-option at `46a9c53`, not a retained default: its aggregate is favorable but no
+targets. See `docs/b11_prerequisite_evidence.md`. A12 is explicitly deferred
+for time: `profile_weight=0.0`, profile value remains unproven, and the Track 4
+long-term-profile gap stays open. B12 is an explicit exploratory
+option at `82891c8`, not a retained default: its aggregate is favorable but no
 contemporaneous keep/revert gate exists and the gain is concentrated in fold 4.
 See `docs/b12_adaptive_depth_evidence.md`. Score margin remains forbidden as a
 gate. The complete dependency order lives only in

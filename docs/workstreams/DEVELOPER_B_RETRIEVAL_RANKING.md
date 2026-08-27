@@ -21,8 +21,8 @@ user explicitly requests it.
 
 ## Current integrated state
 
-- Retained B9 route commit: `7f520ba`; optional B12 code commit: `46a9c53`.
-- Current full test suite: `286/286` passing.
+- Retained B9 route commit: `7f520ba`; optional B12 code commit: `82891c8`.
+- Current full test suite: `287/287` passing.
 - Retained default route: structured scoring, plus pinned local dense/RRF only
   behind the broad-Browsing gate.
 - Global dense/RRF and CrossEncoder remain rejected experiments; an LLM ranker
@@ -221,7 +221,7 @@ Avoid broad expansions that inflate the pool without improving final ranks.
 
 ## B12 — Adaptive candidate depth
 
-**Status: exploratory, disabled by default at `46a9c53`.** With
+**Status: exploratory, disabled by default at `82891c8`.** With
 `--adaptive-depth`, A maps high-confidence narrow Buying to the smaller
 existing Buying depth floor and preserves `top_k` as a hard lower bound. B
 consumes only `Strategy.retrieval_depth`; it does not inspect raw confidence or

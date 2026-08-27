@@ -327,7 +327,7 @@ available; see
 B10b is not justified without new R0 evidence. The refreshed B11 audit found
 zero retrieval/ranking primary misses and 157/160 retained-depth lexical
 recall, so B11 was not started. B12 remains an explicit exploratory option at
-`46a9c53`; it is disabled by default because no contemporaneous selection gate
+`82891c8`; it is disabled by default because no contemporaneous selection gate
 was recorded and its fold gain is concentrated. Its favorable candidate
 metrics are reported as an experiment, not the default; see
 [`docs/b11_prerequisite_evidence.md`](docs/b11_prerequisite_evidence.md) and

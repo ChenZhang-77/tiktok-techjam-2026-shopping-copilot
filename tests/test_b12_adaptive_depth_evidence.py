@@ -56,7 +56,7 @@ class B12AdaptiveDepthEvidenceTest(unittest.TestCase):
             for item in self.record["fold_reports"].values()
         )
         for report in reports:
-            self.assertEqual(report["code_provenance"]["commit"], "46a9c53")
+            self.assertEqual(report["code_provenance"]["commit"], "82891c8")
             self.assertTrue(report["code_provenance"]["worktree_clean"])
             self.assertEqual(report["evaluation"]["split"], "development")
         self.assertFalse(self.default["evaluation"]["adaptive_depth_enabled"])

@@ -251,7 +251,7 @@ TechnicalScore gate; the B9 default remains exact at `93b5b19`. See
 evidence. B11 is also not started: the current R0 refresh finds zero
 retrieval/ranking primary causes and retained-depth recall of 157/160. See
 `docs/b11_prerequisite_evidence.md`. B12 remains an explicit, disabled-by-default
-experiment at `46a9c53`: its aggregate result is favorable, but there was no
+experiment at `82891c8`: its aggregate result is favorable, but there was no
 contemporaneous keep/revert gate and the gain is concentrated in fold 4. The
 B9 default is preserved exactly. See `docs/b12_adaptive_depth_evidence.md`.
 

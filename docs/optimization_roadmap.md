@@ -264,6 +264,12 @@ new R0 evidence; subsequent B modules remain evidence-gated.
 
 ### A12 - Profile ablation
 
+**Status: deferred for time.** The user paused further A-side optimization
+before this ablation. `profile_weight` remains `0.0`, no profile behavior was
+selected, and the Track 4 long-term-profile gap remains explicitly open. This
+records the required disposition before R4 without claiming evidence that was
+not produced.
+
 Only after A8-A11 and AB1 stabilize: test a very small profile prior in vague
 Browsing states. Explicit current intent always wins. Keep
 `profile_weight=0.0` when the ablation is not stable.
@@ -407,7 +413,7 @@ of conversational filler.
 
 ### B12 - Adaptive depth
 
-**Status: exploratory, disabled by default at `46a9c53`.** A owns one bounded
+**Status: exploratory, disabled by default at `82891c8`.** A owns one bounded
 mapping from its existing ordinal confidence band into the existing
 `Strategy.retrieval_depth`; B receives no raw confidence. The Development-160
 aggregate result is favorable, but no contemporaneous keep/revert gate was
