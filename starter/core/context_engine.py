@@ -220,7 +220,12 @@ def _catalog_separator_is_supported(
 ) -> bool:
     if re.fullmatch(r"(?:\s+|\s*-\s*)", separator) is not None:
         return True
-    return separator in {"'", "’"} and right.group(0).lower() == "s"
+    if right.group(0).lower() == "s" and separator in {"'", "’"}:
+        return True
+    return (
+        left.group(0).lower().endswith("s")
+        and re.fullmatch(r"['’]\s*", separator) is not None
+    )
 
 
 def _catalog_phrase_spans(
@@ -456,7 +461,8 @@ def _negative_head_categories(
         )
     modifier_groups = (MATERIALS, COLORS, STYLE_TERMS, USE_CASES)
     heads: set[str] = set()
-    for category_start, _, category in category_spans:
+    direct_head_spans: list[tuple[int, int]] = []
+    for category_start, category_end, category in category_spans:
         for phrases in modifier_groups:
             modifier_spans = [
                 span
@@ -468,7 +474,14 @@ def _negative_head_categories(
             last_modifier_end = max(end for _, end in modifier_spans)
             if re.fullmatch(r"\s+", text[last_modifier_end:category_start]):
                 heads.add(category)
+                direct_head_spans.append((category_start, category_end))
                 break
+    for category_start, category_end, category in category_spans:
+        if any(
+            head_start <= category_start and category_end <= head_end
+            for head_start, head_end in direct_head_spans
+        ):
+            heads.add(category)
     return heads
 
 

@@ -98,15 +98,28 @@ class ContextEngineTest(unittest.TestCase):
 
     def test_catalog_category_supports_controlled_possessive_boundaries(self) -> None:
         vocabulary = CatalogVocabulary.from_products([
-            {"categories": ["Women's Clothing"]}
+            {
+                "categories": [
+                    "Women's Clothing",
+                    "Boys' Swimwear",
+                    "Kids’ Clothing",
+                ]
+            }
         ])
 
-        for message in ("I need women's clothing.", "I need women’s clothing."):
+        for message, category in (
+            ("I need women's clothing.", "women s clothing"),
+            ("I need women’s clothing.", "women s clothing"),
+            ("I need boys' swimwear.", "boys swimwear"),
+            ("I need boys’ swimwear.", "boys swimwear"),
+            ("I need kids' clothing.", "kids clothing"),
+            ("I need kids’ clothing.", "kids clothing"),
+        ):
             values = {
                 (item["attribute"], item["normalized_value"])
                 for item in extract_constraints(message, 1, vocabulary=vocabulary)
             }
-            self.assertIn(("category", "women s clothing"), values)
+            self.assertIn(("category", category), values)
 
     def test_session_state_accumulates_constraints_without_duplicates(self) -> None:
         state = SessionState(session_id="s1", user_profile={})
@@ -222,13 +235,24 @@ class ContextEngineTest(unittest.TestCase):
 
     def test_catalog_category_head_uses_original_possessive_and_hyphen_spans(self) -> None:
         vocabulary = CatalogVocabulary.from_products([
-            {"categories": ["Women's Clothing", "Mid Calf Boots"]}
+            {
+                "categories": [
+                    "Women's Clothing",
+                    "Mid Calf Boots",
+                    "Trail Running Shoes",
+                    "Boys' Swimwear",
+                    "Kids’ Clothing",
+                ]
+            }
         ])
 
-        for message, category in (
-            ("Avoid black and white women's clothing.", "women s clothing"),
-            ("Avoid black and white women’s clothing.", "women s clothing"),
-            ("Avoid black and white mid-calf boots.", "mid calf boots"),
+        for message, category, nested in (
+            ("Avoid black and white women's clothing.", "women s clothing", None),
+            ("Avoid black and white women’s clothing.", "women s clothing", None),
+            ("Avoid black and white mid-calf boots.", "mid calf boots", "boots"),
+            ("Avoid black and white trail-running shoes.", "trail running shoes", "shoes"),
+            ("Avoid black and white boys' swimwear.", "boys swimwear", None),
+            ("Avoid black and white kids’ clothing.", "kids clothing", None),
         ):
             active = {
                 (item["attribute"], item["normalized_value"])
@@ -244,6 +268,8 @@ class ContextEngineTest(unittest.TestCase):
             }
             self.assertIn(("category", category), active)
             self.assertNotIn(("category", category), rejected)
+            if nested is not None:
+                self.assertNotIn(("category", nested), rejected)
 
     def test_rejected_brand_and_budget_share_positive_matcher_inventory(self) -> None:
         message = "Avoid brand Nike and anything under $80."
