@@ -2,19 +2,24 @@
 
 ## Decision
 
-Retain AB1 at clean code commit `2ebb954`. It appends truthful requested,
+Retain AB1 at clean code commit `e992b89`. It appends truthful requested,
 executed, and fallback Route observations to `RetrievalDiagnostics` while
 preserving the existing `RetrievalRequest`, single distilled `query`, Strategy
 weights, dialogue policy, and `HybridRetriever.retrieve` seam.
 
 ## Frozen semantics
 
-- `requested_route_weights` maps shared Route names to finite non-negative
-  requested weights. `Strategy.semantic_weight` maps to the B-owned `dense`
-  Route name.
-- `executed_routes` is an ordered unique list of Routes that actually ran.
-- `fallback_route` names the Route that produced the degraded result, or is
-  `null` when a reported execution did not fall back.
+- `requested_route_weights` is either the legacy empty object or maps exactly
+  `lexical`, `structured`, and `dense` to finite requested weights in `[0, 1]`.
+  `Strategy.semantic_weight` maps to the B-owned `dense` Route name.
+- `executed_routes` is an ordered unique list of stages that actually ran from
+  the closed inventory: `lexical`, `structured`, `dense`, `fusion`,
+  `semantic_rerank`, and `catalog_fallback`.
+- `fallback_route` is `null` when a reported execution did not fall back.
+  Otherwise it must be a frozen execution name, `fallback_used` must be true,
+  and that Route must appear in `executed_routes`.
+- A successful downstream stage such as `semantic_rerank` preserves any
+  upstream fallback route and failure evidence.
 - `{}` plus `[]` means a legacy producer did not report AB1 semantics. In that
   case, `fallback_route=null` is unavailable evidence, not proof of success.
 - The fields are appended with `{}`, `[]`, and `null` defaults, so the original

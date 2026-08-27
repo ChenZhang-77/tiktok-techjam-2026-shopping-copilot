@@ -21,6 +21,8 @@ FORBIDDEN_RETRIEVAL_REQUEST_KEYS = {
 }
 MAX_RETRIEVAL_DEPTH = 500
 REQUESTED_ROUTE_NAMES = frozenset({"lexical", "structured", "dense"})
+# These are execution-stage names, not aliases for RetrievalDiagnostics.route.
+# Keep this inventory closed so diagnostics cannot silently drift across A/B.
 EXECUTED_ROUTE_NAMES = frozenset(
     {
         "lexical",

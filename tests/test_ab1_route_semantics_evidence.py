@@ -49,7 +49,7 @@ class AB1RouteSemanticsEvidenceTest(unittest.TestCase):
                     encoding="utf-8"
                 )
             )
-            self.assertEqual(payload["code_provenance"]["commit"], "2ebb954")
+            self.assertEqual(payload["code_provenance"]["commit"], "e992b89")
             self.assertTrue(payload["code_provenance"]["worktree_clean"])
             self.assertEqual(payload["evaluation"]["split"], "development")
         self.assertFalse(self.record["evaluation_boundary"]["full_or_holdout_used"])
