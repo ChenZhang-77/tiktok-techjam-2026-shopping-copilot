@@ -76,7 +76,9 @@ fallback without changing ask behavior or the shared contract. A9 Should-Ask
 Over-Generality Gate was tested, rejected, and reverted because it worsened
 HitRate/MTTC. A10a Candidate Question Value was subsequently tested, rejected,
 and reverted because its partial-evidence post-feature ranking regressed every
-main metric. The next executable module is A10b Internal QueryPlan.
+main metric. A10b was then retained at `a6446e9` with exact Development session
+parity and no shared schema change. The next executable module is A11 Extraction
+and Scope Hardening.
 The retained A8 confidence is an A-owned ordinal stability signal with
 `low`/`medium`/`high` diagnostic bands, not a calibrated probability or B-side
 gate.
@@ -395,6 +397,13 @@ The answer-usefulness prior must not be a hardcoded public-sample table.
 - Question selection changes without also changing query construction.
 
 ## A10b - Internal QueryPlan
+
+**Disposition: retained at `a6446e9`.** Category, hard, soft, semantic,
+residual, and excluded evidence are explicit A-side roles. The plan still
+renders one `RetrievalRequest.query`; all 160 Development outcomes match the
+baseline. Residual text stays intact unless exact active/excluded phrases can be
+removed, because broader cleanup belongs to A11. Full record:
+`docs/a10b_query_plan_evidence.md`.
 
 ### Hypothesis
 

@@ -230,13 +230,21 @@ use_case; uncovered attributes were implicitly treated as low value, so the
 evidence is not comparable across all allowed question attributes. See
 `docs/a10a_question_value_evidence.md`.
 
+## A10b Result
+
+A10b is retained at clean code commit `a6446e9`. The A-owned `QueryPlan`
+separates category, hard, soft, semantic, residual, and excluded evidence while
+still emitting the existing single `RetrievalRequest.query`. Rejected and
+overridden values never render positive; residual text remains until A11 can
+prove broader extraction is safe. All Development-160 metrics, scenario
+metrics, and 160 session outcomes exactly match the baseline. See
+`docs/a10b_query_plan_evidence.md`.
+
 ## Next Decision
 
-The next dependency-ordered module is A10b Internal QueryPlan. It must remain
-A-owned and continue to emit the existing single `RetrievalRequest.query`.
-Score margin remains forbidden as a gate. A11 Extraction and Scope Hardening
-remains supported by six primary Extraction misses and stays after the
-dependencies specified in the roadmap.
+The next dependency-ordered module is A11 Extraction and Scope Hardening. It
+remains supported by six primary Extraction misses. Score margin remains
+forbidden as a gate.
 
 The complete dependency order lives only in `docs/optimization_roadmap.md`.
 Immediate blocker to remember: B9 cannot start before AB1 freezes shared route
@@ -267,6 +275,7 @@ track in `docs/demo_and_submission_plan.md`.
 | `docs/ab0_decision_evidence.md` | DecisionEvidence sources, fallbacks, parity, and A9 input boundary |
 | `docs/a9_should_ask_evidence.md` | Rejected should-ask gate, evaluator mechanism, and A10a route consequence |
 | `docs/a10a_question_value_evidence.md` | Rejected full-pool question-value candidate and incomplete partition coverage |
+| `docs/a10b_query_plan_evidence.md` | Retained A-internal QueryPlan roles, parity, and A11 boundary |
 | `docs/ablation_summary.md` | Human-readable keep/reject evidence |
 | `docs/workstreams/DEVELOPER_A_CONTROL_PLANE.md` | Standalone A-side route |
 | `docs/workstreams/DEVELOPER_B_RETRIEVAL_RANKING.md` | Standalone B-side route |

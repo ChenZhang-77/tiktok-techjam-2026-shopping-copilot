@@ -281,7 +281,11 @@ A10a full-pool question-value candidate was also rejected and reverted after
 HitRate fell to `0.75625`, MRR to `0.520012`, and MTTC rose to `5.3625`; current
 partition evidence is incomplete across allowed attributes. See
 [`docs/a10a_question_value_evidence.md`](docs/a10a_question_value_evidence.md).
-The dependency-ordered next module is A10b Internal QueryPlan.
+A10b now retains an A-internal `QueryPlan` that separates positive roles,
+residual text, and excluded values while continuing to send B the same single
+query string. Development-160 metrics and all session outcomes are unchanged.
+See [`docs/a10b_query_plan_evidence.md`](docs/a10b_query_plan_evidence.md).
+The dependency-ordered next module is A11 Extraction and Scope Hardening.
 `AGENTS.md` owns the taxonomy and
 leakage boundary; [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md)
 owns the complete order.

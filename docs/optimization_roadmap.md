@@ -229,6 +229,12 @@ without losing useful preference evidence.
 
 ### A10b - Internal QueryPlan
 
+**Status: retained at `a6446e9`.** The A-owned plan separates category, hard,
+soft, semantic, residual, and excluded evidence while rendering the existing
+single request query. Development overall/scenario metrics and all 160 session
+outcomes exactly match the baseline. Residual text remains conservative because
+A11 extraction is incomplete. See `docs/a10b_query_plan_evidence.md`.
+
 Problem: the distilled query is one string that can retain noisy phrases.
 
 Hypothesis: an A-internal, auditable `QueryPlan` separating

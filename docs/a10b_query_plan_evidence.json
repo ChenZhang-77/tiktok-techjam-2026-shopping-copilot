@@ -1,0 +1,69 @@
+{
+  "experiment": "A10b_internal_query_plan",
+  "hypothesis": "An A-owned role-separated QueryPlan can make query construction auditable and keep rejected/overridden values out of positive evidence without changing the shared request schema or retained Development quality.",
+  "failure_class_addressed": "query_construction_hardening",
+  "run_code_commit": "a6446e9",
+  "baseline_code_commit": "3988b8b",
+  "runtime_disposition": "retained",
+  "files_changed": [
+    "starter/agent.py",
+    "starter/core/query_builder.py",
+    "tests/test_agent_smoke.py",
+    "tests/test_query_builder.py"
+  ],
+  "query_plan_inventory": {
+    "category_terms": {"producer": "active category constraints", "type_range": "ordered unique tuple of strings; JSON diagnostic array", "lifecycle": "current turn", "fallback": "empty", "rendering": "positive first"},
+    "hard_terms": {"producer": "active hard non-category/non-semantic constraints", "type_range": "ordered unique tuple of strings; JSON diagnostic array", "lifecycle": "current turn", "fallback": "empty", "rendering": "positive after category"},
+    "soft_terms": {"producer": "active soft non-category/non-semantic constraints", "type_range": "ordered unique tuple of strings; JSON diagnostic array", "lifecycle": "current turn", "fallback": "empty", "rendering": "positive after hard"},
+    "semantic_terms": {"producer": "active feature and use_case constraints", "type_range": "ordered unique tuple of strings; JSON diagnostic array", "lifecycle": "current turn", "fallback": "empty", "rendering": "positive after soft"},
+    "residual_terms": {"producer": "current message after exact active/excluded phrase removal", "type_range": "empty tuple or one string; JSON diagnostic array", "lifecycle": "current turn only", "fallback": "empty", "rendering": "positive last to preserve not-yet-extracted semantics"},
+    "excluded_terms": {"producer": "rejected and overridden constraints not currently active", "type_range": "ordered unique tuple of strings; JSON diagnostic array", "lifecycle": "cross-turn state summarized for current plan", "fallback": "empty", "rendering": "never positive"},
+    "rendered_query": {"producer": "ordered positive roles plus residual", "type_range": "string", "lifecycle": "current request", "fallback": "sanitized current message or empty", "rendering": "the only value assigned to RetrievalRequest.query"},
+    "fallback_to_message": {"producer": "whether no active positive role exists", "type_range": "bool", "lifecycle": "current turn", "fallback": "true with no active terms", "rendering": "diagnostic only"}
+  },
+  "behavior_boundaries": {
+    "question_policy_changed": false,
+    "intent_or_state_semantics_changed": false,
+    "shared_contract_change": "none",
+    "retrieval_request_shape_changed": false,
+    "target_or_evaluator_label_used_at_runtime": false,
+    "residual_policy": "Preserve residual current-message text because A11 extraction is incomplete; do not claim generic control-word removal is safe under OR+BM25."
+  },
+  "reports": {
+    "baseline": {
+      "path": "docs/ab0_reports/development_structured.json",
+      "sha256": "e0a473b3c5b208175c4ca1d2ecffd052c81882cde15ca96331e4bf4991fba430"
+    },
+    "candidate": {
+      "path": "docs/a10b_reports/development_query_plan.json",
+      "sha256": "29f89a4f4e4fa71a41761695a7f35e3ab3a09bad2842cb897c592d59422d2754"
+    }
+  },
+  "development_160": {
+    "candidate": {
+      "hit_rate_at_10": 0.7625,
+      "mrr": 0.529812,
+      "mttc": 5.35,
+      "efficiency": 0.565,
+      "recommended_technical_score": 0.653194
+    },
+    "metric_delta": {
+      "hit_rate_at_10": 0.0,
+      "mrr": 0.0,
+      "mttc": 0.0,
+      "efficiency": 0.0,
+      "recommended_technical_score": 0.0
+    },
+    "scenario_metrics_equal": true,
+    "session_outcomes_equal": true,
+    "session_outcome_sha256": "63a8dd1a958c1a26652d6ae4870dc462735fe6b37dba73e9288b0a3ad8c40849",
+    "observed_failures": {"respond_exceptions": 0, "invalid_response_payloads": 0, "reported_fallbacks": 0, "internal_fallbacks": 0}
+  },
+  "fold_status": "not rerun because every Development-160 session outcome, including first-hit turn and best rank, exactly matches the baseline; each fixed fold is a subset of these identical outcomes",
+  "holdout_status": "not run during A10b",
+  "full_status": "not run during A10b",
+  "keep_gate": "Query roles and negative evidence are auditable; shared query schema and question policy are unchanged; Development quality is stable.",
+  "revert_gate": "Revert if excluded terms re-enter rendered_query, residual removal precedes A11 evidence, the shared request shape changes, or Development session outcomes regress.",
+  "decision": "retain_A_internal_query_plan",
+  "next_module": "A11 Extraction and Scope Hardening"
+}

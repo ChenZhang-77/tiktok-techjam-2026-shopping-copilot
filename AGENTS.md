@@ -190,7 +190,14 @@ must not be treated as comparable evidence for feature/size/brand/budget/other.
 The candidate protected feature priority but still treated the other uncovered
 attributes as implicitly low. Revisit A10a only after A11 provides A-owned
 coverage or AB1 coordinates missing B semantics, plus an explicit fallback for
-uncovered attributes. The next module is A10b Internal QueryPlan.
+uncovered attributes. A10b was the historical next step and is now complete.
+
+A10b Internal QueryPlan is retained at `a6446e9`. It is A-owned and separates
+category/hard/soft/semantic/residual/excluded evidence, but renders only the
+existing single `RetrievalRequest.query`; the shared schema is unchanged.
+Rejected and overridden terms must never render positive. Preserve residual
+current-turn text until A11 proves extraction coverage and broader cleanup with
+Development evidence. The next module is A11 Extraction and Scope Hardening.
 
 Dense retrieval, weighted RRF, and the CrossEncoder reranker are optional,
 reproducible experiments with deterministic fallback. They are disabled by

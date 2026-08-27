@@ -25,6 +25,12 @@ The current search expression derived from active customer intent without stale
 or overridden preferences.
 _Avoid_: full history, raw query
 
+**QueryPlan**:
+An A-owned current-turn decomposition of category, hard, soft, semantic,
+residual, and excluded evidence. It renders the existing single Distilled Query
+for B; it is not a shared typed-query contract.
+_Avoid_: RetrievalRequest schema extension, treating excluded terms as positive
+
 **Active Constraint**:
 A current customer requirement or preference that may influence retrieval or
 ranking and has not been overridden, rejected, or marked no-preference.
