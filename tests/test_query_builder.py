@@ -67,6 +67,34 @@ class QueryBuilderTest(unittest.TestCase):
         self.assertEqual(plan.rendered_query, "shoes black")
         self.assertEqual(plan.semantic_terms, ())
 
+    def test_short_and_symbolic_excluded_values_never_render_positive(self) -> None:
+        plan = build_query_plan(
+            "avoid 8, not M, and avoid $50",
+            [],
+            rejected_constraints=[
+                {"attribute": "size", "normalized_value": "8", "active": False},
+                {"attribute": "size", "normalized_value": "m", "active": False},
+            ],
+            overridden_constraints=[
+                {"attribute": "budget", "normalized_value": "$50", "active": False}
+            ],
+        )
+
+        self.assertEqual(plan.excluded_terms, ("8", "m", "$50"))
+        self.assertNotIn("8", plan.rendered_query)
+        self.assertNotRegex(plan.rendered_query, r"(?i)(?<![a-z0-9'])m(?![a-z0-9'])")
+        self.assertNotIn("$50", plan.rendered_query)
+
+    def test_single_character_active_value_does_not_mutilate_contraction(self) -> None:
+        plan = build_query_plan(
+            "I'm looking for size M",
+            [{"attribute": "size", "normalized_value": "m", "hard": True}],
+        )
+
+        self.assertEqual(plan.hard_terms, ("m",))
+        self.assertEqual(plan.residual_terms, ("I'm looking for size",))
+        self.assertEqual(plan.rendered_query, "m I'm looking for size")
+
 
 if __name__ == "__main__":
     unittest.main()

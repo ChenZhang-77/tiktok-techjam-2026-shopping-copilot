@@ -57,9 +57,8 @@ def _residual_text(
 ) -> str:
     result = str(user_message or "").strip()
     for term in (*consumed_terms, *excluded_terms):
-        if len(term) <= 1:
-            continue
-        result = re.sub(rf"\b{re.escape(term)}\b", " ", result, flags=re.IGNORECASE)
+        pattern = rf"(?<![A-Za-z0-9']){re.escape(term)}(?![A-Za-z0-9'])"
+        result = re.sub(pattern, " ", result, flags=re.IGNORECASE)
     return re.sub(r"\s+", " ", result).strip(" ,;:-")
 
 
