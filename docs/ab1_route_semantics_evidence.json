@@ -5,7 +5,7 @@
     "owners": ["developer_a_control_plane", "developer_b_retrieval_ranking"],
     "hypothesis": "Freezing requested, executed, and fallback Route diagnostics makes the shared A/B seam truthful without changing retrieval order or dialogue policy.",
     "decision": "retain_route_execution_semantics",
-    "runtime_code_commit": "40a5182",
+    "runtime_code_commit": "a676855",
     "reporting_code_commit": "2ebb954"
   },
   "shared_contract": {
@@ -19,7 +19,7 @@
       "executed_routes": "ordered unique list of stages that actually executed from lexical, structured, dense, fusion, semantic_rerank, and catalog_fallback",
       "fallback_route": "null for reported non-degraded execution; otherwise a frozen executed Route with fallback_used true"
     },
-    "missing_data_semantics": "Empty requested_route_weights plus empty executed_routes means a legacy producer did not report AB1 semantics; fallback_route null is conclusive only when executed_routes is non-empty.",
+    "missing_data_semantics": "Empty requested_route_weights plus empty executed_routes means a legacy producer did not report AB1 semantics; fallback_route null is conclusive only when executed_routes is non-empty; requested-only and executed-only partial states are invalid.",
     "backward_compatibility": "Fields are appended with {}, [], and null defaults, preserving the original RetrievalDiagnostics positional signature."
   },
   "evaluation_boundary": {
@@ -34,8 +34,8 @@
   },
   "candidate": {
     "report": "docs/ab1_reports/development_route_semantics.json",
-    "sha256": "db17e6af8a939fd23ea53ddb615448e3986b5eb185fdf174d7d68dc4e4e1106d",
-    "clean_code_commit": "40a5182",
+    "sha256": "8220ad97e1ebbdd8d5bd5ae834d7d064079afc49e1c6820d5e9dfae39ff0a8a2",
+    "clean_code_commit": "a676855",
     "session_outcome_sha256": "41f7a9dede01e03439a76615adca62cbac1181619970d9ff345dca00608a5621",
     "metrics": {
       "hit_rate_at_10": 0.8625,
@@ -66,19 +66,19 @@
   "fold_reports": {
     "fold_1": {
       "path": "docs/ab1_reports/fold_1_route_semantics.json",
-      "sha256": "265a6872f6c7f7a0477868b92ed9850320cc182f742c545d0e65b48126499ced"
+      "sha256": "d0bfc01b8fd92dfba9520be2d57a7d7892233426094b17a20bf5f0ef8ed767f2"
     },
     "fold_2": {
       "path": "docs/ab1_reports/fold_2_route_semantics.json",
-      "sha256": "57e477234a085905318e2a76186968cd699b255b5f56335e61a417e8436f6dbc"
+      "sha256": "55881cca456c7e1cd03d72d28ca754f98198c85cfcc31b5a363c4e24b9b34057"
     },
     "fold_3": {
       "path": "docs/ab1_reports/fold_3_route_semantics.json",
-      "sha256": "9f5739a8cb3df38df75dae73504b8fb78503e2745826d27a9a7af6dea626119b"
+      "sha256": "696261ffc1dee56c6e4a8d26a470a780dfebc814ba69024fcad0688aafe0f45f"
     },
     "fold_4": {
       "path": "docs/ab1_reports/fold_4_route_semantics.json",
-      "sha256": "c9a904e888c060bdd587a2fea78efd090882df8a377218a115b323bc4c7f3b00"
+      "sha256": "c81a5b474dd25216ced412387d365c168017925953c27f109a87f398d88db855"
     }
   },
   "compatibility_examples": {

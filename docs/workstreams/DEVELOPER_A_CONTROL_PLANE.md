@@ -198,7 +198,7 @@ A8 persistent IntentAssessment
                       -> AB1 shared contract and route-semantics freeze
 ```
 
-AB1 passed at `40a5182`; its shared diagnostics preserve the A-owned Strategy
+AB1 passed at `a676855`; its shared diagnostics preserve the A-owned Strategy
 request while exposing B-owned execution and fallback. A12 must still either
 run as a time-boxed profile ablation or be explicitly deferred as an open
 Track 4 gap. Do not start A12 before the explicit-intent path is stable.

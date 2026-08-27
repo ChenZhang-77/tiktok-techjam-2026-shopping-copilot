@@ -2,7 +2,7 @@
 
 ## Decision
 
-Retain AB1 at clean code commit `40a5182`. It appends truthful requested,
+Retain AB1 at clean code commit `a676855`. It appends truthful requested,
 executed, and fallback Route observations to `RetrievalDiagnostics` while
 preserving the existing `RetrievalRequest`, single distilled `query`, Strategy
 weights, dialogue policy, and `HybridRetriever.retrieve` seam.
@@ -24,6 +24,8 @@ weights, dialogue policy, and `HybridRetriever.retrieve` seam.
   case, `fallback_route=null` is unavailable evidence, not proof of success.
   A downstream wrapper preserves this unreported triple on both success and
   fallback paths instead of guessing from the legacy free-form `route` value.
+- `requested_route_weights` and `executed_routes` are reported together or not
+  at all. Requested-only and executed-only partial states are invalid.
 - The fields are appended with `{}`, `[]`, and `null` defaults, so the original
   positional `RetrievalDiagnostics` signature remains compatible.
 
