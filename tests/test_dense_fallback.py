@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import tempfile
+import time
 import unittest
 from dataclasses import replace
 from pathlib import Path
@@ -160,6 +161,7 @@ class DenseFallbackTest(unittest.TestCase):
     def test_query_time_dense_failure_reaches_lexical_fallback(self) -> None:
         class FailingBackend:
             def rank(self, query: str, top_n: int) -> list[tuple[int, float]]:
+                time.sleep(0.005)
                 raise OSError("model unavailable")
 
         with tempfile.TemporaryDirectory() as directory:
@@ -180,6 +182,8 @@ class DenseFallbackTest(unittest.TestCase):
             self.assertEqual([item.parent_asin for item in result.candidates], ["A", "B"])
             self.assertTrue(result.diagnostics.fallback_used)
             self.assertIn("dense_query_failed", result.diagnostics.notes)
+            self.assertGreaterEqual(result.diagnostics.stage_latencies_ms["dense"], 4.0)
+            self.assertGreaterEqual(result.diagnostics.latency_ms, 4.0)
 
     def test_hash_mismatched_cache_reaches_lexical_fallback(self) -> None:
         class FakeBackend:

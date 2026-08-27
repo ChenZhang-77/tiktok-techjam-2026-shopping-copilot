@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import tempfile
+import time
 import unittest
 from dataclasses import replace
 from pathlib import Path
@@ -389,10 +390,13 @@ class ConditionalDenseRetrieverTest(unittest.TestCase):
             def __init__(self, catalog_path: Path) -> None:
                 super().__init__(catalog_path)
                 self.retrieve_calls = 0
+                self.results: list[RetrievalResult] = []
 
             def retrieve(self, request: RetrievalRequest) -> RetrievalResult:
                 self.retrieve_calls += 1
-                return super().retrieve(request)
+                result = super().retrieve(request)
+                self.results.append(result)
+                return result
 
         class QueryFailingBackend:
             def __init__(self) -> None:
@@ -400,6 +404,7 @@ class ConditionalDenseRetrieverTest(unittest.TestCase):
 
             def rank(self, query: str, top_n: int) -> list[tuple[int, float]]:
                 self.rank_calls += 1
+                time.sleep(0.005)
                 raise RuntimeError("query encoding failed")
 
         with tempfile.TemporaryDirectory() as directory:
@@ -462,6 +467,16 @@ class ConditionalDenseRetrieverTest(unittest.TestCase):
             self.assertEqual(backend.rank_calls, 1)
             self.assertEqual(first.diagnostics.route_failures, {"dense": "dense_query_failed"})
             self.assertEqual(second.diagnostics.route_failures, {"dense": "dense_query_failed"})
+            self.assertGreaterEqual(first.diagnostics.stage_latencies_ms["dense"], 4.0)
+            self.assertEqual(
+                first.diagnostics.latency_ms,
+                round(
+                    base.results[0].diagnostics.latency_ms
+                    + first.diagnostics.stage_latencies_ms["dense"],
+                    6,
+                ),
+            )
+            self.assertNotIn("dense", second.diagnostics.stage_latencies_ms)
             self.assertEqual(first.candidates, second.candidates)
 
 

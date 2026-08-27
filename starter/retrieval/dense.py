@@ -191,7 +191,7 @@ class DenseRetriever:
             "dense",
             self._unavailable_reason or "dense_route_unavailable",
         )
-        return self._fallback_result(request, reason)
+        return self._fallback_result(request, reason, attempted=attempted)
 
     def retrieve_dense_attempt(self, request: RetrievalRequest) -> RetrievalResult:
         """Run only dense work, returning failure status without invoking fallback."""
@@ -202,9 +202,13 @@ class DenseRetriever:
             try:
                 ranked = self._backend.rank(request.query, request.strategy.retrieval_depth)
             except Exception:
+                latency_ms = (time.perf_counter() - started) * 1000.0
                 self._backend = None
                 self._unavailable_reason = "dense_query_failed"
-                return self._failed_attempt(self._unavailable_reason)
+                return self._failed_attempt(
+                    self._unavailable_reason,
+                    latency_ms=latency_ms,
+                )
             latency_ms = (time.perf_counter() - started) * 1000.0
             candidates = [
                 Candidate(
@@ -238,14 +242,25 @@ class DenseRetriever:
         )
 
     @staticmethod
-    def _failed_attempt(reason: str) -> RetrievalResult:
+    def _failed_attempt(
+        reason: str,
+        *,
+        latency_ms: float | None = None,
+    ) -> RetrievalResult:
+        rounded_latency = round(latency_ms, 6) if latency_ms is not None else None
         return RetrievalResult(
             candidates=[],
             diagnostics=RetrievalDiagnostics(
                 route="dense",
                 candidate_count=0,
                 fallback_used=True,
+                latency_ms=rounded_latency,
                 notes=[reason],
+                stage_latencies_ms=(
+                    {"dense": rounded_latency}
+                    if rounded_latency is not None
+                    else {}
+                ),
                 cache_state={"dense": reason},
                 route_failures={"dense": reason},
             ),
@@ -298,13 +313,44 @@ class DenseRetriever:
             "query_text_template": QUERY_TEXT_TEMPLATE,
         }
 
-    def _fallback_result(self, request: RetrievalRequest, reason: str) -> RetrievalResult:
+    def _fallback_result(
+        self,
+        request: RetrievalRequest,
+        reason: str,
+        *,
+        attempted: RetrievalResult | None = None,
+    ) -> RetrievalResult:
         result = self._lexical.retrieve(request)
+        attempted_latency = (
+            float(attempted.diagnostics.latency_ms)
+            if attempted is not None and attempted.diagnostics.latency_ms is not None
+            else 0.0
+        )
         diagnostics = replace(
             result.diagnostics,
             fallback_used=True,
+            latency_ms=round(
+                float(result.diagnostics.latency_ms or 0.0) + attempted_latency,
+                6,
+            ),
             notes=[*result.diagnostics.notes, reason],
-            cache_state={**result.diagnostics.cache_state, "dense": reason},
+            stage_latencies_ms={
+                **result.diagnostics.stage_latencies_ms,
+                **(
+                    attempted.diagnostics.stage_latencies_ms
+                    if attempted is not None
+                    else {}
+                ),
+            },
+            cache_state={
+                **result.diagnostics.cache_state,
+                **(
+                    attempted.diagnostics.cache_state
+                    if attempted is not None
+                    else {}
+                ),
+                "dense": reason,
+            },
             route_failures={**result.diagnostics.route_failures, "dense": reason},
             fallback_route=result.diagnostics.route,
         )
