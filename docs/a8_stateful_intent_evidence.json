@@ -1,0 +1,86 @@
+{
+  "experiment": "A8_stateful_intent_persistence",
+  "owner": "Developer A",
+  "failure_class_addressed": "Intent / Strategy Routing",
+  "hypothesis": "A persisted IntentAssessment with explicit transition reasons prevents ordinary clarification replies from flipping Buying to Browsing while still allowing accumulated evidence, exploration, and overrides to change route intent.",
+  "primary_behavior_changed": "Intent is assessed from current and persisted conversation evidence, stored in SessionState, and exposed through A-side diagnostics and Strategy.reason.",
+  "run_code_commit": "b3c4aeb",
+  "code_worktree_clean_before_runs": true,
+  "dataset": "data/public_set.jsonl",
+  "split": "development",
+  "split_version": "public-split-v1",
+  "development_fold_version": "development-folds-v1",
+  "files_changed": [
+    "starter/agent.py",
+    "starter/core/context_engine.py",
+    "starter/core/diagnostics.py",
+    "starter/core/planner.py",
+    "starter/core/state.py",
+    "tests/test_agent_smoke.py",
+    "tests/test_context_engine.py",
+    "tests/test_planner.py",
+    "tests/test_state.py"
+  ],
+  "contract_change": "none",
+  "target_data_runtime_scan": "No target, hit/miss, target-rank, scenario-label, or sample-specific input was added to runtime state, requests, diagnostics, rules, or models.",
+  "commands": {
+    "tests": ".venv/bin/python -m unittest discover -s tests -v",
+    "development": ".venv/bin/python -m experiments.evaluation_reporting --split development --structured-filter --output docs/a8_reports/development_structured.json",
+    "fold": ".venv/bin/python -m experiments.evaluation_reporting --split development --fold <fold_1..fold_4> --structured-filter --output docs/a8_reports/<fold>_structured.json"
+  },
+  "raw_reports": {
+    "development": {"path": "docs/a8_reports/development_structured.json", "sha256": "52dbca57fbabd2195807d027bdbecdbdb01067c028ae3435bf39c08c77d9c62b"},
+    "fold_1": {"path": "docs/a8_reports/fold_1_structured.json", "sha256": "dc746bb531281452732af9cd00af4d3be2c90a1d4bf899c10cd7272eb26346a0"},
+    "fold_2": {"path": "docs/a8_reports/fold_2_structured.json", "sha256": "c624571a898705de2ba3d1c951b6226031427ba0a4f2171e1d7a404e5a3b3bc5"},
+    "fold_3": {"path": "docs/a8_reports/fold_3_structured.json", "sha256": "fc2f3b7689a7eac94153843548edd9594aa47bf1ae2b771fad74878d30636254"},
+    "fold_4": {"path": "docs/a8_reports/fold_4_structured.json", "sha256": "3cf3d4e63c7e4b99f7ef02f94d409a4d68025eff18d7b35117fb301a21c2ec2b"}
+  },
+  "comparator_reports": {
+    "development": {"path": "docs/b2_reports/development_structured.json", "sha256": "66a7e57351a8346b5af587a4462b4d4838d5196e5e377c25897aae55e6c8f305"},
+    "fold_1": {"path": "docs/b2_reports/fold_1_structured.json", "sha256": "aba88e4c7a7ac73004423281890c39768732d593d658eb81bc4dd9a034b7dacc"},
+    "fold_2": {"path": "docs/b2_reports/fold_2_structured.json", "sha256": "2c14d9f4586dbd0083b19ae7c34f7be412e6d48a79c0fcd902ded9107781ae33"},
+    "fold_3": {"path": "docs/b2_reports/fold_3_structured.json", "sha256": "22d878b3c3f96dd67264412ddf7bd8829e0ef3abbc6786d85f674f81d53eed75"},
+    "fold_4": {"path": "docs/b2_reports/fold_4_structured.json", "sha256": "5628d6aca1af9c58a54dd474f5530fe0b2cf679878695d49f662918a4bb3b744"}
+  },
+  "development_160": {
+    "baseline": {"hit_rate_at_10": 0.7625, "mrr": 0.526989, "mttc": 5.30625, "efficiency": 0.569375, "recommended_technical_score": 0.653222},
+    "candidate": {"hit_rate_at_10": 0.7625, "mrr": 0.529812, "mttc": 5.35, "efficiency": 0.565, "recommended_technical_score": 0.653194},
+    "delta": {"hit_rate_at_10": 0.0, "mrr": 0.002823, "mttc": 0.04375, "efficiency": -0.004375, "recommended_technical_score": -0.000028},
+    "gained_sessions": [],
+    "lost_sessions": [],
+    "changed_session_count": 12,
+    "scenario_score_delta": {"boundary": -0.005, "browsing": 0.000112, "buying": 0.00164, "intent_override": -0.003194}
+  },
+  "fixed_cross_validation": {
+    "fold_count": 4,
+    "samples_per_fold": 40,
+    "fold_score_delta": {"fold_1": 0.001154, "fold_2": -0.001417, "fold_3": -0.000217, "fold_4": 0.000366},
+    "buying_score_delta": {"fold_1": 0.004137, "fold_2": -0.00125, "fold_3": 0.00026, "fold_4": 0.003415},
+    "browsing_score_delta": {"fold_1": 0.0, "fold_2": 0.0, "fold_3": 0.000447, "fold_4": 0.0},
+    "intent_override_score_delta": {"fold_1": -0.003333, "fold_2": -0.006111, "fold_3": 0.0, "fold_4": -0.003333},
+    "interpretation": "Buying improves in three of four folds and Browsing never regresses. Aggregate HitRate is unchanged with no gained or lost sessions. Overall fold deltas straddle zero, and Intent Override regresses slightly, so the retained claim is control-plane stability and explainability with a small Buying ordering gain, not a robust aggregate score improvement."
+  },
+  "observed_cost_and_reliability": {
+    "response_mean_ms": 44.285991,
+    "retrieval_mean_ms": 37.477245,
+    "peak_rss_bytes": 547454976,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "respond_exceptions": 0,
+    "invalid_response_payloads": 0,
+    "reported_fallbacks": 0,
+    "note": "This is clean-run observation, not a paired causal latency claim. A8 adds no model or retrieval stage."
+  },
+  "rejected_variants": [
+    {"variant": "unbounded sticky Buying", "reason": "Technical score fell to 0.638267 and two baseline hits were lost."},
+    {"variant": "confidence-gated hard filtering", "reason": "Technical score fell to 0.652686; confidence was not a validated retrieval gate."},
+    {"variant": "clear every free-form feature on override", "reason": "HitRate fell to 0.75 and Intent Override HitRate fell to 0.625; the cleanup scope was too broad."}
+  ],
+  "keep_gate": "Persisted semantics are tested and observable; Buying improves in three of four folds; Browsing does not regress; HitRate and gained/lost sessions are unchanged; no target-specific logic or A/B contract change exists.",
+  "revert_gate": "Revert if downstream integration reveals ignored explicit intent changes, material Browsing regression, or reliance on confidence as an unvalidated B-side ranking gate.",
+  "decision": "retain_stateful_intent_assessment_with_disclosed_tradeoff",
+  "claim_boundary": "A8 is retained for stable, explainable routing and modest Buying ordering evidence. It does not establish a robust aggregate score gain and does not authorize A9 to invent unavailable Candidate signals.",
+  "next_module": "AB0 DecisionEvidence availability",
+  "holdout_status": "not_run_during_A8",
+  "full_status": "not_run_during_A8"
+}

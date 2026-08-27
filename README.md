@@ -265,8 +265,13 @@ misses as Intent / Strategy Routing, seven as State / Override, and six as
 Extraction, while the target entered the retained lexical pool in 145 of 160
 sessions. See
 [`docs/r0_development_failure_taxonomy.md`](docs/r0_development_failure_taxonomy.md).
-The evidence-ranked and dependency-ordered next module is A8 stateful intent
-persistence, followed by AB0. `AGENTS.md` owns the taxonomy and
+The retained A8 module now persists a complete cross-turn `IntentAssessment`.
+Development-160 HitRate stayed `0.7625`, MRR rose by `0.002823`, Buying improved
+in three of four folds, and Browsing did not regress; the overall score was
+effectively neutral and Intent Override regressed slightly. See
+[`docs/a8_stateful_intent_evidence.md`](docs/a8_stateful_intent_evidence.md).
+The dependency-ordered next module is AB0 DecisionEvidence Availability.
+`AGENTS.md` owns the taxonomy and
 leakage boundary; [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md)
 owns the complete order.
 
@@ -291,7 +296,8 @@ hard filters, duplicate/invalid ASINs, and Candidate Pool shortages.
 ## Limitations
 
 - The historical public holdout is exposed and cannot support a sealed claim.
-- Current intent inference is still too current-utterance-sensitive.
+- Stateful intent is retained, but its small Intent Override regression remains
+  a disclosed risk and confidence is not a validated retrieval gate.
 - Clarification remains priority-biased and does not yet have a complete
   should-ask uncertainty gate.
 - Rule-based extraction has vocabulary and negation-scope limits.

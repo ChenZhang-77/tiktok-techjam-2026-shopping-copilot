@@ -70,6 +70,10 @@ The current Control Plane already provides:
 The next phase does not rebuild these capabilities. It targets decision quality
 and private-set robustness.
 
+A8 Stateful Intent Persistence is retained at `b3c4aeb`. The next executable
+module is the shared AB0 DecisionEvidence source audit; A9 remains blocked until
+AB0 defines every proposed signal and fallback without changing ask behavior.
+
 ## Ownership
 
 Developer A owns:

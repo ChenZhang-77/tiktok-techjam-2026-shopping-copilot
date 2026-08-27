@@ -180,13 +180,27 @@ would disappear after one upstream behavior change. The durable report is
 `docs/r0_development_failure_taxonomy.md`, with turn-level offline evidence in
 the adjacent JSON artifact.
 
+## A8 Result
+
+A8 is retained at clean code commit `b3c4aeb`. `IntentAssessment` is now a
+persistent `SessionState` value with intent, confidence, evidence, source turn,
+and an explicit transition reason. Strategy diagnostics expose that decision;
+the A/B request contract is unchanged.
+
+On Development-160, HitRate@10 remains `0.7625`, MRR increases from `0.526989`
+to `0.529812`, MTTC changes from `5.30625` to `5.35`, and technical score is
+effectively neutral (`0.653222` to `0.653194`). Buying improves in three of four
+folds and Browsing does not regress; Intent Override regresses slightly. The
+bounded decision and rejected variants are recorded in
+`docs/a8_stateful_intent_evidence.md`.
+
 ## Next Decision
 
-The next evidence-ranked and dependency-ordered module is A8 Stateful Intent
-Persistence. It must define stable cross-turn `IntentAssessment` semantics;
-then AB0 must establish Candidate decision evidence before A9. A11 Extraction
-and Scope Hardening remains supported by six primary Extraction misses and
-should stay after the A8/AB0 dependencies specified in the roadmap.
+The next dependency-ordered module is AB0 DecisionEvidence Availability. It
+must establish Candidate evidence producers and fallback semantics without
+changing question behavior. A9 remains blocked until AB0 passes. A11
+Extraction and Scope Hardening remains supported by six primary Extraction
+misses and stays after the A8/AB0 dependencies specified in the roadmap.
 
 The complete dependency order lives only in `docs/optimization_roadmap.md`.
 Immediate blockers to remember: A9 cannot start from the current Top-K text
