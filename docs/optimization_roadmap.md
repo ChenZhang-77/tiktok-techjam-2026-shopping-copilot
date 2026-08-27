@@ -394,7 +394,13 @@ reproducibility as retained runtime coverage.
 
 ### B11 - Lexical recall refinement
 
-Run only if R0 shows recall is a dominant cause. Test one variable at a time:
+**Status: not started; prerequisite failed at `6cf3948`.** The refreshed
+Development-160 taxonomy assigns all 22 misses to upstream control-plane causes
+and zero to retrieval/ranking primary causes. Retained-depth lexical recall is
+157/160 (`0.98125`): non-perfect, but not the dominant failure bucket required
+to open B11. See `docs/b11_prerequisite_evidence.md`.
+
+If new R0 evidence later makes recall dominant, test one variable at a time:
 exact phrase plus broad OR, field-specific query weights, catalog-derived
 synonyms, category normalization, details key/value representation, or removal
 of conversational filler.

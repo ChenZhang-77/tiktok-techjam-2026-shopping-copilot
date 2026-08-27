@@ -22,7 +22,7 @@ user explicitly requests it.
 ## Current integrated state
 
 - Retained B9 runtime commit: `7f520ba`.
-- Current full test suite: `274/274` passing.
+- Current full test suite: `277/277` passing.
 - Retained default route: structured scoring, plus pinned local dense/RRF only
   behind the broad-Browsing gate.
 - Global dense/RRF and CrossEncoder remain rejected experiments; an LLM ranker
@@ -202,7 +202,13 @@ the LLM-ranking gap.
 
 ## B11 — Lexical recall refinement
 
-Run only if R0 proves that the target often never enters the candidate pool.
+**Status: not started; prerequisite failed.** A current Development-160 R0
+refresh at `6cf3948` finds zero retrieval/ranking primary causes across 22
+misses. Retained-depth target recall is 157/160 (`0.98125`); the three absent
+targets do not make recall the dominant failure bucket. Evidence:
+`docs/b11_prerequisite_evidence.md`.
+
+Run only if later R0 evidence proves that the target often never enters the candidate pool.
 Change one variable per experiment:
 
 - product-text field template or field weights;

@@ -320,7 +320,10 @@ B10a is rejected as a runtime default while its reproducible experiment remains
 available; see
 [`docs/b10a_constraint_rerank_evidence.md`](docs/b10a_constraint_rerank_evidence.md).
 B10b is not justified without new R0 evidence. B11 and B12 remain conditional
-on their documented prerequisites.
+on their documented prerequisites. The refreshed B11 audit found zero
+retrieval/ranking primary misses and 157/160 retained-depth lexical recall, so
+B11 was not started; see
+[`docs/b11_prerequisite_evidence.md`](docs/b11_prerequisite_evidence.md).
 `AGENTS.md` owns the taxonomy and
 leakage boundary; [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md)
 owns the complete order.

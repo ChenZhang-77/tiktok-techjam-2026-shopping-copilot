@@ -24,4 +24,6 @@ non-regressing, and its material startup/memory cost is recorded in
 `b9_conditional_dense_evidence.md`. B10a Top-3 and Top-5 candidates were then
 rejected for MRR and TechnicalScore regressions; the B9 default remains exact.
 See `b10a_constraint_rerank_evidence.md`. B10b is not justified without new R0
-evidence; B11/B12 remain prerequisite-gated.
+evidence. B11's refreshed prerequisite audit also failed: retrieval/ranking is
+the primary cause for zero current misses and retained lexical recall is
+157/160. See `b11_prerequisite_evidence.md`. B12 remains prerequisite-gated.

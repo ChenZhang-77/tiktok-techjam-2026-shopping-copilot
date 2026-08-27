@@ -41,7 +41,7 @@ Verified on 2026-08-27:
 | Retained behavior commit | `7f520ba` |
 | B9 selection data | Development-160 plus four fixed folds only |
 | B10a experiment branch | `b/b10a-constraint-preserving-crossencoder` |
-| Latest local full test suite | 274 passed |
+| Latest local full test suite | 277 passed |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | structured retrieval plus gated local dense/RRF for broad Browsing |
 
@@ -314,8 +314,11 @@ process-tree peak memory remain unavailable.
 At `93b5b19`, the B9 default exactly reproduced all aggregate, scenario, and
 session outcomes. See `docs/b10a_constraint_rerank_evidence.md`.
 
-B10b is recorded as not justified without new R0 evidence. B11/B12 remain
-conditional on their documented failure and intent prerequisites. Score margin
+B10b is recorded as not justified without new R0 evidence. A refreshed R0
+audit then rejected B11's entry condition: all 22 misses have upstream primary
+causes, retrieval/ranking has zero, and retained lexical depth covers 157/160
+targets. See `docs/b11_prerequisite_evidence.md`. B12 remains conditional on its
+intent/contract prerequisite. Score margin
 remains forbidden as a gate. The complete dependency order lives only in
 `docs/optimization_roadmap.md`.
 

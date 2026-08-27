@@ -248,7 +248,10 @@ actual LLM ranker has not been implemented. B10a Top-3 and Top-5
 constraint-preserving CrossEncoder candidates both failed the MRR and
 TechnicalScore gate; the B9 default remains exact at `93b5b19`. See
 `docs/b10a_constraint_rerank_evidence.md`. B10b is not justified without new R0
-evidence; continue to B11/B12 only when their documented prerequisites hold.
+evidence. B11 is also not started: the current R0 refresh finds zero
+retrieval/ranking primary causes and retained-depth recall of 157/160. See
+`docs/b11_prerequisite_evidence.md`. B12 still requires its documented intent
+and contract inputs.
 
 The current optimization order is defined in
 `docs/optimization_roadmap.md`. Diagnose failures before introducing another
