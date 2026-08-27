@@ -31,6 +31,12 @@ residual, and excluded evidence. It renders the existing single Distilled Query
 for B; it is not a shared typed-query contract.
 _Avoid_: RetrievalRequest schema extension, treating excluded terms as positive
 
+**Catalog Vocabulary**:
+An A-owned deterministic set of multi-word category phrases derived from the
+frozen runtime catalog. The retained A11 vocabulary does not include broad
+feature phrases or inferred single-word brands.
+_Avoid_: target vocabulary, evaluator labels, unrestricted feature dictionary
+
 **Active Constraint**:
 A current customer requirement or preference that may influence retrieval or
 ranking and has not been overridden, rejected, or marked no-preference.

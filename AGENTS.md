@@ -159,6 +159,7 @@ The current default is deterministic and local:
 
 ```text
 message
+  -> scoped extraction with frozen-catalog multi-word categories
   -> state/context update
   -> Buying/Browsing Strategy
   -> distilled current query
@@ -188,16 +189,25 @@ post-feature variant regressed every main Development metric. Existing
 partition evidence covers only category/material/color/style/use_case, so it
 must not be treated as comparable evidence for feature/size/brand/budget/other.
 The candidate protected feature priority but still treated the other uncovered
-attributes as implicitly low. Revisit A10a only after A11 provides A-owned
-coverage or AB1 coordinates missing B semantics, plus an explicit fallback for
-uncovered attributes. A10b was the historical next step and is now complete.
+attributes as implicitly low. Bounded A11 did not add comparable partition
+coverage for those attributes. Revisit A10a only if AB1 coordinates missing B
+semantics plus an explicit fallback for uncovered attributes. A10b was the
+historical next step and is now complete.
 
 A10b Internal QueryPlan is retained at `9560344`. It is A-owned and separates
 category/hard/soft/semantic/residual/excluded evidence, but renders only the
 existing single `RetrievalRequest.query`; the shared schema is unchanged.
-Rejected and overridden terms must never render positive. Preserve residual
-current-turn text until A11 proves extraction coverage and broader cleanup with
-Development evidence. The next module is A11 Extraction and Scope Hardening.
+Rejected and overridden terms must never render positive.
+
+A11 Extraction and Scope Hardening is retained at runtime code commit
+`4ed5560`, with the R0 tracing fix at `b0c953d`. Retain only the bounded slice:
+catalog-derived multi-word categories, clause-scoped positive/negative/
+no-preference extraction, and numeric/hyphen disambiguation. Do not re-enable
+the rejected broad feature vocabulary, low-confidence feature expiry, or
+QueryPlan residual cleanup. Catalog brand expansion remains deferred. The
+shared request schema and question policy are unchanged. See
+`docs/a11_extraction_scope_evidence.md`. The next module is AB1 Shared Contract
+and Active-Route Semantics Freeze; B9 remains blocked until AB1 passes.
 
 Dense retrieval, weighted RRF, and the CrossEncoder reranker are optional,
 reproducible experiments with deterministic fallback. They are disabled by

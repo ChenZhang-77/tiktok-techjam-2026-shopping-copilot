@@ -88,9 +88,10 @@ B8 rejected-constraint ranking
   -> B12 adaptive candidate depth, only if supported
 ```
 
-Do not begin B8-B12 while the roadmap's current blocker is unresolved or while
-A-side intent and shared route semantics are unstable. B may still contribute
-to R0, AB0, and AB1 within its ownership.
+Do not begin B8-B12 before the current AB1 shared route-semantics gate is
+resolved. A11 is retained and A-side intent/extraction is stable enough for
+AB1; B should now contribute its owned route, fallback, range, and diagnostics
+definitions. B9 remains blocked until AB1 passes.
 
 ## AB0 and AB1 obligations for B
 

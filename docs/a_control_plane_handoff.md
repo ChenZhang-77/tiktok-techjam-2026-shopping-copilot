@@ -13,11 +13,10 @@ For a new A-side Codex conversation, read:
 
 Current reality: A and B are integrated; the stable seam is
 `HybridRetriever.retrieve(request: RetrievalRequest) -> RetrievalResult`; the
-verified checkpoint recorded in `current_status.md` passed 148 tests. Do not
-repeat the obsolete “B not integrated” or “40 tests” status from the historical
-handoff.
+bounded A11 runtime reached Development score `0.733292` with all four folds
+positive. Do not repeat the obsolete “B not integrated”, “40 tests”, or
+pre-A11 status from the historical handoff.
 
-Current blocker: R0. Follow `optimization_roadmap.md` for the complete order.
-Two important later guards: do not start A9 using only the current Top-K
-candidate text, and do not change `RetrievalRequest` for query components
-without the roadmap's coordinated contract step.
+Current module: AB1 Shared Contract and Active-Route Semantics Freeze. Do not
+change `RetrievalRequest` for query components without shared A/B evidence and
+compatibility tests. A12 remains blocked until AB1 completes.

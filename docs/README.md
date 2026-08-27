@@ -36,6 +36,13 @@ definitions instead of creating local variants.
 - `development_folds_v1.json` — deterministic Development folds
 - `adr/0001-treat-public-holdout-as-exposed.md` — public-data decision record
 
+## Current experiment evidence
+
+- `a11_extraction_scope_evidence.md` — retained bounded A11 behavior, folds,
+  rejected expansions, and AB1 handoff
+- `a10b_query_plan_evidence.md` — retained A-internal QueryPlan boundary
+- `ab0_decision_evidence.md` — complete A-side decision-evidence inventory
+
 ## Historical evidence
 
 Files named `b0_*` through `b7_*` and directories such as `b2_reports/` through

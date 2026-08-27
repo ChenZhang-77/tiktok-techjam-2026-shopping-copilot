@@ -13,10 +13,12 @@ For a new B-side Codex conversation, read:
 5. `ablation_summary.md`
 
 Current reality: the retained default is lexical retrieval plus structured
-scoring. Dense retrieval, RRF, and global semantic reranking remain documented
-ablations and are disabled by default. Any new route must follow the gates in
-the current B-side workstream rather than enabling old experiments globally.
+scoring plus bounded A11 Control Plane extraction. Dense retrieval, RRF, and
+global semantic reranking remain documented ablations and are disabled by
+default. Any new route must follow the gates in the current B-side workstream
+rather than enabling old experiments globally.
 
-Current blocker: R0. Follow `optimization_roadmap.md` for the complete order and
-the B workstream for B-local gates. B9 remains Browsing-first for literal Track
-4 alignment; stable Buying is a separate secondary hypothesis.
+Current module: AB1 Shared Contract and Active-Route Semantics Freeze. Follow
+`optimization_roadmap.md` and the B workstream for its exact ownership and
+compatibility gates. B9 remains blocked until AB1 passes; once unblocked it is
+Browsing-first for literal Track 4 alignment.

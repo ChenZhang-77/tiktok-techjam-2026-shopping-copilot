@@ -77,8 +77,10 @@ Over-Generality Gate was tested, rejected, and reverted because it worsened
 HitRate/MTTC. A10a Candidate Question Value was subsequently tested, rejected,
 and reverted because its partial-evidence post-feature ranking regressed every
 main metric. A10b was then retained at `9560344` with exact Development session
-parity and no shared schema change. The next executable module is A11 Extraction
-and Scope Hardening.
+parity and no shared schema change. A11 was retained as a bounded deterministic
+slice at `4ed5560`: Development score rose to `0.733292` and all four folds
+improved, without a shared schema or question-policy change. The next executable
+module is the shared AB1 contract and active-route semantics freeze.
 The retained A8 confidence is an A-owned ordinal stability signal with
 `low`/`medium`/`high` diagnostic bands, not a calibrated probability or B-side
 gate.
@@ -193,6 +195,7 @@ A8 persistent IntentAssessment
           -> A10a candidate question value
               -> A10b internal QueryPlan
                   -> A11 extraction/scope hardening when R0 supports it
+                      -> AB1 shared contract and route-semantics freeze
 ```
 
 AB1 remains a shared gate. After it freezes, A12 must either run as a time-boxed
@@ -368,8 +371,8 @@ feature-first behavior and only replaced the later Top-K partition ranking with
 full-pool scores. Uncovered size/brand/budget/other attributes could not compete
 with any positively scored supported attribute, so the candidate retained a
 missing-as-low confound and regressed HitRate, MRR, MTTC, Efficiency, and score.
-Revisit only after A11 or AB1 supplies comparable evidence and defines how an
-uncovered attribute preserves legacy priority. Full record:
+Bounded A11 did not supply comparable partition evidence. Revisit only if AB1
+supplies it and defines how an uncovered attribute preserves legacy priority. Full record:
 `docs/a10a_question_value_evidence.md`.
 
 ### Hypothesis
@@ -430,8 +433,9 @@ A10c is blocked on A/B agreement, AB1 schema/range/fallback definitions, and
 compatibility tests. Developer A must not add typed components to
 `RetrievalRequest` unilaterally.
 
-Do not blindly append the full current utterance after its evidence has been
-captured in state. Negative terms must not become positive FTS terms.
+The A11 residual-cleanup ablation was rejected. Preserve the A10b conservative
+residual renderer; exact rejected/overridden values must still never become
+positive FTS terms.
 
 ### Keep gate
 
@@ -440,6 +444,19 @@ captured in state. Negative terms must not become positive FTS terms.
 - Retrieval quality improves or remains stable without changing question policy.
 
 ## A11 - Extraction and Scope Hardening
+
+**Status: retained as a bounded slice at `4ed5560`.** The retained behavior is
+catalog-derived multi-word category extraction, clause-scoped positive/
+negative/no-preference evidence, and numeric/hyphen disambiguation. It gained
+22 Development sessions, lost three, improved all four fixed-fold technical
+scores, and raised overall score from `0.653194` to `0.733292`.
+
+The broad feature vocabulary candidate, low-confidence feature expiry, and
+QueryPlan residual cleanup were rejected during ablation. Catalog brand
+expansion is deferred because it had no Development outcome effect and created
+single-word ambiguity. Do not resurrect those behaviors without a new isolated
+experiment. Boundary technical score fell by `0.039896`; preserve this risk in
+handoffs. Full evidence: `docs/a11_extraction_scope_evidence.md`.
 
 Prioritize R0-supported failures:
 

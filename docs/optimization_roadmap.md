@@ -218,9 +218,9 @@ MRR, MTTC, Efficiency, and technical score all regressed. Current partition
 evidence covers only category/material/color/style/use_case and is not
 comparable with feature/size/brand/budget/other; after feature, missing evidence
 was implicitly treated as low value. See
-`docs/a10a_question_value_evidence.md`. Revisit only after A11 supplies
-comparable A-owned evidence or AB1 coordinates missing B semantics, with an
-explicit legacy-priority fallback for uncovered attributes.
+`docs/a10a_question_value_evidence.md`. Bounded A11 did not supply comparable
+partition evidence for the uncovered attributes. Revisit only if AB1
+coordinates missing B semantics, with an explicit legacy-priority fallback.
 
 Problem: `feature` is normally selected before candidate partition evidence.
 
@@ -233,7 +233,8 @@ without losing useful preference evidence.
 soft, semantic, residual, and excluded evidence while rendering the existing
 single request query. Development overall/scenario metrics and all 160 session
 outcomes exactly match the baseline. Residual text remains conservative because
-A11 extraction is incomplete. See `docs/a10b_query_plan_evidence.md`.
+A11 later rejected broader residual cleanup. See
+`docs/a10b_query_plan_evidence.md` and `docs/a11_extraction_scope_evidence.md`.
 
 Problem: the distilled query is one string that can retain noisy phrases.
 
@@ -246,10 +247,18 @@ then an AB1-coordinated contract change with compatibility tests.
 
 ### A11 - Extraction and scope hardening
 
-Prioritize catalog-derived category/brand vocabulary, multi-word values,
-negation scope, numeric ambiguity, override scope, and bounded low-confidence
-feature phrases. A lightweight model parser is optional and must be behind a
-timeout plus deterministic fallback.
+**Status: retained as a bounded deterministic slice at `4ed5560`.** Catalog-
+derived multi-word categories, clause-scoped positive/negative/no-preference
+extraction, and numeric/hyphen disambiguation improved Development technical
+score from `0.653194` to `0.733292`; all four fixed folds improved. Broad
+catalog feature extraction, feature expiry, and QueryPlan residual cleanup were
+rejected, while catalog brand expansion remains unproven and deferred. Boundary
+technical score regressed by `0.039896` and remains a disclosed risk. See
+`docs/a11_extraction_scope_evidence.md`.
+
+Do not add a lightweight model parser now: the deterministic slice passed the
+gate, and the remaining feature-phrase misses do not justify another parser
+before AB1. The next dependency-ordered module is AB1.
 
 ### A12 - Profile ablation
 

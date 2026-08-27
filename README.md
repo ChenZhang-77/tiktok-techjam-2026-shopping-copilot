@@ -19,15 +19,16 @@ The verified integrated checkout and next optimization decision are documented
 in [`docs/current_status.md`](docs/current_status.md). The project-wide route is
 [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md).
 
-Verified Development-160 result for the retained structured runtime:
+Verified Development-160 result for the retained structured plus bounded A11
+runtime:
 
 | Metric | Result |
 | --- | ---: |
-| HitRate@10 | 0.7625 |
-| MRR | 0.526989 |
-| MTTC | 5.30625 |
-| Efficiency | 0.569375 |
-| TechnicalScore | 0.653222 |
+| HitRate@10 | 0.88125 |
+| MRR | 0.534308 |
+| MTTC | 4.38125 |
+| Efficiency | 0.661875 |
+| TechnicalScore | 0.733292 |
 
 Historical Full-200 public snapshot:
 
@@ -67,6 +68,7 @@ What is still true?
 
 ```text
 user message
+  -> scoped extraction with frozen-catalog multi-word categories
   -> SessionState and context update
   -> current Buying/Browsing Strategy
   -> distilled query from active constraints
@@ -105,10 +107,11 @@ Shared types and leakage validation are in `starter/contracts.py`.
 | Dynamic Context Programming | The Agent rebuilds the query from active state and records Strategy, Candidate, relaxation, and fallback diagnostics |
 | Product and Efficiency Metrics | Development evaluation reports HitRate@10, MRR, MTTC, Efficiency, scenario results, latency, memory, and failures |
 
-The next optimization phase makes intent persistence and proactive guidance
-more genuinely candidate-aware. A non-zero requested Strategy weight is not
-evidence that the retained retriever executed that route. See the roadmap rather
-than inferring that each planned behavior is already implemented.
+The next module freezes the shared request/diagnostic contract and makes
+requested versus executed route semantics explicit. A non-zero requested
+Strategy weight is not evidence that the retained retriever executed that
+route. See the roadmap rather than inferring that each planned behavior is
+already implemented.
 
 ## What the Ablations Showed
 
@@ -119,6 +122,8 @@ Development-160:
 | Official weak BM25 | 0.12500 | 0.068034 | 0.106710 | Comparison |
 | Pure lexical | 0.71875 | 0.485851 | 0.617005 | Reject as default |
 | Retained structured path | 0.76250 | 0.526989 | 0.653222 | Retain |
+| A11 broad extraction candidate | 0.72500 | 0.479085 | 0.613976 | Reject |
+| A11 bounded extraction scope | 0.88125 | 0.534308 | 0.733292 | Retain |
 | Dense only | 0.33750 | 0.160501 | 0.272650 | Reject as default |
 | Weighted RRF, k=10 | 0.75000 | 0.486620 | 0.637611 | Reject as default |
 | Semantic rerank, Top 30 | 0.78125 | 0.484162 | 0.656499 | Reject globally; keep experiment |
@@ -285,7 +290,15 @@ A10b now retains an A-internal `QueryPlan` that separates positive roles,
 residual text, and excluded values while continuing to send B the same single
 query string. Development-160 metrics and all session outcomes are unchanged.
 See [`docs/a10b_query_plan_evidence.md`](docs/a10b_query_plan_evidence.md).
-The dependency-ordered next module is A11 Extraction and Scope Hardening.
+A11 now retains bounded catalog-derived multi-word category extraction,
+clause-scoped positive/negative/no-preference evidence, and numeric/hyphen
+disambiguation. Development-160 improved to HR `0.88125`, MRR `0.534308`, MTTC
+`4.38125`, and technical score `0.733292`; all four fixed folds improved. Broad
+feature extraction and feature expiry were rejected, and Boundary rank quality
+remains a disclosed risk. See
+[`docs/a11_extraction_scope_evidence.md`](docs/a11_extraction_scope_evidence.md).
+The dependency-ordered next module is AB1 Shared Contract and Active-Route
+Semantics Freeze.
 `AGENTS.md` owns the taxonomy and
 leakage boundary; [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md)
 owns the complete order.
@@ -296,10 +309,10 @@ Historical retained Development-160 evidence:
 
 | Measure | Value |
 | --- | ---: |
-| Initialization | about 1.25 s |
-| Mean retrieval latency | about 36.87 ms |
-| p95 retrieval latency | about 82.69 ms |
-| Peak RSS | about 574 MB |
+| Initialization | about 1.57 s |
+| Mean retrieval latency | about 21.22 ms in the A11 Development run |
+| p95 retrieval latency | about 40.61 ms in the A11 Development run |
+| Peak RSS | about 578 MB |
 | Prompt/completion tokens | 0 / 0 |
 | Response exceptions | 0 |
 | Invalid response payloads | 0 |
@@ -311,11 +324,12 @@ hard filters, duplicate/invalid ASINs, and Candidate Pool shortages.
 ## Limitations
 
 - The historical public holdout is exposed and cannot support a sealed claim.
-- Stateful intent is retained, but its small Intent Override regression remains
-  a disclosed risk and confidence is not a validated retrieval gate.
+- Stateful intent is retained, but confidence remains an ordinal A-side signal,
+  not a calibrated retrieval gate; two primary State / Override misses remain.
 - Clarification remains priority-biased and does not yet have a complete
   should-ask uncertainty gate.
-- Rule-based extraction has vocabulary and negation-scope limits.
+- Five primary Development Extraction misses remain, mainly catalog feature
+  phrases; broad feature-vocabulary extraction failed the keep gate.
 - Profile ranking is disabled at weight 0.0.
 - Dense/fusion/semantic paths are not the default runtime.
 - The retained runtime therefore does not yet literally satisfy the

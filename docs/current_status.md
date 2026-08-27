@@ -51,29 +51,32 @@ any runtime behavior change does.
 
 ## Verified Development Result
 
-The integrated A+B runtime at `bddf7d7` was independently reproduced on the
-fixed Development-160 split with the structured default:
+The retained runtime after bounded A11 extraction at code commit `4ed5560`
+(plus offline tracing fix `b0c953d`) was reproduced on the fixed
+Development-160 split with the structured default:
 
 | Metric | Development-160 |
 | --- | ---: |
-| HitRate@10 | 0.7625 |
-| MRR | 0.526989 |
-| MTTC | 5.30625 |
-| Efficiency | 0.569375 |
-| TechnicalScore | 0.653222 |
+| HitRate@10 | 0.88125 |
+| MRR | 0.534308 |
+| MTTC | 4.38125 |
+| Efficiency | 0.661875 |
+| TechnicalScore | 0.733292 |
 
 Scenario diagnostics:
 
 | Scenario | Samples | HitRate@10 | MRR | MTTC | TechnicalScore |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Boundary | 8 | 0.875000 | 0.775000 | 5.875000 | 0.772500 |
-| Browsing | 64 | 0.812500 | 0.572241 | 4.906250 | 0.699797 |
-| Buying | 64 | 0.718750 | 0.459518 | 5.203125 | 0.613168 |
-| Intent Override | 24 | 0.708333 | 0.503571 | 6.458333 | 0.596071 |
+| Boundary | 8 | 0.875000 | 0.592014 | 5.375000 | 0.727604 |
+| Browsing | 64 | 0.890625 | 0.505202 | 4.250000 | 0.731873 |
+| Buying | 64 | 0.875000 | 0.541853 | 4.015625 | 0.739743 |
+| Intent Override | 24 | 0.875000 | 0.572569 | 5.375000 | 0.721771 |
 
 Observed reliability was zero response exceptions, invalid payloads, reported
-fallbacks, and internal fallbacks. The bound artifact is
-`docs/b7_pre_freeze_development.json`.
+fallbacks, and internal fallbacks. All four fixed folds improved in technical
+score. The bound artifact is
+`docs/a11_reports/development_scoped_extraction.json`; the decision record is
+`docs/a11_extraction_scope_evidence.md`.
 
 ## Historical Final Public Result
 
@@ -104,6 +107,7 @@ cross-validation.
 
 ```text
 user message
+  -> scoped extraction with frozen-catalog multi-word categories
   -> state/context update
   -> current-turn Buying/Browsing inference
   -> Strategy planning
@@ -151,13 +155,13 @@ and rejected paths whose tradeoffs were not robust.
 
 The next optimization phase starts from diagnosis, not from another model:
 
-1. Intent is re-inferred from the current utterance and can flip too easily
-   after a clarification reply.
+1. Requested Strategy weights are not yet distinguished cleanly from the route
+   actually executed by an injected retriever; AB1 must freeze this semantic.
 2. Clarification normally asks `feature` before using candidate partition
    evidence and does not first decide whether a question is needed.
-3. Constraint extraction is rule- and vocabulary-limited. Negation scope is a
-   known issue: a sentence such as "I do not care about color, but I prefer
-   nylon" can mark both color and material as no-preference.
+3. Five primary Extraction misses remain, mainly catalog feature phrases.
+   Broad feature-vocabulary extraction and low-confidence feature expiry were
+   tested but failed the keep gate.
 4. `rejected_constraints` crosses the A/B seam but the retained B path does not
    yet use it as a calibrated negative ranking signal.
 5. The semantic reranker has useful scenario-specific signals, but global
@@ -236,15 +240,36 @@ A10b is retained at clean code commit `9560344`. The A-owned `QueryPlan`
 separates category, hard, soft, semantic, residual, and excluded evidence while
 still emitting the existing single `RetrievalRequest.query`. Rejected and
 overridden values never render positive; residual text remains until A11 can
-prove broader extraction is safe. All Development-160 metrics, scenario
+prove broader extraction is safe. A11 later rejected broader residual cleanup,
+so this conservative renderer remains retained. All Development-160 metrics, scenario
 metrics, and 160 session outcomes exactly match the baseline. See
 `docs/a10b_query_plan_evidence.md`.
 
+## A11 Result
+
+A11 is retained as a bounded deterministic slice at runtime code commit
+`4ed5560`, with the R0 catalog-context tracing fix at `b0c953d`. It adds
+catalog-derived multi-word categories, clause-scoped positive/negative/
+no-preference extraction, and numeric/hyphen disambiguation. It does not change
+the shared A/B schema, QueryPlan residual renderer, or clarification policy.
+
+Development-160 improved from HR `0.7625`, MRR `0.529812`, MTTC `5.35`, and
+score `0.653194` to HR `0.88125`, MRR `0.534308`, MTTC `4.38125`, and score
+`0.733292`. All four fixed folds improved; 22 sessions were gained and three
+lost. Boundary score fell by `0.039896`, while its HitRate stayed flat and MTTC
+improved, so Boundary rank quality remains a disclosed risk. The updated
+offline audit has 19 misses and five primary Extraction misses.
+
+The broad catalog feature candidate, feature expiry, and residual cleanup were
+rejected. Catalog brand expansion remains deferred. See
+`docs/a11_extraction_scope_evidence.md`.
+
 ## Next Decision
 
-The next dependency-ordered module is A11 Extraction and Scope Hardening. It
-remains supported by six primary Extraction misses. Score margin remains
-forbidden as a gate.
+The next dependency-ordered module is AB1 Shared Contract and Active-Route
+Semantics Freeze. It must make requested versus executed route behavior,
+fallbacks, types, ranges, and missing-data semantics explicit without moving
+dialogue policy into B. Score margin remains forbidden as a gate.
 
 The complete dependency order lives only in `docs/optimization_roadmap.md`.
 Immediate blocker to remember: B9 cannot start before AB1 freezes shared route
@@ -276,6 +301,7 @@ track in `docs/demo_and_submission_plan.md`.
 | `docs/a9_should_ask_evidence.md` | Rejected should-ask gate, evaluator mechanism, and A10a route consequence |
 | `docs/a10a_question_value_evidence.md` | Rejected full-pool question-value candidate and incomplete partition coverage |
 | `docs/a10b_query_plan_evidence.md` | Retained A-internal QueryPlan roles, parity, and A11 boundary |
+| `docs/a11_extraction_scope_evidence.md` | Retained bounded extraction scope, rejected expansions, folds, and remaining risks |
 | `docs/ablation_summary.md` | Human-readable keep/reject evidence |
 | `docs/workstreams/DEVELOPER_A_CONTROL_PLANE.md` | Standalone A-side route |
 | `docs/workstreams/DEVELOPER_B_RETRIEVAL_RANKING.md` | Standalone B-side route |

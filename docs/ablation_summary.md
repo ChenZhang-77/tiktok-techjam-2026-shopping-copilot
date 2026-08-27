@@ -20,9 +20,24 @@ Development-160 results:
 | Dense only | 0.33750 | 0.160501 | 8.21250 | 0.272650 | Reject as default |
 | Weighted RRF, k=10 | 0.75000 | 0.486620 | 5.16875 | 0.637611 | Reject as default |
 | Semantic rerank, Top 30 | 0.78125 | 0.484162 | 4.96875 | 0.656499 | Reject globally; retain experiment |
+| A11 broad extraction candidate | 0.72500 | 0.479085 | 5.61250 | 0.613976 | Reject |
+| A11 bounded extraction scope | 0.88125 | 0.534308 | 4.38125 | 0.733292 | Retain |
 
-The retained runtime is the structured path because it provides the strongest
-stable balance of recall, ranking, efficiency, latency, memory, and simplicity.
+The current retained runtime combines the structured retrieval path with the
+bounded A11 Control Plane extraction change. A11 passed all four fixed folds;
+the broad extraction alternative did not.
+
+## Why Bounded A11 Extraction Was Retained
+
+Catalog-derived multi-word categories, clause-scoped positive/negative/
+no-preference evidence, and numeric/hyphen disambiguation gained 22 Development
+sessions and lost three. All four fixed-fold technical scores improved.
+
+Broad catalog feature matching, low-confidence feature expiry, and QueryPlan
+residual cleanup were rejected during ablation. Catalog brand expansion remains
+deferred. Boundary technical score fell by `0.039896`, so the retained decision
+is strong but not scenario-uniform. Evidence:
+`docs/a11_extraction_scope_evidence.md`.
 
 ## Why Structured Was Retained
 
@@ -103,15 +118,15 @@ weight 0.0.
 
 ## Runtime Cost and Reliability
 
-Historical retained Development-160 evidence:
+Current A11 Development-160 evidence:
 
 | Measure | Value |
 | --- | ---: |
-| Initialization | 1252.970375 ms |
-| Mean retrieval latency | 36.870219 ms |
-| p50 retrieval latency | 32.505333 ms |
-| p95 retrieval latency | 82.687167 ms |
-| Peak RSS | 574144512 bytes |
+| Initialization | 1569.082791 ms |
+| Mean retrieval latency | 21.224283 ms |
+| p50 retrieval latency | 20.184500 ms |
+| p95 retrieval latency | 40.608667 ms |
+| Peak RSS | 578355200 bytes |
 | Prompt/completion tokens | 0 / 0 |
 | Response exceptions | 0 |
 | Invalid payloads | 0 |
