@@ -66,9 +66,17 @@ class ContractsTest(unittest.TestCase):
             {"requested_route_weights": {"": 0.2}},
             {"requested_route_weights": {"semantic": 1.0}},
             {"requested_route_weights": {"lexical": 1.0}},
+            {
+                "requested_route_weights": {
+                    "lexical": 0.7,
+                    "structured": 0.3,
+                    "dense": 0.0,
+                }
+            },
             {"executed_routes": ["lexical", "lexical"]},
             {"executed_routes": [""]},
             {"executed_routes": ["bogus"]},
+            {"executed_routes": ["lexical"]},
             {"fallback_route": ""},
             {
                 "executed_routes": ["lexical", "structured"],

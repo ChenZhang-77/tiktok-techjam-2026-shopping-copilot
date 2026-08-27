@@ -246,7 +246,7 @@ class RerankingRetriever:
         base_latency = base.diagnostics.latency_ms or 0.0
         route_semantics_reported = bool(
             base.diagnostics.requested_route_weights
-            or base.diagnostics.executed_routes
+            and base.diagnostics.executed_routes
         )
         diagnostics = replace(
             base.diagnostics,
@@ -302,7 +302,7 @@ class RerankingRetriever:
         base_latency = base.diagnostics.latency_ms or 0.0
         route_semantics_reported = bool(
             base.diagnostics.requested_route_weights
-            or base.diagnostics.executed_routes
+            and base.diagnostics.executed_routes
         )
         fallback_route = None
         if route_semantics_reported:

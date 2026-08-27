@@ -158,6 +158,10 @@ class RetrievalDiagnostics:
             raise ValueError("executed_routes must contain only frozen Route names")
         if len(self.executed_routes) != len(set(self.executed_routes)):
             raise ValueError("executed_routes must not contain duplicates")
+        if bool(self.requested_route_weights) != bool(self.executed_routes):
+            raise ValueError(
+                "requested_route_weights and executed_routes must be reported together"
+            )
         if self.fallback_route is not None:
             if self.fallback_route not in EXECUTED_ROUTE_NAMES:
                 raise ValueError("fallback_route must be null or a frozen Route name")
