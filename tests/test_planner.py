@@ -65,7 +65,7 @@ class PlannerTest(unittest.TestCase):
         strategy = plan_strategy(state, turn=2, top_k=10)
 
         self.assertIn("accumulated", strategy.reason)
-        self.assertIn("confidence=0.84", strategy.reason)
+        self.assertNotIn("confidence", strategy.reason)
 
 if __name__ == "__main__":
     unittest.main()

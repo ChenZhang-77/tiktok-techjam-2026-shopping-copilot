@@ -51,9 +51,7 @@ def plan_strategy(state: SessionState, *, turn: int, top_k: int, config: Strateg
     has_hard = any(bool(item.get("hard")) for item in state.active_constraints if item.get("active", True))
     assessment = state.intent_assessment
     assessment_reason = (
-        f"{assessment.transition_reason}, confidence={assessment.confidence:.2f}"
-        if assessment is not None
-        else "legacy intent"
+        assessment.transition_reason if assessment is not None else "legacy intent"
     )
 
     if intent == "buying":
