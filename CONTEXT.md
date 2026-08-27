@@ -60,6 +60,11 @@ The expected reduction in decision-relevant uncertainty from asking one
 clarifying question, weighed against its extra-turn cost.
 _Avoid_: always ask when an attribute is missing
 
+Current boundary: the A-side Candidate vocabulary supplies comparable partition
+evidence only for category/material/color/style/use-case. Missing evidence for
+feature/size/brand/budget/other is not a zero Question Value and must not be
+ranked as though it were.
+
 **Candidate Stability**:
 How little the leading Candidate Pool changes under small, valid changes to the
 query or active state. Low stability may justify clarification or a guarded

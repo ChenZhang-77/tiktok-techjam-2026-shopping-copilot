@@ -220,10 +220,19 @@ not include turn-level question counts, so those are not used as a retained
 claim. The final runtime preserves the pre-A9 question policy. See
 `docs/a9_should_ask_evidence.md`.
 
+## A10a Result
+
+A10a is rejected and reverted. The safe candidate used full-pool partition
+scores only after feature was unavailable, but HitRate fell to `0.75625`, MRR
+to `0.520012`, MTTC rose to `5.3625`, and technical score fell to `0.646879`.
+The current partition vocabulary covers only category/material/color/style/
+use_case, so it is not comparable across all allowed question attributes. See
+`docs/a10a_question_value_evidence.md`.
+
 ## Next Decision
 
-The next dependency-ordered module is A10a Candidate Question Value. It should
-improve which useful question is asked while preserving the ask opportunity.
+The next dependency-ordered module is A10b Internal QueryPlan. It must remain
+A-owned and continue to emit the existing single `RetrievalRequest.query`.
 Score margin remains forbidden as a gate. A11 Extraction and Scope Hardening
 remains supported by six primary Extraction misses and stays after the
 dependencies specified in the roadmap.
@@ -256,6 +265,7 @@ track in `docs/demo_and_submission_plan.md`.
 | `docs/a8_stateful_intent_evidence.md` | Stateful intent keep/reject evidence and tradeoff boundary |
 | `docs/ab0_decision_evidence.md` | DecisionEvidence sources, fallbacks, parity, and A9 input boundary |
 | `docs/a9_should_ask_evidence.md` | Rejected should-ask gate, evaluator mechanism, and A10a route consequence |
+| `docs/a10a_question_value_evidence.md` | Rejected full-pool question-value candidate and incomplete partition coverage |
 | `docs/ablation_summary.md` | Human-readable keep/reject evidence |
 | `docs/workstreams/DEVELOPER_A_CONTROL_PLANE.md` | Standalone A-side route |
 | `docs/workstreams/DEVELOPER_B_RETRIEVAL_RANKING.md` | Standalone B-side route |

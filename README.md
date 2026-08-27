@@ -277,7 +277,11 @@ contract change. See
 tested A9 should-ask gate was rejected and reverted after HitRate fell to
 `0.7500` and MTTC rose to `5.43125`.
 See [`docs/a9_should_ask_evidence.md`](docs/a9_should_ask_evidence.md). The
-dependency-ordered next module is A10a Candidate Question Value.
+A10a full-pool question-value candidate was also rejected and reverted after
+HitRate fell to `0.75625`, MRR to `0.520012`, and MTTC rose to `5.3625`; current
+partition evidence is incomplete across allowed attributes. See
+[`docs/a10a_question_value_evidence.md`](docs/a10a_question_value_evidence.md).
+The dependency-ordered next module is A10b Internal QueryPlan.
 `AGENTS.md` owns the taxonomy and
 leakage boundary; [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md)
 owns the complete order.

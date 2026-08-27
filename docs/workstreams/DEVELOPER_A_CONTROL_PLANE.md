@@ -75,7 +75,9 @@ Availability is retained at `3988b8b`; it defines every proposed signal and
 fallback without changing ask behavior or the shared contract. A9 Should-Ask
 Over-Generality Gate was tested, rejected, and reverted because it worsened
 HitRate/MTTC. The next executable module is
-A10a Candidate Question Value.
+A10a Candidate Question Value. A10a was subsequently tested, rejected, and
+reverted because even the safe post-feature full-pool ranking regressed every
+main metric. The next executable module is A10b Internal QueryPlan.
 The retained A8 confidence is an A-owned ordinal stability signal with
 `low`/`medium`/`high` diagnostic bands, not a calibrated probability or B-side
 gate.
@@ -359,6 +361,13 @@ Do not turn every possible signal into a required input.
 - behavior is based on Candidate evidence, not public sample availability.
 
 ## A10a - Candidate Question Value
+
+**Disposition: rejected and reverted.** Candidate `304a3d6` preserved
+feature-first behavior and only replaced the later Top-K partition ranking with
+full-pool scores. It still regressed HitRate, MRR, MTTC, Efficiency, and score.
+The current partition vocabulary is partial and cannot globally compare all
+allowed question attributes. Revisit only after A11 or AB1 supplies comparable
+evidence. Full record: `docs/a10a_question_value_evidence.md`.
 
 ### Hypothesis
 
