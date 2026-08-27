@@ -18,8 +18,6 @@ def _request(
     query: str,
     constraints: list[dict],
     *,
-    rejected_constraints: list[dict] | None = None,
-    no_preference_attributes: list[str] | None = None,
     top_k: int = 2,
     intent: str = "buying",
     allow_hard_filter: bool = True,
@@ -42,62 +40,10 @@ def _request(
             reason="structured fixture",
         ),
         active_constraints=constraints,
-        rejected_constraints=rejected_constraints or [],
-        no_preference_attributes=no_preference_attributes or [],
     )
 
 
 class StructuredRetrievalTest(unittest.TestCase):
-    def test_rejected_constraint_penalty_is_exposed_by_structured_route(self) -> None:
-        rows = [
-            {"parent_asin": "X", "title": "trail walking shoes"},
-            {"parent_asin": "A", "title": "black walking shoes"},
-            {"parent_asin": "B", "title": "white walking shoes"},
-        ]
-        rejection = {
-            "attribute": "color",
-            "normalized_value": "black",
-            "confidence": 0.8,
-            "source_turn": 2,
-            "active": False,
-        }
-        with tempfile.TemporaryDirectory() as directory:
-            catalog_path = Path(directory) / "catalog.jsonl"
-            _write_catalog(catalog_path, rows)
-            retriever = HybridRetriever(
-                catalog_path,
-                structured_config=StructuredConfig(enabled=False),
-            )
-
-            result = retriever.retrieve(
-                _request(
-                    "walking shoes",
-                    [],
-                    rejected_constraints=[rejection],
-                    top_k=3,
-                    allow_hard_filter=False,
-                )
-            )
-
-            self.assertEqual(
-                [candidate.parent_asin for candidate in result.candidates],
-                ["X", "B", "A"],
-            )
-            rejected = next(
-                candidate for candidate in result.candidates if candidate.parent_asin == "A"
-            )
-            self.assertGreater(rejected.diagnostics["rejection_penalty"], 0.0)
-            self.assertEqual(
-                rejected.diagnostics["rejected_constraint_matches"],
-                [
-                    {
-                        "attribute": "color",
-                        "normalized_value": "black",
-                        "confidence": 0.8,
-                    }
-                ],
-            )
-
     def test_route_bundle_exposes_lexical_and_structured_orders_from_one_seam(self) -> None:
         rows = [
             {"parent_asin": "A", "title": "cotton walking shoes"},

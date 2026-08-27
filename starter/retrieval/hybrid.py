@@ -193,8 +193,6 @@ class HybridRetriever:
                 active_constraints=request.active_constraints,
                 lexical_weight=request.strategy.lexical_weight,
                 structured_weight=request.strategy.structured_weight,
-                rejected_constraints=request.rejected_constraints,
-                no_preference_attributes=request.no_preference_attributes,
             )
             ranked_ids = [item.parent_asin for item in ranking_scores]
         else:
@@ -296,16 +294,6 @@ class HybridRetriever:
                     "constraint_reranked": constraint_reranked,
                     "lexical_score": round(score_by_id[parent_asin].lexical_score, 8),
                     "constraint_score": round(score_by_id[parent_asin].constraint_score, 8),
-                    "rejection_penalty": round(
-                        score_by_id[parent_asin].rejection_penalty,
-                        8,
-                    ),
-                    "rejected_constraint_matches": [
-                        match.to_dict()
-                        for match in score_by_id[
-                            parent_asin
-                        ].rejected_constraint_matches
-                    ],
                     "ranking_score": round(score_by_id[parent_asin].ranking_score, 8),
                     "structured_matches": structured_matches(
                         self._structured_evidence[parent_asin],
