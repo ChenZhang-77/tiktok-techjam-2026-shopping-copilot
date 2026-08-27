@@ -42,7 +42,10 @@ STANDALONE_SIZE_RE = re.compile(
 )
 DESCRIPTIVE_SIZE_RE = re.compile(r"\b(small|medium|large|wide|narrow)\b", re.I)
 BUDGET_RE = re.compile(r"\b(?:under|below|less than|around|about|up to|budget)\s*\$?\s*(\d+(?:\.\d{1,2})?)\b|\$\s*(\d+(?:\.\d{1,2})?)", re.I)
-BRAND_RE = re.compile(r"\b(?:brand|from|by)\s+([A-Z][A-Za-z0-9&' -]{1,30})")
+BRAND_RE = re.compile(
+    r"\b(?:brand|from|by)\s+"
+    r"([A-Z][A-Za-z0-9&'-]*(?:\s+[A-Z][A-Za-z0-9&'-]*){0,2})"
+)
 TOKEN_RE = re.compile(r"[a-z0-9]+", re.I)
 OVERRIDE_RE = re.compile(
     r"\b(?:actually|instead|ignore|forget|rather|change|changed my mind|what i need)\b",
@@ -56,7 +59,7 @@ NEGATION_MARKER_RE = re.compile(
     r"\b(?:anything except|anything but|don't want|do not want|instead of|avoid|without|except|exclude|ignore|not)\b",
     re.I,
 )
-NEGATION_END_RE = re.compile(r"[,.;?!]|\b(?:but|however|rather)\b", re.I)
+CLAUSE_END_RE = re.compile(r"[.;?!]|\b(?:but|however|rather)\b", re.I)
 EXPLORATION_RE = re.compile(
     r"\b(?:browse|browsing|explore|exploring|just looking|not sure|ideas|open to options)\b",
     re.I,
@@ -203,18 +206,32 @@ def _catalog_phrase_matches(
     text: str,
     phrases: frozenset[str],
 ) -> list[str]:
-    tokens = [token.lower() for token in TOKEN_RE.findall(text)]
-    if not tokens or not phrases:
+    token_matches = list(TOKEN_RE.finditer(text))
+    if not token_matches or not phrases:
         return []
-    maximum = min(12, len(tokens), max(len(phrase.split()) for phrase in phrases))
-    occupied = [False] * len(tokens)
+    maximum = min(
+        12,
+        len(token_matches),
+        max(len(phrase.split()) for phrase in phrases),
+    )
+    occupied = [False] * len(token_matches)
     matches: list[tuple[int, str]] = []
     for width in range(maximum, 0, -1):
-        for start in range(0, len(tokens) - width + 1):
+        for start in range(0, len(token_matches) - width + 1):
             end = start + width
             if any(occupied[start:end]):
                 continue
-            phrase = " ".join(tokens[start:end])
+            selected = token_matches[start:end]
+            separators = [
+                text[left.end():right.start()]
+                for left, right in zip(selected, selected[1:])
+            ]
+            if any(
+                re.fullmatch(r"(?:\s+|\s*-\s*)", separator) is None
+                for separator in separators
+            ):
+                continue
+            phrase = " ".join(token.group(0).lower() for token in selected)
             if phrase not in phrases:
                 continue
             matches.append((start, phrase))
@@ -235,7 +252,7 @@ def _negative_spans(text: str) -> list[tuple[int, int]]:
     spans: list[tuple[int, int]] = []
     for marker in NEGATION_MARKER_RE.finditer(text):
         remainder = text[marker.end():]
-        boundary = NEGATION_END_RE.search(remainder)
+        boundary = CLAUSE_END_RE.search(remainder)
         end = marker.end() + boundary.start() if boundary else len(text)
         spans.append((marker.start(), end))
     return spans
@@ -244,12 +261,12 @@ def _negative_spans(text: str) -> list[tuple[int, int]]:
 def _mask_spans(text: str, spans: list[tuple[int, int]]) -> str:
     characters = list(text)
     for start, end in spans:
-        characters[start:end] = " " * (end - start)
+        characters[start:end] = "\0" * (end - start)
     return "".join(characters)
 
 
 def _no_preference_spans(text: str) -> list[tuple[int, int]]:
-    separators = list(re.finditer(r"[,;.!?]|\b(?:but|however)\b", text, re.I))
+    separators = list(CLAUSE_END_RE.finditer(text))
     spans: list[tuple[int, int]] = []
     for marker in NO_PREFERENCE_RE.finditer(text):
         start = max(
@@ -285,6 +302,105 @@ def _is_hard_request(text: str) -> bool:
     ))
 
 
+def _matched_constraints(
+    text: str,
+    turn: int,
+    source_text: str,
+    *,
+    vocabulary: CatalogVocabulary | None,
+    hard: bool,
+    rejected: bool,
+) -> list[Constraint]:
+    confidence = {
+        "material": 0.82 if rejected else 0.86,
+        "color": 0.80 if rejected else 0.82,
+        "category": 0.72 if rejected else 0.78,
+        "use_case": 0.65 if rejected else 0.72,
+        "style": 0.68 if rejected else 0.70,
+        "catalog_category": 0.76 if rejected else 0.80,
+        "size": 0.70 if rejected else 0.74,
+        "budget": 0.80 if rejected else 0.84,
+        "brand": 0.68 if rejected else 0.62,
+    }
+    constraints: list[Constraint] = []
+    matchers = (
+        ("material", MATERIALS),
+        ("color", COLORS),
+        ("category", CATEGORY_TERMS),
+        ("use_case", USE_CASES),
+        ("style", STYLE_TERMS),
+    )
+    for attribute, phrases in matchers:
+        attribute_hard = hard if attribute in {"material", "color", "category"} else False
+        if rejected:
+            attribute_hard = True
+        for value in _word_matches(text, phrases):
+            constraints.append(
+                _constraint(
+                    attribute,
+                    value,
+                    turn,
+                    source_text,
+                    confidence[attribute],
+                    attribute_hard,
+                )
+            )
+
+    if vocabulary is not None:
+        for value in _catalog_phrase_matches(text, vocabulary.category_terms):
+            constraints.append(
+                _constraint(
+                    "category",
+                    value,
+                    turn,
+                    source_text,
+                    confidence["catalog_category"],
+                    True if rejected else hard,
+                )
+            )
+
+    for value in _size_matches(text):
+        constraints.append(
+            _constraint(
+                "size",
+                value,
+                turn,
+                source_text,
+                confidence["size"],
+                True if rejected else hard,
+            )
+        )
+
+    for match in BUDGET_RE.finditer(text):
+        amount = match.group(1) or match.group(2)
+        if amount:
+            constraints.append(
+                _constraint(
+                    "budget",
+                    f"${amount}",
+                    turn,
+                    source_text,
+                    confidence["budget"],
+                    True if rejected else hard,
+                )
+            )
+
+    for match in BRAND_RE.finditer(text):
+        raw = match.group(1).strip(" .,!?:;")
+        if raw and raw.lower() not in {"a", "an", "the"}:
+            constraints.append(
+                _constraint(
+                    "brand",
+                    raw,
+                    turn,
+                    source_text,
+                    confidence["brand"],
+                    rejected,
+                )
+            )
+    return constraints
+
+
 def extract_constraints(
     user_message: str,
     turn: int,
@@ -298,40 +414,14 @@ def extract_constraints(
     )
     lowered = positive_text.lower()
     hard = _is_hard_request(text)
-    constraints: list[Constraint] = []
-
-    for value in _word_matches(positive_text, MATERIALS):
-        constraints.append(_constraint("material", value, turn, text, 0.86, hard))
-    for value in _word_matches(positive_text, COLORS):
-        constraints.append(_constraint("color", value, turn, text, 0.82, hard))
-    for value in _word_matches(positive_text, CATEGORY_TERMS):
-        constraints.append(_constraint("category", value, turn, text, 0.78, hard))
-    for value in _word_matches(positive_text, USE_CASES):
-        constraints.append(_constraint("use_case", value, turn, text, 0.72, False))
-    for value in _word_matches(positive_text, STYLE_TERMS):
-        constraints.append(_constraint("style", value, turn, text, 0.70, False))
-
-    catalog_categories: list[str] = []
-    if vocabulary is not None:
-        catalog_categories = _catalog_phrase_matches(
-            positive_text,
-            vocabulary.category_terms,
-        )
-    for value in catalog_categories:
-        constraints.append(_constraint("category", value, turn, text, 0.80, hard))
-
-    for value in _size_matches(positive_text):
-        constraints.append(_constraint("size", value, turn, text, 0.74, hard))
-
-    for match in BUDGET_RE.finditer(positive_text):
-        amount = match.group(1) or match.group(2)
-        if amount:
-            constraints.append(_constraint("budget", f"${amount}", turn, text, 0.84, hard))
-
-    for match in BRAND_RE.finditer(positive_text):
-        raw = match.group(1).strip(" .,!?:;")
-        if raw and raw.lower() not in {"a", "an", "the"}:
-            constraints.append(_constraint("brand", raw, turn, text, 0.62, False))
+    constraints = _matched_constraints(
+        positive_text,
+        turn,
+        text,
+        vocabulary=vocabulary,
+        hard=hard,
+        rejected=False,
+    )
 
     if (
         not constraints
@@ -384,22 +474,16 @@ def detect_rejected_constraints(
     rejected: list[Constraint] = []
     for start, end in _negative_spans(text):
         window = text[start:end]
-        hard = True
-        for value in _word_matches(window, MATERIALS):
-            rejected.append(_constraint("material", value, turn, text, 0.82, hard))
-        for value in _word_matches(window, COLORS):
-            rejected.append(_constraint("color", value, turn, text, 0.80, hard))
-        for value in _word_matches(window, CATEGORY_TERMS):
-            rejected.append(_constraint("category", value, turn, text, 0.72, hard))
-        for value in _word_matches(window, STYLE_TERMS):
-            rejected.append(_constraint("style", value, turn, text, 0.68, hard))
-        for value in _word_matches(window, USE_CASES):
-            rejected.append(_constraint("use_case", value, turn, text, 0.65, hard))
-        for value in _size_matches(window):
-            rejected.append(_constraint("size", value, turn, text, 0.70, hard))
-        if vocabulary is not None:
-            for value in _catalog_phrase_matches(window, vocabulary.category_terms):
-                rejected.append(_constraint("category", value, turn, text, 0.76, hard))
+        rejected.extend(
+            _matched_constraints(
+                window,
+                turn,
+                text,
+                vocabulary=vocabulary,
+                hard=True,
+                rejected=True,
+            )
+        )
 
     unique: dict[tuple[str, str], Constraint] = {}
     for item in rejected:

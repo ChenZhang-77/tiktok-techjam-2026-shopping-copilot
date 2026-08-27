@@ -71,6 +71,31 @@ class ContextEngineTest(unittest.TestCase):
 
         self.assertIn(("category", "trail running shoes"), values)
 
+    def test_catalog_category_does_not_cross_punctuation_or_masked_scope(self) -> None:
+        vocabulary = CatalogVocabulary.from_products([
+            {"categories": ["Trail Running"]}
+        ])
+
+        for message in (
+            "Trail, running shoes are fine.",
+            "Trail, I don't care about color, running shoes are fine.",
+        ):
+            values = {
+                (item["attribute"], item["normalized_value"])
+                for item in extract_constraints(message, 1, vocabulary=vocabulary)
+            }
+            self.assertNotIn(("category", "trail running"), values)
+
+        joined = {
+            (item["attribute"], item["normalized_value"])
+            for item in extract_constraints(
+                "Trail-running shoes are fine.",
+                1,
+                vocabulary=vocabulary,
+            )
+        }
+        self.assertIn(("category", "trail running"), joined)
+
     def test_session_state_accumulates_constraints_without_duplicates(self) -> None:
         state = SessionState(session_id="s1", user_profile={})
         state.add_constraints(extract_constraints("I need black leather shoes", 1))
@@ -102,12 +127,67 @@ class ContextEngineTest(unittest.TestCase):
             ["material"],
         )
 
+    def test_no_preference_attribute_list_stays_in_scope_until_contrast(self) -> None:
+        message = (
+            "I do not care about color, material, or style, "
+            "but size is important."
+        )
+
+        self.assertEqual(
+            detect_no_preference_attributes(message),
+            ["material", "color", "style"],
+        )
+        active = {
+            (item["attribute"], item["normalized_value"])
+            for item in extract_constraints(message, 2)
+        }
+        self.assertNotIn(("material", "material"), active)
+
     def test_detects_rejected_constraints(self) -> None:
         rejected = detect_rejected_constraints("Any color is fine except black, and avoid leather.", 3)
         by_attribute = {item["attribute"]: item["normalized_value"] for item in rejected}
 
         self.assertEqual(by_attribute["color"], "black")
         self.assertEqual(by_attribute["material"], "leather")
+
+    def test_negative_list_stays_rejected_until_sentence_boundary(self) -> None:
+        message = "Avoid black, white, and red shoes. Blue is fine."
+
+        active = {
+            (item["attribute"], item["normalized_value"])
+            for item in extract_constraints(message, 3)
+        }
+        rejected = {
+            (item["attribute"], item["normalized_value"])
+            for item in detect_rejected_constraints(message, 3)
+        }
+
+        self.assertEqual(
+            {value for attribute, value in rejected if attribute == "color"},
+            {"black", "white", "red"},
+        )
+        self.assertIn(("color", "blue"), active)
+        self.assertFalse(
+            {("color", "black"), ("color", "white"), ("color", "red")}
+            & active
+        )
+
+    def test_rejected_brand_and_budget_share_positive_matcher_inventory(self) -> None:
+        message = "Avoid brand Nike and anything under $80."
+
+        active = {
+            (item["attribute"], item["normalized_value"])
+            for item in extract_constraints(message, 3)
+        }
+        rejected = {
+            (item["attribute"], item["normalized_value"])
+            for item in detect_rejected_constraints(message, 3)
+        }
+
+        self.assertIn(("brand", "nike"), rejected)
+        self.assertIn(("budget", "$80"), rejected)
+        self.assertNotIn(("brand", "nike"), active)
+        self.assertNotIn(("budget", "$80"), active)
 
     def test_mixed_positive_and_negative_clauses_keep_evidence_in_its_scope(self) -> None:
         message = "Blue shoes are good, but anything but black, and without leather."

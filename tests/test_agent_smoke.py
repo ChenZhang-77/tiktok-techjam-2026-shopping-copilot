@@ -296,6 +296,44 @@ class AgentSmokeTest(unittest.TestCase):
             response["diagnostics"]["query_plan"]["category_terms"],
         )
 
+    def test_injected_catalog_retriever_supplies_its_own_vocabulary_path(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            catalog_path = Path(directory) / "catalog.jsonl"
+            _write_catalog(catalog_path)
+            retriever = HybridRetriever(catalog_path)
+            agent = Agent(retriever=retriever)
+            agent.reset("injected-catalog-context", {})
+
+            try:
+                response = agent.respond(
+                    "injected-catalog-context",
+                    "I need trail running shoes.",
+                    1,
+                    2,
+                )
+            finally:
+                retriever.close()
+
+        self.assertEqual(agent.catalog_path, catalog_path)
+        self.assertIn(
+            "trail running shoes",
+            response["diagnostics"]["query_plan"]["category_terms"],
+        )
+
+    def test_explicit_catalog_path_must_match_injected_retriever(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            catalog_path = Path(directory) / "catalog.jsonl"
+            other_path = Path(directory) / "other.jsonl"
+            _write_catalog(catalog_path)
+            _write_catalog(other_path)
+            retriever = HybridRetriever(catalog_path)
+
+            try:
+                with self.assertRaisesRegex(ValueError, "catalog_path"):
+                    Agent(other_path, retriever=retriever)
+            finally:
+                retriever.close()
+
     def test_agent_scopes_no_preference_and_negative_evidence(self) -> None:
         retriever = _RecordingRetriever()
         agent = Agent(retriever=retriever)

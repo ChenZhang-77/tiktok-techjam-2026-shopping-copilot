@@ -35,15 +35,26 @@ class Agent:
 
     def __init__(
         self,
-        catalog_path: str | Path = "data/catalog.jsonl",
+        catalog_path: str | Path | None = None,
         strategy_config: StrategyConfig | None = None,
         retriever: Retriever | None = None,
     ) -> None:
-        self.catalog_path = Path(catalog_path)
+        requested_catalog_path = Path(catalog_path) if catalog_path is not None else None
+        retriever_catalog_path = getattr(retriever, "catalog_path", None)
+        if retriever is not None and retriever_catalog_path is not None:
+            effective_catalog_path = Path(retriever_catalog_path)
+            if (
+                requested_catalog_path is not None
+                and requested_catalog_path.resolve() != effective_catalog_path.resolve()
+            ):
+                raise ValueError(
+                    "catalog_path must match the injected retriever.catalog_path"
+                )
+        else:
+            effective_catalog_path = requested_catalog_path or Path("data/catalog.jsonl")
+        self.catalog_path = effective_catalog_path
         self.strategy_config = strategy_config or StrategyConfig()
-        catalog_backed_retriever = (
-            retriever is None or getattr(retriever, "catalog_path", None) is not None
-        )
+        catalog_backed_retriever = retriever is None or retriever_catalog_path is not None
         self.context_vocabulary = (
             CatalogVocabulary.from_catalog(self.catalog_path)
             if catalog_backed_retriever
