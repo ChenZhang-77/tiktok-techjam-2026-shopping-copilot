@@ -587,7 +587,22 @@ def main() -> None:
         "--rerank-limit",
         type=int,
         default=30,
-        help="Maximum structured candidates scored by --semantic-rerank (1-100).",
+        help=(
+            "Maximum candidates considered by --semantic-rerank or "
+            "--constraint-preserving-rerank (1-100)."
+        ),
+    )
+    parser.add_argument(
+        "--rerank-anchor-count",
+        type=int,
+        default=3,
+        help="Protected prefix size for --constraint-preserving-rerank.",
+    )
+    parser.add_argument(
+        "--rerank-base-score-weight",
+        type=float,
+        default=0.35,
+        help="Retained base-score weight for --constraint-preserving-rerank.",
     )
     parser.add_argument(
         "--conditional-dense-max-active-constraints",
@@ -607,6 +622,16 @@ def main() -> None:
     parser.add_argument("--output", default="results.json")
     args = parser.parse_args()
 
+    constraint_reranker_config = None
+    if args.retrieval_mode == "constraint_preserving_rerank":
+        constraint_reranker_config = RerankerConfig(
+            candidate_limit=args.rerank_limit,
+            anchor_count=args.rerank_anchor_count,
+            base_score_weight=args.rerank_base_score_weight,
+            minimum_constraint_confidence=0.75,
+            constraint_guard_enabled=True,
+        )
+
     result = evaluate_split(
         catalog_path=args.catalog,
         dataset_path=args.dataset,
@@ -625,6 +650,7 @@ def main() -> None:
                 args.conditional_dense_max_accepted_latency_ms
             ),
         ),
+        constraint_reranker_config=constraint_reranker_config,
     )
     Path(args.output).write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({key: value for key, value in result.items() if key != "sessions"}, indent=2))
