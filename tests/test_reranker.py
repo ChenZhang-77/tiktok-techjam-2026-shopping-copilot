@@ -214,7 +214,7 @@ class RerankingRetrieverTest(unittest.TestCase):
                         "attribute": "material",
                         "normalized_value": "leather",
                         "confidence": 0.95,
-                        "active": True,
+                        "active": False,
                     }
                 ],
             )
@@ -222,11 +222,97 @@ class RerankingRetrieverTest(unittest.TestCase):
 
         self.assertEqual(
             [candidate.parent_asin for candidate in result.candidates],
-            ["D", "B", "A", "C"],
+            ["A", "D", "B", "C"],
         )
         self.assertEqual(
             [candidate.diagnostics["constraint_guard_status"] for candidate in result.candidates],
-            ["neutral", "neutral", "matched", "contradicted"],
+            ["matched", "neutral", "neutral", "contradicted"],
+        )
+
+    def test_rejected_guard_honors_no_preference_and_current_positive_suppression(self) -> None:
+        base = FakeRetriever()
+        base.result = replace(
+            base.result,
+            candidates=[
+                replace(
+                    candidate,
+                    diagnostics={
+                        "structured_matches": (
+                            [{"attribute": "material", "value": "leather"}]
+                            if candidate.parent_asin == "C"
+                            else []
+                        ),
+                        "rejected_constraint_matches": (
+                            [{"attribute": "material", "value": "leather"}]
+                            if candidate.parent_asin == "C"
+                            else []
+                        ),
+                    },
+                )
+                for candidate in base.result.candidates
+            ],
+        )
+        rejected = [
+            {
+                "attribute": "material",
+                "normalized_value": "leather",
+                "confidence": 0.95,
+                "active": False,
+            }
+        ]
+
+        no_preference = RerankingRetriever(
+            base,
+            config=RerankerConfig(
+                candidate_limit=4,
+                constraint_guard_enabled=True,
+            ),
+            backend=RecordingBackend([0.1, 0.2, 1.0, 0.9]),
+        ).retrieve(
+            replace(
+                _request(rejected_constraints=rejected),
+                no_preference_attributes=["material"],
+            )
+        )
+        current_positive = RerankingRetriever(
+            base,
+            config=RerankerConfig(
+                candidate_limit=4,
+                constraint_guard_enabled=True,
+            ),
+            backend=RecordingBackend([0.1, 0.2, 1.0, 0.9]),
+        ).retrieve(
+            _request(
+                active_constraints=[
+                    {
+                        "attribute": "material",
+                        "normalized_value": "leather",
+                        "confidence": 0.95,
+                        "hard": True,
+                        "active": True,
+                    }
+                ],
+                rejected_constraints=rejected,
+            )
+        )
+
+        no_preference_c = next(
+            candidate
+            for candidate in no_preference.candidates
+            if candidate.parent_asin == "C"
+        )
+        positive_c = next(
+            candidate
+            for candidate in current_positive.candidates
+            if candidate.parent_asin == "C"
+        )
+        self.assertEqual(
+            no_preference_c.diagnostics["constraint_guard_status"],
+            "neutral",
+        )
+        self.assertEqual(
+            positive_c.diagnostics["constraint_guard_status"],
+            "matched",
         )
 
     def test_constraint_preserving_failure_returns_the_exact_full_base_order(self) -> None:

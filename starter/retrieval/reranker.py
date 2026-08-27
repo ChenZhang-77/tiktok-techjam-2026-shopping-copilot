@@ -288,7 +288,9 @@ class RerankingRetriever:
                 + (1.0 - self.config.base_score_weight) * semantic_rank_signal
             )
             guard_status = self._constraint_guard_status(candidate, request)
-            guard_rank = 1 if guard_status == "contradicted" else 0
+            guard_rank = {"matched": 0, "neutral": 1, "contradicted": 2}[
+                guard_status
+            ]
             indexed.append(
                 (
                     guard_rank,
@@ -432,6 +434,16 @@ class RerankingRetriever:
     ) -> str:
         if not self.config.constraint_guard_enabled:
             return "neutral"
+        current_positive_keys = {
+            (
+                str(item.get("attribute") or "").strip().lower(),
+                str(item.get("normalized_value") or item.get("raw_value") or "")
+                .strip()
+                .lower(),
+            )
+            for item in request.active_constraints
+            if item.get("active", True)
+        }
         active_keys = {
             (
                 str(item.get("attribute") or "").strip().lower(),
@@ -445,6 +457,11 @@ class RerankingRetriever:
             and float(item.get("confidence") or 0.0)
             >= self.config.minimum_constraint_confidence
         }
+        no_preference_attributes = {
+            str(attribute).strip().lower()
+            for attribute in request.no_preference_attributes
+            if str(attribute).strip()
+        }
         rejected_keys = {
             (
                 str(item.get("attribute") or "").strip().lower(),
@@ -453,10 +470,12 @@ class RerankingRetriever:
                 .lower(),
             )
             for item in request.rejected_constraints
-            if item.get("active", True)
-            and float(item.get("confidence") or 0.0)
+            if float(item.get("confidence") or 0.0)
             >= self.config.minimum_constraint_confidence
+            and str(item.get("attribute") or "").strip().lower()
+            not in no_preference_attributes
         }
+        rejected_keys.difference_update(current_positive_keys)
         diagnostics = getattr(candidate, "diagnostics", {})
         if not isinstance(diagnostics, dict):
             return "neutral"
