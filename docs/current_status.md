@@ -10,8 +10,10 @@ Read, in order:
 
 1. `AGENTS.md` for non-negotiable operating rules.
 2. This file for the verified current state and next decision.
-3. `docs/optimization_roadmap.md` for the project-wide execution order.
-4. One workstream document:
+3. `docs/human_optimization_recap_zh.md` when a human-readable Chinese history
+   and metric explanation is needed.
+4. `docs/optimization_roadmap.md` for the project-wide execution order.
+5. One workstream document:
    - A: `docs/workstreams/DEVELOPER_A_CONTROL_PLANE.md`
    - B: `docs/workstreams/DEVELOPER_B_RETRIEVAL_RANKING.md`
 5. The files named by the selected experiment.
@@ -357,6 +359,7 @@ track in `docs/demo_and_submission_plan.md`.
 | `docs/a11_extraction_scope_evidence.md` | Retained bounded extraction scope, rejected expansions, folds, and remaining risks |
 | `docs/b9_conditional_dense_evidence.md` | Retained Browsing-only dense gate, quality, route truth, cost, and folds |
 | `docs/ablation_summary.md` | Human-readable keep/reject evidence |
+| `docs/human_optimization_recap_zh.md` | Plain-language Chinese A1/B1-to-current recap and metric guide |
 | `docs/workstreams/DEVELOPER_A_CONTROL_PLANE.md` | Standalone A-side route |
 | `docs/workstreams/DEVELOPER_B_RETRIEVAL_RANKING.md` | Standalone B-side route |
 | `docs/demo_and_submission_plan.md` | Demo, README, Devpost, packaging, rehearsal |

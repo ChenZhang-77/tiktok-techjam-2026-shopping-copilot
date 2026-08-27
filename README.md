@@ -18,7 +18,9 @@ CrossEncoder, and LLM reranking are not enabled.
 
 The verified integrated checkout and next optimization decision are documented
 in [`docs/current_status.md`](docs/current_status.md). The project-wide route is
-[`docs/optimization_roadmap.md`](docs/optimization_roadmap.md).
+[`docs/optimization_roadmap.md`](docs/optimization_roadmap.md). For a plain-
+language Chinese walkthrough from A1/B1 through the current result, read
+[`docs/human_optimization_recap_zh.md`](docs/human_optimization_recap_zh.md).
 
 Verified Development-160 result for the retained bounded A11 plus B9
 conditional-dense default:

@@ -7,8 +7,10 @@ from old reports.
 
 1. `../AGENTS.md` — operating rules for Codex and contributors
 2. `current_status.md` — authoritative current checkpoint, evidence, and risks
-3. `optimization_roadmap.md` — dependency-ordered whole-project route
-4. `ablation_summary.md` — what was retained, rejected, and why
+3. `human_optimization_recap_zh.md` — plain-language Chinese timeline from
+   A1/B1, metric explanations, decisions, and current interpretation
+4. `optimization_roadmap.md` — dependency-ordered whole-project route
+5. `ablation_summary.md` — what was retained, rejected, and why
 
 `../AGENTS.md` is the sole authority for the R0 failure taxonomy and the
 offline-target/runtime boundary. `optimization_roadmap.md` is the sole authority
