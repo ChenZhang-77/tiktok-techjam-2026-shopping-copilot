@@ -212,18 +212,18 @@ observed `41.18 ms` mean response latency and zero failures. Full evidence is in
 
 ## A9 Result
 
-A9 is rejected and reverted. The tested stability/no-partition gate reduced
-neither total questions nor MTTC: HitRate fell from `0.7625` to `0.7500`, MTTC
+A9 is rejected and reverted. The tested stability/no-partition gate regressed
+the technical keep metrics: HitRate fell from `0.7625` to `0.7500`, MTTC
 rose from `5.35` to `5.43125`, and technical score fell from `0.653194` to
-`0.644556`. Two sessions were lost and none gained. Three bounded conservative
-thresholds exactly matched the baseline but improved no keep metric. The final
-runtime therefore preserves the pre-A9 question policy. See
+`0.644556`. Two sessions were lost and none gained. The hash-bound reports do
+not include turn-level question counts, so those are not used as a retained
+claim. The final runtime preserves the pre-A9 question policy. See
 `docs/a9_should_ask_evidence.md`.
 
 ## Next Decision
 
 The next dependency-ordered module is A10a Candidate Question Value. It should
-improve which useful question is asked, not reopen threshold-only suppression.
+improve which useful question is asked while preserving the ask opportunity.
 Score margin remains forbidden as a gate. A11 Extraction and Scope Hardening
 remains supported by six primary Extraction misses and stays after the
 dependencies specified in the roadmap.

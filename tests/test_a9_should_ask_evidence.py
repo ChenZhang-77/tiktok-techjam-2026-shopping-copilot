@@ -51,6 +51,10 @@ class A9ShouldAskEvidenceTest(unittest.TestCase):
         self.assertEqual(self.record["candidate_rule"]["shared_contract_change"], "none")
         self.assertEqual(self.record["holdout_status"], "not run during A9")
         self.assertEqual(self.record["full_status"], "not run during A9")
+        self.assertFalse(
+            self.record["question_measurement"]["available_in_hash_bound_reports"]
+        )
+        self.assertFalse(self.record["question_measurement"]["used_for_decision"])
         self.assertEqual(self.record["next_module"], "A10a Candidate Question Value")
 
 

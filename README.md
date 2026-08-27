@@ -275,7 +275,7 @@ clarification with exact 160-session / 818-turn dialogue parity and no shared
 contract change. See
 [`docs/ab0_decision_evidence.md`](docs/ab0_decision_evidence.md). The
 tested A9 should-ask gate was rejected and reverted after HitRate fell to
-`0.7500`, MTTC rose to `5.43125`, and no total-question reduction appeared.
+`0.7500` and MTTC rose to `5.43125`.
 See [`docs/a9_should_ask_evidence.md`](docs/a9_should_ask_evidence.md). The
 dependency-ordered next module is A10a Candidate Question Value.
 `AGENTS.md` owns the taxonomy and

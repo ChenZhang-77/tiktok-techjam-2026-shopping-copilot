@@ -54,47 +54,14 @@
       "intent_override": 0.0
     }
   },
-  "question_audit": {
-    "baseline_responses": 818,
-    "baseline_questions": 685,
-    "candidate_responses": 829,
-    "candidate_questions": 685,
-    "candidate_suppress_decisions": 21,
-    "question_delta": 0,
-    "candidate_reason_counts": {
-      "candidate_partition_available": 523,
-      "final_turn": 40,
-      "insufficient_evidence_conservative": 162,
-      "no_available_attribute": 83,
-      "stable_without_useful_partition": 21
-    },
-    "no_value_question_delta": "not directly observable from the retained evaluation report"
+  "question_measurement": {
+    "available_in_hash_bound_reports": false,
+    "used_for_decision": false,
+    "reason": "The retained evaluator report does not contain turn-level ask_attribute or clarification-reason traces.",
+    "future_requirement": "Any renewed A9 experiment must retain a hash-bound turn audit before claiming question-count or no-value-question improvement."
   },
-  "bounded_exploratory_screen": [
-    {
-      "name": "stability_1_turn_2",
-      "threshold": 1.0,
-      "minimum_turn": 2,
-      "overall_metrics": "exact baseline match",
-      "status": "not retained; no MTTC or Efficiency gain"
-    },
-    {
-      "name": "stability_0.9_turn_5",
-      "threshold": 0.9,
-      "minimum_turn": 5,
-      "overall_metrics": "exact baseline match",
-      "status": "not retained; no MTTC or Efficiency gain"
-    },
-    {
-      "name": "stability_0.8_turn_7",
-      "threshold": 0.8,
-      "minimum_turn": 7,
-      "overall_metrics": "exact baseline match",
-      "status": "not retained; no MTTC or Efficiency gain"
-    }
-  ],
   "simulator_mechanism": "Recommendations are scored before the next customer reply. Asking does not delay a same-turn hit; on a miss, ask_attribute=null causes a generic request for a specific question rather than revealing a target preference. Suppression can therefore remove future constraint evidence without improving the current turn.",
-  "fold_status": "not run because the primary Development-160 candidate failed every main keep metric and the bounded conservative screen produced no overall improvement",
+  "fold_status": "not run because the primary Development-160 candidate regressed HitRate, MRR, MTTC, Efficiency, and technical score",
   "holdout_status": "not run during A9",
   "full_status": "not run during A9",
   "keep_gate": "MTTC/Efficiency improves on stable folds, HitRate does not materially fall, and question/no-value counts fall.",

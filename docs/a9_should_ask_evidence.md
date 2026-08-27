@@ -24,20 +24,16 @@ target/evaluator labels, and it did not change the shared A/B contract.
 
 There were no gained sessions and two lost sessions: `public_0097` and
 `public_0098`. Browsing scenario score fell `0.011172`; Buying fell `0.010422`.
-Boundary and Intent Override were unchanged.
+Boundary and Intent Override were unchanged. This reproducible regression is
+sufficient to reject the candidate before fold evaluation.
 
-The candidate emitted 21 `stable_without_useful_partition` decisions, but the
-total question count remained `685`: lost sessions extended the replay from
-`818` to `829` responses and later questions offset the suppressed ones. Thus
-neither the technical keep gate nor the question-count objective passed.
+## Evidence Boundary
 
-## Bounded Threshold Screen
-
-To avoid open-ended Development tuning, only three more conservative variants
-were screened: stability `1.0` from turn 2, `0.9` from turn 5, and `0.8` from
-turn 7. Each exactly matched the baseline overall metrics; none improved MTTC
-or Efficiency. They were not retained, and folds were not run because no
-candidate first passed the overall Development gate.
+The hash-bound evaluator reports do not contain turn-level `ask_attribute` or
+clarification-reason traces. Therefore this retained decision makes no exact
+claim about total-question or no-value-question deltas. Any renewed A9
+experiment must first retain a hash-bound turn audit before using those measures
+in its keep/revert decision.
 
 ## Why the Hypothesis Failed Here
 
@@ -51,11 +47,11 @@ questions have no real product UX cost.
 
 ## Route Consequence
 
-Do not reopen threshold-only should-ask tuning unless the conversation/evaluator
-contract changes or an independent online UX metric exists. Proceed to **A10a
-Candidate Question Value**: improve which useful question is asked while
-preserving recommendations and the existing ask opportunity. Holdout and
-Full-200 remain untouched.
+Proceed to **A10a Candidate Question Value**: improve which useful question is
+asked while preserving recommendations and the existing ask opportunity. A
+future A9 variant would be a new experiment requiring both a hash-bound turn
+audit and the existing technical keep gate. Holdout and Full-200 remain
+untouched.
 
 Machine-readable evidence is in `docs/a9_should_ask_evidence.json`; the rejected
 clean report is in `docs/a9_reports/development_stability_080.json`.
