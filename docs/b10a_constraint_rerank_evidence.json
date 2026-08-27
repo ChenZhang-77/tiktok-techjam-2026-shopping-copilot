@@ -1,0 +1,166 @@
+{
+  "version": "b10a-v1",
+  "experiment": {
+    "id": "B10a",
+    "owner": "developer_b_retrieval_ranking",
+    "hypothesis": "Anchoring the strongest structured prefix while blending retained ranking and CrossEncoder evidence can improve ambiguous lower-ranked candidates without materially reducing HitRate@10.",
+    "top3_code_commit": "122c374",
+    "parameterized_code_commit": "7dc3d42",
+    "decision": "reject_as_default_retain_reproducible_optional_experiment"
+  },
+  "candidate_behavior": {
+    "base_route": "retained B9 conditional dense route",
+    "model_id": "cross-encoder/ms-marco-MiniLM-L2-v2",
+    "model_revision": "1b5cd67b15209f24824c50370e0397743aa9b787",
+    "candidate_limit": 30,
+    "top3_anchor_count": 3,
+    "top5_followup_anchor_count": 5,
+    "base_score_weight": 0.35,
+    "semantic_rank_weight": 0.65,
+    "base_score_source_order": [
+      "fusion_score",
+      "ranking_score",
+      "candidate_score",
+      "reciprocal_pre_rerank_rank"
+    ],
+    "constraint_guard": "Explicit high-confidence rejected-constraint matches cannot be promoted ahead of non-contradicted candidates; missing evidence remains neutral.",
+    "failure_fallback": "exact_pre_rerank_candidate_order",
+    "runtime_network_access": false,
+    "official_llm_semantic_ranking_gap_closed": false
+  },
+  "evaluation_boundary": {
+    "selection_split": "Development-160",
+    "fixed_folds": "development-folds-v1",
+    "full_or_holdout_used": false,
+    "target_information_in_runtime": false,
+    "target_information_used_offline": true,
+    "offline_target_use": "Development-only metric and session comparison; no target field crossed Agent or RetrievalRequest."
+  },
+  "keep_gate": {
+    "mrr_must_increase": true,
+    "material_hit_rate_loss_allowed": false,
+    "gain_must_be_distributed_across_folds_and_sessions": true
+  },
+  "baseline": {
+    "report": "docs/b9_reports/development_conditional_dense.json",
+    "sha256": "02510624bc55e283e23efada06eee6a132ca170d7e3aa32b644430bd7dcdbef4",
+    "clean_code_commit": "7f520ba",
+    "metrics": {
+      "hit_rate_at_10": 0.8625,
+      "mrr": 0.547329,
+      "mttc": 4.66875,
+      "efficiency": 0.633125,
+      "recommended_technical_score": 0.722074
+    }
+  },
+  "top3_candidate": {
+    "report": "docs/b10a_reports/development_top3.json",
+    "sha256": "8a38d36c26c6558949306ed6ac8ecbb04c99d327efe7100fdee04a069817ad26",
+    "clean_code_commit": "122c374",
+    "session_outcome_sha256": "9beee377a0fada46c891a2dd4a136acf9b33432a1fe8a27d77642ab94a0abf27",
+    "metrics": {
+      "hit_rate_at_10": 0.875,
+      "mrr": 0.515952,
+      "mttc": 4.54375,
+      "efficiency": 0.645625,
+      "recommended_technical_score": 0.721411
+    },
+    "delta_vs_b9": {
+      "hit_rate_at_10": 0.0125,
+      "mrr": -0.031377,
+      "mttc": -0.125,
+      "efficiency": 0.0125,
+      "recommended_technical_score": -0.000663
+    },
+    "session_changes": {
+      "changed": 74,
+      "gained_hits": 7,
+      "lost_hits": 5
+    }
+  },
+  "top5_candidate": {
+    "report": "docs/b10a_reports/development_top5.json",
+    "sha256": "7c416801244762515fc290156c48f0fc8eb3c7355b77c3b7306ead58b4fa100c",
+    "clean_code_commit": "7dc3d42",
+    "session_outcome_sha256": "1c3118f95ce93145701a2cbb64aad0a7b8d7a469c84891f2720599713e44b079",
+    "metrics": {
+      "hit_rate_at_10": 0.86875,
+      "mrr": 0.524025,
+      "mttc": 4.54375,
+      "efficiency": 0.645625,
+      "recommended_technical_score": 0.720708
+    },
+    "delta_vs_b9": {
+      "hit_rate_at_10": 0.00625,
+      "mrr": -0.023304,
+      "mttc": -0.125,
+      "efficiency": 0.0125,
+      "recommended_technical_score": -0.001366
+    },
+    "folds_run": false,
+    "folds_not_run_reason": "The aggregate Development keep gate already failed for the single-variable follow-up; it was not eligible for selection."
+  },
+  "top3_fold_reports": {
+    "fold_1": {
+      "path": "docs/b10a_reports/fold_1_top3.json",
+      "sha256": "06131731de91f07ef23c93e1c7d2b3efe6bd07d6089266c30f98dbecdd862c18",
+      "technical_score_delta": -0.008925
+    },
+    "fold_2": {
+      "path": "docs/b10a_reports/fold_2_top3.json",
+      "sha256": "5ec9bc1720259156803c4f019e7150bb8a423b5ae63e2814ee2380a7e12d4203",
+      "technical_score_delta": 0.020312
+    },
+    "fold_3": {
+      "path": "docs/b10a_reports/fold_3_top3.json",
+      "sha256": "97485cb42c09b7e1ebc7020d0831fa256aa4f6fed408d4d35de6659f99fe20ac",
+      "technical_score_delta": -0.028262
+    },
+    "fold_4": {
+      "path": "docs/b10a_reports/fold_4_top3.json",
+      "sha256": "3a27ad32868364581692b459bed67d86ded184ea8b1217f2a4f66ae5b07fdaa4",
+      "technical_score_delta": 0.014223
+    }
+  },
+  "top3_cost": {
+    "initialization_ms": 4212.408917,
+    "peak_rss_bytes": 1049542656,
+    "semantic_rerank_mean_ms": 66.280506,
+    "semantic_rerank_p95_ms": 69.528625,
+    "semantic_rerank_max_ms": 2078.720125,
+    "retrieval_mean_ms": 90.703364,
+    "retrieval_p95_ms": 112.196584,
+    "prompt_tokens": 0,
+    "completion_tokens": 0
+  },
+  "default_parity": {
+    "report": "docs/b10a_reports/development_default_parity.json",
+    "sha256": "5fb267026f4944f18e61cb16a818ef5e55906a8cbdd118cdcde32c7bed2cf471",
+    "clean_code_commit": "7dc3d42",
+    "session_outcome_sha256": "da333cbc5d1879ecbde86e133dab6f4b75d8bb3bf10111329a486f9888f859e4",
+    "metrics_equal_b9": true,
+    "scenario_metrics_equal_b9": true,
+    "sessions_equal_b9": true
+  },
+  "verification": {
+    "focused_tests": "49/49",
+    "full_tests_before_evidence": "268/268",
+    "targeted_properties": [
+      "Top 3 is byte-for-byte anchored and only ranks 4-30 are scored in the initial candidate",
+      "retained base score and semantic rank signals are blended deterministically",
+      "explicit rejected-constraint matches cannot be promoted over non-contradicted candidates",
+      "missing constraint evidence remains neutral",
+      "timeout, invalid scores, and backend errors preserve the exact full base order",
+      "AB1 executed-route and upstream fallback semantics remain truthful",
+      "the current B9 default remains session-exact after adding the optional experiment"
+    ]
+  },
+  "decision_rationale": [
+    "Top 3 improves HitRate and MTTC but reduces MRR by 0.031377 and TechnicalScore by 0.000663.",
+    "Its fold TechnicalScore is split two wins and two losses, with material losses on folds 1 and 3.",
+    "Top 5 reduces but does not remove the MRR regression and produces a larger TechnicalScore loss.",
+    "The learned route adds about 66 ms mean rerank latency and a roughly 2.08 second observed cold-start maximum.",
+    "The B9 default is therefore retained, while the adapter and reports remain reproducible optional experiment evidence."
+  ],
+  "next_module": "B10b disposition: do not run an actual LLM ranker without new R0 evidence because the cheaper bounded learned reranker failed its gate."
+}

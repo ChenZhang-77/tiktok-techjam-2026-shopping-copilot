@@ -22,7 +22,7 @@ user explicitly requests it.
 ## Current integrated state
 
 - Retained B9 runtime commit: `7f520ba`.
-- Current full test suite: `262/262` passing.
+- Current full test suite: `272/272` passing.
 - Retained default route: structured scoring, plus pinned local dense/RRF only
   behind the broad-Browsing gate.
 - Global dense/RRF and CrossEncoder remain rejected experiments; an LLM ranker
@@ -67,8 +67,8 @@ behavior only for a diagnosed B-owned class.
    reverted pending a separately approved dataset with relevant coverage.
 2. B9's rank/turn gain is small, adds no hits, and raises observed peak RSS by
    about 546 MB.
-3. Global semantic reranking regressed aggregate quality; B10a must be bounded,
-   conditional, and constraint-preserving.
+3. B10a's bounded Top-3 and Top-5 variants also regressed MRR and aggregate
+   TechnicalScore; B10b needs new R0 evidence before it is justified.
 4. Lexical recall should only be changed if R0 shows genuine candidate-pool
    misses rather than ordering failures.
 5. Retrieval depth is mostly fixed; deeper pools add cost and noise when the
@@ -91,8 +91,8 @@ B8 rejected-constraint ranking
 
 AB1 passed at `a676855`. B8's bounded candidate at `f53a7ee` was reverted at
 `3952788` because all 726 Development retrieval turns carried zero rejected
-constraints. B9 is retained at `7f520ba`; B10a is the next executable module
-only after B9 dual review.
+constraints. B9 is retained at `7f520ba`; B10a is rejected as the default, and
+the current B9 route is outcome-exact at B10a experiment head `7dc3d42`.
 
 ## AB0 and AB1 obligations for B
 
@@ -165,7 +165,7 @@ Do not widen the route without a separate experiment. Evidence:
 
 ## B10a — Constraint-preserving CrossEncoder rerank
 
-**Status: next after B9 dual review.**
+**Status: rejected as default; reproducible optional experiment retained.**
 
 Hypothesis: semantic or learned scoring may improve ambiguous lower-ranked
 candidates while the best structured matches should remain protected.
@@ -187,10 +187,15 @@ folds and sessions.
 Retaining this CrossEncoder does not close the official LLM Semantic Ranking
 gap. Report it as a learned reranker with its exact model and measured cost.
 
+Top 3 lowered MRR by `0.031377` and TechnicalScore by `0.000663`; its fold
+TechnicalScore split 2/2. Top 5 still lowered MRR by `0.023304` and
+TechnicalScore by `0.001366`. See `docs/b10a_constraint_rerank_evidence.md`.
+
 ## B10b — LLM semantic ranking
 
-Run an actual LLM ranker only as a separate, reproducible experiment after
-B10a or R0 evidence justifies it. Bound the Candidate Pool, record token/cost
+**Status: not justified by current R0/B10a evidence.** Run an actual LLM ranker
+only as a separate, reproducible experiment after new evidence justifies it.
+Bound the Candidate Pool, record token/cost
 and latency, enforce timeout and deterministic pre-rank fallback, and preserve
 hard constraints. Only a retained actual LLM route may be described as closing
 the LLM-ranking gap.

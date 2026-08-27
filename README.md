@@ -113,8 +113,9 @@ AB1 freezes requested, executed, and fallback Route semantics. B8's bounded
 rejected-constraint candidate was reverted because Development-160 supplied
 zero rejection turns. B9 is retained at `7f520ba`: dense and fusion actually
 executed on 102 of 725 retrieval turns, only Browsing outcomes changed, and all
-four fixed folds were non-regressing. The next module after B9 review is B10a
-Constraint-Preserving CrossEncoder Rerank.
+four fixed folds were non-regressing. B10a then tested Top-3 and Top-5 anchored
+CrossEncoder tails; both reduced MRR and TechnicalScore, so the B9 default is
+unchanged and an actual LLM reranker is not justified by this evidence.
 
 ## What the Ablations Showed
 
@@ -128,6 +129,8 @@ Development-160:
 | A11 broad extraction candidate | 0.72500 | 0.479085 | 0.613976 | Reject |
 | A11 bounded extraction scope | 0.86250 | 0.545568 | 0.721420 | Retain |
 | B9 broad-Browsing conditional dense | 0.86250 | 0.547329 | 0.722074 | Retain conditionally |
+| B10a CrossEncoder, Top 3 anchored | 0.87500 | 0.515952 | 0.721411 | Reject as default |
+| B10a CrossEncoder, Top 5 anchored | 0.86875 | 0.524025 | 0.720708 | Reject as default |
 | Dense only | 0.33750 | 0.160501 | 0.272650 | Reject as default |
 | Weighted RRF, k=10 | 0.75000 | 0.486620 | 0.637611 | Reject as default |
 | Semantic rerank, Top 30 | 0.78125 | 0.484162 | 0.656499 | Reject globally; keep experiment |
@@ -135,8 +138,8 @@ Development-160:
 Global semantic reranking gained recall in some Buying/Browsing sessions but
 reduced MRR, regressed Intent Override, split the folds 2/2, and added
 substantial latency and memory. B9 instead retained a narrow Browsing-only
-dense route. B10a is the next constraint-preserving learned-reranking
-experiment.
+dense route. B10a's safer anchored variants also failed: Top 3 split the folds
+2/2 and reduced MRR by `0.031377`; Top 5 still reduced MRR by `0.023304`.
 
 See [`docs/ablation_summary.md`](docs/ablation_summary.md) for decisions and the
 bound JSON reports under `docs/` for numerical provenance.
@@ -313,8 +316,11 @@ because all 726 Development turns carried zero rejected constraints. See
 [`docs/b8_rejected_constraint_evidence.md`](docs/b8_rejected_constraint_evidence.md).
 B9 now retains the Browsing-first conditional dense Route at `7f520ba`; see
 [`docs/b9_conditional_dense_evidence.md`](docs/b9_conditional_dense_evidence.md).
-The dependency-ordered next module after B9 review is B10a
-Constraint-Preserving CrossEncoder Rerank.
+B10a is rejected as a runtime default while its reproducible experiment remains
+available; see
+[`docs/b10a_constraint_rerank_evidence.md`](docs/b10a_constraint_rerank_evidence.md).
+B10b is not justified without new R0 evidence. B11 and B12 remain conditional
+on their documented prerequisites.
 `AGENTS.md` owns the taxonomy and
 leakage boundary; [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md)
 owns the complete order.

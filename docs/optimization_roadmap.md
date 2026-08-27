@@ -81,9 +81,9 @@ R0 failure taxonomy
                                               -> R5 delivery and rehearsal
 ```
 
-B9's A8 and AB1 blockers are complete, and B9 is retained. B10a is now blocked
-only on B9 dual review; it must preserve typed intent and truthful Route
-semantics rather than reopening those seams.
+B9's A8 and AB1 blockers are complete, and B9 is retained. B10a has been
+measured and rejected; B10b is not justified by the current R0/B10a evidence.
+B11 and B12 must not start unless their explicit prerequisites are satisfied.
 
 ## R0 - Development Failure Taxonomy
 
@@ -259,8 +259,8 @@ remains a disclosed risk. See
 
 Do not add a lightweight model parser now: the deterministic slice passed the
 gate, and the remaining feature-phrase misses do not justify another parser.
-AB1 and B9 are now complete; B10a is the next dependency-ordered module after
-B9 dual review.
+AB1 and B9 are complete. B10a is rejected, and B10b is not justified without
+new R0 evidence; subsequent B modules remain evidence-gated.
 
 ### A12 - Profile ablation
 
@@ -360,9 +360,11 @@ experiment. See `docs/b9_conditional_dense_evidence.md`.
 
 ### B10a - Constraint-preserving CrossEncoder rerank
 
-**Status: next after B9 dual review.** Start with one bounded candidate and
-preserve the B9 gate/fallback behavior unless evidence explicitly supports a
-change.
+**Status: rejected as default; optional experiment retained at `7dc3d42`.** The
+Top-3 candidate lowered MRR by `0.031377` and TechnicalScore by `0.000663`, and
+split folds 2/2. A single-variable Top-5 follow-up still lowered MRR by
+`0.023304` and TechnicalScore by `0.001366`. B9 default outputs remain exact.
+See `docs/b10a_constraint_rerank_evidence.md`.
 
 Candidates:
 
@@ -378,11 +380,13 @@ cost, latency, and fallback disclosed.
 
 ### B10b - LLM semantic ranking
 
-Treat an actual LLM ranker as a separate experiment with one primary behavior,
+**Status: not justified by current evidence.** Treat an actual LLM ranker as a separate experiment with one primary behavior,
 a bounded Candidate Pool, token/cost accounting, timeout, deterministic
 pre-rank fallback, and the same constraint-preservation rules. Run it only when
 time and the competition environment permit a reproducible path. Only a
-retained actual LLM route may close the LLM-ranking gap.
+retained actual LLM route may close the LLM-ranking gap. Do not run B10b merely
+to fill the pillar: the cheaper B10a route failed its quality gate and added
+material latency, so new R0 evidence is required first.
 
 If no dense or semantic route survives the gate, record the measured negative
 result and the remaining literal Track 4 gap. Do not describe implementation or

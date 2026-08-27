@@ -40,7 +40,8 @@ Verified on 2026-08-27:
 | Branch at B9 verification | `b/b9-browsing-conditional-dense` |
 | Retained behavior commit | `7f520ba` |
 | B9 selection data | Development-160 plus four fixed folds only |
-| Latest local full test suite | 262 passed |
+| B10a experiment branch | `b/b10a-constraint-preserving-crossencoder` |
+| Latest local full test suite | 272 passed |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | structured retrieval plus gated local dense/RRF for broad Browsing |
 
@@ -145,6 +146,7 @@ does not use an unavailable intent-confidence field.
 | Dense-only MiniLM retrieval | Reject as default; weak recall/ranking |
 | Global weighted RRF fusion | Reject as default; cross-validation regression |
 | Top-30 CrossEncoder semantic rerank | Reject globally; small aggregate gain but MRR and Intent Override regression, high cost |
+| B10a anchored CrossEncoder | Reject as default; Top 3 and Top 5 both reduce MRR and TechnicalScore |
 | Profile ranking | Disabled at weight 0.0; no evidence-backed gain |
 
 Do not claim that every request combines lexical, dense, and semantic routes.
@@ -162,8 +164,8 @@ The next optimization phase starts from diagnosis, not from another model:
 3. Four primary Extraction misses remain. The combined broad extraction
    candidate failed the keep gate, but its individual components do not have
    independent hash-bound evidence and remain unproven.
-4. B9's dense gain is small and memory-heavy; B10a must show that a bounded,
-   constraint-preserving reranker adds value without harming Buying/Override.
+4. B9's dense gain is small and memory-heavy; B10a failed to add stable ranking
+   value, so an actual LLM reranker is not justified without new failure data.
 5. The final package and demo narrative lag the runtime.
 
 ## R0 Result
@@ -302,9 +304,17 @@ p95 about `40.44 ms`. Startup rose from about `2.12 s` to `3.58 s`, and peak
 RSS from about `563 MB` to `1.109 GB`. This cost is part of the keep decision,
 not hidden overhead. See `docs/b9_conditional_dense_evidence.md`.
 
-After B9 dual review, the next dependency-ordered module is B10a
-Constraint-Preserving CrossEncoder Rerank. Score margin remains forbidden as a
-gate. The complete dependency order lives only in
+B10a Top-3 and Top-5 anchored CrossEncoder candidates are rejected. Top 3
+raised HitRate by `0.0125` but lowered MRR by `0.031377` and TechnicalScore by
+`0.000663`; its four folds split 2/2. Top 5 still lowered MRR by `0.023304` and
+TechnicalScore by `0.001366`. The optional learned-reranker path averaged about
+`66.28 ms` per executed retrieval and had a roughly `2.08 s` cold-start maximum.
+At `7dc3d42`, the B9 default exactly reproduced all aggregate, scenario, and
+session outcomes. See `docs/b10a_constraint_rerank_evidence.md`.
+
+B10b is recorded as not justified without new R0 evidence. B11/B12 remain
+conditional on their documented failure and intent prerequisites. Score margin
+remains forbidden as a gate. The complete dependency order lives only in
 `docs/optimization_roadmap.md`.
 
 If submission is imminent, skip new behavior work and execute the delivery
@@ -345,8 +355,8 @@ track in `docs/demo_and_submission_plan.md`.
 
 - Browsing-specific diverse dense retrieval is retained only behind the B9
   broad-Browsing gate; it is not a global route.
-- CrossEncoder reranking is reproducible but globally rejected; a
-  constraint-preserving conditional use remains a hypothesis.
+- CrossEncoder reranking is reproducible but rejected both globally and in the
+  tested Top-3/Top-5 constraint-preserving variants.
 - An actual LLM semantic ranker has not been implemented or measured.
 - Profile ranking remains disabled at weight `0.0`; long-term profile value has
   not been demonstrated.

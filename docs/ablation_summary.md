@@ -139,15 +139,19 @@ It gained ten sessions and lost seven. A global replacement would therefore
 trade ranking quality, Intent Override safety, and operational cost for an
 unstable aggregate improvement.
 
-The next defensible semantic experiment is the B10a conditional,
-constraint-preserving CrossEncoder:
+The subsequent B10a constraint-preserving CrossEncoder tested:
 
 - structured Top 3 anchored,
 - positions 4-30 reranked,
 - semantic score cannot override hard constraints,
 - exact pre-rerank fallback.
 
-Evidence: `docs/b5_semantic_rerank_cv.json`.
+Top 3 increased HitRate by `0.0125` but reduced MRR by `0.031377` and
+TechnicalScore by `0.000663`; folds split 2/2. Top 5 still reduced MRR by
+`0.023304` and TechnicalScore by `0.001366`. Both are rejected as defaults.
+
+Evidence: `docs/b5_semantic_rerank_cv.json` and
+`docs/b10a_constraint_rerank_evidence.json`.
 
 B9 now covers dense retrieval for its narrow broad-Browsing bucket. A
 CrossEncoder remains a learned reranker rather than an LLM, and an actual LLM

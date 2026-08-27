@@ -58,4 +58,6 @@ Buying/Intent Override. Do not widen the gate without a separate experiment.
 
 No Full-200 or holdout run was used. Runtime requests and diagnostics contain
 no target ASIN, target rank, hit/miss, scenario label, or evaluator behavior.
-The next B-side module is B10a Constraint-Preserving CrossEncoder Rerank.
+B10a subsequently tested and rejected Top-3 and Top-5 anchored CrossEncoder
+variants; see `docs/b10a_constraint_rerank_evidence.md`. The B9 default remains
+the retained route.

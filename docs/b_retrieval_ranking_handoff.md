@@ -21,5 +21,7 @@ workstream rather than widening B9 implicitly.
 AB1 is complete. B8 was reverted after Development-160 supplied zero rejection
 turns. B9 is retained at `7f520ba`: only Browsing changed, all four folds were
 non-regressing, and its material startup/memory cost is recorded in
-`b9_conditional_dense_evidence.md`. After B9 dual review, the current module is
-B10a Constraint-Preserving CrossEncoder Rerank.
+`b9_conditional_dense_evidence.md`. B10a Top-3 and Top-5 candidates were then
+rejected for MRR and TechnicalScore regressions; the B9 default remains exact.
+See `b10a_constraint_rerank_evidence.md`. B10b is not justified without new R0
+evidence; B11/B12 remain prerequisite-gated.
