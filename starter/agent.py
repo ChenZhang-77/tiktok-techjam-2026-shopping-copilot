@@ -13,6 +13,7 @@ from starter.core.context_engine import (
     extract_constraints,
 )
 from starter.core.diagnostics import state_diagnostics
+from starter.core.decision_evidence import build_decision_evidence
 from starter.core.planner import Strategy, StrategyConfig, plan_strategy
 from starter.core.query_builder import build_distilled_query
 from starter.core.response_guard import guard_response
@@ -55,7 +56,7 @@ class Agent:
         turn: int,
         top_k: int,
         strategy: Strategy | None = None,
-    ) -> tuple[dict, dict[str, str]]:
+    ) -> tuple[dict, RetrievalResult]:
         if session_id not in self._sessions:
             raise RuntimeError("reset must be called before respond")
         if strategy is None:
@@ -87,11 +88,7 @@ class Agent:
             },
             "usage": {"prompt_tokens": 0, "completion_tokens": 0},
         }
-        evidence = {
-            candidate.parent_asin: candidate.evidence_text or ""
-            for candidate in result.candidates[:top_k]
-        }
-        return response, evidence
+        return response, result
 
     def respond(
         self,
@@ -133,9 +130,11 @@ class Agent:
             query_text = build_distilled_query(user_message, state.active_constraints)
             state.previous_distilled_query = query_text
         try:
-            response, candidate_evidence = self._respond_impl(session_id, query_text, turn, top_k, strategy)
+            response, retrieval_result = self._respond_impl(
+                session_id, query_text, turn, top_k, strategy
+            )
         except Exception:
-            candidate_evidence = {}
+            retrieval_result = None
             response = {
                 "message": "Here are the closest matches I found.",
                 "ask_attribute": None,
@@ -154,18 +153,34 @@ class Agent:
                 "usage": {"prompt_tokens": 0, "completion_tokens": 0},
             }
         if state is not None:
+            decision_evidence = build_decision_evidence(
+                retrieval_result,
+                state=state,
+                turn=turn,
+                top_k=top_k,
+            )
             diagnostics = response.get("diagnostics") if isinstance(response, dict) else {}
             if not isinstance(diagnostics, dict):
                 diagnostics = {}
+            diagnostics["decision_evidence"] = decision_evidence.to_diagnostics()
             diagnostics.update(state_diagnostics(state))
             response["diagnostics"] = diagnostics
             raw_recommendations = response.get("recommendations") if isinstance(response, dict) else []
+            candidate_evidence = {
+                candidate.parent_asin: candidate.evidence_text or ""
+                for candidate in (retrieval_result.candidates[:top_k] if retrieval_result else [])
+            }
             candidate_texts = [
                 candidate_evidence.get(str(item.get("parent_asin", "")).strip(), "")
                 for item in raw_recommendations
                 if isinstance(item, dict)
             ]
-            ask_attribute, question = choose_clarification(state, turn=turn, candidate_texts=candidate_texts)
+            ask_attribute, question = choose_clarification(
+                state,
+                turn=turn,
+                candidate_texts=candidate_texts,
+                decision_evidence=decision_evidence,
+            )
             if ask_attribute:
                 response["ask_attribute"] = ask_attribute
                 base_message = response.get("message") if isinstance(response, dict) else ""

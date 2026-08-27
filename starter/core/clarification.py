@@ -2,10 +2,14 @@ from __future__ import annotations
 
 import re
 from collections import Counter
+from typing import TYPE_CHECKING
 
 from starter.core.context_engine import CATEGORY_TERMS, COLORS, MATERIALS, STYLE_TERMS, USE_CASES
 from starter.core.response_guard import ALLOWED_ASK_ATTRIBUTES
 from starter.core.state import SessionState
+
+if TYPE_CHECKING:
+    from starter.core.decision_evidence import DecisionEvidence
 
 
 QUESTION_TEXT = {
@@ -95,7 +99,11 @@ def choose_clarification(
     *,
     turn: int,
     candidate_texts: list[str] | None = None,
+    decision_evidence: DecisionEvidence | None = None,
 ) -> tuple[str | None, str]:
+    # AB0 makes the complete summary available here. A9 will decide whether to
+    # consume it; AB0 deliberately preserves the existing ask policy.
+    _ = decision_evidence
     if turn >= 10:
         return None, ""
 

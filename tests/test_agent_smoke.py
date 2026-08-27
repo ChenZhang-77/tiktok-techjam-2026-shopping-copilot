@@ -90,6 +90,36 @@ def _write_catalog(path: Path) -> None:
 
 
 class AgentSmokeTest(unittest.TestCase):
+    def test_full_candidate_pool_reaches_decision_evidence_without_public_raw_evidence(self) -> None:
+        retriever = _RecordingRetriever()
+
+        def retrieve(request: RetrievalRequest) -> RetrievalResult:
+            retriever.requests.append(request)
+            return RetrievalResult(
+                candidates=[
+                    Candidate("A", evidence_text="leather shoes"),
+                    Candidate("B", evidence_text="leather shoes"),
+                    Candidate("C", evidence_text="cotton shoes"),
+                ],
+                diagnostics=RetrievalDiagnostics(route="fixture", candidate_count=3),
+            )
+
+        retriever.catalog_ids = frozenset({"A", "B", "C"})
+        retriever.fallback_ids = ("A", "B", "C")
+        retriever.retrieve = retrieve
+        agent = Agent(retriever=retriever)
+        agent.reset("decision-evidence", {})
+
+        response = agent.respond("decision-evidence", "Show me product ideas", 1, 2)
+
+        evidence = response["diagnostics"]["decision_evidence"]
+        self.assertEqual(len(response["recommendations"]), 2)
+        self.assertEqual(evidence["pool_size"], 3)
+        self.assertEqual(evidence["evidence_candidate_count"], 3)
+        self.assertIn("material", evidence["attribute_partition_scores"])
+        self.assertNotIn("candidate_ids", evidence)
+        self.assertNotIn("candidate_texts", evidence)
+
     def test_buying_intent_persists_after_a_no_preference_reply(self) -> None:
         retriever = _RecordingRetriever()
         agent = Agent(retriever=retriever)
