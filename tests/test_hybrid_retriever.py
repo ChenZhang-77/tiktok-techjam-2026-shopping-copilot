@@ -147,6 +147,19 @@ class HybridRetrieverTest(unittest.TestCase):
                     }[intent]
 
                     self.assertEqual(actual, golden)
+                    self.assertEqual(
+                        result.diagnostics.requested_route_weights,
+                        {
+                            "lexical": request.strategy.lexical_weight,
+                            "structured": request.strategy.structured_weight,
+                            "dense": request.strategy.semantic_weight,
+                        },
+                    )
+                    self.assertEqual(
+                        result.diagnostics.executed_routes,
+                        ["lexical", "structured"],
+                    )
+                    self.assertIsNone(result.diagnostics.fallback_route)
 
     def test_field_weight_order_matches_the_embedded_bm25_baseline(self) -> None:
         rows = [

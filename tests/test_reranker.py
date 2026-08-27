@@ -55,6 +55,12 @@ class FakeRetriever:
                 latency_ms=2.0,
                 notes=["base_ready"],
                 stage_latencies_ms={"lexical": 1.0, "structured_filter": 1.0},
+                requested_route_weights={
+                    "lexical": 0.72,
+                    "structured": 0.28,
+                    "dense": 0.0,
+                },
+                executed_routes=["lexical", "structured"],
             ),
         )
 
@@ -109,6 +115,11 @@ class RerankingRetrieverTest(unittest.TestCase):
         self.assertEqual(backend.calls, [("comfortable trail shoes", ["evidence A", "evidence B"])])
         self.assertEqual([item.parent_asin for item in result.candidates], ["B", "A", "C", "D"])
         self.assertEqual(result.diagnostics.route, "semantic_rerank")
+        self.assertEqual(
+            result.diagnostics.executed_routes,
+            ["lexical", "structured", "semantic_rerank"],
+        )
+        self.assertIsNone(result.diagnostics.fallback_route)
         self.assertEqual(result.diagnostics.rerank_pool_size, 2)
         self.assertEqual(result.candidates[0].diagnostics["pre_rerank_rank"], 2)
         self.assertEqual(result.candidates[0].diagnostics["semantic_rerank_rank"], 1)
@@ -129,6 +140,11 @@ class RerankingRetrieverTest(unittest.TestCase):
         self.assertEqual(result.diagnostics.route, "structured")
         self.assertTrue(result.diagnostics.fallback_used)
         self.assertEqual(result.diagnostics.route_failures, {"semantic_rerank": "reranker_error"})
+        self.assertEqual(
+            result.diagnostics.executed_routes,
+            ["lexical", "structured"],
+        )
+        self.assertEqual(result.diagnostics.fallback_route, "structured")
         self.assertIn("semantic_rerank_failed:reranker_error", result.diagnostics.notes)
 
     def test_invalid_scores_use_the_same_deterministic_fallback(self) -> None:

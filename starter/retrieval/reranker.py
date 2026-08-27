@@ -259,6 +259,11 @@ class RerankingRetriever:
                 **base.diagnostics.ranking_pool_sizes,
                 "semantic_rerank": pool_size,
             },
+            executed_routes=[
+                *base.diagnostics.executed_routes,
+                "semantic_rerank",
+            ],
+            fallback_route=None,
         )
         return RetrievalResult(
             candidates=[*reranked, *base.candidates[pool_size:]],
@@ -302,6 +307,7 @@ class RerankingRetriever:
                 **base.diagnostics.ranking_pool_sizes,
                 "semantic_rerank": pool_size,
             },
+            fallback_route=base.diagnostics.route,
         )
         return RetrievalResult(candidates=base.candidates, diagnostics=diagnostics)
 

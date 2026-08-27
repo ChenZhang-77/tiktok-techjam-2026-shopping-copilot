@@ -229,6 +229,12 @@ class DenseFallbackTest(unittest.TestCase):
             self.assertEqual(result.candidates[0].diagnostics["dense_rank"], 1)
             self.assertFalse(result.diagnostics.fallback_used)
             self.assertEqual(result.diagnostics.route, "dense")
+            self.assertEqual(
+                result.diagnostics.requested_route_weights,
+                {"lexical": 0.72, "structured": 0.28, "dense": 0.0},
+            )
+            self.assertEqual(result.diagnostics.executed_routes, ["dense"])
+            self.assertIsNone(result.diagnostics.fallback_route)
             snapshot = retriever.configuration_snapshot()
             self.assertEqual(snapshot["cache_status"], "compatible")
             self.assertTrue(snapshot["cache_available"])
@@ -254,6 +260,15 @@ class DenseFallbackTest(unittest.TestCase):
             self.assertTrue(first.diagnostics.fallback_used)
             self.assertIn("dense_cache_missing", first.diagnostics.notes)
             self.assertEqual(first.diagnostics.route, "structured")
+            self.assertEqual(
+                first.diagnostics.route_failures,
+                {"dense": "dense_cache_missing"},
+            )
+            self.assertEqual(
+                first.diagnostics.executed_routes,
+                ["lexical", "structured"],
+            )
+            self.assertEqual(first.diagnostics.fallback_route, "structured")
             snapshot = retriever.configuration_snapshot()
             self.assertEqual(snapshot["cache_status"], "dense_cache_missing")
             self.assertFalse(snapshot["cache_available"])

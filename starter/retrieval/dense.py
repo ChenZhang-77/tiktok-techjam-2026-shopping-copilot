@@ -12,6 +12,7 @@ from starter.contracts import (
     RetrievalDiagnostics,
     RetrievalRequest,
     RetrievalResult,
+    requested_route_weights,
     validate_retrieval_request_object,
 )
 from starter.retrieval.hybrid import HybridRetriever
@@ -211,6 +212,10 @@ class DenseRetriever:
                     stage_latencies_ms={"dense": round(latency_ms, 6)},
                     cache_state={"dense": "compatible"},
                     ranking_pool_sizes={"dense": len(candidates)},
+                    requested_route_weights=requested_route_weights(
+                        request.strategy
+                    ),
+                    executed_routes=["dense"],
                 ),
             )
         return self._fallback_result(
@@ -256,5 +261,7 @@ class DenseRetriever:
             fallback_used=True,
             notes=[*result.diagnostics.notes, reason],
             cache_state={**result.diagnostics.cache_state, "dense": reason},
+            route_failures={**result.diagnostics.route_failures, "dense": reason},
+            fallback_route=result.diagnostics.route,
         )
         return RetrievalResult(candidates=result.candidates, diagnostics=diagnostics)

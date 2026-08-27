@@ -22,6 +22,16 @@ FORBIDDEN_RETRIEVAL_REQUEST_KEYS = {
 MAX_RETRIEVAL_DEPTH = 500
 
 
+def requested_route_weights(strategy: Strategy) -> dict[str, float]:
+    """Map A-side Strategy weights to the shared B-side Route vocabulary."""
+
+    return {
+        "lexical": float(strategy.lexical_weight),
+        "structured": float(strategy.structured_weight),
+        "dense": float(strategy.semantic_weight),
+    }
+
+
 def _find_forbidden_runtime_keys(value: object) -> set[str]:
     found: set[str] = set()
     if isinstance(value, dict):
@@ -102,6 +112,35 @@ class RetrievalDiagnostics:
     rerank_pool_size: int = 0
     cache_state: dict[str, str] = field(default_factory=dict)
     ranking_pool_sizes: dict[str, int] = field(default_factory=dict)
+    requested_route_weights: dict[str, float] = field(default_factory=dict)
+    executed_routes: list[str] = field(default_factory=list)
+    fallback_route: str | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.requested_route_weights, dict):
+            raise ValueError("requested_route_weights must be an object")
+        for route, weight in self.requested_route_weights.items():
+            if not isinstance(route, str) or not route:
+                raise ValueError("requested route names must be non-empty strings")
+            if (
+                isinstance(weight, bool)
+                or not isinstance(weight, (int, float))
+                or not math.isfinite(weight)
+                or weight < 0
+            ):
+                raise ValueError(
+                    "requested route weights must be finite non-negative numbers"
+                )
+        if not isinstance(self.executed_routes, list) or not all(
+            isinstance(route, str) and route for route in self.executed_routes
+        ):
+            raise ValueError("executed_routes must be a list of non-empty strings")
+        if len(self.executed_routes) != len(set(self.executed_routes)):
+            raise ValueError("executed_routes must not contain duplicates")
+        if self.fallback_route is not None and (
+            not isinstance(self.fallback_route, str) or not self.fallback_route
+        ):
+            raise ValueError("fallback_route must be null or a non-empty string")
 
     def to_dict(self) -> dict:
         return asdict(self)

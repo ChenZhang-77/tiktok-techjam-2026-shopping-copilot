@@ -206,6 +206,16 @@ class AgentSmokeTest(unittest.TestCase):
         self.assertEqual(buying_retrieval["ranking_pool_sizes"]["post_structured_filter"], 50)
         self.assertEqual(browsing_retrieval["route_candidate_counts"]["lexical"], 100)
         self.assertEqual(browsing_retrieval["route_candidate_counts"]["structured"], 100)
+        self.assertEqual(
+            browsing_retrieval["requested_route_weights"],
+            {"lexical": 0.62, "structured": 0.20, "dense": 0.18},
+        )
+        self.assertEqual(
+            browsing_retrieval["executed_routes"],
+            ["lexical", "structured"],
+        )
+        self.assertNotIn("dense", browsing_retrieval["executed_routes"])
+        self.assertIsNone(browsing_retrieval["fallback_route"])
 
     def test_candidate_pool_evidence_reaches_agent_clarification(self) -> None:
         def make_agent(*, include_evidence: bool) -> Agent:

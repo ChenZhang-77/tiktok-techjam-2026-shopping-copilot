@@ -12,6 +12,7 @@ from starter.contracts import (
     RetrievalDiagnostics,
     RetrievalRequest,
     RetrievalResult,
+    requested_route_weights,
     validate_retrieval_request_object,
 )
 from starter.retrieval.dense import DenseConfig, DenseRetriever
@@ -280,6 +281,24 @@ class FusionRetriever:
                     **{f"{route}_route": len(ids) for route, ids in route_ids.items()},
                     "fusion": len(candidates),
                 },
+                requested_route_weights=requested_route_weights(request.strategy),
+                executed_routes=(
+                    ["catalog_fallback"]
+                    if catalog_fallback_used
+                    else [
+                        *(
+                            route
+                            for route in active_routes
+                            if route in batch.results
+                        ),
+                        "fusion",
+                    ]
+                ),
+                fallback_route=(
+                    "catalog_fallback"
+                    if catalog_fallback_used
+                    else "fusion" if failures else None
+                ),
             ),
         )
 
