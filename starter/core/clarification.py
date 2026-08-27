@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import re
 from collections import Counter
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 from starter.core.context_engine import CATEGORY_TERMS, COLORS, MATERIALS, STYLE_TERMS, USE_CASES
 from starter.core.response_guard import ALLOWED_ASK_ATTRIBUTES
@@ -11,39 +10,6 @@ from starter.core.state import SessionState
 
 if TYPE_CHECKING:
     from starter.core.decision_evidence import DecisionEvidence
-
-
-QuestionSelectionReason = Literal[
-    "final_turn",
-    "no_available_attribute",
-    "candidate_question_value",
-    "concrete_buying_material",
-    "legacy_feature_fallback",
-    "top_k_candidate_fallback",
-    "priority_fallback",
-]
-QuestionScoreSource = Literal[
-    "decision_evidence_full_pool",
-    "recommendation_top_k",
-    "none",
-]
-
-
-@dataclass(frozen=True)
-class QuestionSelection:
-    ask_attribute: str | None
-    question: str
-    reason: QuestionSelectionReason
-    score_source: QuestionScoreSource
-    question_value: float | None
-
-    def to_diagnostics(self) -> dict:
-        return {
-            "ask_attribute": self.ask_attribute,
-            "reason": self.reason,
-            "score_source": self.score_source,
-            "question_value": self.question_value,
-        }
 
 
 QUESTION_TEXT = {
@@ -137,90 +103,6 @@ def _frontload_concrete_buying_attribute(state: SessionState, available: list[st
     return "material" if "material" in available else None
 
 
-def select_clarification(
-    state: SessionState,
-    *,
-    turn: int,
-    candidate_texts: list[str] | None = None,
-    decision_evidence: DecisionEvidence | None = None,
-) -> QuestionSelection:
-    if turn >= 10:
-        return QuestionSelection(None, "", "final_turn", "none", None)
-
-    priority = BUYING_PRIORITY if state.intent == "buying" else BROWSING_PRIORITY
-    available = _available_attributes(state, priority)
-    if not available:
-        return QuestionSelection(None, "", "no_available_attribute", "none", None)
-
-    concrete_attribute = _frontload_concrete_buying_attribute(state, available)
-    if concrete_attribute is not None:
-        return QuestionSelection(
-            concrete_attribute,
-            QUESTION_TEXT[concrete_attribute],
-            "concrete_buying_material",
-            "none",
-            None,
-        )
-
-    if "feature" in available:
-        return QuestionSelection(
-            "feature",
-            QUESTION_TEXT["feature"],
-            "legacy_feature_fallback",
-            "none",
-            None,
-        )
-
-    if (
-        decision_evidence is not None
-        and decision_evidence.source_status == "available"
-        and not decision_evidence.degraded
-        and decision_evidence.evidence_candidate_count >= 2
-    ):
-        full_pool_scores = {
-            attribute: score
-            for attribute, score in decision_evidence.attribute_partition_scores.items()
-            if attribute in available and score > 0.0
-        }
-        ranked_full_pool = sorted(
-            full_pool_scores,
-            key=lambda attribute: (-full_pool_scores[attribute], priority.index(attribute)),
-        )
-        if ranked_full_pool:
-            attribute = ranked_full_pool[0]
-            return QuestionSelection(
-                attribute,
-                QUESTION_TEXT[attribute],
-                "candidate_question_value",
-                "decision_evidence_full_pool",
-                full_pool_scores[attribute],
-            )
-
-    scores = candidate_attribute_scores(candidate_texts or [])
-    ranked = sorted(
-        [attribute for attribute in available if attribute in scores],
-        key=lambda attribute: (-scores[attribute], priority.index(attribute)),
-    )
-    if ranked:
-        attribute = ranked[0]
-        return QuestionSelection(
-            attribute,
-            QUESTION_TEXT[attribute],
-            "top_k_candidate_fallback",
-            "recommendation_top_k",
-            scores[attribute],
-        )
-
-    attribute = available[0]
-    return QuestionSelection(
-        attribute,
-        QUESTION_TEXT[attribute],
-        "priority_fallback",
-        "none",
-        None,
-    )
-
-
 def choose_clarification(
     state: SessionState,
     *,
@@ -228,12 +110,30 @@ def choose_clarification(
     candidate_texts: list[str] | None = None,
     decision_evidence: DecisionEvidence | None = None,
 ) -> tuple[str | None, str]:
-    """Compatibility wrapper for callers that only need the public question."""
+    # AB0 makes the complete summary available here. A9 will decide whether to
+    # consume it; AB0 deliberately preserves the existing ask policy.
+    _ = decision_evidence
+    if turn >= 10:
+        return None, ""
 
-    selection = select_clarification(
-        state,
-        turn=turn,
-        candidate_texts=candidate_texts,
-        decision_evidence=decision_evidence,
+    priority = BUYING_PRIORITY if state.intent == "buying" else BROWSING_PRIORITY
+    available = _available_attributes(state, priority)
+    if not available:
+        return None, ""
+
+    concrete_attribute = _frontload_concrete_buying_attribute(state, available)
+    if concrete_attribute is not None:
+        return concrete_attribute, QUESTION_TEXT[concrete_attribute]
+
+    if "feature" in available:
+        return "feature", QUESTION_TEXT["feature"]
+
+    scores = candidate_attribute_scores(candidate_texts or [])
+    ranked = sorted(
+        [attribute for attribute in available if attribute in scores],
+        key=lambda attribute: (-scores[attribute], priority.index(attribute)),
     )
-    return selection.ask_attribute, selection.question
+    if ranked:
+        return ranked[0], QUESTION_TEXT[ranked[0]]
+
+    return available[0], QUESTION_TEXT[available[0]]
