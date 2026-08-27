@@ -186,6 +186,65 @@ class ContextEngineTest(unittest.TestCase):
             & active
         )
 
+    def test_mixed_negative_list_does_not_reverse_category_polarity(self) -> None:
+        message = "Avoid black, white, and shoes."
+
+        active = {
+            (item["attribute"], item["normalized_value"])
+            for item in extract_constraints(message, 3)
+        }
+        rejected = {
+            (item["attribute"], item["normalized_value"])
+            for item in detect_rejected_constraints(message, 3)
+        }
+
+        self.assertNotIn(("category", "shoes"), active)
+        self.assertIn(("category", "shoes"), rejected)
+
+    def test_repeated_negation_markers_do_not_merge_modifier_context(self) -> None:
+        message = "Avoid black, and avoid white shoes."
+
+        active = {
+            (item["attribute"], item["normalized_value"])
+            for item in extract_constraints(message, 3)
+        }
+        rejected = {
+            (item["attribute"], item["normalized_value"])
+            for item in detect_rejected_constraints(message, 3)
+        }
+
+        self.assertIn(("category", "shoes"), active)
+        self.assertNotIn(("category", "shoes"), rejected)
+        self.assertEqual(
+            {value for attribute, value in rejected if attribute == "color"},
+            {"black", "white"},
+        )
+
+    def test_catalog_category_head_uses_original_possessive_and_hyphen_spans(self) -> None:
+        vocabulary = CatalogVocabulary.from_products([
+            {"categories": ["Women's Clothing", "Mid Calf Boots"]}
+        ])
+
+        for message, category in (
+            ("Avoid black and white women's clothing.", "women s clothing"),
+            ("Avoid black and white women’s clothing.", "women s clothing"),
+            ("Avoid black and white mid-calf boots.", "mid calf boots"),
+        ):
+            active = {
+                (item["attribute"], item["normalized_value"])
+                for item in extract_constraints(message, 3, vocabulary=vocabulary)
+            }
+            rejected = {
+                (item["attribute"], item["normalized_value"])
+                for item in detect_rejected_constraints(
+                    message,
+                    3,
+                    vocabulary=vocabulary,
+                )
+            }
+            self.assertIn(("category", category), active)
+            self.assertNotIn(("category", category), rejected)
+
     def test_rejected_brand_and_budget_share_positive_matcher_inventory(self) -> None:
         message = "Avoid brand Nike and anything under $80."
 

@@ -223,10 +223,10 @@ def _catalog_separator_is_supported(
     return separator in {"'", "’"} and right.group(0).lower() == "s"
 
 
-def _catalog_phrase_matches(
+def _catalog_phrase_spans(
     text: str,
     phrases: frozenset[str],
-) -> list[str]:
+) -> list[tuple[int, int, str]]:
     token_matches = list(TOKEN_RE.finditer(text))
     if not token_matches or not phrases:
         return []
@@ -236,7 +236,7 @@ def _catalog_phrase_matches(
         max(len(phrase.split()) for phrase in phrases),
     )
     occupied = [False] * len(token_matches)
-    matches: list[tuple[int, str]] = []
+    matches: list[tuple[int, int, int, str]] = []
     for width in range(maximum, 0, -1):
         for start in range(0, len(token_matches) - width + 1):
             end = start + width
@@ -255,9 +255,21 @@ def _catalog_phrase_matches(
             phrase = " ".join(token.group(0).lower() for token in selected)
             if phrase not in phrases:
                 continue
-            matches.append((start, phrase))
+            matches.append(
+                (start, selected[0].start(), selected[-1].end(), phrase)
+            )
             occupied[start:end] = [True] * width
-    return [phrase for _, phrase in sorted(matches)]
+    return [
+        (character_start, character_end, phrase)
+        for _, character_start, character_end, phrase in sorted(matches)
+    ]
+
+
+def _catalog_phrase_matches(
+    text: str,
+    phrases: frozenset[str],
+) -> list[str]:
+    return [phrase for _, _, phrase in _catalog_phrase_spans(text, phrases)]
 
 
 def _size_matches(text: str) -> list[str]:
@@ -270,11 +282,16 @@ def _size_matches(text: str) -> list[str]:
 
 
 def _negative_spans(text: str) -> list[tuple[int, int]]:
+    markers = list(NEGATION_MARKER_RE.finditer(text))
     spans: list[tuple[int, int]] = []
-    for marker in NEGATION_MARKER_RE.finditer(text):
+    for index, marker in enumerate(markers):
         remainder = text[marker.end():]
         boundary = CLAUSE_END_RE.search(remainder)
-        end = marker.end() + boundary.start() if boundary else len(text)
+        clause_end = marker.end() + boundary.start() if boundary else len(text)
+        next_marker_start = (
+            markers[index + 1].start() if index + 1 < len(markers) else len(text)
+        )
+        end = min(clause_end, next_marker_start)
         spans.append((marker.start(), end))
     return spans
 
@@ -426,19 +443,30 @@ def _negative_head_categories(
     text: str,
     vocabulary: CatalogVocabulary | None,
 ) -> set[str]:
-    """Keep a category head positive when a negated same-attribute list modifies it."""
+    """Keep a category positive only when a modifier directly precedes its head."""
 
-    category_values = set(_word_matches(text, CATEGORY_TERMS))
+    category_spans = [
+        (start, end, category)
+        for category in _word_matches(text, CATEGORY_TERMS)
+        for start, end in _phrase_spans(text, category)
+    ]
     if vocabulary is not None:
-        category_values.update(
-            _catalog_phrase_matches(text, vocabulary.category_terms)
+        category_spans.extend(
+            _catalog_phrase_spans(text, vocabulary.category_terms)
         )
     modifier_groups = (MATERIALS, COLORS, STYLE_TERMS, USE_CASES)
     heads: set[str] = set()
-    for category in category_values:
-        for category_start, _ in _phrase_spans(text, category):
-            prefix = text[:category_start]
-            if any(len(_word_matches(prefix, phrases)) >= 2 for phrases in modifier_groups):
+    for category_start, _, category in category_spans:
+        for phrases in modifier_groups:
+            modifier_spans = [
+                span
+                for modifier in _word_matches(text[:category_start], phrases)
+                for span in _phrase_spans(text[:category_start], modifier)
+            ]
+            if not modifier_spans:
+                continue
+            last_modifier_end = max(end for _, end in modifier_spans)
+            if re.fullmatch(r"\s+", text[last_modifier_end:category_start]):
                 heads.add(category)
                 break
     return heads
