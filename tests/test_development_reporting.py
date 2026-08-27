@@ -50,6 +50,13 @@ class _RouteDiagnosticsStubAgent(_StubAgent):
                     "route_candidate_counts": {"lexical": 10, "dense": 8},
                     "route_overlap_counts": {"lexical|dense": 4},
                     "route_failures": {"structured": "route_error"},
+                    "requested_route_weights": {
+                        "lexical": 0.6,
+                        "structured": 0.2,
+                        "dense": 0.2,
+                    },
+                    "executed_routes": ["lexical", "structured"],
+                    "fallback_route": "structured",
                     "structured_filter_applied": True,
                     "relaxed_constraints": [{"attribute": "material"}],
                     "filtered_pool_sizes": [{"before": 10, "after": 4}],
@@ -68,6 +75,23 @@ class _SubtlyInvalidStubAgent(_StubAgent):
             "recommendations": [{"parent_asin": "VALID", "score": "high"}],
             "usage": {"prompt_tokens": True, "completion_tokens": 0},
             "unexpected": "not in the response contract",
+        }
+
+
+class _LegacyRouteDiagnosticsStubAgent(_StubAgent):
+    def respond(self, session_id: str, user_message: str, turn: int, top_k: int) -> dict:
+        return {
+            "message": "ok",
+            "ask_attribute": None,
+            "recommendations": [],
+            "diagnostics": {
+                "fallback_used": False,
+                "retrieval": {
+                    "requested_route_weights": {},
+                    "executed_routes": [],
+                    "fallback_route": None,
+                },
+            },
         }
 
 
@@ -129,11 +153,35 @@ class DevelopmentReportingTest(unittest.TestCase):
         self.assertEqual(diagnostics["route_candidate_counts"]["dense"]["max"], 8)
         self.assertEqual(diagnostics["route_overlap_counts"]["lexical|dense"]["mean"], 4.0)
         self.assertEqual(diagnostics["route_failure_counts"], {"structured:route_error": 1})
+        self.assertEqual(
+            diagnostics["requested_route_counts"],
+            {"lexical": 1, "structured": 1, "dense": 1},
+        )
+        self.assertEqual(
+            diagnostics["executed_route_counts"],
+            {"lexical": 1, "structured": 1},
+        )
+        self.assertEqual(
+            diagnostics["requested_not_executed_route_counts"],
+            {"dense": 1},
+        )
+        self.assertEqual(diagnostics["fallback_route_counts"], {"structured": 1})
+        self.assertEqual(diagnostics["route_semantics_unreported_responses"], 0)
         self.assertEqual(diagnostics["structured_filter_applied_responses"], 1)
         self.assertEqual(diagnostics["relaxed_constraint_responses"], 1)
         self.assertEqual(diagnostics["filtered_pool_step_count"], 1)
         self.assertEqual(diagnostics["cache_state_counts"], {"dense:dense_cache_missing": 1})
         self.assertEqual(diagnostics["rerank_pool_size"]["mean"], 30.0)
+
+    def test_empty_legacy_route_semantics_are_reported_as_unavailable(self) -> None:
+        observer = AgentObserver(_LegacyRouteDiagnosticsStubAgent(), catalog_ids=set())
+
+        observer.respond("session", "query", 1, 10)
+
+        self.assertEqual(
+            observer.retrieval_diagnostics()["route_semantics_unreported_responses"],
+            1,
+        )
 
     def test_fusion_mode_uses_central_rrf_config_and_records_degraded_route_policy(self) -> None:
         empty_result = {"scenario_metrics": {}}

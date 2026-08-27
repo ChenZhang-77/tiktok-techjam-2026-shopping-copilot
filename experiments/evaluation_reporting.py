@@ -64,6 +64,11 @@ class AgentObserver:
         self._route_candidate_counts: dict[str, list[int]] = {}
         self._route_overlap_counts: dict[str, list[int]] = {}
         self._route_failure_counts: dict[str, int] = {}
+        self._requested_route_counts: dict[str, int] = {}
+        self._executed_route_counts: dict[str, int] = {}
+        self._requested_not_executed_route_counts: dict[str, int] = {}
+        self._fallback_route_counts: dict[str, int] = {}
+        self._route_semantics_unreported_responses = 0
         self._structured_filter_applied_responses = 0
         self._relaxed_constraint_responses = 0
         self._filtered_pool_step_count = 0
@@ -114,6 +119,49 @@ class AgentObserver:
                     if isinstance(reason, str):
                         key = f"{route}:{reason}"
                         self._route_failure_counts[key] = self._route_failure_counts.get(key, 0) + 1
+            requested_weights = retrieval.get("requested_route_weights")
+            executed_routes = retrieval.get("executed_routes")
+            if (
+                not isinstance(requested_weights, dict)
+                or not requested_weights
+                or not isinstance(executed_routes, list)
+                or not executed_routes
+            ):
+                self._route_semantics_unreported_responses += 1
+            valid_executed = {
+                route
+                for route in executed_routes
+                if isinstance(executed_routes, list)
+                and isinstance(route, str)
+                and route
+            } if isinstance(executed_routes, list) else set()
+            for route in valid_executed:
+                self._executed_route_counts[route] = (
+                    self._executed_route_counts.get(route, 0) + 1
+                )
+            if isinstance(requested_weights, dict):
+                for route, weight in requested_weights.items():
+                    if (
+                        isinstance(route, str)
+                        and route
+                        and isinstance(weight, (int, float))
+                        and not isinstance(weight, bool)
+                        and math.isfinite(weight)
+                        and weight > 0
+                    ):
+                        self._requested_route_counts[route] = (
+                            self._requested_route_counts.get(route, 0) + 1
+                        )
+                        if route not in valid_executed:
+                            self._requested_not_executed_route_counts[route] = (
+                                self._requested_not_executed_route_counts.get(route, 0)
+                                + 1
+                            )
+            fallback_route = retrieval.get("fallback_route")
+            if isinstance(fallback_route, str) and fallback_route:
+                self._fallback_route_counts[fallback_route] = (
+                    self._fallback_route_counts.get(fallback_route, 0) + 1
+                )
             if retrieval.get("structured_filter_applied") is True:
                 self._structured_filter_applied_responses += 1
             relaxed = retrieval.get("relaxed_constraints")
@@ -220,6 +268,15 @@ class AgentObserver:
                 for pair, values in self._route_overlap_counts.items()
             },
             "route_failure_counts": dict(self._route_failure_counts),
+            "requested_route_counts": dict(self._requested_route_counts),
+            "executed_route_counts": dict(self._executed_route_counts),
+            "requested_not_executed_route_counts": dict(
+                self._requested_not_executed_route_counts
+            ),
+            "fallback_route_counts": dict(self._fallback_route_counts),
+            "route_semantics_unreported_responses": (
+                self._route_semantics_unreported_responses
+            ),
             "structured_filter_applied_responses": self._structured_filter_applied_responses,
             "relaxed_constraint_responses": self._relaxed_constraint_responses,
             "filtered_pool_step_count": self._filtered_pool_step_count,
