@@ -17,8 +17,7 @@ verified checkpoint recorded in `current_status.md` passed 148 tests. Do not
 repeat the obsolete “B not integrated” or “40 tests” status from the historical
 handoff.
 
-Current blocking route: R0 -> A8 persistent `IntentAssessment` -> AB0
-`DecisionEvidence` availability -> A9 should-ask -> A10a Candidate question
-value -> A10b internal `QueryPlan`.
-Do not start A9 using only the current Top-K candidate text, and do not change
-`RetrievalRequest` for query components without an A10c/AB1 coordination step.
+Current blocker: R0. Follow `optimization_roadmap.md` for the complete order.
+Two important later guards: do not start A9 using only the current Top-K
+candidate text, and do not change `RetrievalRequest` for query components
+without the roadmap's coordinated contract step.

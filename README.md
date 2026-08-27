@@ -260,24 +260,11 @@ pre-rerank order.
 
 ## Current Optimization Route
 
-The next technical route is:
-
-1. classify Development-160 failures offline with the canonical causal
-   taxonomy in `AGENTS.md`,
-2. persist an explainable A-owned `IntentAssessment`,
-3. complete AB0 by proving the source and fallback of every proposed
-   `DecisionEvidence` signal,
-4. add the should-ask gate using only retained AB0 evidence,
-5. rank questions by Candidate evidence without changing query construction,
-6. build an A-internal `QueryPlan` while keeping the current single-query
-   contract, then harden extraction only for R0-supported failures,
-7. freeze any shared fields and actual route semantics in AB1,
-8. test rejected-constraint ranking, then a Browsing-first conditional dense
-   route and constraint-preserving semantic rerank,
-9. freeze the simplest robust development configuration and complete delivery.
-
-See [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md) and the A/B
-workstream documents for experiment gates and ownership.
+The current blocker is R0: classify Development-160 failures offline before
+changing runtime behavior. `AGENTS.md` owns the taxonomy and leakage boundary;
+[`docs/optimization_roadmap.md`](docs/optimization_roadmap.md) owns the complete
+dependency order. The A/B workstream documents provide experiment inputs,
+tests, and keep/revert gates without overriding that order.
 
 ## Reliability and Cost
 

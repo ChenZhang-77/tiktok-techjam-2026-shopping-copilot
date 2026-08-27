@@ -71,12 +71,14 @@ R0 failure taxonomy
                   -> A10b internal QueryPlan
                       -> A11 extraction/scope hardening when R0 supports it
                           -> AB1 shared contract and route-semantics freeze
-                              -> B8 rejected-constraint ranking
-                              -> B9 Browsing-first conditional dense retrieval
-                              -> B10 constraint-preserving semantic rerank
-                                  -> B11/B12 only when diagnosed
-                                      -> R4 integrated freeze
-                                          -> R5 delivery and rehearsal
+                              -> A12 profile disposition
+                                  -> B8 rejected-constraint ranking
+                                  -> B9 Browsing-first conditional dense retrieval
+                                  -> B10a constraint-preserving CrossEncoder rerank
+                                  -> B10b LLM semantic ranking only as a distinct experiment
+                                      -> B11/B12 only when diagnosed
+                                          -> R4 integrated freeze
+                                              -> R5 delivery and rehearsal
 ```
 
 B9 is blocked by A8 and AB1 because conditional routing cannot be evaluated
@@ -221,6 +223,10 @@ Only after A8-A11 and AB1 stabilize: test a very small profile prior in vague
 Browsing states. Explicit current intent always wins. Keep
 `profile_weight=0.0` when the ablation is not stable.
 
+A12 is a required disposition before R4: either run the time-boxed ablation or
+record that profile value remains unproven and deferred. A skipped or rejected
+ablation leaves the Track 4 long-term-profile gap open.
+
 ## R2 - Shared Evidence and Contract Loop
 
 ### AB1 - Shared contract and active-route semantics freeze
@@ -280,7 +286,7 @@ Candidates:
 - enable only when lexical/structured evidence is ambiguous,
 - preserve the deterministic structured fallback.
 
-### B10 - Constraint-preserving semantic rerank
+### B10a - Constraint-preserving CrossEncoder rerank
 
 Candidates:
 
@@ -289,6 +295,18 @@ Candidates:
 - blend normalized semantic and constraint scores,
 - prevent a semantic score from promoting a hard-constraint violation,
 - fall back to the exact pre-rerank order.
+
+Retaining a CrossEncoder does not satisfy or close the official LLM Semantic
+Ranking pillar. It remains a measured learned reranker with its exact model,
+cost, latency, and fallback disclosed.
+
+### B10b - LLM semantic ranking
+
+Treat an actual LLM ranker as a separate experiment with one primary behavior,
+a bounded Candidate Pool, token/cost accounting, timeout, deterministic
+pre-rank fallback, and the same constraint-preservation rules. Run it only when
+time and the competition environment permit a reproducible path. Only a
+retained actual LLM route may close the LLM-ranking gap.
 
 If no dense or semantic route survives the gate, record the measured negative
 result and the remaining literal Track 4 gap. Do not describe implementation or
@@ -346,9 +364,9 @@ Required outcomes:
 
 ### If at least two development days remain
 
-Execute R0, A8, AB0, A9, A10a, A10b/A11 as supported, AB1, then the single
-best R0-supported B experiment. Stop behavior work early enough to complete R4
-and R5.
+Execute R0, A8, AB0, A9, A10a, A10b/A11 as supported, AB1, make the A12
+profile disposition, then run the single best R0-supported B experiment. Stop
+behavior work early enough to complete R4 and R5.
 
 ### If submission is imminent
 

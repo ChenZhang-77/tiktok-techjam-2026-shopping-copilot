@@ -171,11 +171,9 @@ Development-160 failures using the canonical causal taxonomy in `AGENTS.md`.
 Offline diagnosis may use the development target to distinguish Retrieval
 Recall from Ranking / Filtering; runtime code and diagnostics may not.
 
-The behavior sequence is R0, A8 persistent `IntentAssessment`, AB0
-`DecisionEvidence` availability, A9 should-ask, A10a candidate question value,
-A10b internal `QueryPlan`/A11 as diagnosed, and AB1 contract/route freeze before
-new B-side work. Do not start A9 from the current Top-K text evidence alone, and
-do not start B9 against unstable intent or route semantics.
+The complete dependency order lives only in `docs/optimization_roadmap.md`.
+Immediate blockers to remember: A9 cannot start from the current Top-K text
+evidence alone, and B9 cannot start against unstable intent or route semantics.
 
 If submission is imminent, skip new behavior work and execute the delivery
 track in `docs/demo_and_submission_plan.md`.

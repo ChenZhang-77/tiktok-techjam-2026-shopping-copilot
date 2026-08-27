@@ -60,11 +60,8 @@ schema change with the A side and add compatibility tests first.
 ## Diagnosed bottlenecks
 
 The next B-side work is not “add more models.” R0 uses the canonical causal
-taxonomy in `AGENTS.md`: Extraction, State / Override, Intent / Strategy
-Routing, Query Construction, Question Policy, Retrieval Recall, Ranking /
-Filtering, and Response / Contract. Evaluator/timing anomalies are separate
-`evaluation_validity` flags. B changes behavior only for a diagnosed B-owned
-class.
+taxonomy and separate evaluation-validity flag defined in `AGENTS.md`. B changes
+behavior only for a diagnosed B-owned class.
 
 1. Current reports do not give a complete per-session miss taxonomy.
 2. Rejected constraints are represented in dialogue state but are not yet a
@@ -78,24 +75,22 @@ class.
 
 ## Dependency order
 
+The authoritative whole-project order is `../optimization_roadmap.md`. B-side
+runtime work starts only after its declared R0/A/AB blockers are complete. The
+B-local order is:
+
 ```text
-R0 failure taxonomy
-  -> A8 persistent IntentAssessment
-  -> AB0 DecisionEvidence availability
-  -> A9 should-ask gate
-  -> A10a candidate question value
-  -> A10b internal QueryPlan / A11 diagnosed extraction work
-  -> AB1 shared contract and route-semantics freeze
-  -> B8 rejected-constraint ranking
+B8 rejected-constraint ranking
   -> B9 Browsing-first conditional dense route
-  -> B10 constraint-preserving semantic rerank
+  -> B10a constraint-preserving CrossEncoder rerank
+  -> B10b LLM semantic ranking only as a distinct experiment
   -> B11 lexical recall refinement, only if supported
   -> B12 adaptive candidate depth, only if supported
 ```
 
-Do not begin B8-B12 while A9 lacks real DecisionEvidence or while A-side intent
-and shared route semantics are unstable. B may still contribute to R0, AB0, and
-AB1 within its ownership.
+Do not begin B8-B12 while the roadmap's current blocker is unresolved or while
+A-side intent and shared route semantics are unstable. B may still contribute
+to R0, AB0, and AB1 within its ownership.
 
 ## AB0 and AB1 obligations for B
 
@@ -161,7 +156,7 @@ Intent Override materially worse.
 If no dense route passes, record the negative result and the remaining literal
 Track 4 coverage gap. Do not call an implemented-but-disabled route active.
 
-## B10 — Constraint-preserving rerank
+## B10a — Constraint-preserving CrossEncoder rerank
 
 Hypothesis: semantic or learned scoring may improve ambiguous lower-ranked
 candidates while the best structured matches should remain protected.
@@ -179,6 +174,17 @@ First safe experiment:
 Top 3 and ranks 4–30 are experiment parameters, not final truths. Keep only if
 MRR rises without a material HitRate@10 loss and the gain is distributed across
 folds and sessions.
+
+Retaining this CrossEncoder does not close the official LLM Semantic Ranking
+gap. Report it as a learned reranker with its exact model and measured cost.
+
+## B10b — LLM semantic ranking
+
+Run an actual LLM ranker only as a separate, reproducible experiment after
+B10a or R0 evidence justifies it. Bound the Candidate Pool, record token/cost
+and latency, enforce timeout and deterministic pre-rank fallback, and preserve
+hard constraints. Only a retained actual LLM route may be described as closing
+the LLM-ranking gap.
 
 ## B11 — Lexical recall refinement
 

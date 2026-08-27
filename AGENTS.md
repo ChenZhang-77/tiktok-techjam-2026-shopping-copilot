@@ -205,14 +205,15 @@ Developer A may send:
 - rejected constraints,
 - asked attributes.
 
-The current contract sends one distilled `query` string. Query components may
-exist in A10b as an A-owned internal `QueryPlan`, but they do not cross the seam
-unless an A/B-coordinated A10c experiment proves that B must consume them
+The current contract sends one distilled `query` string. Structured query
+components may remain an A-owned internal plan, but they do not cross the seam
+unless an A/B-coordinated experiment proves that B must consume them
 independently.
 
-Before A9, complete AB0: define a compact, non-label `DecisionEvidence` input
-for the Control Plane. Prefer deriving its first version in A from the existing
-full `RetrievalResult` plus prior returned Candidate IDs. A field belongs in
+Before implementing a should-ask policy, document the source, owner, lifecycle,
+calibration, and missing-data behavior of every Candidate signal it consumes.
+Prefer deriving A-side decision evidence from the existing full
+`RetrievalResult` and persisted state. A field belongs in
 `RetrievalDiagnostics` only when B must compute it or its meaning must be shared.
 
 Developer A must not send evaluator-only labels. Developer B must not require a
@@ -243,7 +244,8 @@ Owns:
 - response guard and `starter/agent.py` orchestration,
 - Control Plane diagnostics and tests.
 
-Developer A also owns `IntentAssessment` lifecycle and the should-ask decision.
+Developer A also owns the cross-turn intent-assessment lifecycle and the
+should-ask decision.
 Developer B may consume a coordinated Strategy/gate, but does not infer dialogue
 intent from evaluator labels or replace A's confidence policy.
 
@@ -267,9 +269,9 @@ clarification policy, response guard, or `starter/agent.py` orchestration.
 
 Neither side changes shared contract or route-weight semantics alone.
 
-`DecisionEvidence` is an A-side decision model, not a second retrieval stack.
-B owns the meaning of any retrieval-produced score, coverage, partition, route,
-or fallback field used to populate it.
+An A-side decision-evidence adapter is not a second retrieval stack. B owns the
+meaning of any retrieval-produced score, coverage, partition, route, or fallback
+field used to populate it.
 
 ## 9. State and Dialogue Rules
 
@@ -287,8 +289,8 @@ State must preserve:
 - override events,
 - `user_profile` as an optional weak prior only.
 
-Before A8 implementation, freeze `IntentAssessment` semantics: intent,
-confidence, observed evidence, source turn, and transition reason. Because the
+Before implementing cross-turn intent confidence, freeze its intent, confidence,
+observed-evidence, source-turn, and transition-reason semantics. Because the
 assessment affects later turns, it must either be persisted directly or be
 deterministically derived from persisted evidence; a current-turn-only score is
 not sufficient. Do not expose evaluator-derived confidence.
@@ -356,9 +358,9 @@ Use the canonical R0 taxonomy from Section 5. Do not introduce local synonyms
 such as `query`, `dialogue`, or `timing failure` without mapping them to the
 canonical class or the separate evaluation-validity flag.
 
-AB0 is a blocker, not an implementation shortcut: document the source,
-lifecycle, owner, calibration, and fallback of every signal A9 will use before
-writing the should-ask rule.
+Evidence availability is a blocker, not an implementation shortcut: verify each
+should-ask signal before writing the policy. The current experiment IDs and
+dependency order belong in `docs/optimization_roadmap.md`.
 
 Run blockers-first according to `docs/optimization_roadmap.md`. Do not combine
 several speculative changes and attempt to explain the aggregate later.

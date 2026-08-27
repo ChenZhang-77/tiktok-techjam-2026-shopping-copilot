@@ -50,24 +50,6 @@ Non-label operational evidence about route availability, pool sizes, filtering,
 fallbacks, latency, and candidate overlap.
 _Avoid_: evaluator diagnostics, target data
 
-**Intent Assessment**:
-The A-owned, cross-turn interpretation of current intent, its bounded confidence
-or ordinal stability, conversation-derived evidence, source turn, and transition
-reason. It is persisted or deterministically derived from persisted evidence.
-_Avoid_: current-utterance label, probability of target hit
-
-**Decision Evidence**:
-A compact A-side view of non-label Candidate and state evidence available at the
-should-ask decision point. Every field has a declared producer, meaning,
-lifecycle, and missing-data fallback.
-_Avoid_: Top-K text alone, evaluator diagnostics
-
-**Query Plan**:
-An A-owned structured trace of exact/category, active hard/soft, semantic/use-case,
-and rejected/overridden evidence. In A10b it compiles to the existing single
-`RetrievalRequest.query` string and does not cross the A/B seam.
-_Avoid_: a shared contract change by default, full-history concatenation
-
 **Over-Generality**:
 A state in which the current intent leaves too many materially different
 candidate interpretations for reliable ranking.

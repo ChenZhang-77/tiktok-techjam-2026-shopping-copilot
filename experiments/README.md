@@ -70,37 +70,10 @@ Recommended note format:
 
 The original B1-B7 build sequence is complete. Do not restart it or assume that
 implemented experimental routes should be enabled. Use the canonical R0
-taxonomy from `../AGENTS.md`, with the earliest causal stage as primary:
-
-```text
-Extraction -> State / Override -> Intent / Strategy Routing
--> Query Construction -> Question Policy -> Retrieval Recall
--> Ranking / Filtering -> Response / Contract
-```
-
-Record evaluator/timing anomalies separately as `evaluation_validity` flags.
-The current optimization sequence is:
-
-1. `r0-failure-taxonomy`: classify Development-160 failures offline without
-   changing runtime behavior.
-2. `a8-intent-assessment`: persist intent evidence, confidence, and transition
-   reasons without mixing in extraction/scope work.
-3. `ab0-decision-evidence`: prove the source, owner, lifecycle, and fallback of
-   every proposed A9 input; keep ask behavior unchanged.
-4. `a9-should-ask`: improve the ask-or-retrieve decision using only retained
-   AB0 signals.
-5. `a10a-question-value`: rank candidate questions without changing query
-   construction.
-6. `a10b-query-plan`: make A-side query construction state-aware and auditable
-   while preserving the existing single query contract.
-7. `a11-extraction-scope`: address only extraction failures demonstrated by R0.
-8. `ab1-contract-freeze`: freeze any required shared fields and actual route
-   semantics before B work.
-9. `b8-rejected-constraints`: test confidence-gated negative evidence.
-10. `b9-browsing-dense`: test a guarded Browsing-first dense route.
-11. `b10-protected-rerank`: protect strong structured matches while reranking a
-   bounded tail.
-
-Run lexical recall or adaptive-depth work only if the R0 taxonomy supports it.
-See `../docs/optimization_roadmap.md` and the A/B workstream documents for
-hypotheses, dependencies, and keep/revert gates.
+taxonomy from `../AGENTS.md`, with the earliest causal stage as primary. Record
+evaluator/timing anomalies separately as `evaluation_validity` flags.
+The current experiment is `r0-failure-taxonomy`; it changes no runtime behavior.
+The authoritative dependency order is maintained only in
+`../docs/optimization_roadmap.md`. Use the selected A/B workstream for its
+hypothesis, inputs, tests, and keep/revert gate. Do not copy the full sequence
+into an experiment note.

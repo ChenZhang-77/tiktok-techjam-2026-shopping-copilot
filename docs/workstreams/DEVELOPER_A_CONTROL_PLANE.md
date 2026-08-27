@@ -170,19 +170,21 @@ decision input named below.
 
 ## Blocking Order
 
+The authoritative whole-project order is `../optimization_roadmap.md`. Within
+the A workstream, the current local blockers are:
+
 ```text
-R0 failure taxonomy
-  -> A8 persistent IntentAssessment
-      -> AB0 DecisionEvidence availability
-          -> A9 should-ask gate
-              -> A10a candidate question value
-                  -> A10b internal QueryPlan
-                      -> A11 extraction/scope hardening when R0 supports it
-                          -> AB1 shared contract freeze
-                              -> A12 profile ablation
+A8 persistent IntentAssessment
+  -> AB0 DecisionEvidence availability
+      -> A9 should-ask gate
+          -> A10a candidate question value
+              -> A10b internal QueryPlan
+                  -> A11 extraction/scope hardening when R0 supports it
 ```
 
-Do not start A12 before the explicit-intent path is stable.
+AB1 remains a shared gate. After it freezes, A12 must either run as a time-boxed
+profile ablation or be explicitly deferred as an open Track 4 gap. Do not start
+A12 before the explicit-intent path is stable.
 
 ## A8 - Stateful Intent Persistence
 
@@ -431,6 +433,9 @@ Rules:
 - override never resurrects a profile preference as active intent,
 - report a direct `profile_weight=0.0` comparison,
 - retain zero when fold evidence is weak.
+
+Before R4, record one explicit A12 disposition: retained, rejected with evidence,
+or deferred for time with the profile gap still open.
 
 Do not claim cross-session long-term memory; the evaluator supplies isolated
 sessions without stable identity.
