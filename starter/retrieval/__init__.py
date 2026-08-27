@@ -1,3 +1,7 @@
+from starter.retrieval.conditional_dense import (
+    ConditionalDenseConfig,
+    ConditionalDenseRetriever,
+)
 from starter.retrieval.dense import DenseConfig, DenseRetriever
 from starter.retrieval.fusion import FusionConfig, FusionRetriever
 from starter.retrieval.hybrid import HybridRetriever
@@ -6,6 +10,8 @@ from starter.retrieval.structured import StructuredConfig
 
 
 __all__ = [
+    "ConditionalDenseConfig",
+    "ConditionalDenseRetriever",
     "DenseConfig",
     "DenseRetriever",
     "FusionConfig",

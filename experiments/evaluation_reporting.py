@@ -20,6 +20,8 @@ from starter.agent import Agent
 from starter.contracts import validate_agent_response
 from starter.core.response_guard import ALLOWED_ASK_ATTRIBUTES
 from starter.retrieval import (
+    ConditionalDenseConfig,
+    ConditionalDenseRetriever,
     DenseConfig,
     DenseRetriever,
     FusionConfig,
@@ -318,6 +320,7 @@ def evaluate_split(
     retrieval_mode: str = "structured",
     fusion_rrf_k: float = 60.0,
     rerank_candidate_limit: int = 30,
+    conditional_dense_config: ConditionalDenseConfig | None = None,
 ) -> dict:
     if fold_name and split != "development":
         raise ValueError("A development fold can only be used with the development split")
@@ -328,10 +331,11 @@ def evaluate_split(
         "dense",
         "fusion",
         "semantic_rerank",
+        "conditional_dense",
     }:
         raise ValueError(
             "retrieval_mode must be structured, no_guarded_filter, lexical, dense, fusion, "
-            "or semantic_rerank"
+            "semantic_rerank, or conditional_dense"
         )
 
     samples = load_jsonl(dataset_path)
@@ -347,10 +351,29 @@ def evaluate_split(
 
     initialization_started = time.perf_counter()
     catalog_ids, categories, products = catalog_index(catalog_path)
-    structured_filter_enabled = retrieval_mode in {"structured", "fusion", "semantic_rerank"}
+    structured_filter_enabled = retrieval_mode in {
+        "structured",
+        "fusion",
+        "semantic_rerank",
+        "conditional_dense",
+    }
     structured_config = StructuredConfig(enabled=structured_filter_enabled)
     dense_config = DenseConfig()
-    if retrieval_mode == "fusion":
+    conditional_dense_configuration = None
+    if retrieval_mode == "conditional_dense":
+        conditional_config = (
+            conditional_dense_config
+            if conditional_dense_config is not None
+            else ConditionalDenseConfig()
+        )
+        retriever = ConditionalDenseRetriever.from_catalog(
+            catalog_path,
+            config=conditional_config,
+            dense_config=dense_config,
+        )
+        dense_configuration = retriever.dense_configuration()
+        conditional_dense_configuration = retriever.configuration_snapshot()
+    elif retrieval_mode == "fusion":
         retriever = FusionRetriever.from_catalog(
             catalog_path,
             config=FusionConfig(rrf_k=fusion_rrf_k),
@@ -418,6 +441,7 @@ def evaluate_split(
         "retrieval_mode": retrieval_mode,
         "structured_filter": structured_filter_enabled,
         "fusion_rrf_k": fusion_rrf_k if retrieval_mode == "fusion" else None,
+        "conditional_dense_configuration": conditional_dense_configuration,
         "reranker_configuration": reranker_configuration,
         "dense_configuration": (
             dense_configuration
@@ -429,9 +453,17 @@ def evaluate_split(
                 fusion_fallback_configuration()
                 if retrieval_mode == "fusion"
                 else (
-                    {"semantic_rerank_failure": "exact_pre_rerank_candidate_order"}
-                    if retrieval_mode == "semantic_rerank"
-                    else None
+                    {
+                        "gate_skip": "exact_structured_order",
+                        "dense_failure": "exact_structured_order",
+                        "slow_dense_result": "exact_structured_order_after_execution",
+                    }
+                    if retrieval_mode == "conditional_dense"
+                    else (
+                        {"semantic_rerank_failure": "exact_pre_rerank_candidate_order"}
+                        if retrieval_mode == "semantic_rerank"
+                        else None
+                    )
                 )
             )
         ),
@@ -477,6 +509,13 @@ def main() -> None:
         help="Fuse weighted lexical, structured, and available dense Route rankings.",
     )
     retrieval_mode.add_argument(
+        "--conditional-dense",
+        action="store_const",
+        const="conditional_dense",
+        dest="retrieval_mode",
+        help="Fuse dense only for broad Browsing and preserve exact structured fallback.",
+    )
+    retrieval_mode.add_argument(
         "--dense-only",
         action="store_const",
         const="dense",
@@ -503,6 +542,21 @@ def main() -> None:
         default=30,
         help="Maximum structured candidates scored by --semantic-rerank (1-100).",
     )
+    parser.add_argument(
+        "--conditional-dense-max-active-constraints",
+        type=int,
+        default=1,
+    )
+    parser.add_argument(
+        "--conditional-dense-min-base-candidates",
+        type=int,
+        default=30,
+    )
+    parser.add_argument(
+        "--conditional-dense-max-accepted-latency-ms",
+        type=float,
+        default=250.0,
+    )
     parser.add_argument("--output", default="results.json")
     args = parser.parse_args()
 
@@ -516,6 +570,14 @@ def main() -> None:
         retrieval_mode=args.retrieval_mode,
         fusion_rrf_k=args.rrf_k,
         rerank_candidate_limit=args.rerank_limit,
+        conditional_dense_config=ConditionalDenseConfig(
+            max_active_constraints=args.conditional_dense_max_active_constraints,
+            min_base_candidates=args.conditional_dense_min_base_candidates,
+            rrf_k=args.rrf_k,
+            max_accepted_dense_latency_ms=(
+                args.conditional_dense_max_accepted_latency_ms
+            ),
+        ),
     )
     Path(args.output).write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({key: value for key, value in result.items() if key != "sessions"}, indent=2))

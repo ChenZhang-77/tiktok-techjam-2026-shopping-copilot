@@ -10,7 +10,12 @@ from experiments.evaluation_reporting import (
     code_provenance,
     evaluate_split,
 )
-from starter.retrieval import DenseConfig, FusionConfig, RerankerConfig
+from starter.retrieval import (
+    ConditionalDenseConfig,
+    DenseConfig,
+    FusionConfig,
+    RerankerConfig,
+)
 
 
 class _StubAgent:
@@ -96,6 +101,69 @@ class _LegacyRouteDiagnosticsStubAgent(_StubAgent):
 
 
 class DevelopmentReportingTest(unittest.TestCase):
+    def test_conditional_dense_mode_records_gate_dense_and_exact_fallback_policy(self) -> None:
+        empty_result = {"scenario_metrics": {}}
+        with (
+            patch("experiments.evaluation_reporting.load_jsonl", return_value=[]),
+            patch(
+                "experiments.evaluation_reporting.load_split_manifest",
+                return_value={"version": "test"},
+            ),
+            patch("experiments.evaluation_reporting.validate_development_fold_manifest"),
+            patch("experiments.evaluation_reporting.filter_samples", return_value=[]),
+            patch("experiments.evaluation_reporting.catalog_index", return_value=(set(), set(), {})),
+            patch(
+                "experiments.evaluation_reporting.ConditionalDenseRetriever.from_catalog"
+            ) as from_catalog,
+            patch("experiments.evaluation_reporting.Agent", return_value=_StubAgent()),
+            patch("experiments.evaluation_reporting.evaluate", return_value=empty_result),
+            patch(
+                "experiments.evaluation_reporting.code_provenance",
+                return_value={"commit": "test", "worktree_clean": True},
+            ),
+        ):
+            from_catalog.return_value.configuration_snapshot.return_value = {
+                "gate": "browsing_with_sparse_active_constraints",
+                "max_active_constraints": 1,
+                "min_base_candidates": 30,
+                "rrf_k": 60.0,
+                "max_accepted_dense_latency_ms": 250.0,
+                "latency_budget_kind": "post_execution_acceptance_budget",
+            }
+            from_catalog.return_value.dense_configuration.return_value = {
+                "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+                "cache_available": True,
+            }
+
+            report = evaluate_split(
+                catalog_path="catalog.jsonl",
+                dataset_path="dataset.jsonl",
+                split="development",
+                public_split_path="split.json",
+                development_fold_path="folds.json",
+                retrieval_mode="conditional_dense",
+            )
+
+        from_catalog.assert_called_once_with(
+            "catalog.jsonl",
+            config=ConditionalDenseConfig(),
+            dense_config=DenseConfig(),
+        )
+        self.assertEqual(report["evaluation"]["retrieval_mode"], "conditional_dense")
+        self.assertEqual(
+            report["evaluation"]["conditional_dense_configuration"]["max_active_constraints"],
+            1,
+        )
+        self.assertTrue(report["evaluation"]["dense_configuration"]["cache_available"])
+        self.assertEqual(
+            report["evaluation"]["fallback_configuration"],
+            {
+                "gate_skip": "exact_structured_order",
+                "dense_failure": "exact_structured_order",
+                "slow_dense_result": "exact_structured_order_after_execution",
+            },
+        )
+
     def test_semantic_rerank_mode_wraps_retained_structured_candidates(self) -> None:
         empty_result = {"scenario_metrics": {}}
         with (
