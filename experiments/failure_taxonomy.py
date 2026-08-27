@@ -644,6 +644,7 @@ def build_report(
 class _TracingRetriever:
     def __init__(self, retriever: object) -> None:
         self._retriever = retriever
+        self.catalog_path = retriever.catalog_path
         self.catalog_ids = retriever.catalog_ids
         self.fallback_ids = retriever.fallback_ids
         self.turns_by_session: dict[str, dict[int, dict[str, Any]]] = defaultdict(dict)
