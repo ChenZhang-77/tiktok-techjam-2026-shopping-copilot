@@ -270,7 +270,11 @@ Development-160 HitRate stayed `0.7625`, MRR rose by `0.002823`, Buying improved
 in three of four folds, and Browsing did not regress; the overall score was
 effectively neutral and Intent Override regressed slightly. See
 [`docs/a8_stateful_intent_evidence.md`](docs/a8_stateful_intent_evidence.md).
-The dependency-ordered next module is AB0 DecisionEvidence Availability.
+AB0 now makes a compact full-pool `DecisionEvidence` available before
+clarification with exact 160-session / 818-turn dialogue parity and no shared
+contract change. See
+[`docs/ab0_decision_evidence.md`](docs/ab0_decision_evidence.md). The
+dependency-ordered next module is A9 Should-Ask Over-Generality Gate.
 `AGENTS.md` owns the taxonomy and
 leakage boundary; [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md)
 owns the complete order.

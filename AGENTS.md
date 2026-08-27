@@ -165,9 +165,17 @@ message
   -> field-weighted SQLite FTS5 Candidate Pool
   -> hard/soft cross-field constraint ranking
   -> guarded structured filter and relaxation/fill
+  -> A-side DecisionEvidence summary
   -> clarification
   -> response guard
 ```
+
+`DecisionEvidence` is an A-side adapter over the complete `RetrievalResult` and
+cross-turn state. It does not extend the shared request/result schema and AB0
+does not change ask/no-ask behavior. Public diagnostics may expose bounded
+summaries/statuses, never raw Candidate IDs/text. `top_score_margin` is
+route-local and uncalibrated, so `score_margin_usable` remains false until a
+coordinated measured contract defines otherwise.
 
 Dense retrieval, weighted RRF, and the CrossEncoder reranker are optional,
 reproducible experiments with deterministic fallback. They are disabled by

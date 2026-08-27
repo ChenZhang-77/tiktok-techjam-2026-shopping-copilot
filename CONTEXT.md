@@ -66,6 +66,13 @@ query or active state. Low stability may justify clarification or a guarded
 fallback.
 _Avoid_: deterministic execution
 
+**Decision Evidence**:
+An A-side, label-free summary of the complete current Candidate Pool and
+cross-turn state made available before clarification. It carries bounded
+availability/status fields, never target data or raw Candidate text/IDs in
+public diagnostics. An uncalibrated route-local score margin is not a gate.
+_Avoid_: evaluator evidence, target rank, automatic should-ask rule
+
 **Conditional Route**:
 An optional retrieval or reranking route activated only for a declared,
 observable subset of agent-side states and backed by a deterministic fallback.

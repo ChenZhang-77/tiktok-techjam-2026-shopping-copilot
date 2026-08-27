@@ -195,17 +195,32 @@ folds and Browsing does not regress; Intent Override regresses slightly. The
 bounded decision and rejected variants are recorded in
 `docs/a8_stateful_intent_evidence.md`.
 
+## AB0 Result
+
+AB0 is retained at clean code commit `a37fd61`. The A-side adapter computes
+bounded full-pool size, Top-K stability, constraint coverage, attribute
+partition, relaxation/degradation, and turn/exhaustion summaries before
+clarification. Raw Candidate IDs/text are not serialized, and the shared A/B
+contracts are unchanged. Route-local score margin is observable but explicitly
+uncalibrated and unusable for A9.
+
+The clean Development-160 metrics and all 160 session outcomes exactly match
+A8. A separate 818-turn replay also produced an identical ask/recommendation
+trace hash. The original slow scanner was rejected; the retained implementation
+observed `41.39 ms` mean response latency and zero failures. Full evidence is in
+`docs/ab0_decision_evidence.md`.
+
 ## Next Decision
 
-The next dependency-ordered module is AB0 DecisionEvidence Availability. It
-must establish Candidate evidence producers and fallback semantics without
-changing question behavior. A9 remains blocked until AB0 passes. A11
-Extraction and Scope Hardening remains supported by six primary Extraction
-misses and stays after the A8/AB0 dependencies specified in the roadmap.
+The next dependency-ordered module is A9 Should-Ask Over-Generality Gate. It is
+now unblocked, but must use only AB0 fields marked usable and status-guarded;
+score margin remains forbidden as a gate. A11 Extraction and Scope Hardening
+remains supported by six primary Extraction misses and stays after the
+dependencies specified in the roadmap.
 
 The complete dependency order lives only in `docs/optimization_roadmap.md`.
-Immediate blockers to remember: A9 cannot start from the current Top-K text
-evidence alone, and B9 cannot start against unstable intent or route semantics.
+Immediate blocker to remember: B9 cannot start before AB1 freezes shared route
+semantics.
 
 If submission is imminent, skip new behavior work and execute the delivery
 track in `docs/demo_and_submission_plan.md`.
@@ -228,6 +243,8 @@ track in `docs/demo_and_submission_plan.md`.
 | `docs/current_status.md` | Current verified state and next decision |
 | `docs/optimization_roadmap.md` | Project-wide optimization sequence and gates |
 | `docs/r0_development_failure_taxonomy.md` | Clean Development-160 failure audit and next-experiment evidence |
+| `docs/a8_stateful_intent_evidence.md` | Stateful intent keep/reject evidence and tradeoff boundary |
+| `docs/ab0_decision_evidence.md` | DecisionEvidence sources, fallbacks, parity, and A9 input boundary |
 | `docs/ablation_summary.md` | Human-readable keep/reject evidence |
 | `docs/workstreams/DEVELOPER_A_CONTROL_PLANE.md` | Standalone A-side route |
 | `docs/workstreams/DEVELOPER_B_RETRIEVAL_RANKING.md` | Standalone B-side route |

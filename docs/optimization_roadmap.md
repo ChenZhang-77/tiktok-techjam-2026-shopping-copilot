@@ -166,6 +166,11 @@ solve intent persistence.
 
 ### AB0 - Candidate decision evidence availability
 
+**Status: retained at `a37fd61`.** Full-pool evidence now reaches the A-side
+decision point through a compact adapter with deterministic availability
+statuses. Shared contracts and ask/no-ask behavior are unchanged. Score margin
+remains uncalibrated and unusable. See `docs/ab0_decision_evidence.md`.
+
 This is a design-and-plumbing blocker before A9, not a new ranking experiment.
 
 Start from the full existing `RetrievalResult` and prior returned Candidate IDs.
