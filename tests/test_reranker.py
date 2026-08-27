@@ -69,6 +69,20 @@ class FakeRetriever:
         return self.result
 
 
+class LegacyFakeRetriever(FakeRetriever):
+    def __init__(self, *, fallback_used: bool = False) -> None:
+        super().__init__()
+        self.result = replace(
+            self.result,
+            diagnostics=RetrievalDiagnostics(
+                route="structured",
+                candidate_count=4,
+                fallback_used=fallback_used,
+                notes=["legacy_base"],
+            ),
+        )
+
+
 class RecordingBackend:
     def __init__(self, scores: list[float] | Exception) -> None:
         self.scores = scores
@@ -157,6 +171,37 @@ class RerankingRetrieverTest(unittest.TestCase):
             result.diagnostics.executed_routes,
             ["lexical", "structured", "semantic_rerank"],
         )
+
+    def test_successful_rerank_keeps_legacy_route_semantics_unreported(self) -> None:
+        for fallback_used in (False, True):
+            with self.subTest(fallback_used=fallback_used):
+                retriever = RerankingRetriever(
+                    LegacyFakeRetriever(fallback_used=fallback_used),
+                    config=RerankerConfig(candidate_limit=2),
+                    backend=RecordingBackend([0.1, 0.9]),
+                )
+
+                result = retriever.retrieve(_request())
+
+                self.assertEqual(result.diagnostics.requested_route_weights, {})
+                self.assertEqual(result.diagnostics.executed_routes, [])
+                self.assertIsNone(result.diagnostics.fallback_route)
+                self.assertEqual(result.diagnostics.fallback_used, fallback_used)
+
+    def test_reranker_failure_keeps_legacy_route_semantics_unreported(self) -> None:
+        retriever = RerankingRetriever(
+            LegacyFakeRetriever(),
+            config=RerankerConfig(candidate_limit=2),
+            backend=RecordingBackend(RuntimeError("model unavailable")),
+        )
+
+        result = retriever.retrieve(_request())
+
+        self.assertTrue(result.diagnostics.fallback_used)
+        self.assertEqual(result.diagnostics.requested_route_weights, {})
+        self.assertEqual(result.diagnostics.executed_routes, [])
+        self.assertIsNone(result.diagnostics.fallback_route)
+        self.assertIn("semantic_rerank_failed:reranker_error", result.diagnostics.notes)
 
     def test_backend_failure_preserves_exact_pre_rerank_candidates(self) -> None:
         base = FakeRetriever()

@@ -244,6 +244,10 @@ class RerankingRetriever:
         stage_latencies = dict(base.diagnostics.stage_latencies_ms)
         stage_latencies["semantic_rerank"] = round(latency_ms, 6)
         base_latency = base.diagnostics.latency_ms or 0.0
+        route_semantics_reported = bool(
+            base.diagnostics.requested_route_weights
+            or base.diagnostics.executed_routes
+        )
         diagnostics = replace(
             base.diagnostics,
             route="semantic_rerank",
@@ -259,11 +263,16 @@ class RerankingRetriever:
                 **base.diagnostics.ranking_pool_sizes,
                 "semantic_rerank": pool_size,
             },
-            executed_routes=[
-                *base.diagnostics.executed_routes,
-                "semantic_rerank",
-            ],
-            fallback_route=base.diagnostics.fallback_route,
+            executed_routes=(
+                [*base.diagnostics.executed_routes, "semantic_rerank"]
+                if route_semantics_reported
+                else []
+            ),
+            fallback_route=(
+                base.diagnostics.fallback_route
+                if route_semantics_reported
+                else None
+            ),
         )
         return RetrievalResult(
             candidates=[*reranked, *base.candidates[pool_size:]],
@@ -291,6 +300,19 @@ class RerankingRetriever:
         failures = dict(base.diagnostics.route_failures)
         failures["semantic_rerank"] = reason
         base_latency = base.diagnostics.latency_ms or 0.0
+        route_semantics_reported = bool(
+            base.diagnostics.requested_route_weights
+            or base.diagnostics.executed_routes
+        )
+        fallback_route = None
+        if route_semantics_reported:
+            fallback_route = base.diagnostics.fallback_route
+            if fallback_route is None:
+                fallback_route = (
+                    base.diagnostics.route
+                    if base.diagnostics.route in base.diagnostics.executed_routes
+                    else base.diagnostics.executed_routes[-1]
+                )
         diagnostics = replace(
             base.diagnostics,
             fallback_used=True,
@@ -307,7 +329,7 @@ class RerankingRetriever:
                 **base.diagnostics.ranking_pool_sizes,
                 "semantic_rerank": pool_size,
             },
-            fallback_route=base.diagnostics.route,
+            fallback_route=fallback_route,
         )
         return RetrievalResult(candidates=base.candidates, diagnostics=diagnostics)
 
