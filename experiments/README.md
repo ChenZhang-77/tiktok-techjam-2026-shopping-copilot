@@ -75,7 +75,7 @@ evaluator/timing anomalies separately as `evaluation_validity` flags.
 R0 is complete. Its clean Development-160 artifacts are
 `../docs/r0_development_failure_taxonomy.md` and
 `../docs/r0_development_failure_taxonomy.json`; it changed no runtime behavior.
-The corrected semantic audit classified 25 of 38 misses as Intent / Strategy
+The corrected causal-evidence audit classified 25 of 38 misses as Intent / Strategy
 Routing, seven as State / Override, and six as Extraction. The evidence-ranked
 and dependency-ordered next module is A8.
 The authoritative dependency order is maintained only in

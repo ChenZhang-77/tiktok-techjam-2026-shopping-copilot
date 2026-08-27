@@ -176,7 +176,7 @@ Strategy Routing was the largest class in every fixed fold. The target entered
 the retained lexical pool in 145 of 160 sessions, so the next optimization
 should stay on the A-side control plane.
 This is deterministic evidence triage, not proof that every downstream failure
-would disappear after one extraction change. The durable report is
+would disappear after one upstream behavior change. The durable report is
 `docs/r0_development_failure_taxonomy.md`, with turn-level offline evidence in
 the adjacent JSON artifact.
 
