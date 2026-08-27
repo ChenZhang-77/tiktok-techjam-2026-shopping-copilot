@@ -47,6 +47,9 @@ likewise disabled at weight 0.0.
   remains B9 and no LLM-ranking claim is allowed.
 - B11: not started because the current R0 refresh finds zero retrieval/ranking
   primary misses; do not claim a lexical-recall refinement.
+- B12: not started because A8 confidence is not an authorized B-side gate and
+  AB1 did not define confidence-to-depth semantics; describe current depth only
+  as intent/constraint-aware.
 - Historical full-200 run: HitRate@10 `0.765`, MRR `0.517355`, MTTC `5.375`,
   TechnicalScore `0.650207`.
 

@@ -221,6 +221,13 @@ Avoid broad expansions that inflate the pool without improving final ranks.
 
 ## B12 — Adaptive candidate depth
 
+**Status: not started; prerequisite failed.** The typed
+`Strategy.retrieval_depth` already crosses the seam and B obeys it, but A
+currently derives it only from intent and active-constraint count. A8 explicitly
+marks its ordinal confidence as unavailable for a B-side gate, and AB1 did not
+define confidence-to-depth semantics. B must not invent that policy. Evidence:
+`docs/b12_prerequisite_evidence.md`.
+
 Run only after A8 has a stable IntentAssessment and AB1 defines the exact gate
 or Strategy field B consumes. B must not invent a second intent-confidence
 policy.

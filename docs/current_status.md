@@ -317,10 +317,11 @@ session outcomes. See `docs/b10a_constraint_rerank_evidence.md`.
 B10b is recorded as not justified without new R0 evidence. A refreshed R0
 audit then rejected B11's entry condition: all 22 misses have upstream primary
 causes, retrieval/ranking has zero, and retained lexical depth covers 157/160
-targets. See `docs/b11_prerequisite_evidence.md`. B12 remains conditional on its
-intent/contract prerequisite. Score margin
-remains forbidden as a gate. The complete dependency order lives only in
-`docs/optimization_roadmap.md`.
+targets. See `docs/b11_prerequisite_evidence.md`. B12 is also not started: the
+typed depth already crosses the seam, but A8 confidence is not authorized as a
+B gate and AB1 did not define confidence-to-depth semantics. See
+`docs/b12_prerequisite_evidence.md`. Score margin remains forbidden as a gate.
+The complete dependency order lives only in `docs/optimization_roadmap.md`.
 
 If submission is imminent, skip new behavior work and execute the delivery
 track in `docs/demo_and_submission_plan.md`.

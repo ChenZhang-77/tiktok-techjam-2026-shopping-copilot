@@ -407,6 +407,14 @@ of conversational filler.
 
 ### B12 - Adaptive depth
 
+**Status: not started; prerequisite failed.** The current A-owned planner
+already sends a bounded `Strategy.retrieval_depth`, but maps only intent and
+active-constraint count. A8's ordinal confidence is explicitly not an
+authorized B-side gate, and AB1 did not freeze confidence-to-depth semantics.
+No runtime experiment is valid until A defines that mapping through the
+existing Strategy field in an A/B-coordinated slice. See
+`docs/b12_prerequisite_evidence.md`.
+
 Run only after the diagnostics loop exists. Clear Buying can be shallower and
 more precise; ambiguous Browsing may go deeper; over-general pools should stop
 expanding and return control to A for clarification.
