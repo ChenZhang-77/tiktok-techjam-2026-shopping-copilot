@@ -34,6 +34,14 @@ CANDIDATE_TERMS = {
     "style": STYLE_TERMS,
     "use_case": USE_CASES,
 }
+WORD_SEPARATOR_RE = re.compile(r"\W+", re.UNICODE)
+NORMALIZED_CANDIDATE_TERMS = {
+    attribute: {
+        term: WORD_SEPARATOR_RE.sub(" ", term.lower()).strip()
+        for term in terms
+    }
+    for attribute, terms in CANDIDATE_TERMS.items()
+}
 
 
 def _available_attributes(state: SessionState, priority: tuple[str, ...]) -> list[str]:
@@ -52,22 +60,17 @@ def _available_attributes(state: SessionState, priority: tuple[str, ...]) -> lis
     ]
 
 
-def _term_hits(text: str, terms: set[str]) -> set[str]:
-    lowered = text.lower()
-    return {
-        term
-        for term in terms
-        if re.search(rf"\b{re.escape(term)}\b", lowered)
-    }
-
-
 def candidate_attribute_scores(candidate_texts: list[str]) -> dict[str, float]:
     scores: dict[str, float] = {}
-    for attribute, terms in CANDIDATE_TERMS.items():
+    normalized_texts = [
+        f" {WORD_SEPARATOR_RE.sub(' ', text.lower()).strip()} "
+        for text in candidate_texts
+    ]
+    for attribute, terms in NORMALIZED_CANDIDATE_TERMS.items():
         counts: Counter[str] = Counter()
         covered = 0
-        for text in candidate_texts:
-            hits = _term_hits(text, terms)
+        for text in normalized_texts:
+            hits = {term for term, normalized in terms.items() if f" {normalized} " in text}
             if hits:
                 covered += 1
                 counts.update(hits)
