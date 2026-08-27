@@ -45,6 +45,8 @@ definitions instead of creating local variants.
 - `ab1_route_semantics_evidence.md` — retained shared route diagnostics
 - `b8_rejected_constraint_evidence.md` — tested and reverted B8 candidate;
   zero Development rejection coverage
+- `b9_conditional_dense_evidence.md` — retained broad-Browsing dense/RRF gate,
+  exact fallback, four-fold result, and operational cost
 
 ## Historical evidence
 

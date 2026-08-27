@@ -1,0 +1,562 @@
+{
+  "sample_count": 40,
+  "hit_rate_at_10": 0.9,
+  "mrr": 0.588819,
+  "mttc": 4.25,
+  "efficiency": 0.675,
+  "recommended_technical_score": 0.761646,
+  "reported_token_usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  },
+  "scenario_metrics": {
+    "boundary": {
+      "sample_count": 2,
+      "hit_rate_at_10": 1.0,
+      "mrr": 1.0,
+      "mttc": 6.0,
+      "efficiency": 0.5,
+      "recommended_technical_score": 0.9
+    },
+    "browsing": {
+      "sample_count": 16,
+      "hit_rate_at_10": 0.875,
+      "mrr": 0.519965,
+      "mttc": 5.0,
+      "efficiency": 0.6,
+      "recommended_technical_score": 0.713489
+    },
+    "buying": {
+      "sample_count": 16,
+      "hit_rate_at_10": 0.875,
+      "mrr": 0.548958,
+      "mttc": 3.25,
+      "efficiency": 0.775,
+      "recommended_technical_score": 0.757187
+    },
+    "intent_override": {
+      "sample_count": 6,
+      "hit_rate_at_10": 1.0,
+      "mrr": 0.741667,
+      "mttc": 4.333333,
+      "efficiency": 0.666667,
+      "recommended_technical_score": 0.855833
+    }
+  },
+  "sessions": [
+    {
+      "sample_id": "public_0004",
+      "scenario_type": "intent_override",
+      "hit": true,
+      "first_hit_turn": 3,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0009",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0010",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 1,
+      "best_rank": 8,
+      "reciprocal_rank": 0.125
+    },
+    {
+      "sample_id": "public_0015",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 8,
+      "best_rank": 8,
+      "reciprocal_rank": 0.125
+    },
+    {
+      "sample_id": "public_0023",
+      "scenario_type": "intent_override",
+      "hit": true,
+      "first_hit_turn": 7,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0037",
+      "scenario_type": "browsing",
+      "hit": false,
+      "first_hit_turn": null,
+      "best_rank": null,
+      "reciprocal_rank": 0.0
+    },
+    {
+      "sample_id": "public_0039",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 4,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0042",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0043",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 3,
+      "best_rank": 3,
+      "reciprocal_rank": 0.3333333333333333
+    },
+    {
+      "sample_id": "public_0050",
+      "scenario_type": "boundary",
+      "hit": true,
+      "first_hit_turn": 7,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0051",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0056",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 4,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0061",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 1,
+      "best_rank": 2,
+      "reciprocal_rank": 0.5
+    },
+    {
+      "sample_id": "public_0064",
+      "scenario_type": "intent_override",
+      "hit": true,
+      "first_hit_turn": 4,
+      "best_rank": 5,
+      "reciprocal_rank": 0.2
+    },
+    {
+      "sample_id": "public_0073",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 4,
+      "reciprocal_rank": 0.25
+    },
+    {
+      "sample_id": "public_0083",
+      "scenario_type": "buying",
+      "hit": false,
+      "first_hit_turn": null,
+      "best_rank": null,
+      "reciprocal_rank": 0.0
+    },
+    {
+      "sample_id": "public_0085",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 2,
+      "reciprocal_rank": 0.5
+    },
+    {
+      "sample_id": "public_0099",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 3,
+      "best_rank": 3,
+      "reciprocal_rank": 0.3333333333333333
+    },
+    {
+      "sample_id": "public_0103",
+      "scenario_type": "intent_override",
+      "hit": true,
+      "first_hit_turn": 4,
+      "best_rank": 4,
+      "reciprocal_rank": 0.25
+    },
+    {
+      "sample_id": "public_0107",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 1,
+      "best_rank": 10,
+      "reciprocal_rank": 0.1
+    },
+    {
+      "sample_id": "public_0121",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 3,
+      "best_rank": 6,
+      "reciprocal_rank": 0.16666666666666666
+    },
+    {
+      "sample_id": "public_0124",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 6,
+      "best_rank": 10,
+      "reciprocal_rank": 0.1
+    },
+    {
+      "sample_id": "public_0126",
+      "scenario_type": "browsing",
+      "hit": false,
+      "first_hit_turn": null,
+      "best_rank": null,
+      "reciprocal_rank": 0.0
+    },
+    {
+      "sample_id": "public_0128",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0142",
+      "scenario_type": "intent_override",
+      "hit": true,
+      "first_hit_turn": 4,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0148",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 1,
+      "best_rank": 8,
+      "reciprocal_rank": 0.125
+    },
+    {
+      "sample_id": "public_0153",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 7,
+      "best_rank": 9,
+      "reciprocal_rank": 0.1111111111111111
+    },
+    {
+      "sample_id": "public_0154",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0155",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 1,
+      "best_rank": 3,
+      "reciprocal_rank": 0.3333333333333333
+    },
+    {
+      "sample_id": "public_0163",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0165",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0166",
+      "scenario_type": "intent_override",
+      "hit": true,
+      "first_hit_turn": 4,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0169",
+      "scenario_type": "boundary",
+      "hit": true,
+      "first_hit_turn": 5,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0170",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 7,
+      "best_rank": 2,
+      "reciprocal_rank": 0.5
+    },
+    {
+      "sample_id": "public_0173",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 6,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0176",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 5,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0179",
+      "scenario_type": "buying",
+      "hit": false,
+      "first_hit_turn": null,
+      "best_rank": null,
+      "reciprocal_rank": 0.0
+    },
+    {
+      "sample_id": "public_0190",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 1,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0193",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 1,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0199",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 7,
+      "best_rank": 2,
+      "reciprocal_rank": 0.5
+    }
+  ],
+  "code_provenance": {
+    "commit": "b620357",
+    "worktree_clean": true
+  },
+  "observed_run_counts": {
+    "respond_exceptions": 0,
+    "invalid_response_payloads": 0,
+    "reported_fallbacks": 0,
+    "internal_fallbacks": 0,
+    "internal_fallbacks_note": "B1 Agent diagnostics expose fallback_used at the public boundary."
+  },
+  "retrieval_diagnostics": {
+    "route_candidate_counts": {
+      "lexical": {
+        "response_count": 166,
+        "total": 15580,
+        "mean": 93.855422,
+        "min": 60,
+        "max": 120
+      },
+      "structured": {
+        "response_count": 166,
+        "total": 15580,
+        "mean": 93.855422,
+        "min": 60,
+        "max": 120
+      },
+      "dense": {
+        "response_count": 20,
+        "total": 2400,
+        "mean": 120.0,
+        "min": 120,
+        "max": 120
+      },
+      "fusion": {
+        "response_count": 20,
+        "total": 4359,
+        "mean": 217.95,
+        "min": 179,
+        "max": 239
+      }
+    },
+    "route_overlap_counts": {
+      "lexical|structured": {
+        "response_count": 166,
+        "total": 15580,
+        "mean": 93.855422,
+        "min": 60,
+        "max": 120
+      },
+      "structured|dense": {
+        "response_count": 20,
+        "total": 441,
+        "mean": 22.05,
+        "min": 1,
+        "max": 61
+      }
+    },
+    "route_failure_counts": {},
+    "requested_route_counts": {
+      "lexical": 166,
+      "structured": 166,
+      "dense": 103
+    },
+    "executed_route_counts": {
+      "fusion": 20,
+      "structured": 166,
+      "dense": 20,
+      "lexical": 166
+    },
+    "requested_not_executed_route_counts": {
+      "dense": 83
+    },
+    "fallback_route_counts": {},
+    "route_semantics_unreported_responses": 0,
+    "structured_filter_applied_responses": 50,
+    "relaxed_constraint_responses": 0,
+    "filtered_pool_step_count": 70,
+    "cache_state_counts": {
+      "lexical_index:memory_ready": 166,
+      "structured_evidence:memory_ready": 166,
+      "dense:compatible": 20
+    },
+    "rerank_pool_size": null
+  },
+  "timing": {
+    "initialization_ms": 4104.732042,
+    "evaluation_wall_ms": 4485.570833,
+    "responses": {
+      "response_count": 166,
+      "total_ms": 4461.260662,
+      "mean_ms": 26.875064,
+      "p50_ms": 27.0805,
+      "p95_ms": 47.958875,
+      "max_ms": 58.784875
+    },
+    "retrieval": {
+      "latency": {
+        "response_count": 166,
+        "total_ms": 3757.758713,
+        "mean_ms": 22.637101,
+        "p50_ms": 22.122959,
+        "p95_ms": 42.967666,
+        "max_ms": 54.517417
+      },
+      "lexical_latency": {
+        "response_count": 166,
+        "total_ms": 2034.258249,
+        "mean_ms": 12.254568,
+        "p50_ms": 12.792375,
+        "p95_ms": 22.035125,
+        "max_ms": 32.493542
+      },
+      "constraint_rerank_latency": {
+        "response_count": 166,
+        "total_ms": 885.789827,
+        "mean_ms": 5.336083,
+        "p50_ms": 4.481708,
+        "p95_ms": 14.560375,
+        "max_ms": 18.469792
+      },
+      "structured_filter_latency": {
+        "response_count": 166,
+        "total_ms": 65.893584,
+        "mean_ms": 0.396949,
+        "p50_ms": 0.000208,
+        "p95_ms": 1.63625,
+        "max_ms": 3.275625
+      },
+      "dense_latency": {
+        "response_count": 20,
+        "total_ms": 103.125542,
+        "mean_ms": 5.156277,
+        "p50_ms": 4.610167,
+        "p95_ms": 5.452333,
+        "max_ms": 12.49025
+      },
+      "fusion_latency": {
+        "response_count": 20,
+        "total_ms": 8.020499,
+        "mean_ms": 0.401025,
+        "p50_ms": 0.340625,
+        "p95_ms": 0.595791,
+        "max_ms": 1.41175
+      }
+    }
+  },
+  "resources": {
+    "peak_rss_bytes": 1105903616,
+    "peak_rss_kind": "process_peak_rss"
+  },
+  "evaluation": {
+    "dataset": "data/public_set.jsonl",
+    "split": "development",
+    "split_manifest": "docs/public_split_v1.json",
+    "split_version": "public-split-v1",
+    "development_fold": "fold_3",
+    "development_fold_manifest": "docs/development_folds_v1.json",
+    "development_fold_version": "development-folds-v1",
+    "retrieval_mode": "conditional_dense",
+    "structured_filter": true,
+    "fusion_rrf_k": null,
+    "conditional_dense_configuration": {
+      "gate": "browsing_with_sparse_active_constraints",
+      "max_active_constraints": 1,
+      "min_base_candidates": 30,
+      "rrf_k": 60.0,
+      "max_accepted_dense_latency_ms": 250.0,
+      "latency_budget_kind": "post_execution_acceptance_budget",
+      "dense_warmup_status": "ready"
+    },
+    "reranker_configuration": null,
+    "dense_configuration": {
+      "cache_dir": "embeddings/minilm-l6-v2-v1",
+      "cache_schema_version": 1,
+      "cache_status": "compatible",
+      "cache_available": true,
+      "cache_size_bytes": 77501054,
+      "build_seconds": 255.086887,
+      "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+      "model_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+      "dimension": 384,
+      "dtype": "float32",
+      "normalized": true,
+      "product_text_template": "product-fields-v1",
+      "query_text_template": "distilled-query-v1"
+    },
+    "fallback_configuration": {
+      "gate_skip": "exact_structured_order",
+      "dense_failure": "exact_structured_order",
+      "slow_dense_result": "exact_structured_order_after_execution"
+    }
+  }
+}

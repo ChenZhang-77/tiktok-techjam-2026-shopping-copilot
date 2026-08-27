@@ -12,15 +12,14 @@ For a new B-side Codex conversation, read:
 4. `workstreams/DEVELOPER_B_RETRIEVAL_RANKING.md`
 5. `ablation_summary.md`
 
-Current reality: the retained default is lexical retrieval plus structured
-scoring plus bounded A11 Control Plane extraction. Dense retrieval, RRF, and
-global semantic reranking remain documented ablations and are disabled by
-default. Any new route must follow the gates in the current B-side workstream
-rather than enabling old experiments globally.
+Current reality: the retained default is structured retrieval/ranking plus
+bounded A11 extraction and B9 local dense/RRF only for a typed broad-Browsing
+gate. Global dense/RRF and CrossEncoder remain rejected ablations; an actual
+LLM ranker is absent. Any new route must follow the gates in the current B-side
+workstream rather than widening B9 implicitly.
 
-AB1 is complete. B8's bounded rejected-constraint candidate was reverted after
-Development-160 supplied zero rejection turns; read
-`b8_rejected_constraint_evidence.md` before revisiting it. The current module,
-after B8 dual review, is B9 Browsing-First Conditional Dense Route for literal
-Track 4 alignment. Follow `optimization_roadmap.md` and the B workstream for
-its gates.
+AB1 is complete. B8 was reverted after Development-160 supplied zero rejection
+turns. B9 is retained at `b620357`: only Browsing changed, all four folds were
+non-regressing, and its material startup/memory cost is recorded in
+`b9_conditional_dense_evidence.md`. After B9 dual review, the current module is
+B10a Constraint-Preserving CrossEncoder Rerank.

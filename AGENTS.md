@@ -166,6 +166,8 @@ message
   -> field-weighted SQLite FTS5 Candidate Pool
   -> hard/soft cross-field constraint ranking
   -> guarded structured filter and relaxation/fill
+  -> B9 broad-Browsing gate -> pinned local dense retrieval + weighted RRF
+     (otherwise exact structured order)
   -> A-side DecisionEvidence summary
   -> clarification
   -> response guard
@@ -230,13 +232,20 @@ B8 Rejected-Constraint Ranking was tested at `f53a7ee` and reverted at
 `3952788`. Development-160 contained zero rejected-constraint observations
 across 726 retrieval turns, so exact metric/fold/session parity was non-evidence
 and failed the keep gate. See `docs/b8_rejected_constraint_evidence.md`.
-After B8 dual review, the next module is B9 Browsing-First Conditional Dense
-Route.
+B9 Browsing-First Conditional Dense Route is retained at `b620357`. The default
+Agent executes pinned local dense retrieval plus weighted RRF only when the
+typed request is Browsing, Strategy requests dense, at most one active
+constraint exists, and the structured Candidate Pool has at least 30 entries.
+Gate skips and degraded dense results preserve the exact structured order.
+Across Development-160, dense and fusion executed 102 times, only Browsing
+outcomes changed, and no fixed fold regressed. The observed cost is material:
+startup increased by about 1.5 seconds and peak RSS by about 546 MB. See
+`docs/b9_conditional_dense_evidence.md`.
 
-Dense retrieval, weighted RRF, and the CrossEncoder reranker are optional,
-reproducible experiments with deterministic fallback. They are disabled by
-default because development evidence did not justify global enablement. Do not
-describe them as active runtime routes.
+Do not describe dense as globally active. The retained route is conditional;
+global RRF and CrossEncoder reranking remain rejected experiments, and an
+actual LLM ranker has not been implemented. After B9 dual review, the next
+module is B10a Constraint-Preserving CrossEncoder Rerank.
 
 The current optimization order is defined in
 `docs/optimization_roadmap.md`. Diagnose failures before introducing another
@@ -247,7 +256,7 @@ model or route.
 The stable seam is:
 
 ```text
-HybridRetriever.retrieve(request: RetrievalRequest) -> RetrievalResult
+Retriever.retrieve(request: RetrievalRequest) -> RetrievalResult
 Agent.respond(session_id, user_message, turn, top_k) -> public response dict
 ```
 
@@ -395,7 +404,7 @@ Explicit current intent always wins over profile evidence.
 
 ## 10. Retrieval and Ranking Rules
 
-- Preserve the deterministic structured default as the last-known-good path.
+- Preserve the deterministic structured order as the last-known-good fallback.
 - Build evidence across title, categories, features, details, store, and
   description; do not depend on sparse details or price.
 - Hard filtering requires high confidence and adequate coverage.

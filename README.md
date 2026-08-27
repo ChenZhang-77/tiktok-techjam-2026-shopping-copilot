@@ -8,10 +8,10 @@ distinguishes targeted Buying from open-ended Browsing, retrieves products from
 a frozen 50,000-item Amazon catalog, ranks candidates with explicit constraint
 evidence, and returns safe recommendations with an optional clarification.
 
-The project is intentionally lightweight: the retained runtime requires no
-external API, hosted model, vector database, or token budget. Dense retrieval,
-fusion, and semantic reranking were implemented and measured as reproducible
-experiments, then disabled by default because their tradeoffs were not robust.
+The retained runtime requires no external API, hosted model, vector database,
+or token budget. B9 conditionally executes a pinned local MiniLM dense route for
+broad Browsing and otherwise preserves the structured order. Global dense,
+CrossEncoder, and LLM reranking are not enabled.
 
 ## Current Status
 
@@ -19,16 +19,16 @@ The verified integrated checkout and next optimization decision are documented
 in [`docs/current_status.md`](docs/current_status.md). The project-wide route is
 [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md).
 
-Verified Development-160 result for the retained structured plus bounded A11
-runtime:
+Verified Development-160 result for the retained bounded A11 plus B9
+conditional-dense runtime:
 
 | Metric | Result |
 | --- | ---: |
 | HitRate@10 | 0.86250 |
-| MRR | 0.545568 |
-| MTTC | 4.67500 |
-| Efficiency | 0.632500 |
-| TechnicalScore | 0.721420 |
+| MRR | 0.547329 |
+| MTTC | 4.66875 |
+| Efficiency | 0.633125 |
+| TechnicalScore | 0.722074 |
 
 Historical Full-200 public snapshot:
 
@@ -76,6 +76,8 @@ user message
   -> cross-field hard/soft constraint ranking
   -> guarded structured filtering
   -> deterministic relaxation and fill
+  -> broad-Browsing gate -> local dense retrieval + weighted RRF
+     (otherwise exact structured order)
   -> priority-biased clarification selection
   -> response guard
 ```
@@ -93,7 +95,7 @@ Important behaviors:
 The stable integration seam is:
 
 ```text
-HybridRetriever.retrieve(request: RetrievalRequest) -> RetrievalResult
+Retriever.retrieve(request: RetrievalRequest) -> RetrievalResult
 ```
 
 Shared types and leakage validation are in `starter/contracts.py`.
@@ -102,19 +104,17 @@ Shared types and leakage validation are in `starter/contracts.py`.
 
 | Track 4 pillar | Project behavior |
 | --- | --- |
-| Intent Routing and Hybrid Pipeline | Buying/Browsing currently changes structured Strategy behavior; dense and semantic routes are measured but disabled, so literal Browsing-dense coverage remains open |
+| Intent Routing and Hybrid Pipeline | Buying/Browsing changes Strategy and execution; B9 conditionally runs local dense retrieval plus weighted RRF for broad Browsing, with exact structured fallback |
 | Multi-Turn Scenario Evolution | Session state accumulates constraints, tracks no-preference/rejection, and deactivates stale intent on override |
 | Dynamic Context Programming | The Agent rebuilds the query from active state and records Strategy, Candidate, relaxation, and fallback diagnostics |
 | Product and Efficiency Metrics | Development evaluation reports HitRate@10, MRR, MTTC, Efficiency, scenario results, latency, memory, and failures |
 
-AB1 now freezes the shared diagnostic semantics: requested weights, actually
-executed Routes, and the actual fallback Route are separately observable. The
-retained Hybrid path records non-zero dense requests from Browsing Strategy but
-does not claim dense execution. B8's bounded rejected-constraint candidate was
-not retained because Development-160 supplied zero rejection turns; unchanged
-metrics under zero activation were not treated as proof. The next module after
-B8 review is B9 Browsing-First Conditional Dense Route. See the roadmap rather
-than inferring that each planned behavior is already implemented.
+AB1 freezes requested, executed, and fallback Route semantics. B8's bounded
+rejected-constraint candidate was reverted because Development-160 supplied
+zero rejection turns. B9 is retained at `b620357`: dense and fusion actually
+executed on 102 of 725 retrieval turns, only Browsing outcomes changed, and all
+four fixed folds were non-regressing. The next module after B9 review is B10a
+Constraint-Preserving CrossEncoder Rerank.
 
 ## What the Ablations Showed
 
@@ -127,14 +127,16 @@ Development-160:
 | Retained structured path | 0.76250 | 0.526989 | 0.653222 | Retain |
 | A11 broad extraction candidate | 0.72500 | 0.479085 | 0.613976 | Reject |
 | A11 bounded extraction scope | 0.86250 | 0.545568 | 0.721420 | Retain |
+| B9 broad-Browsing conditional dense | 0.86250 | 0.547329 | 0.722074 | Retain conditionally |
 | Dense only | 0.33750 | 0.160501 | 0.272650 | Reject as default |
 | Weighted RRF, k=10 | 0.75000 | 0.486620 | 0.637611 | Reject as default |
 | Semantic rerank, Top 30 | 0.78125 | 0.484162 | 0.656499 | Reject globally; keep experiment |
 
-Semantic reranking gained recall in some Buying/Browsing sessions but reduced
-MRR, regressed Intent Override, split the folds 2/2, and added substantial
-latency and memory. The next defensible semantic experiment is conditional and
-constraint-preserving, after A-side intent is stabilized.
+Global semantic reranking gained recall in some Buying/Browsing sessions but
+reduced MRR, regressed Intent Override, split the folds 2/2, and added
+substantial latency and memory. B9 instead retained a narrow Browsing-only
+dense route. B10a is the next constraint-preserving learned-reranking
+experiment.
 
 See [`docs/ablation_summary.md`](docs/ablation_summary.md) for decisions and the
 bound JSON reports under `docs/` for numerical provenance.
@@ -164,10 +166,10 @@ ignored by Git.
 
 Requirements:
 
-- Python 3.10 or newer for the default standard-library runtime.
+- Python 3.10 or newer for deterministic structured fallback behavior.
 - The official frozen catalog release.
-- Python 3.12 plus `requirements-dense.txt` only for optional semantic
-  experiments.
+- Python 3.12 plus `requirements-dense.txt`, the pinned model, and a compatible
+  embedding cache to activate the retained B9 dense route.
 
 Clone and enter the repository:
 
@@ -189,8 +191,8 @@ Run the complete test suite:
 .venv/bin/python -m unittest discover -s tests -v
 ```
 
-If no project virtual environment is present, the default runtime uses only
-the Python standard library:
+If no project virtual environment or dense cache is present, the Agent degrades
+to its deterministic standard-library structured path:
 
 ```bash
 python3 -m unittest discover -s tests -v
@@ -237,7 +239,7 @@ That information is evaluator-only and is never a valid Agent or retrieval
 input. A public demo must clearly separate the Agent-visible view from the
 evaluator/debug view.
 
-## Optional Semantic Experiments
+## Local Dense and Optional Semantic Setup
 
 Install pinned optional dependencies in a Python 3.12 environment:
 
@@ -246,7 +248,7 @@ python3.12 -m venv .venv
 .venv/bin/python -m pip install -r requirements-dense.txt
 ```
 
-Dense benchmark cache:
+Retained B9 dense cache:
 
 ```bash
 .venv/bin/python -m scripts.build_dense_index \
@@ -263,8 +265,8 @@ Semantic reranker cache and Development-160 experiment:
 ```
 
 Model downloads are cache-preparation actions, not ordinary runtime behavior.
-After preparation, loading is local-only and failures return the exact
-pre-rerank order.
+After preparation, loading is local-only. Missing/incompatible cache or model
+failures return the exact structured order.
 
 ## Current Optimization Route
 
@@ -309,22 +311,25 @@ executed Routes truthful. See
 B8's exact, confidence-aware penalty passed targeted tests but was reverted
 because all 726 Development turns carried zero rejected constraints. See
 [`docs/b8_rejected_constraint_evidence.md`](docs/b8_rejected_constraint_evidence.md).
-The dependency-ordered next module after review is B9 Browsing-First
-Conditional Dense Route.
+B9 now retains the Browsing-first conditional dense Route at `b620357`; see
+[`docs/b9_conditional_dense_evidence.md`](docs/b9_conditional_dense_evidence.md).
+The dependency-ordered next module after B9 review is B10a
+Constraint-Preserving CrossEncoder Rerank.
 `AGENTS.md` owns the taxonomy and
 leakage boundary; [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md)
 owns the complete order.
 
 ## Reliability and Cost
 
-Historical retained Development-160 evidence:
+Retained B9 Development-160 evidence:
 
 | Measure | Value |
 | --- | ---: |
-| Initialization | about 1.57 s |
-| Mean retrieval latency | about 21.22 ms in the A11 Development run |
-| p95 retrieval latency | about 40.61 ms in the A11 Development run |
-| Peak RSS | about 578 MB |
+| Initialization | about 3.63 s |
+| Mean retrieval latency | about 21.67 ms |
+| p95 retrieval latency | about 40.13 ms |
+| Peak RSS | about 1.109 GB |
+| Dense route mean / p95 | about 4.57 / 5.03 ms |
 | Prompt/completion tokens | 0 / 0 |
 | Response exceptions | 0 |
 | Invalid response payloads | 0 |
@@ -343,10 +348,10 @@ hard filters, duplicate/invalid ASINs, and Candidate Pool shortages.
 - Four primary Development Extraction misses remain. Broader extraction
   alternatives remain unproven without independent hash-bound evidence.
 - Profile ranking is disabled at weight 0.0.
-- Dense/fusion/semantic paths are not the default runtime.
-- The retained runtime therefore does not yet literally satisfy the
-  Browsing-dense/semantic Track 4 pillar; it currently has measured disabled
-  alternatives and a guarded follow-up route.
+- B9 closes the literal Browsing-dense route only for its narrow gate; global
+  dense remains rejected and an actual LLM ranker is still absent.
+- B9 adds about 1.5 seconds of initialization and about 546 MB of observed peak
+  RSS for a small rank/turn gain with no additional hits.
 - Long-term profile value has not been demonstrated; profile ranking remains
   disabled at weight 0.0.
 - Public sessions are deterministic simulations derived from product metadata,

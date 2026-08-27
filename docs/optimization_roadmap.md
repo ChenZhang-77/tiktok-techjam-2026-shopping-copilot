@@ -81,9 +81,9 @@ R0 failure taxonomy
                                               -> R5 delivery and rehearsal
 ```
 
-B9 is blocked by A8 and AB1 because conditional routing cannot be evaluated
-reliably when intent flips on ordinary clarification replies or when Strategy
-weights describe a route that the selected retriever does not execute.
+B9's A8 and AB1 blockers are complete, and B9 is retained. B10a is now blocked
+only on B9 dual review; it must preserve typed intent and truthful Route
+semantics rather than reopening those seams.
 
 ## R0 - Development Failure Taxonomy
 
@@ -258,9 +258,9 @@ remains a disclosed risk. See
 `docs/a11_extraction_scope_evidence.md`.
 
 Do not add a lightweight model parser now: the deterministic slice passed the
-gate, and the remaining feature-phrase misses do not justify another parser
-before the shared route seam is stable. AB1 is now complete; the next
-dependency-ordered module is B8.
+gate, and the remaining feature-phrase misses do not justify another parser.
+AB1 and B9 are now complete; B10a is the next dependency-ordered module after
+B9 dual review.
 
 ### A12 - Profile ablation
 
@@ -287,7 +287,7 @@ requests and zero dense executions across 726 Development retrievals. See
 Preserve the stable interface:
 
 ```text
-HybridRetriever.retrieve(request: RetrievalRequest) -> RetrievalResult
+Retriever.retrieve(request: RetrievalRequest) -> RetrievalResult
 ```
 
 Do not pass SessionState implementation objects into B. Extend the contract
@@ -339,19 +339,30 @@ rejection turns. Do not tune on Full-200 or the exposed holdout.
 
 ### B9 - Browsing-first conditional dense route
 
-Track 4 explicitly associates Browsing with diverse dense retrieval. Test a
-guarded Browsing route first while preserving the deterministic fallback.
-Existing evidence does not justify global enablement.
+**Status: retained at `b620357`.** B9 uses only the existing typed A/B seam:
+Browsing intent, positive Strategy dense weight, at most one active constraint,
+and at least 30 structured candidates. It does not parse `Strategy.reason`, use
+score margin, or invent an intent-confidence field. Gate skips, unavailable or
+incompatible local model/cache, dense errors, and over-budget results preserve
+the exact structured order.
 
-Candidates:
+Development-160 retained HitRate@10 `0.8625`, improved MRR from `0.545568` to
+`0.547329`, MTTC from `4.675` to `4.66875`, and TechnicalScore from `0.721420`
+to `0.722074`. Only Browsing changed; three sessions improved, one regressed,
+and no hit was gained or lost. All four fixed folds were non-regressing. Dense
+and fusion actually executed on 102 of 725 retrieval turns, with zero reported
+fallbacks or route failures.
 
-- broad or low-confidence Browsing as the primary compliance hypothesis,
-- stable Buying only as a secondary evidence-supported experiment,
-- disable immediately after Intent Override,
-- enable only when lexical/structured evidence is ambiguous,
-- preserve the deterministic structured fallback.
+The keep decision includes material cost: initialization rose by about `1.5 s`
+and observed peak RSS by about `546 MB`; dense p95 after startup warmup was
+about `5.03 ms`. Do not widen the gate without a separate Development-only
+experiment. See `docs/b9_conditional_dense_evidence.md`.
 
 ### B10a - Constraint-preserving CrossEncoder rerank
+
+**Status: next after B9 dual review.** Start with one bounded candidate and
+preserve the B9 gate/fallback behavior unless evidence explicitly supports a
+change.
 
 Candidates:
 

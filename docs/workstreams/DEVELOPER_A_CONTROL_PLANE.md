@@ -117,7 +117,7 @@ inside Control Plane files.
 Current public seam:
 
 ```text
-HybridRetriever.retrieve(request: RetrievalRequest) -> RetrievalResult
+Retriever.retrieve(request: RetrievalRequest) -> RetrievalResult
 ```
 
 Developer A constructs `RetrievalRequest` with:

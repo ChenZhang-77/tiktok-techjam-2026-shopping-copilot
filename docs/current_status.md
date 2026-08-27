@@ -37,12 +37,12 @@ Verified on 2026-08-27:
 
 | Item | Value |
 | --- | --- |
-| Historical branch at verification | `yuqing` |
-| Behavior commit | `bddf7d7e8ad7dda6880ae4d8e08d0c4c082e29e2` |
-| Local tracking ref | `origin/main` at the same commit when last inspected |
-| Full test suite | 148 passed |
+| Branch at B9 verification | `b/b9-browsing-conditional-dense` |
+| Retained behavior commit | `b620357` |
+| B9 selection data | Development-160 plus four fixed folds only |
+| Latest local full test suite | 256 passed |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
-| Default runtime | deterministic structured retrieval/ranking |
+| Default runtime | structured retrieval plus gated local dense/RRF for broad Browsing |
 
 Branch and remote facts can drift. Re-check them before reporting or changing
 the repository. Do not fetch, push, merge, or open a PR unless the user asks.
@@ -51,32 +51,32 @@ any runtime behavior change does.
 
 ## Verified Development Result
 
-The retained runtime after reviewed bounded A11 extraction at clean code commit
-`350cce2` (including the earlier tracing fix `b0c953d`) was reproduced on the fixed
-Development-160 split with the structured default:
+The retained runtime after bounded A11 extraction and B9 conditional dense at
+clean runtime commit `b620357` was reproduced on the fixed Development-160
+split:
 
 | Metric | Development-160 |
 | --- | ---: |
 | HitRate@10 | 0.86250 |
-| MRR | 0.545568 |
-| MTTC | 4.67500 |
-| Efficiency | 0.632500 |
-| TechnicalScore | 0.721420 |
+| MRR | 0.547329 |
+| MTTC | 4.66875 |
+| Efficiency | 0.633125 |
+| TechnicalScore | 0.722074 |
 
 Scenario diagnostics:
 
 | Scenario | Samples | HitRate@10 | MRR | MTTC | TechnicalScore |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | Boundary | 8 | 0.875000 | 0.576389 | 6.000000 | 0.710417 |
-| Browsing | 64 | 0.875000 | 0.535869 | 4.562500 | 0.727011 |
+| Browsing | 64 | 0.875000 | 0.540272 | 4.546875 | 0.728644 |
 | Buying | 64 | 0.843750 | 0.517591 | 4.328125 | 0.710590 |
 | Intent Override | 24 | 0.875000 | 0.635764 | 5.458333 | 0.739063 |
 
 Observed reliability was zero response exceptions, invalid payloads, reported
-fallbacks, and internal fallbacks. All four fixed folds improved in technical
-score. The bound artifact is
-`docs/a11_reports/development_scoped_extraction.json`; the decision record is
-`docs/a11_extraction_scope_evidence.md`.
+fallbacks, and route failures. Dense and fusion executed 102 times; only
+Browsing changed relative to AB1, and all four fixed folds were non-regressing.
+The bound artifact is `docs/b9_reports/development_conditional_dense.json`; the
+decision record is `docs/b9_conditional_dense_evidence.md`.
 
 ## Historical Final Public Result
 
@@ -115,6 +115,8 @@ user message
   -> in-memory SQLite FTS5 field-weighted candidate pool
   -> hard/soft cross-field constraint ranking
   -> guarded structured filtering with deterministic relaxation/fill
+  -> broad-Browsing gate -> pinned local dense retrieval + weighted RRF
+     (otherwise exact structured order)
   -> candidate-aware but still priority-biased clarification
   -> response guard
 ```
@@ -123,47 +125,45 @@ The public seam is:
 
 ```text
 Agent.respond(session_id, user_message, turn, top_k) -> response dict
-HybridRetriever.retrieve(request: RetrievalRequest) -> RetrievalResult
+Retriever.retrieve(request: RetrievalRequest) -> RetrievalResult
 ```
 
 The shared contract lives in `starter/contracts.py`. Developer A must not send
 evaluator labels. Developer B must not import Agent state implementation
 internals.
 
-The current Strategy can express a non-zero Browsing semantic weight, but the
-retained default `HybridRetriever` does not execute a semantic route. Treat that
-field as requested intent rather than proof of active execution until AB1 makes
-requested versus executed route semantics explicit.
+AB1 distinguishes requested from executed Routes. B9 consumes the existing
+typed request without changing the shared schema and executes dense only behind
+its Browsing/constraint/pool-size gate. It never parses `Strategy.reason` and
+does not use an unavailable intent-confidence field.
 
-## Measured but Disabled Paths
-
-These paths exist for reproducible experiments and failure coverage. They are
-not part of the default runtime:
+## Retained Conditional and Disabled Paths
 
 | Path | Decision |
 | --- | --- |
+| B9 broad-Browsing MiniLM + weighted RRF | Retained conditionally; exact structured fallback |
 | Dense-only MiniLM retrieval | Reject as default; weak recall/ranking |
-| Weighted RRF fusion | Reject as default; cross-validation regression |
+| Global weighted RRF fusion | Reject as default; cross-validation regression |
 | Top-30 CrossEncoder semantic rerank | Reject globally; small aggregate gain but MRR and Intent Override regression, high cost |
 | Profile ranking | Disabled at weight 0.0; no evidence-backed gain |
 
-Do not claim that the default runtime dynamically combines lexical, dense, and
-semantic routes. The defensible story is that the team implemented, measured,
-and rejected paths whose tradeoffs were not robust.
+Do not claim that every request combines lexical, dense, and semantic routes.
+The default Agent conditionally combines structured and dense evidence for a
+narrow Browsing bucket; Buying remains unchanged and no LLM ranker exists.
 
 ## Current Bottlenecks
 
 The next optimization phase starts from diagnosis, not from another model:
 
-1. `rejected_constraints` crosses the A/B seam but the retained B path does not
-   yet use it as a calibrated negative ranking signal.
+1. `rejected_constraints` crosses the A/B seam, but Development-160 supplied
+   no activation evidence for B8; it remains reverted.
 2. Clarification normally asks `feature` before using candidate partition
    evidence and does not first decide whether a question is needed.
 3. Four primary Extraction misses remain. The combined broad extraction
    candidate failed the keep gate, but its individual components do not have
    independent hash-bound evidence and remain unproven.
-4. The semantic reranker has useful scenario-specific signals, but global
-   enablement damages MRR and Intent Override.
+4. B9's dense gain is small and memory-heavy; B10a must show that a bounded,
+   constraint-preserving reranker adds value without harming Buying/Override.
 5. The final package and demo narrative lag the runtime.
 
 ## R0 Result
@@ -290,11 +290,22 @@ targeted tests, but Development-160 contained zero rejected constraints across
 matched AB1 without exercising the variable. This failed the keep gate; see
 `docs/b8_rejected_constraint_evidence.md`.
 
-After B8 dual review, the next dependency-ordered module is B9 Browsing-First
-Conditional Dense Route. Score margin remains forbidden as a gate.
+B9 Browsing-First Conditional Dense Route is retained at `b620357`. Relative to
+AB1, HitRate@10 is unchanged, MRR improves by `0.001761`, MTTC by `0.00625`, and
+TechnicalScore by `0.000654`. Only Browsing changed; three sessions improved,
+one regressed, and no hit was gained or lost. Fold TechnicalScore deltas were
+`+0.000238`, `0`, `0`, and `+0.002375`.
 
-The complete dependency order lives only in `docs/optimization_roadmap.md`.
-Do not start B9 until the B8 revert decision passes dual review.
+The default run observed 102 dense/fusion executions out of 725 retrieval
+turns, zero fallbacks/failures, dense p95 about `5.03 ms`, and overall retrieval
+p95 about `40.13 ms`. Startup rose from about `2.12 s` to `3.63 s`, and peak
+RSS from about `563 MB` to `1.109 GB`. This cost is part of the keep decision,
+not hidden overhead. See `docs/b9_conditional_dense_evidence.md`.
+
+After B9 dual review, the next dependency-ordered module is B10a
+Constraint-Preserving CrossEncoder Rerank. Score margin remains forbidden as a
+gate. The complete dependency order lives only in
+`docs/optimization_roadmap.md`.
 
 If submission is imminent, skip new behavior work and execute the delivery
 track in `docs/demo_and_submission_plan.md`.
@@ -323,6 +334,7 @@ track in `docs/demo_and_submission_plan.md`.
 | `docs/a10a_question_value_evidence.md` | Rejected full-pool question-value candidate and incomplete partition coverage |
 | `docs/a10b_query_plan_evidence.md` | Retained A-internal QueryPlan roles, parity, and A11 boundary |
 | `docs/a11_extraction_scope_evidence.md` | Retained bounded extraction scope, rejected expansions, folds, and remaining risks |
+| `docs/b9_conditional_dense_evidence.md` | Retained Browsing-only dense gate, quality, route truth, cost, and folds |
 | `docs/ablation_summary.md` | Human-readable keep/reject evidence |
 | `docs/workstreams/DEVELOPER_A_CONTROL_PLANE.md` | Standalone A-side route |
 | `docs/workstreams/DEVELOPER_B_RETRIEVAL_RANKING.md` | Standalone B-side route |
@@ -331,10 +343,11 @@ track in `docs/demo_and_submission_plan.md`.
 
 ## Remaining Track 4 Coverage Gaps
 
-- Browsing-specific diverse dense retrieval is implemented only as disabled
-  experimental machinery, not retained runtime behavior.
-- Semantic reranking is reproducible but globally rejected; conditional use is
-  still a hypothesis.
+- Browsing-specific diverse dense retrieval is retained only behind the B9
+  broad-Browsing gate; it is not a global route.
+- CrossEncoder reranking is reproducible but globally rejected; a
+  constraint-preserving conditional use remains a hypothesis.
+- An actual LLM semantic ranker has not been implemented or measured.
 - Profile ranking remains disabled at weight `0.0`; long-term profile value has
   not been demonstrated.
 - Candidate-aware clarification exists, but a complete should-ask gate has not

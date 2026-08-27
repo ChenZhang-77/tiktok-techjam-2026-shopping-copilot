@@ -19,28 +19,30 @@ The defensible technical story is:
 conversation
   -> active intent and constraint state
   -> distilled retrieval request
-  -> lexical candidates plus structured scoring
+  -> structured candidates
+  -> gated local dense/RRF for broad Browsing, exact structured fallback
   -> priority-biased clarification selection
   -> response guard and catalog-valid Top 10
 ```
 
-Do not claim that dense retrieval, RRF, or semantic reranking powers the default
-system. They were evaluated and rejected globally; that negative evidence is a
-strength when presented honestly.
+Do not claim that every turn uses dense retrieval, RRF, or semantic reranking.
+B9 runs pinned local dense plus weighted RRF only behind its broad-Browsing
+gate; global variants were rejected.
 
-Do not imply that the retained runtime satisfies the literal Browsing-dense or
-LLM semantic-ranking pillar. Dense retrieval and CrossEncoder reranking are
-reproducible, measured, and disabled; an actual LLM ranker has not been
-implemented or measured. If a conditional experiment is not retained, present
-that outcome as an explicit coverage gap. Profile ranking is likewise disabled
-at weight 0.0.
+The retained runtime now has literal Browsing-dense execution only for B9's
+narrow gate. Do not expand that into a global hybrid claim or an LLM semantic-
+ranking claim. CrossEncoder reranking is measured and globally rejected; an
+actual LLM ranker has not been implemented or measured. Profile ranking is
+likewise disabled at weight 0.0.
 
 ## Evidence available now
 
-- Integrated checkpoint: `bddf7d7`.
-- Test suite at that checkpoint: `148/148` passing.
-- Development-160: HitRate@10 `0.7625`, MRR `0.526989`, MTTC `5.30625`,
-  TechnicalScore `0.653222`.
+- Retained B9 runtime commit: `b620357`.
+- Current full test suite: `256/256` passing.
+- Development-160: HitRate@10 `0.8625`, MRR `0.547329`, MTTC `4.66875`,
+  TechnicalScore `0.722074`.
+- B9 route: dense/fusion executed 102 times; all four folds non-regressing;
+  startup about `3.63 s`, peak RSS about `1.109 GB`.
 - Historical full-200 run: HitRate@10 `0.765`, MRR `0.517355`, MTTC `5.375`,
   TechnicalScore `0.650207`.
 
@@ -148,7 +150,7 @@ from individual implementation. Do not infer ownership from filenames alone.
 
 ## Questions to rehearse
 
-- Why did the simpler structured route beat dense/RRF/semantic variants?
+- Why is dense/RRF restricted to broad Browsing rather than enabled globally?
 - How do you prevent stale preferences after an intent change?
 - When is a clarifying question worth its MTTC cost?
 - How do you handle sparse product metadata?

@@ -24,11 +24,12 @@ Development-160 results:
 | A11 bounded extraction scope | 0.86250 | 0.545568 | 4.67500 | 0.721420 | Retain |
 | AB1 route-execution semantics | 0.86250 | 0.545568 | 4.67500 | 0.721420 | Retain parity/observability |
 | B8 rejected-constraint candidate | 0.86250 | 0.545568 | 4.67500 | 0.721420 | Revert; zero Development activation |
+| B9 broad-Browsing conditional dense | 0.86250 | 0.547329 | 4.66875 | 0.722074 | Retain conditionally |
 
-The current retained runtime combines the structured retrieval path, bounded
-A11 Control Plane extraction, and AB1 route-execution diagnostics. A11 passed
-all four fixed folds; the broad extraction alternative did not. AB1 preserves
-exact metric and session parity.
+The current retained runtime combines bounded A11 extraction, AB1 route
+diagnostics, and B9 local dense/RRF behind a narrow broad-Browsing gate. A11
+passed all four fixed folds, AB1 preserved parity, and B9 was non-regressing on
+all four folds.
 
 ## Why Bounded A11 Extraction Was Retained
 
@@ -63,6 +64,21 @@ Every metric, session, scenario, and fold therefore matched AB1 without
 exercising the code. This failed the documented intended-bucket keep gate and
 the candidate was reverted. Evidence:
 `docs/b8_rejected_constraint_evidence.md`.
+
+## Why B9 Conditional Dense Was Retained
+
+B9 uses typed Browsing intent, positive Strategy dense weight, no more than one
+active constraint, and a structured pool of at least 30 products. It ran dense
+and weighted RRF on 102 of 725 Development retrieval turns. Buying, Intent
+Override, and Boundary matched AB1 exactly; Browsing TechnicalScore improved by
+`0.001633`, and no fold regressed.
+
+The aggregate gain is deliberately described as small: HitRate@10 is unchanged,
+MRR rises by `0.001761`, MTTC improves by `0.00625`, and no hit is gained or
+lost. Startup warmup keeps dense p95 near `5.03 ms`, but initialization rises by
+about `1.5 s` and observed peak RSS by about `546 MB`. The route is retained for
+narrow Track 4 Browsing coverage and exact fallback, not as evidence for global
+dense enablement. Evidence: `docs/b9_conditional_dense_evidence.md`.
 
 ## Why Structured Was Retained
 
@@ -123,12 +139,9 @@ It gained ten sessions and lost seven. A global replacement would therefore
 trade ranking quality, Intent Override safety, and operational cost for an
 unstable aggregate improvement.
 
-The next defensible semantic experiment is conditional and
-constraint-preserving, after A-side intent is stabilized:
+The next defensible semantic experiment is the B10a conditional,
+constraint-preserving CrossEncoder:
 
-- broad or low-confidence Browsing first, matching the literal Track 4 route,
-- stable Buying only as a separate evidence-supported hypothesis,
-- disabled immediately after Intent Override,
 - structured Top 3 anchored,
 - positions 4-30 reranked,
 - semantic score cannot override hard constraints,
@@ -136,22 +149,23 @@ constraint-preserving, after A-side intent is stabilized:
 
 Evidence: `docs/b5_semantic_rerank_cv.json`.
 
-Until such a route passes its gate, Browsing-dense retrieval and semantic
-ranking remain explicit Track 4 coverage gaps rather than retained-runtime
-claims. The same rule applies to profile ranking, which remains disabled at
-weight 0.0.
+B9 now covers dense retrieval for its narrow broad-Browsing bucket. A
+CrossEncoder remains a learned reranker rather than an LLM, and an actual LLM
+ranker remains an explicit Track 4 gap. The same rule applies to profile
+ranking, which remains disabled at weight 0.0.
 
 ## Runtime Cost and Reliability
 
-Current AB1 Development-160 evidence:
+Current B9 Development-160 evidence:
 
 | Measure | Value |
 | --- | ---: |
-| Initialization | 2223.707417 ms |
-| Mean retrieval latency | 22.552566 ms |
-| p50 retrieval latency | 21.875833 ms |
-| p95 retrieval latency | 42.728083 ms |
-| Peak RSS | 564264960 bytes |
+| Initialization | 3629.072417 ms |
+| Mean retrieval latency | 21.668122 ms |
+| p95 retrieval latency | 40.130167 ms |
+| Max retrieval latency | 58.298500 ms |
+| Dense mean / p95 latency | 4.570372 / 5.030792 ms |
+| Peak RSS | 1109377024 bytes |
 | Prompt/completion tokens | 0 / 0 |
 | Response exceptions | 0 |
 | Invalid payloads | 0 |
@@ -165,11 +179,10 @@ semantic worker is terminated and joined rather than left running.
 
 Use this claim:
 
-> We built and measured lexical, structured, dense, fusion, and semantic
-> ranking paths, then retained the deterministic structured path because it was
-> the strongest robust default. Optional semantic paths remain reproducible and
-> failure-safe, and future work targets conditional activation rather than
-> global complexity.
+> We retain deterministic structured retrieval for every request and add pinned
+> local dense/RRF only for a measured broad-Browsing bucket. Global dense and
+> CrossEncoder variants were rejected; every optional failure returns the exact
+> structured order.
 
 Do not claim:
 
