@@ -3,7 +3,7 @@
 ## Decision
 
 Retain the reviewed bounded A11 candidate at clean runtime code commit
-`c50e69f`; the earlier R0 tracing fix remains in its history at `b0c953d`. The
+`f40e265`; the earlier R0 tracing fix remains in its history at `b0c953d`. The
 retained change is deterministic, A-owned, and
 keeps the existing `RetrievalRequest.query` contract and clarification policy.
 
@@ -88,8 +88,8 @@ an isolated causal conclusion.
 - Shared A/B schema: unchanged.
 - Question policy: unchanged.
 - Model/network/token cost: none.
-- Initialization: `1320.31 ms -> 1569.28 ms` in the recorded runs.
-- Peak RSS: approximately unchanged (`579,010,560 -> 578,469,888` bytes).
+- Initialization: `1320.31 ms -> 1568.25 ms` in the recorded runs.
+- Peak RSS: approximately unchanged (`579,010,560 -> 578,748,416` bytes).
 - Response latency is not directly comparable because A11 reaches correct
   products in fewer turns; no latency regression was observed in the report.
 
