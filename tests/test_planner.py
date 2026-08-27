@@ -51,6 +51,13 @@ class PlannerTest(unittest.TestCase):
         self.assertEqual(strategy.lexical_weight, 0.8)
         self.assertEqual(strategy.structured_weight, 0.2)
 
+    def test_adaptive_flag_preserves_existing_positional_config_order(self) -> None:
+        config = StrategyConfig(70, 90)
+
+        self.assertEqual(config.buying_depth_sparse, 70)
+        self.assertEqual(config.buying_depth_constrained, 90)
+        self.assertFalse(config.adaptive_depth_enabled)
+
     def test_strategy_reason_exposes_persisted_intent_transition(self) -> None:
         state = SessionState(session_id="s1", user_profile={})
         state.set_intent_assessment(
@@ -143,7 +150,10 @@ class PlannerTest(unittest.TestCase):
             plan_strategy(medium, turn=1, top_k=10, config=candidate).retrieval_depth,
             80,
         )
-        self.assertEqual(plan_strategy(legacy, turn=1, top_k=10).retrieval_depth, 80)
+        self.assertEqual(
+            plan_strategy(legacy, turn=1, top_k=10, config=candidate).retrieval_depth,
+            80,
+        )
 
 if __name__ == "__main__":
     unittest.main()

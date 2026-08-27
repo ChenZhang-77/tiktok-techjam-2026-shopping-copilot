@@ -7,7 +7,6 @@ from starter.core.state import SessionState
 
 @dataclass(frozen=True)
 class StrategyConfig:
-    adaptive_depth_enabled: bool = False
     buying_depth_sparse: int = 60
     buying_depth_constrained: int = 80
     browsing_depth_sparse: int = 120
@@ -17,6 +16,7 @@ class StrategyConfig:
     browsing_lexical_weight: float = 0.62
     browsing_structured_weight: float = 0.20
     browsing_semantic_weight: float = 0.18
+    adaptive_depth_enabled: bool = False
 
 
 @dataclass(frozen=True)
