@@ -7,6 +7,7 @@ from pathlib import Path
 
 from starter.agent import Agent
 from starter.contracts import Candidate, RetrievalDiagnostics, RetrievalRequest, RetrievalResult
+from starter.retrieval import HybridRetriever
 
 
 class _RecordingRetriever:
@@ -276,15 +277,19 @@ class AgentSmokeTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             catalog_path = Path(directory) / "catalog.jsonl"
             _write_catalog(catalog_path)
-            agent = Agent(catalog_path)
+            retriever = HybridRetriever(catalog_path)
+            agent = Agent(catalog_path, retriever=retriever)
             agent.reset("catalog-context", {})
 
-            response = agent.respond(
-                "catalog-context",
-                "I need trail running shoes.",
-                1,
-                2,
-            )
+            try:
+                response = agent.respond(
+                    "catalog-context",
+                    "I need trail running shoes.",
+                    1,
+                    2,
+                )
+            finally:
+                retriever.close()
 
         self.assertIn(
             "trail running shoes",

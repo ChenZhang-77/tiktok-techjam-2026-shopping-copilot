@@ -42,11 +42,17 @@ class Agent:
     ) -> None:
         self.catalog_path = Path(catalog_path)
         self.strategy_config = strategy_config or StrategyConfig()
+        catalog_backed_retriever = (
+            retriever is None or getattr(retriever, "catalog_path", None) is not None
+        )
+        self.context_vocabulary = (
+            CatalogVocabulary.from_catalog(self.catalog_path)
+            if catalog_backed_retriever
+            else CatalogVocabulary.empty()
+        )
         if retriever is None:
-            self.context_vocabulary = CatalogVocabulary.from_catalog(self.catalog_path)
             self.retriever = HybridRetriever(self.catalog_path)
         else:
-            self.context_vocabulary = CatalogVocabulary.empty()
             self.retriever = retriever
         self._sessions: dict[str, SessionState] = {}
         self._catalog_ids = set(self.retriever.catalog_ids)
