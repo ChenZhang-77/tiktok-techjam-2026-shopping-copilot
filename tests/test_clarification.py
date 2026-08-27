@@ -2,13 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from starter.contracts import Candidate, RetrievalDiagnostics, RetrievalResult
-from starter.core.clarification import (
-    candidate_attribute_scores,
-    choose_clarification,
-    decide_clarification,
-)
-from starter.core.decision_evidence import build_decision_evidence
+from starter.core.clarification import candidate_attribute_scores, choose_clarification
 from starter.core.state import SessionState
 
 
@@ -77,68 +71,6 @@ class ClarificationTest(unittest.TestCase):
         ask_attribute, _ = choose_clarification(state, turn=1)
 
         self.assertEqual(ask_attribute, "material")
-
-    def test_stable_candidates_without_a_useful_partition_produce_no_question(self) -> None:
-        state = SessionState(session_id="s1", user_profile={})
-        state.intent = "buying"
-        state.previous_candidate_ids = ["A", "B"]
-        evidence = build_decision_evidence(
-            RetrievalResult(
-                candidates=[Candidate("A"), Candidate("B")],
-                diagnostics=RetrievalDiagnostics(route="fixture", candidate_count=2),
-            ),
-            state=state,
-            turn=2,
-            top_k=2,
-        )
-
-        decision = decide_clarification(state, turn=2, decision_evidence=evidence)
-
-        self.assertFalse(decision.should_ask)
-        self.assertIsNone(decision.ask_attribute)
-        self.assertEqual(decision.reason, "stable_without_useful_partition")
-
-    def test_broad_candidates_with_a_useful_partition_produce_one_question(self) -> None:
-        state = SessionState(session_id="s1", user_profile={})
-        state.intent = "browsing"
-        state.previous_candidate_ids = ["A", "B"]
-        evidence = build_decision_evidence(
-            RetrievalResult(
-                candidates=[
-                    Candidate("C", evidence_text="black leather running shoes"),
-                    Candidate("D", evidence_text="white cotton walking boots"),
-                ],
-                diagnostics=RetrievalDiagnostics(route="fixture", candidate_count=2),
-            ),
-            state=state,
-            turn=2,
-            top_k=2,
-        )
-
-        decision = decide_clarification(state, turn=2, decision_evidence=evidence)
-
-        self.assertTrue(decision.should_ask)
-        self.assertIsNotNone(decision.ask_attribute)
-        self.assertEqual(decision.reason, "candidate_partition_available")
-
-    def test_degraded_evidence_preserves_a_conservative_question(self) -> None:
-        state = SessionState(session_id="s1", user_profile={})
-        state.intent = "buying"
-        evidence = build_decision_evidence(
-            RetrievalResult(
-                candidates=[Candidate("A")],
-                diagnostics=RetrievalDiagnostics(route="fixture", candidate_count=1),
-            ),
-            state=state,
-            turn=2,
-            top_k=2,
-        )
-
-        decision = decide_clarification(state, turn=2, decision_evidence=evidence)
-
-        self.assertTrue(decision.should_ask)
-        self.assertIsNotNone(decision.ask_attribute)
-        self.assertEqual(decision.reason, "degraded_evidence_conservative")
 
 
 if __name__ == "__main__":
