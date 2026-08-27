@@ -216,6 +216,35 @@ class ConditionalDenseRetrieverTest(unittest.TestCase):
             {"dense": "dense_latency_budget_exceeded"},
         )
 
+    def test_successful_fusion_preserves_an_upstream_structured_fallback(self) -> None:
+        base = FakeRetriever(
+            replace(
+                _result("structured", ["A", "B", "C", "D"]),
+                diagnostics=replace(
+                    _result("structured", ["A", "B", "C", "D"]).diagnostics,
+                    fallback_used=True,
+                    fallback_route="structured",
+                    route_failures={"structured": "guarded_filter_relaxed"},
+                ),
+            )
+        )
+        dense = FakeRetriever(_result("dense", ["D", "C", "E", "B"]))
+        retriever = ConditionalDenseRetriever(
+            base,
+            dense,
+            config=ConditionalDenseConfig(min_base_candidates=3),
+        )
+
+        result = retriever.retrieve(_request())
+
+        self.assertEqual(result.diagnostics.route, "fusion")
+        self.assertTrue(result.diagnostics.fallback_used)
+        self.assertEqual(result.diagnostics.fallback_route, "structured")
+        self.assertEqual(
+            result.diagnostics.route_failures,
+            {"structured": "guarded_filter_relaxed"},
+        )
+
     def test_legacy_base_keeps_ab1_route_semantics_unreported(self) -> None:
         legacy = FakeRetriever(
             replace(

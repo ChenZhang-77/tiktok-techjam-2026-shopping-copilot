@@ -324,8 +324,8 @@ class ConditionalDenseRetriever:
             base.diagnostics,
             route="fusion",
             candidate_count=len(candidates),
-            fallback_used=False,
-            fallback_route=None,
+            fallback_used=base.diagnostics.fallback_used,
+            fallback_route=base.diagnostics.fallback_route,
             latency_ms=round(
                 float(base.diagnostics.latency_ms or 0.0)
                 + float(dense.diagnostics.latency_ms or 0.0)
