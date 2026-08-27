@@ -99,6 +99,9 @@ class NumpySentenceBackend:
         ordered = sorted(selected.tolist(), key=lambda index: (-float(scores[index]), index))
         return [(index, float(scores[index])) for index in ordered]
 
+    def prepare(self) -> None:
+        self._load_model()
+
 
 class DenseRetriever:
     """Optional local dense route with deterministic BM25 degradation."""
@@ -222,6 +225,22 @@ class DenseRetriever:
             request,
             self._unavailable_reason or "dense_route_unavailable",
         )
+
+    def prepare(self) -> str | None:
+        """Load the local query model before a request reaches the dense Route."""
+
+        if self._backend is None:
+            return self._unavailable_reason or "dense_route_unavailable"
+        prepare_backend = getattr(self._backend, "prepare", None)
+        if not callable(prepare_backend):
+            return None
+        try:
+            prepare_backend()
+        except Exception:
+            self._backend = None
+            self._unavailable_reason = "dense_warmup_failed"
+            return self._unavailable_reason
+        return None
 
     def configuration_snapshot(self) -> dict:
         metadata_path = self.config.cache_dir / "metadata.json"

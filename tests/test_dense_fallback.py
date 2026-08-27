@@ -67,6 +67,65 @@ def _request() -> RetrievalRequest:
 
 
 class DenseFallbackTest(unittest.TestCase):
+    def test_prepare_warms_a_compatible_backend_without_querying_products(self) -> None:
+        class PreparedBackend:
+            def __init__(self) -> None:
+                self.prepare_calls = 0
+
+            def prepare(self) -> None:
+                self.prepare_calls += 1
+
+            def rank(self, query: str, top_n: int) -> list[tuple[int, float]]:
+                return [(0, 1.0)]
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "catalog.jsonl"
+            cache = root / "cache"
+            cache.mkdir()
+            _write_catalog(catalog)
+            _write_compatible_cache(cache, catalog)
+            backend = PreparedBackend()
+            retriever = DenseRetriever(
+                catalog,
+                config=DenseConfig(cache_dir=cache),
+                backend_factory=lambda _config, _ids: backend,
+            )
+
+            status = retriever.prepare()
+
+            self.assertIsNone(status)
+            self.assertEqual(backend.prepare_calls, 1)
+            self.assertEqual(retriever.configuration_snapshot()["cache_status"], "compatible")
+
+    def test_prepare_failure_disables_dense_and_preserves_structured_fallback(self) -> None:
+        class FailingPrepareBackend:
+            def prepare(self) -> None:
+                raise OSError("model unavailable")
+
+            def rank(self, query: str, top_n: int) -> list[tuple[int, float]]:
+                raise AssertionError("disabled backend must not be queried")
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "catalog.jsonl"
+            cache = root / "cache"
+            cache.mkdir()
+            _write_catalog(catalog)
+            _write_compatible_cache(cache, catalog)
+            retriever = DenseRetriever(
+                catalog,
+                config=DenseConfig(cache_dir=cache),
+                backend_factory=lambda _config, _ids: FailingPrepareBackend(),
+            )
+
+            status = retriever.prepare()
+            result = retriever.retrieve(_request())
+
+            self.assertEqual(status, "dense_warmup_failed")
+            self.assertTrue(result.diagnostics.fallback_used)
+            self.assertIn("dense_warmup_failed", result.diagnostics.notes)
+
     def test_compatible_cache_rejects_invalid_request_before_backend_query(self) -> None:
         class FakeBackend:
             called = False

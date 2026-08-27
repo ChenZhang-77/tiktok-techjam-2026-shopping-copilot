@@ -80,6 +80,7 @@ class ConditionalDenseRetriever:
         dense_retriever: Retriever,
         *,
         config: ConditionalDenseConfig | None = None,
+        dense_warmup_status: str = "not_run",
     ) -> None:
         if base_retriever.catalog_ids != dense_retriever.catalog_ids:
             raise ValueError("base and dense retrievers must share one catalog")
@@ -88,6 +89,7 @@ class ConditionalDenseRetriever:
         self.config = config if config is not None else ConditionalDenseConfig()
         self.catalog_ids = base_retriever.catalog_ids
         self.fallback_ids = base_retriever.fallback_ids
+        self._dense_warmup_status = dense_warmup_status
         base_catalog_path = getattr(base_retriever, "catalog_path", None)
         if base_catalog_path is not None:
             self.catalog_path = Path(base_catalog_path)
@@ -111,7 +113,13 @@ class ConditionalDenseRetriever:
             config=dense_config,
             lexical_fallback=base,
         )
-        return cls(base, dense, config=config)
+        warmup_failure = dense.prepare()
+        return cls(
+            base,
+            dense,
+            config=config,
+            dense_warmup_status=warmup_failure or "ready",
+        )
 
     def _gate_reason(
         self,
@@ -373,6 +381,7 @@ class ConditionalDenseRetriever:
                 self.config.max_accepted_dense_latency_ms
             ),
             "latency_budget_kind": "post_execution_acceptance_budget",
+            "dense_warmup_status": self._dense_warmup_status,
         }
 
     def dense_configuration(self) -> dict[str, object]:
