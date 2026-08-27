@@ -192,7 +192,7 @@ attributes as implicitly low. Revisit A10a only after A11 provides A-owned
 coverage or AB1 coordinates missing B semantics, plus an explicit fallback for
 uncovered attributes. A10b was the historical next step and is now complete.
 
-A10b Internal QueryPlan is retained at `a6446e9`. It is A-owned and separates
+A10b Internal QueryPlan is retained at `9560344`. It is A-owned and separates
 category/hard/soft/semantic/residual/excluded evidence, but renders only the
 existing single `RetrievalRequest.query`; the shared schema is unchanged.
 Rejected and overridden terms must never render positive. Preserve residual

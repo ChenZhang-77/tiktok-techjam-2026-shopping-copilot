@@ -40,7 +40,7 @@ class A10bQueryPlanEvidenceTest(unittest.TestCase):
         for report in self.record["reports"].values():
             path = ROOT / report["path"]
             self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), report["sha256"])
-        self.assertEqual(self.candidate["code_provenance"]["commit"], "a6446e9")
+        self.assertEqual(self.candidate["code_provenance"]["commit"], "9560344")
         self.assertTrue(self.candidate["code_provenance"]["worktree_clean"])
         self.assertEqual(self.candidate["evaluation"]["split"], "development")
         for metric in METRICS:

@@ -2,7 +2,7 @@
 
 ## Decision
 
-Retain the A-owned `QueryPlan` at clean code commit `a6446e9`. It separates
+Retain the A-owned `QueryPlan` at clean code commit `9560344`. It separates
 category, hard, soft, semantic, residual, and excluded evidence, then renders
 the same single `RetrievalRequest.query` string expected by B. No shared schema,
 question policy, intent transition, or state ownership changed.

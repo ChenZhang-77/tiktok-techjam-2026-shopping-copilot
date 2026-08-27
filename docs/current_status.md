@@ -232,7 +232,7 @@ evidence is not comparable across all allowed question attributes. See
 
 ## A10b Result
 
-A10b is retained at clean code commit `a6446e9`. The A-owned `QueryPlan`
+A10b is retained at clean code commit `9560344`. The A-owned `QueryPlan`
 separates category, hard, soft, semantic, residual, and excluded evidence while
 still emitting the existing single `RetrievalRequest.query`. Rejected and
 overridden values never render positive; residual text remains until A11 can

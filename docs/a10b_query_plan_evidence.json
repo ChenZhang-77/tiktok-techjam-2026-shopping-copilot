@@ -2,7 +2,7 @@
   "experiment": "A10b_internal_query_plan",
   "hypothesis": "An A-owned role-separated QueryPlan can make query construction auditable and keep rejected/overridden values out of positive evidence without changing the shared request schema or retained Development quality.",
   "failure_class_addressed": "Query Construction",
-  "run_code_commit": "a6446e9",
+  "run_code_commit": "9560344",
   "baseline_code_commit": "3988b8b",
   "runtime_disposition": "retained",
   "files_changed": [
@@ -36,7 +36,7 @@
     },
     "candidate": {
       "path": "docs/a10b_reports/development_query_plan.json",
-      "sha256": "29f89a4f4e4fa71a41761695a7f35e3ab3a09bad2842cb897c592d59422d2754"
+      "sha256": "6beca10704aa388d14c9e5767553a47452dd28fa68c20ef58d55cb235b1ad886"
     }
   },
   "development_160": {
