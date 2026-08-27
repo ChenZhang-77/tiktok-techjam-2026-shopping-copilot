@@ -198,9 +198,10 @@ A8 persistent IntentAssessment
                       -> AB1 shared contract and route-semantics freeze
 ```
 
-AB1 remains a shared gate. After it freezes, A12 must either run as a time-boxed
-profile ablation or be explicitly deferred as an open Track 4 gap. Do not start
-A12 before the explicit-intent path is stable.
+AB1 passed at `2ebb954`; its shared diagnostics preserve the A-owned Strategy
+request while exposing B-owned execution and fallback. A12 must still either
+run as a time-boxed profile ablation or be explicitly deferred as an open
+Track 4 gap. Do not start A12 before the explicit-intent path is stable.
 
 ## A8 - Stateful Intent Persistence
 
@@ -429,8 +430,8 @@ existing single `RetrievalRequest.query` string. No shared schema change is
 expected.
 
 Create A10c only if a measured B experiment must consume components separately.
-A10c is blocked on A/B agreement, AB1 schema/range/fallback definitions, and
-compatibility tests. Developer A must not add typed components to
+A10c still requires a separate A/B agreement even though AB1 now freezes Route
+diagnostics and fallback semantics. Developer A must not add typed components to
 `RetrievalRequest` unilaterally.
 
 Broader residual cleanup was not retained, and its isolated effect remains

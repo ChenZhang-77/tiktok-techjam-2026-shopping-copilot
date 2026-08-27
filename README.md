@@ -107,10 +107,11 @@ Shared types and leakage validation are in `starter/contracts.py`.
 | Dynamic Context Programming | The Agent rebuilds the query from active state and records Strategy, Candidate, relaxation, and fallback diagnostics |
 | Product and Efficiency Metrics | Development evaluation reports HitRate@10, MRR, MTTC, Efficiency, scenario results, latency, memory, and failures |
 
-The next module freezes the shared request/diagnostic contract and makes
-requested versus executed route semantics explicit. A non-zero requested
-Strategy weight is not evidence that the retained retriever executed that
-route. See the roadmap rather than inferring that each planned behavior is
+AB1 now freezes the shared diagnostic semantics: requested weights, actually
+executed Routes, and the actual fallback Route are separately observable. The
+retained Hybrid path records non-zero dense requests from Browsing Strategy but
+does not claim dense execution. The next module is B8 Rejected-Constraint
+Ranking; see the roadmap rather than inferring that each planned behavior is
 already implemented.
 
 ## What the Ablations Showed
@@ -300,8 +301,10 @@ fixed folds improved. The combined broad candidate was rejected, while its
 individual components remain unproven without independent evidence. Boundary
 quality remains a disclosed risk. See
 [`docs/a11_extraction_scope_evidence.md`](docs/a11_extraction_scope_evidence.md).
-The dependency-ordered next module is AB1 Shared Contract and Active-Route
-Semantics Freeze.
+AB1 retained exact Development/fold/session parity while making requested and
+executed Routes truthful. See
+[`docs/ab1_route_semantics_evidence.md`](docs/ab1_route_semantics_evidence.md).
+The dependency-ordered next module is B8 Rejected-Constraint Ranking.
 `AGENTS.md` owns the taxonomy and
 leakage boundary; [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md)
 owns the complete order.

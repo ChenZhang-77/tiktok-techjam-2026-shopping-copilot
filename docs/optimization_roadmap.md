@@ -259,7 +259,8 @@ remains a disclosed risk. See
 
 Do not add a lightweight model parser now: the deterministic slice passed the
 gate, and the remaining feature-phrase misses do not justify another parser
-before AB1. The next dependency-ordered module is AB1.
+before the shared route seam is stable. AB1 is now complete; the next
+dependency-ordered module is B8.
 
 ### A12 - Profile ablation
 
@@ -274,6 +275,14 @@ ablation leaves the Track 4 long-term-profile gap open.
 ## R2 - Shared Evidence and Contract Loop
 
 ### AB1 - Shared contract and active-route semantics freeze
+
+**Status: retained at `2ebb954`.** AB1 appends requested Route weights,
+actually executed Routes, and the actual fallback Route to shared diagnostics.
+It preserves the original request/query contract and positional diagnostics
+compatibility. Development metrics, scenarios, sessions, and four folds are
+exactly unchanged. The retained default now truthfully records 475 dense
+requests and zero dense executions across 726 Development retrievals. See
+`docs/ab1_route_semantics_evidence.md`.
 
 Preserve the stable interface:
 
@@ -299,9 +308,9 @@ A owns whether to ask, which attribute to ask, and when Strategy changes. B
 owns how the requested Strategy executes. Diagnostics must not decide dialogue
 policy inside the retrieval plane.
 
-AB1 must also distinguish requested Strategy from executed route. A non-zero
-weight cannot be presented as an active route when the selected retriever
-ignores it; diagnostics must make execution and fallback observable.
+AB1 distinguishes requested Strategy from executed Route. A non-zero weight is
+not presented as active when the selected retriever ignores it; diagnostics
+make execution and fallback observable.
 
 ## R3 - B-Side Targeted Retrieval and Ranking
 

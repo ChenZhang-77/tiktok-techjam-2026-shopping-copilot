@@ -88,10 +88,9 @@ B8 rejected-constraint ranking
   -> B12 adaptive candidate depth, only if supported
 ```
 
-Do not begin B8-B12 before the current AB1 shared route-semantics gate is
-resolved. A11 is retained and A-side intent/extraction is stable enough for
-AB1; B should now contribute its owned route, fallback, range, and diagnostics
-definitions. B9 remains blocked until AB1 passes.
+AB1 passed at `2ebb954`. Do not begin B9-B12 before B8 receives its own
+keep/revert decision and dual review. A11 remains the retained A-side baseline;
+B8 is now the next executable B-owned module.
 
 ## AB0 and AB1 obligations for B
 
@@ -99,10 +98,12 @@ AB0 should first reuse the existing full `RetrievalResult` and diagnostics. B
 must define any retrieval-produced score, coverage, partition, relaxation,
 route, or fallback field that A uses. Do not move dialogue policy into B.
 
-AB1 freezes shared names, types, score ranges, missing-data behavior, and
-compatibility tests. It must also distinguish requested Strategy from executed
-route: the current default retriever does not become semantic merely because a
-Strategy contains a non-zero semantic weight.
+AB1 freezes shared names, types, missing-data behavior, and compatibility tests
+at `2ebb954`. `requested_route_weights` records Strategy intent,
+`executed_routes` records actual execution, and `fallback_route` records the
+degraded Route. The current default retriever therefore does not become dense
+merely because Browsing carries a non-zero semantic weight. Full evidence:
+`docs/ab1_route_semantics_evidence.md`.
 
 ## B8 — Rejected-constraint ranking
 

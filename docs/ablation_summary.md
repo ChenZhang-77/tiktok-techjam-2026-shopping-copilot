@@ -22,10 +22,12 @@ Development-160 results:
 | Semantic rerank, Top 30 | 0.78125 | 0.484162 | 4.96875 | 0.656499 | Reject globally; retain experiment |
 | A11 broad extraction candidate | 0.72500 | 0.479085 | 5.61250 | 0.613976 | Reject |
 | A11 bounded extraction scope | 0.86250 | 0.545568 | 4.67500 | 0.721420 | Retain |
+| AB1 route-execution semantics | 0.86250 | 0.545568 | 4.67500 | 0.721420 | Retain parity/observability |
 
-The current retained runtime combines the structured retrieval path with the
-bounded A11 Control Plane extraction change. A11 passed all four fixed folds;
-the broad extraction alternative did not.
+The current retained runtime combines the structured retrieval path, bounded
+A11 Control Plane extraction, and AB1 route-execution diagnostics. A11 passed
+all four fixed folds; the broad extraction alternative did not. AB1 preserves
+exact metric and session parity.
 
 ## Why Bounded A11 Extraction Was Retained
 
@@ -40,6 +42,15 @@ independent hash-bound reports, so their individual effects remain unproven.
 Boundary technical score fell by `0.057083`, so the retained decision is strong
 but not scenario-uniform. Evidence:
 `docs/a11_extraction_scope_evidence.md`.
+
+## Why AB1 Route Semantics Were Retained
+
+AB1 preserves every Development metric, scenario, session outcome, and fixed
+fold while separating requested Route weights from Routes that actually ran.
+Across 726 retrievals, dense was requested 475 times and executed zero times by
+the retained Hybrid path. This closes a truthfulness/diagnostics blocker without
+claiming a ranking gain or active dense coverage. Evidence:
+`docs/ab1_route_semantics_evidence.md`.
 
 ## Why Structured Was Retained
 
@@ -120,15 +131,15 @@ weight 0.0.
 
 ## Runtime Cost and Reliability
 
-Current A11 Development-160 evidence:
+Current AB1 Development-160 evidence:
 
 | Measure | Value |
 | --- | ---: |
-| Initialization | 1569.082791 ms |
-| Mean retrieval latency | 21.224283 ms |
-| p50 retrieval latency | 20.184500 ms |
-| p95 retrieval latency | 40.608667 ms |
-| Peak RSS | 578355200 bytes |
+| Initialization | 2223.707417 ms |
+| Mean retrieval latency | 22.552566 ms |
+| p50 retrieval latency | 21.875833 ms |
+| p95 retrieval latency | 42.728083 ms |
+| Peak RSS | 564264960 bytes |
 | Prompt/completion tokens | 0 / 0 |
 | Response exceptions | 0 |
 | Invalid payloads | 0 |

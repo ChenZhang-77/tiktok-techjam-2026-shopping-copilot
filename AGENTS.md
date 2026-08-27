@@ -207,8 +207,16 @@ catalog-path consistency for injected retrievers. The combined broad candidate
 was rejected; its feature-vocabulary, feature-expiry, brand, and residual-cleanup
 components lack independent hash-bound evidence and remain unproven. The
 shared request schema and question policy are unchanged. See
-`docs/a11_extraction_scope_evidence.md`. The next module is AB1 Shared Contract
-and Active-Route Semantics Freeze; B9 remains blocked until AB1 passes.
+`docs/a11_extraction_scope_evidence.md`.
+
+AB1 Shared Contract and Active-Route Semantics Freeze is retained at `2ebb954`.
+It appends `requested_route_weights`, `executed_routes`, and `fallback_route`
+to `RetrievalDiagnostics` without changing the request schema, query, Strategy
+weights, ranking, or question policy. Empty requested/executed fields mean an
+older producer did not report AB1 semantics; they must not be interpreted as a
+successful or failed execution. Development metrics, scenarios, sessions, and
+all four folds match A11 exactly. See `docs/ab1_route_semantics_evidence.md`.
+The next module is B8 Rejected-Constraint Ranking.
 
 Dense retrieval, weighted RRF, and the CrossEncoder reranker are optional,
 reproducible experiments with deterministic fallback. They are disabled by
@@ -234,6 +242,15 @@ Shared types live in `starter/contracts.py`:
 - `Candidate`
 - `RetrievalDiagnostics`
 - `RetrievalResult`
+
+AB1 Route diagnostics distinguish intent from execution:
+
+- `requested_route_weights` records the Strategy request using shared
+  `lexical`, `structured`, and `dense` names;
+- `executed_routes` contains only Routes that actually ran;
+- `fallback_route` names the degraded Route, or is `null` when a reported
+  execution did not fall back;
+- `{}` plus `[]` is legacy/unreported evidence, not proof that no Route ran.
 
 Developer A may send:
 

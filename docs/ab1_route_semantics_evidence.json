@@ -1,0 +1,108 @@
+{
+  "version": "ab1-v1",
+  "experiment": {
+    "id": "AB1",
+    "owners": ["developer_a_control_plane", "developer_b_retrieval_ranking"],
+    "hypothesis": "Freezing requested, executed, and fallback Route diagnostics makes the shared A/B seam truthful without changing retrieval order or dialogue policy.",
+    "decision": "retain_route_execution_semantics",
+    "runtime_code_commit": "2ebb954",
+    "reporting_code_commit": "2ebb954"
+  },
+  "shared_contract": {
+    "request_schema_changed": false,
+    "query_schema_changed": false,
+    "session_state_crosses_seam": false,
+    "question_policy_changed": false,
+    "strategy_weight_semantics_changed": false,
+    "diagnostic_fields_appended": {
+      "requested_route_weights": "object mapping lexical, structured, and dense to finite non-negative requested weights; Strategy.semantic_weight maps to dense",
+      "executed_routes": "ordered unique list of non-empty Route names that actually executed",
+      "fallback_route": "actual fallback Route name, or null when reported execution did not fall back"
+    },
+    "missing_data_semantics": "Empty requested_route_weights plus empty executed_routes means a legacy producer did not report AB1 semantics; fallback_route null is conclusive only when executed_routes is non-empty.",
+    "backward_compatibility": "Fields are appended with {}, [], and null defaults, preserving the original RetrievalDiagnostics positional signature."
+  },
+  "evaluation_boundary": {
+    "selection_split": "Development-160",
+    "fixed_folds": "development-folds-v1",
+    "full_or_holdout_used": false,
+    "target_information_in_runtime": false
+  },
+  "baseline": {
+    "report": "docs/a11_reports/development_scoped_extraction.json",
+    "sha256": "520b2b7a5b49cb668a8d6e05c8ee910b440a6f9415090e39688c8cd7ed0eafcf"
+  },
+  "candidate": {
+    "report": "docs/ab1_reports/development_route_semantics.json",
+    "sha256": "12662595076fc15fda7e1bb6c7ab69243908f5ab3b22b995422d246ac6b1d154",
+    "clean_code_commit": "2ebb954",
+    "session_outcome_sha256": "41f7a9dede01e03439a76615adca62cbac1181619970d9ff345dca00608a5621",
+    "metrics": {
+      "hit_rate_at_10": 0.8625,
+      "mrr": 0.545568,
+      "mttc": 4.675,
+      "efficiency": 0.6325,
+      "recommended_technical_score": 0.72142
+    },
+    "observed_route_semantics": {
+      "response_count": 726,
+      "requested_route_counts": {
+        "lexical": 726,
+        "structured": 726,
+        "dense": 475
+      },
+      "executed_route_counts": {
+        "lexical": 726,
+        "structured": 726
+      },
+      "requested_not_executed_route_counts": {
+        "dense": 475
+      },
+      "fallback_route_counts": {},
+      "route_semantics_unreported_responses": 0
+    },
+    "reported_fallbacks": 0
+  },
+  "fold_reports": {
+    "fold_1": {
+      "path": "docs/ab1_reports/fold_1_route_semantics.json",
+      "sha256": "ce4b5caa8321cbdf842025dc317831340d9b66e7350dc0d51cf7a5e5b14578fc"
+    },
+    "fold_2": {
+      "path": "docs/ab1_reports/fold_2_route_semantics.json",
+      "sha256": "d6c04dc7b4d9feed74674ce0d34fd5b98c9597ffaf1f63cf3f7e291772f3e8cc"
+    },
+    "fold_3": {
+      "path": "docs/ab1_reports/fold_3_route_semantics.json",
+      "sha256": "ae6a997be41653874cabe23116d9397a9f3a4389d4007d9e8d1031d2858e0db2"
+    },
+    "fold_4": {
+      "path": "docs/ab1_reports/fold_4_route_semantics.json",
+      "sha256": "931fc10f9b7fda5a41c8f026feef84ba2a720ac67670cd80f83d037ba70b39f0"
+    }
+  },
+  "compatibility_examples": {
+    "default_browsing_hybrid": {
+      "requested_route_weights": {
+        "lexical": 0.62,
+        "structured": 0.2,
+        "dense": 0.18
+      },
+      "executed_routes": ["lexical", "structured"],
+      "fallback_route": null
+    },
+    "dense_cache_failure": {
+      "executed_routes": ["lexical", "structured"],
+      "fallback_route": "structured",
+      "route_failure_example": {
+        "dense": "dense_cache_missing"
+      }
+    }
+  },
+  "known_risks": [
+    "AB1 improves truthfulness and observability, not ranking quality; metric parity is the keep gate.",
+    "The retained default still does not execute dense retrieval even when Browsing Strategy requests a non-zero semantic weight.",
+    "Legacy injected retrievers may leave the appended diagnostics empty, which must be treated as unreported rather than executed or failed."
+  ],
+  "next_module": "B8 Rejected-Constraint Ranking"
+}

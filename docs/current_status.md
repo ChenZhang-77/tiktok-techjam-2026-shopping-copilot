@@ -155,18 +155,16 @@ and rejected paths whose tradeoffs were not robust.
 
 The next optimization phase starts from diagnosis, not from another model:
 
-1. Requested Strategy weights are not yet distinguished cleanly from the route
-   actually executed by an injected retriever; AB1 must freeze this semantic.
+1. `rejected_constraints` crosses the A/B seam but the retained B path does not
+   yet use it as a calibrated negative ranking signal.
 2. Clarification normally asks `feature` before using candidate partition
    evidence and does not first decide whether a question is needed.
 3. Four primary Extraction misses remain. The combined broad extraction
    candidate failed the keep gate, but its individual components do not have
    independent hash-bound evidence and remain unproven.
-4. `rejected_constraints` crosses the A/B seam but the retained B path does not
-   yet use it as a calibrated negative ranking signal.
-5. The semantic reranker has useful scenario-specific signals, but global
+4. The semantic reranker has useful scenario-specific signals, but global
    enablement damages MRR and Intent Override.
-6. The public-facing README, final package, and demo narrative lag the runtime.
+5. The final package and demo narrative lag the runtime.
 
 ## R0 Result
 
@@ -267,14 +265,23 @@ independent hash-bound reports were retained. See
 
 ## Next Decision
 
-The next dependency-ordered module is AB1 Shared Contract and Active-Route
-Semantics Freeze. It must make requested versus executed route behavior,
-fallbacks, types, ranges, and missing-data semantics explicit without moving
-dialogue policy into B. Score margin remains forbidden as a gate.
+AB1 Shared Contract and Active-Route Semantics Freeze is retained at clean code
+commit `2ebb954`. It appends truthful requested, executed, and fallback Route
+fields to `RetrievalDiagnostics`; the request/query schema, Strategy weights,
+ranking, and question policy remain unchanged. Development metrics, scenario
+metrics, all 160 session outcomes, and all four folds exactly match A11.
+
+Across 726 Development retrievals, lexical and structured were each requested
+and executed 726 times. Dense was requested 475 times by Strategy but executed
+zero times by the retained Hybrid path. All responses reported AB1 semantics,
+with zero fallback Routes. See `docs/ab1_route_semantics_evidence.md`.
+
+The next dependency-ordered module is B8 Rejected-Constraint Ranking. It must
+test a bounded confidence-aware penalty, keep missing product evidence neutral,
+and preserve Intent Override quality. Score margin remains forbidden as a gate.
 
 The complete dependency order lives only in `docs/optimization_roadmap.md`.
-Immediate blocker to remember: B9 cannot start before AB1 freezes shared route
-semantics.
+Do not start B9 until B8 has its own keep/revert decision and dual review.
 
 If submission is imminent, skip new behavior work and execute the delivery
 track in `docs/demo_and_submission_plan.md`.
