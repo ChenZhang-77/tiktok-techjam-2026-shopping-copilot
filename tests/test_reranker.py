@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import unittest
+from dataclasses import replace
 
 from starter.contracts import Candidate, RetrievalDiagnostics, RetrievalRequest, RetrievalResult
 from starter.core.planner import Strategy
@@ -125,6 +126,37 @@ class RerankingRetrieverTest(unittest.TestCase):
         self.assertEqual(result.candidates[0].diagnostics["semantic_rerank_rank"], 1)
         self.assertEqual(result.candidates[0].diagnostics["semantic_rerank_score"], 0.9)
         self.assertEqual(result.candidates[2].diagnostics, {"final_rank": 3})
+
+    def test_successful_rerank_preserves_an_upstream_fallback_route(self) -> None:
+        base = FakeRetriever()
+        base.result = replace(
+            base.result,
+            diagnostics=replace(
+                base.result.diagnostics,
+                fallback_used=True,
+                route_failures={"dense": "dense_cache_missing"},
+                fallback_route="structured",
+            ),
+        )
+        retriever = RerankingRetriever(
+            base,
+            config=RerankerConfig(candidate_limit=2),
+            backend=RecordingBackend([0.1, 0.9]),
+        )
+
+        result = retriever.retrieve(_request())
+
+        self.assertEqual(result.diagnostics.route, "semantic_rerank")
+        self.assertTrue(result.diagnostics.fallback_used)
+        self.assertEqual(
+            result.diagnostics.route_failures,
+            {"dense": "dense_cache_missing"},
+        )
+        self.assertEqual(result.diagnostics.fallback_route, "structured")
+        self.assertEqual(
+            result.diagnostics.executed_routes,
+            ["lexical", "structured", "semantic_rerank"],
+        )
 
     def test_backend_failure_preserves_exact_pre_rerank_candidates(self) -> None:
         base = FakeRetriever()

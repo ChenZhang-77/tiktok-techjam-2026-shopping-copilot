@@ -62,10 +62,27 @@ class ContractsTest(unittest.TestCase):
         invalid_fields = (
             {"requested_route_weights": {"dense": -0.1}},
             {"requested_route_weights": {"dense": float("nan")}},
+            {"requested_route_weights": {"dense": 1.1}},
             {"requested_route_weights": {"": 0.2}},
+            {"requested_route_weights": {"semantic": 1.0}},
+            {"requested_route_weights": {"lexical": 1.0}},
             {"executed_routes": ["lexical", "lexical"]},
             {"executed_routes": [""]},
+            {"executed_routes": ["bogus"]},
             {"fallback_route": ""},
+            {
+                "executed_routes": ["lexical", "structured"],
+                "fallback_route": "structured",
+            },
+            {
+                "fallback_used": True,
+                "executed_routes": ["lexical", "structured"],
+            },
+            {
+                "fallback_used": True,
+                "executed_routes": ["lexical"],
+                "fallback_route": "structured",
+            },
         )
 
         for fields in invalid_fields:

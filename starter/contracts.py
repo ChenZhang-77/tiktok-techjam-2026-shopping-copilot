@@ -20,6 +20,17 @@ FORBIDDEN_RETRIEVAL_REQUEST_KEYS = {
     "behavior",
 }
 MAX_RETRIEVAL_DEPTH = 500
+REQUESTED_ROUTE_NAMES = frozenset({"lexical", "structured", "dense"})
+EXECUTED_ROUTE_NAMES = frozenset(
+    {
+        "lexical",
+        "structured",
+        "dense",
+        "fusion",
+        "semantic_rerank",
+        "catalog_fallback",
+    }
+)
 
 
 def requested_route_weights(strategy: Strategy) -> dict[str, float]:
@@ -117,30 +128,48 @@ class RetrievalDiagnostics:
     fallback_route: str | None = None
 
     def __post_init__(self) -> None:
+        if not isinstance(self.fallback_used, bool):
+            raise ValueError("fallback_used must be a boolean")
         if not isinstance(self.requested_route_weights, dict):
             raise ValueError("requested_route_weights must be an object")
+        if self.requested_route_weights and (
+            set(self.requested_route_weights) != REQUESTED_ROUTE_NAMES
+        ):
+            raise ValueError(
+                "reported requested_route_weights must contain exactly "
+                "lexical, structured, and dense"
+            )
         for route, weight in self.requested_route_weights.items():
-            if not isinstance(route, str) or not route:
-                raise ValueError("requested route names must be non-empty strings")
             if (
                 isinstance(weight, bool)
                 or not isinstance(weight, (int, float))
                 or not math.isfinite(weight)
-                or weight < 0
+                or not 0 <= weight <= 1
             ):
                 raise ValueError(
-                    "requested route weights must be finite non-negative numbers"
+                    "requested route weights must be finite numbers from 0 to 1"
                 )
         if not isinstance(self.executed_routes, list) or not all(
-            isinstance(route, str) and route for route in self.executed_routes
+            isinstance(route, str) and route in EXECUTED_ROUTE_NAMES
+            for route in self.executed_routes
         ):
-            raise ValueError("executed_routes must be a list of non-empty strings")
+            raise ValueError("executed_routes must contain only frozen Route names")
         if len(self.executed_routes) != len(set(self.executed_routes)):
             raise ValueError("executed_routes must not contain duplicates")
-        if self.fallback_route is not None and (
-            not isinstance(self.fallback_route, str) or not self.fallback_route
-        ):
-            raise ValueError("fallback_route must be null or a non-empty string")
+        if self.fallback_route is not None:
+            if self.fallback_route not in EXECUTED_ROUTE_NAMES:
+                raise ValueError("fallback_route must be null or a frozen Route name")
+            if not self.fallback_used:
+                raise ValueError("fallback_route requires fallback_used=true")
+            if self.fallback_route not in self.executed_routes:
+                raise ValueError("fallback_route must be present in executed_routes")
+        semantics_reported = bool(
+            self.requested_route_weights
+            or self.executed_routes
+            or self.fallback_route is not None
+        )
+        if semantics_reported and self.fallback_used and self.fallback_route is None:
+            raise ValueError("reported fallback execution requires fallback_route")
 
     def to_dict(self) -> dict:
         return asdict(self)
