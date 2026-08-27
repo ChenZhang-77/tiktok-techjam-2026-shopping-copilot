@@ -193,6 +193,13 @@ must add contract/leakage tests if the shared schema changes.
 
 ### A9 - Should-ask gate
 
+**Status: rejected and reverted.** The clean candidate at `30765cd` lowered
+HitRate by `0.0125`, worsened MTTC by `0.08125`, lost two sessions, and did not
+reduce total Development questions. Three bounded conservative thresholds were
+metric-neutral and therefore also failed the keep gate. See
+`docs/a9_should_ask_evidence.md`. Do not reopen threshold-only suppression
+without a changed conversation/evaluation contract or an independent UX metric.
+
 Problem: clarification is usually attempted whenever an attribute is
 available, even when recommendations may already be sufficiently concentrated.
 

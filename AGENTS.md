@@ -177,6 +177,12 @@ summaries/statuses, never raw Candidate IDs/text. `top_score_margin` is
 route-local and uncalibrated, so `score_margin_usable` remains false until a
 coordinated measured contract defines otherwise.
 
+The A9 threshold-only should-ask gate is a rejected ablation, not retained
+runtime behavior. It reduced Development HitRate, worsened MTTC, and failed to
+reduce total questions after longer failed sessions were counted. Continue with
+A10a question value; do not reopen A9 unless the conversation/evaluation
+contract or available UX metric changes.
+
 Dense retrieval, weighted RRF, and the CrossEncoder reranker are optional,
 reproducible experiments with deterministic fallback. They are disabled by
 default because development evidence did not justify global enablement. Do not

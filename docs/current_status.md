@@ -207,14 +207,24 @@ uncalibrated and unusable for A9.
 The clean Development-160 metrics and all 160 session outcomes exactly match
 A8. A separate 818-turn replay also produced an identical ask/recommendation
 trace hash. The original slow scanner was rejected; the retained implementation
-observed `41.39 ms` mean response latency and zero failures. Full evidence is in
+observed `41.18 ms` mean response latency and zero failures. Full evidence is in
 `docs/ab0_decision_evidence.md`.
+
+## A9 Result
+
+A9 is rejected and reverted. The tested stability/no-partition gate reduced
+neither total questions nor MTTC: HitRate fell from `0.7625` to `0.7500`, MTTC
+rose from `5.35` to `5.43125`, and technical score fell from `0.653194` to
+`0.644556`. Two sessions were lost and none gained. Three bounded conservative
+thresholds exactly matched the baseline but improved no keep metric. The final
+runtime therefore preserves the pre-A9 question policy. See
+`docs/a9_should_ask_evidence.md`.
 
 ## Next Decision
 
-The next dependency-ordered module is A9 Should-Ask Over-Generality Gate. It is
-now unblocked, but must use only AB0 fields marked usable and status-guarded;
-score margin remains forbidden as a gate. A11 Extraction and Scope Hardening
+The next dependency-ordered module is A10a Candidate Question Value. It should
+improve which useful question is asked, not reopen threshold-only suppression.
+Score margin remains forbidden as a gate. A11 Extraction and Scope Hardening
 remains supported by six primary Extraction misses and stays after the
 dependencies specified in the roadmap.
 
@@ -245,6 +255,7 @@ track in `docs/demo_and_submission_plan.md`.
 | `docs/r0_development_failure_taxonomy.md` | Clean Development-160 failure audit and next-experiment evidence |
 | `docs/a8_stateful_intent_evidence.md` | Stateful intent keep/reject evidence and tradeoff boundary |
 | `docs/ab0_decision_evidence.md` | DecisionEvidence sources, fallbacks, parity, and A9 input boundary |
+| `docs/a9_should_ask_evidence.md` | Rejected should-ask gate, evaluator mechanism, and A10a route consequence |
 | `docs/ablation_summary.md` | Human-readable keep/reject evidence |
 | `docs/workstreams/DEVELOPER_A_CONTROL_PLANE.md` | Standalone A-side route |
 | `docs/workstreams/DEVELOPER_B_RETRIEVAL_RANKING.md` | Standalone B-side route |

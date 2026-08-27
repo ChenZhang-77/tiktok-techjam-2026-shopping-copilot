@@ -1,0 +1,103 @@
+{
+  "experiment": "A9_should_ask_over_generality_gate",
+  "hypothesis": "Suppressing low-value clarification when healthy Top-K results are highly stable and no useful Candidate partition exists will reduce wasted questions and MTTC without reducing HitRate.",
+  "failure_class_addressed": "question_policy",
+  "baseline_code_commit": "3988b8b",
+  "candidate_code_commit": "30765cd",
+  "runtime_revert_commit": "11cf67f",
+  "runtime_disposition": "reverted",
+  "candidate_rule": {
+    "ask": "Preserve the existing question when evidence is unavailable/degraded, a useful available Candidate partition exists, or stability is unavailable/below 0.8.",
+    "do_not_ask": "Healthy candidate_stability >= 0.8 and no useful partition among currently available attributes.",
+    "score_margin_used": false,
+    "target_or_evaluator_label_used_at_runtime": false,
+    "shared_contract_change": "none"
+  },
+  "reports": {
+    "baseline": {
+      "path": "docs/ab0_reports/development_structured.json",
+      "sha256": "e0a473b3c5b208175c4ca1d2ecffd052c81882cde15ca96331e4bf4991fba430"
+    },
+    "candidate": {
+      "path": "docs/a9_reports/development_stability_080.json",
+      "sha256": "c440d8c1a041440c65d734c5330e5a5b44d81b27361500ac1c143dd79c043142"
+    }
+  },
+  "development_160": {
+    "baseline": {
+      "hit_rate_at_10": 0.7625,
+      "mrr": 0.529812,
+      "mttc": 5.35,
+      "efficiency": 0.565,
+      "recommended_technical_score": 0.653194
+    },
+    "candidate": {
+      "hit_rate_at_10": 0.75,
+      "mrr": 0.527269,
+      "mttc": 5.43125,
+      "efficiency": 0.556875,
+      "recommended_technical_score": 0.644556
+    },
+    "delta": {
+      "hit_rate_at_10": -0.0125,
+      "mrr": -0.002543,
+      "mttc": 0.08125,
+      "efficiency": -0.008125,
+      "recommended_technical_score": -0.008638
+    },
+    "gained_sessions": [],
+    "lost_sessions": ["public_0097", "public_0098"],
+    "scenario_score_delta": {
+      "boundary": 0.0,
+      "browsing": -0.011172,
+      "buying": -0.010422,
+      "intent_override": 0.0
+    }
+  },
+  "question_audit": {
+    "baseline_responses": 818,
+    "baseline_questions": 685,
+    "candidate_responses": 829,
+    "candidate_questions": 685,
+    "candidate_suppress_decisions": 21,
+    "question_delta": 0,
+    "candidate_reason_counts": {
+      "candidate_partition_available": 523,
+      "final_turn": 40,
+      "insufficient_evidence_conservative": 162,
+      "no_available_attribute": 83,
+      "stable_without_useful_partition": 21
+    },
+    "no_value_question_delta": "not directly observable from the retained evaluation report"
+  },
+  "bounded_exploratory_screen": [
+    {
+      "name": "stability_1_turn_2",
+      "threshold": 1.0,
+      "minimum_turn": 2,
+      "overall_metrics": "exact baseline match",
+      "status": "not retained; no MTTC or Efficiency gain"
+    },
+    {
+      "name": "stability_0.9_turn_5",
+      "threshold": 0.9,
+      "minimum_turn": 5,
+      "overall_metrics": "exact baseline match",
+      "status": "not retained; no MTTC or Efficiency gain"
+    },
+    {
+      "name": "stability_0.8_turn_7",
+      "threshold": 0.8,
+      "minimum_turn": 7,
+      "overall_metrics": "exact baseline match",
+      "status": "not retained; no MTTC or Efficiency gain"
+    }
+  ],
+  "simulator_mechanism": "Recommendations are scored before the next customer reply. Asking does not delay a same-turn hit; on a miss, ask_attribute=null causes a generic request for a specific question rather than revealing a target preference. Suppression can therefore remove future constraint evidence without improving the current turn.",
+  "fold_status": "not run because the primary Development-160 candidate failed every main keep metric and the bounded conservative screen produced no overall improvement",
+  "holdout_status": "not run during A9",
+  "full_status": "not run during A9",
+  "keep_gate": "MTTC/Efficiency improves on stable folds, HitRate does not materially fall, and question/no-value counts fall.",
+  "decision": "reject_and_revert",
+  "next_module": "A10a Candidate Question Value"
+}

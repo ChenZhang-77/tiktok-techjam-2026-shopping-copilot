@@ -72,8 +72,10 @@ and private-set robustness.
 
 A8 Stateful Intent Persistence is retained at `83a6bcd`. AB0 DecisionEvidence
 Availability is retained at `3988b8b`; it defines every proposed signal and
-fallback without changing ask behavior or the shared contract. The next
-executable module is A9 Should-Ask Over-Generality Gate.
+fallback without changing ask behavior or the shared contract. A9 Should-Ask
+Over-Generality Gate was tested, rejected, and reverted because it worsened
+HitRate/MTTC and did not reduce total questions. The next executable module is
+A10a Candidate Question Value.
 The retained A8 confidence is an A-owned ordinal stability signal with
 `low`/`medium`/`high` diagnostic bands, not a calibrated probability or B-side
 gate.
@@ -294,6 +296,12 @@ scenario label, or evaluator timing.
 - ask/no-ask behavior is unchanged.
 
 ## A9 - Should-Ask Over-Generality Gate
+
+**Disposition: rejected and reverted.** Candidate `30765cd` failed the overall
+Development gate and the bounded conservative screen produced no improvement.
+The current runtime retains the pre-A9 question policy. Do not tune another
+stability threshold without a changed evaluator/conversation contract. Full
+evidence: `docs/a9_should_ask_evidence.md`.
 
 ### Hypothesis
 

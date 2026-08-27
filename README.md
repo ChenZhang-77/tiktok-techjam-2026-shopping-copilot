@@ -274,7 +274,10 @@ AB0 now makes a compact full-pool `DecisionEvidence` available before
 clarification with exact 160-session / 818-turn dialogue parity and no shared
 contract change. See
 [`docs/ab0_decision_evidence.md`](docs/ab0_decision_evidence.md). The
-dependency-ordered next module is A9 Should-Ask Over-Generality Gate.
+tested A9 should-ask gate was rejected and reverted after HitRate fell to
+`0.7500`, MTTC rose to `5.43125`, and no total-question reduction appeared.
+See [`docs/a9_should_ask_evidence.md`](docs/a9_should_ask_evidence.md). The
+dependency-ordered next module is A10a Candidate Question Value.
 `AGENTS.md` owns the taxonomy and
 leakage boundary; [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md)
 owns the complete order.
