@@ -14,7 +14,8 @@ from starter.contracts import (
     RetrievalResult,
 )
 from starter.core.planner import Strategy
-from starter.retrieval import DenseConfig
+from starter.retrieval import DenseConfig, DenseRetriever, HybridRetriever
+from starter.retrieval.dense import file_sha256
 from starter.retrieval.conditional_dense import (
     ConditionalDenseConfig,
     ConditionalDenseRetriever,
@@ -363,6 +364,7 @@ class ConditionalDenseRetrieverTest(unittest.TestCase):
                     result.diagnostics.route_failures,
                     {"dense": "dense_latency_invalid"},
                 )
+                self.assertNotIn("dense", result.diagnostics.stage_latencies_ms)
 
     def test_close_releases_distinct_base_and_dense_retrievers(self) -> None:
         class ClosingFakeRetriever(FakeRetriever):
@@ -381,6 +383,86 @@ class ConditionalDenseRetrieverTest(unittest.TestCase):
 
         self.assertEqual(base.close_calls, 1)
         self.assertEqual(dense.close_calls, 1)
+
+    def test_query_failure_never_repeats_shared_base_work(self) -> None:
+        class CountingHybridRetriever(HybridRetriever):
+            def __init__(self, catalog_path: Path) -> None:
+                super().__init__(catalog_path)
+                self.retrieve_calls = 0
+
+            def retrieve(self, request: RetrievalRequest) -> RetrievalResult:
+                self.retrieve_calls += 1
+                return super().retrieve(request)
+
+        class QueryFailingBackend:
+            def __init__(self) -> None:
+                self.rank_calls = 0
+
+            def rank(self, query: str, top_n: int) -> list[tuple[int, float]]:
+                self.rank_calls += 1
+                raise RuntimeError("query encoding failed")
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "catalog.jsonl"
+            cache = root / "cache"
+            cache.mkdir()
+            rows = [
+                {"parent_asin": value, "title": f"{value} walking shoes"}
+                for value in ("A", "B", "C", "D", "E")
+            ]
+            catalog.write_text(
+                "".join(json.dumps(row) + "\n" for row in rows),
+                encoding="utf-8",
+            )
+            ids_path = cache / "ids.json"
+            vectors_path = cache / "vectors.npy"
+            ids_path.write_text(
+                json.dumps([row["parent_asin"] for row in rows]),
+                encoding="utf-8",
+            )
+            vectors_path.write_bytes(b"fixture")
+            (cache / "metadata.json").write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "catalog_sha256": file_sha256(catalog),
+                        "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+                        "model_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+                        "dimension": 384,
+                        "dtype": "float32",
+                        "normalized": True,
+                        "product_count": len(rows),
+                        "product_text_template": "product-fields-v1",
+                        "query_text_template": "distilled-query-v1",
+                        "ids_sha256": file_sha256(ids_path),
+                        "vectors_sha256": file_sha256(vectors_path),
+                    }
+                ),
+                encoding="utf-8",
+            )
+            base = CountingHybridRetriever(catalog)
+            backend = QueryFailingBackend()
+            dense = DenseRetriever(
+                catalog,
+                config=DenseConfig(cache_dir=cache),
+                lexical_fallback=base,
+                backend_factory=lambda _config, _ids: backend,
+            )
+            retriever = ConditionalDenseRetriever(
+                base,
+                dense,
+                config=ConditionalDenseConfig(min_base_candidates=3),
+            )
+
+            first = retriever.retrieve(_request())
+            second = retriever.retrieve(_request())
+
+            self.assertEqual(base.retrieve_calls, 2)
+            self.assertEqual(backend.rank_calls, 1)
+            self.assertEqual(first.diagnostics.route_failures, {"dense": "dense_query_failed"})
+            self.assertEqual(second.diagnostics.route_failures, {"dense": "dense_query_failed"})
+            self.assertEqual(first.candidates, second.candidates)
 
 
 if __name__ == "__main__":

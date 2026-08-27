@@ -175,14 +175,13 @@ class ConditionalDenseRetriever:
             dense is not None and "dense" in dense.diagnostics.executed_routes
         )
         raw_dense_latency = dense.diagnostics.latency_ms if dense is not None else None
-        dense_latency = (
-            float(raw_dense_latency)
-            if isinstance(raw_dense_latency, (int, float))
+        has_dense_latency = (
+            isinstance(raw_dense_latency, (int, float))
             and not isinstance(raw_dense_latency, bool)
             and math.isfinite(raw_dense_latency)
             and raw_dense_latency >= 0
-            else 0.0
         )
+        dense_latency = float(raw_dense_latency) if has_dense_latency else 0.0
         route_failures = dict(base.diagnostics.route_failures)
         if dense is not None:
             route_failures.update(dense.diagnostics.route_failures)
@@ -203,7 +202,7 @@ class ConditionalDenseRetriever:
                 **base.diagnostics.stage_latencies_ms,
                 **(
                     {"dense": round(dense_latency, 6)}
-                    if dense is not None
+                    if dense is not None and has_dense_latency
                     else {}
                 ),
             },
@@ -248,14 +247,21 @@ class ConditionalDenseRetriever:
             )
 
         try:
-            dense = self._dense.retrieve(request)
+            dense_attempt = getattr(self._dense, "retrieve_dense_attempt", None)
+            dense = (
+                dense_attempt(request)
+                if callable(dense_attempt)
+                else self._dense.retrieve(request)
+            )
         except Exception:
+            self._dense_warmup_status = "dense_route_error"
             return self._base_fallback(base, reason="dense_route_error")
         if dense.diagnostics.fallback_used or dense.diagnostics.route != "dense":
             reason = dense.diagnostics.route_failures.get(
                 "dense",
                 "dense_route_degraded",
             )
+            self._dense_warmup_status = reason
             return self._base_fallback(base, reason=reason, dense=dense)
         dense_latency = dense.diagnostics.latency_ms
         if (

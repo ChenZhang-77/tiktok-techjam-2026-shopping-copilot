@@ -184,6 +184,18 @@ class DenseRetriever:
         return None
 
     def retrieve(self, request: RetrievalRequest) -> RetrievalResult:
+        attempted = self.retrieve_dense_attempt(request)
+        if not attempted.diagnostics.fallback_used:
+            return attempted
+        reason = attempted.diagnostics.route_failures.get(
+            "dense",
+            self._unavailable_reason or "dense_route_unavailable",
+        )
+        return self._fallback_result(request, reason)
+
+    def retrieve_dense_attempt(self, request: RetrievalRequest) -> RetrievalResult:
+        """Run only dense work, returning failure status without invoking fallback."""
+
         validate_retrieval_request_object(request)
         if self._backend is not None:
             started = time.perf_counter()
@@ -192,7 +204,7 @@ class DenseRetriever:
             except Exception:
                 self._backend = None
                 self._unavailable_reason = "dense_query_failed"
-                return self._fallback_result(request, self._unavailable_reason)
+                return self._failed_attempt(self._unavailable_reason)
             latency_ms = (time.perf_counter() - started) * 1000.0
             candidates = [
                 Candidate(
@@ -221,9 +233,22 @@ class DenseRetriever:
                     executed_routes=["dense"],
                 ),
             )
-        return self._fallback_result(
-            request,
+        return self._failed_attempt(
             self._unavailable_reason or "dense_route_unavailable",
+        )
+
+    @staticmethod
+    def _failed_attempt(reason: str) -> RetrievalResult:
+        return RetrievalResult(
+            candidates=[],
+            diagnostics=RetrievalDiagnostics(
+                route="dense",
+                candidate_count=0,
+                fallback_used=True,
+                notes=[reason],
+                cache_state={"dense": reason},
+                route_failures={"dense": reason},
+            ),
         )
 
     def prepare(self) -> str | None:
