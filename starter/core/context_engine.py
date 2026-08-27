@@ -190,6 +190,14 @@ class Constraint:
         }
 
 
+@dataclass(frozen=True)
+class _NegativeCategoryContext:
+    """Category heads that remain positive inside one negative clause."""
+
+    active_values: frozenset[str]
+    protected_spans: tuple[tuple[int, int], ...]
+
+
 def _word_matches(text: str, phrases: set[str]) -> list[str]:
     lowered = text.lower()
     matches: list[str] = []
@@ -444,10 +452,10 @@ def _matched_constraints(
     return constraints
 
 
-def _negative_head_categories(
+def _negative_category_context(
     text: str,
     vocabulary: CatalogVocabulary | None,
-) -> set[str]:
+) -> _NegativeCategoryContext:
     """Keep a category positive only when a modifier directly precedes its head."""
 
     category_spans = [
@@ -482,7 +490,32 @@ def _negative_head_categories(
             for head_start, head_end in direct_head_spans
         ):
             heads.add(category)
-    return heads
+    return _NegativeCategoryContext(
+        active_values=frozenset(heads),
+        protected_spans=tuple(sorted(set(direct_head_spans))),
+    )
+
+
+def _inside_protected_category_head(
+    item: Constraint,
+    text: str,
+    context: _NegativeCategoryContext,
+) -> bool:
+    """Return true only when every occurrence belongs to a positive head span."""
+
+    if (
+        item.attribute == "category"
+        and item.normalized_value in context.active_values
+    ):
+        return True
+    occurrences = _phrase_spans(text, item.normalized_value)
+    return bool(occurrences) and all(
+        any(
+            head_start <= value_start and value_end <= head_end
+            for head_start, head_end in context.protected_spans
+        )
+        for value_start, value_end in occurrences
+    )
 
 
 def extract_constraints(
@@ -507,7 +540,11 @@ def extract_constraints(
         rejected=False,
     )
     for start, end in _negative_spans(text):
-        for value in _negative_head_categories(text[start:end], vocabulary):
+        category_context = _negative_category_context(
+            text[start:end],
+            vocabulary,
+        )
+        for value in category_context.active_values:
             constraints.append(_constraint("category", value, turn, text, 0.78, hard))
 
     if (
@@ -561,7 +598,7 @@ def detect_rejected_constraints(
     rejected: list[Constraint] = []
     for start, end in _negative_spans(text):
         window = text[start:end]
-        positive_category_heads = _negative_head_categories(window, vocabulary)
+        category_context = _negative_category_context(window, vocabulary)
         rejected.extend(
             item
             for item in _matched_constraints(
@@ -572,9 +609,10 @@ def detect_rejected_constraints(
                     hard=True,
                     rejected=True,
                 )
-            if not (
-                item.attribute == "category"
-                and item.normalized_value in positive_category_heads
+            if not _inside_protected_category_head(
+                item,
+                window,
+                category_context,
             )
         )
 

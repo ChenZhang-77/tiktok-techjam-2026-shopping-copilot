@@ -240,6 +240,7 @@ class ContextEngineTest(unittest.TestCase):
                     "Women's Clothing",
                     "Mid Calf Boots",
                     "Trail Running Shoes",
+                    "Hiking Boots",
                     "Boys' Swimwear",
                     "Kids’ Clothing",
                 ]
@@ -251,6 +252,7 @@ class ContextEngineTest(unittest.TestCase):
             ("Avoid black and white women’s clothing.", "women s clothing", None),
             ("Avoid black and white mid-calf boots.", "mid calf boots", "boots"),
             ("Avoid black and white trail-running shoes.", "trail running shoes", "shoes"),
+            ("Avoid black and white hiking boots.", "hiking boots", "boots"),
             ("Avoid black and white boys' swimwear.", "boys swimwear", None),
             ("Avoid black and white kids’ clothing.", "kids clothing", None),
         ):
@@ -270,6 +272,25 @@ class ContextEngineTest(unittest.TestCase):
             self.assertNotIn(("category", category), rejected)
             if nested is not None:
                 self.assertNotIn(("category", nested), rejected)
+            if category == "hiking boots":
+                self.assertNotIn(("use_case", "hiking"), rejected)
+
+    def test_value_outside_protected_category_span_remains_rejected(self) -> None:
+        vocabulary = CatalogVocabulary.from_products([
+            {"categories": ["Hiking Boots"]}
+        ])
+        message = "Avoid hiking and black and white hiking boots."
+
+        rejected = {
+            (item["attribute"], item["normalized_value"])
+            for item in detect_rejected_constraints(
+                message,
+                3,
+                vocabulary=vocabulary,
+            )
+        }
+
+        self.assertIn(("use_case", "hiking"), rejected)
 
     def test_rejected_brand_and_budget_share_positive_matcher_inventory(self) -> None:
         message = "Avoid brand Nike and anything under $80."
