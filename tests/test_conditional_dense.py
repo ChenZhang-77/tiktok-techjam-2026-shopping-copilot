@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import json
+import tempfile
 import unittest
 from dataclasses import replace
+from pathlib import Path
 
+from starter.agent import Agent
 from starter.contracts import (
     Candidate,
     RetrievalDiagnostics,
@@ -10,6 +14,7 @@ from starter.contracts import (
     RetrievalResult,
 )
 from starter.core.planner import Strategy
+from starter.retrieval import DenseConfig
 from starter.retrieval.conditional_dense import (
     ConditionalDenseConfig,
     ConditionalDenseRetriever,
@@ -245,6 +250,33 @@ class ConditionalDenseRetrieverTest(unittest.TestCase):
         for fields in invalid:
             with self.subTest(fields=fields), self.assertRaises(ValueError):
                 ConditionalDenseConfig(**fields)
+
+    def test_catalog_backed_wrapper_preserves_agent_catalog_vocabulary(self) -> None:
+        rows = [
+            {
+                "parent_asin": "A",
+                "title": "trail shoe",
+                "categories": ["Clothing", "Women's Trail Running Shoes"],
+            }
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "catalog.jsonl"
+            catalog.write_text(
+                "".join(json.dumps(row) + "\n" for row in rows),
+                encoding="utf-8",
+            )
+            retriever = ConditionalDenseRetriever.from_catalog(
+                catalog,
+                dense_config=DenseConfig(cache_dir=root / "missing-cache"),
+            )
+            agent = Agent(catalog, retriever=retriever)
+
+            self.assertEqual(retriever.catalog_path, catalog)
+            self.assertIn(
+                "women s trail running shoes",
+                agent.context_vocabulary.category_terms,
+            )
 
 
 if __name__ == "__main__":

@@ -88,6 +88,9 @@ class ConditionalDenseRetriever:
         self.config = config if config is not None else ConditionalDenseConfig()
         self.catalog_ids = base_retriever.catalog_ids
         self.fallback_ids = base_retriever.fallback_ids
+        base_catalog_path = getattr(base_retriever, "catalog_path", None)
+        if base_catalog_path is not None:
+            self.catalog_path = Path(base_catalog_path)
 
     @classmethod
     def from_catalog(
