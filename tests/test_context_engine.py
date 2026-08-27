@@ -28,6 +28,19 @@ class ContextEngineTest(unittest.TestCase):
         self.assertEqual(by_attribute["material"]["source_turn"], 2)
         self.assertTrue(by_attribute["material"]["hard"])
 
+    def test_extracts_plural_categories_and_mesh_material(self) -> None:
+        constraints = extract_constraints("I'm looking for black boots and mesh belts.", 1)
+        values = {(item["attribute"], item["normalized_value"]) for item in constraints}
+
+        self.assertIn(("category", "boots"), values)
+        self.assertIn(("category", "belts"), values)
+        self.assertIn(("material", "mesh"), values)
+
+    def test_does_not_extract_apostrophe_m_as_a_size(self) -> None:
+        constraints = extract_constraints("I'm looking for shoes.", 1)
+
+        self.assertNotIn("size", {item["attribute"] for item in constraints})
+
     def test_uncertain_message_is_preserved_as_soft_feature(self) -> None:
         constraints = extract_constraints("Something that feels premium and giftable", 1)
 

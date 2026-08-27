@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 
 MATERIALS = {
-    "alloy", "canvas", "cotton", "denim", "fabric", "fleece", "gold", "lace",
+    "alloy", "canvas", "cotton", "denim", "fabric", "fleece", "gold", "lace", "mesh",
     "leather", "linen", "metal", "nylon", "polyester", "rayon", "rubber",
     "silicone", "silk", "silver", "spandex", "stainless steel", "suede", "wool",
 }
@@ -19,17 +19,19 @@ USE_CASES = {
     "walking", "wedding", "winter", "work", "workout", "yoga",
 }
 CATEGORY_TERMS = {
-    "backpack", "bag", "belt", "boot", "boots", "bracelet", "bra", "cap", "coat",
-    "dress", "earrings", "gloves", "hat", "hoodie", "jacket", "jeans", "leggings",
-    "necklace", "pants", "ring", "sandals", "shirt", "shoe", "shoes", "shorts",
-    "skirt", "sneakers", "socks", "sweater", "swimsuit", "top", "wallet", "watch",
+    "backpack", "bag", "belt", "belts", "boot", "boots", "bracelet", "bracelets", "bra", "bras",
+    "cap", "caps", "coat", "coats", "dress", "dresses", "earring", "earrings", "glove", "gloves",
+    "hat", "hats", "hoodie", "hoodies", "jacket", "jackets", "jeans", "leggings", "necklace", "necklaces",
+    "pants", "ring", "rings", "sandal", "sandals", "shirt", "shirts", "shoe", "shoes", "shorts",
+    "skirt", "skirts", "sneaker", "sneakers", "sock", "socks", "sweater", "sweaters", "swimsuit", "swimsuits",
+    "top", "tops", "wallet", "wallets", "watch", "watches",
 }
 STYLE_TERMS = {
     "athletic", "boho", "classic", "comfortable", "cute", "dressy", "elegant",
     "gothic", "lightweight", "loose", "minimalist", "modern", "padded", "retro",
     "slim", "stretchy", "vintage", "warm", "waterproof",
 }
-SIZE_RE = re.compile(r"\b(?:size\s*)?(?:xxs|xs|s|m|l|xl|xxl|xxxl|\d{1,2}(?:\.\d)?|small|medium|large|wide|narrow)\b", re.I)
+SIZE_RE = re.compile(r"(?<![A-Za-z'])\b(?:size\s*)?(?:xxs|xs|s|m|l|xl|xxl|xxxl|\d{1,2}(?:\.\d)?|small|medium|large|wide|narrow)\b", re.I)
 BUDGET_RE = re.compile(r"\b(?:under|below|less than|around|about|up to|budget)\s*\$?\s*(\d+(?:\.\d{1,2})?)\b|\$\s*(\d+(?:\.\d{1,2})?)", re.I)
 BRAND_RE = re.compile(r"\b(?:brand|from|by)\s+([A-Z][A-Za-z0-9&' -]{1,30})")
 TOKEN_RE = re.compile(r"[a-z0-9]+", re.I)

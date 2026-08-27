@@ -258,19 +258,32 @@ if [[ -n "$EXISTING_PIDS" ]]; then
   done
 fi
 
-nohup "$PYTHON" visualizer/server.py >/tmp/tiktok-techjam-visualizer.log 2>&1 &
+VISUALIZER_LABEL="com.tiktoktechjam.visualizer"
+if command -v launchctl >/dev/null 2>&1; then
+  launchctl remove "$VISUALIZER_LABEL" >/dev/null 2>&1 || true
+  launchctl submit -l "$VISUALIZER_LABEL" -- "$ROOT_DIR/$PYTHON" "$ROOT_DIR/visualizer/server.py"
+else
+  nohup "$PYTHON" visualizer/server.py >/tmp/tiktok-techjam-visualizer.log 2>&1 &
+fi
+VISUALIZER_READY="false"
 for _ in {1..80}; do
   if curl -fsS "http://127.0.0.1:8765/api/sessions" >/dev/null 2>&1; then
+    VISUALIZER_READY="true"
     break
   fi
   sleep 0.25
 done
 
 URL="http://127.0.0.1:8765?experiment=$(basename "$RUN_DIR")"
-if command -v open >/dev/null 2>&1; then
+if [[ "$VISUALIZER_READY" == "true" && "${TIKTOK_OPEN_VISUALIZER:-1}" == "1" ]] && command -v open >/dev/null 2>&1; then
   open "$URL"
 fi
 
 echo
 echo "Experiment saved to: $RUN_DIR"
 echo "Visualizer URL: $URL"
+if [[ "$VISUALIZER_READY" != "true" ]]; then
+  echo "Warning: visualizer did not become ready; no browser tab was opened." >&2
+elif [[ "${TIKTOK_OPEN_VISUALIZER:-1}" != "1" ]]; then
+  echo "Visualizer auto-open disabled. Set TIKTOK_OPEN_VISUALIZER=1 to open it automatically."
+fi

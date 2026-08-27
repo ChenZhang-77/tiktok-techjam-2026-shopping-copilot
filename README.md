@@ -19,15 +19,29 @@ The verified integrated checkout and next optimization decision are documented
 in [`docs/current_status.md`](docs/current_status.md). The project-wide route is
 [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md).
 
-Verified Development-160 result for the retained structured runtime:
+Verified result for the retained A11 + B structured runtime:
 
 | Metric | Result |
 | --- | ---: |
-| HitRate@10 | 0.7625 |
-| MRR | 0.526989 |
-| MTTC | 5.30625 |
-| Efficiency | 0.569375 |
-| TechnicalScore | 0.653222 |
+| HitRate@10 | 0.818750 |
+| MRR | 0.515156 |
+| MTTC | 4.875000 |
+| Efficiency | 0.612500 |
+| TechnicalScore | 0.686422 |
+
+The same retained checkout was also checked once on the exposed public
+Holdout-40 boundary:
+
+| Metric | Holdout-40 |
+| --- | ---: |
+| HitRate@10 | 0.850000 |
+| MRR | 0.462976 |
+| MTTC | 5.100000 |
+| TechnicalScore | 0.681893 |
+
+The A11 gain comes from deterministic context extraction hardening: catalog
+category plurals are recognized, `mesh` is recognized as a material, and the
+apostrophe in `I'm` is no longer misread as size `M`.
 
 Historical Full-200 public snapshot:
 
@@ -105,9 +119,11 @@ Shared types and leakage validation are in `starter/contracts.py`.
 | Dynamic Context Programming | The Agent rebuilds the query from active state and records Strategy, Candidate, relaxation, and fallback diagnostics |
 | Product and Efficiency Metrics | Development evaluation reports HitRate@10, MRR, MTTC, Efficiency, scenario results, latency, memory, and failures |
 
-The next optimization phase makes intent persistence and proactive guidance
-more genuinely candidate-aware. See the roadmap rather than inferring that each
-planned behavior is already implemented.
+AB1 is the retained A/B integration contract: A constructs a
+`RetrievalRequest`, B returns a `RetrievalResult`, and A applies the response
+guard. The request validator rejects evaluator-only fields such as target ASIN
+and ground truth. Profile weighting is disabled (`profile_weight=0.0`) because
+its Development gain did not generalize to Holdout-40.
 
 ## What the Ablations Showed
 
@@ -118,6 +134,7 @@ Development-160:
 | Official weak BM25 | 0.12500 | 0.068034 | 0.106710 | Comparison |
 | Pure lexical | 0.71875 | 0.485851 | 0.617005 | Reject as default |
 | Retained structured path | 0.76250 | 0.526989 | 0.653222 | Retain |
+| A11 extraction hardening | 0.81875 | 0.515156 | 0.686422 | Retain |
 | Dense only | 0.33750 | 0.160501 | 0.272650 | Reject as default |
 | Weighted RRF, k=10 | 0.75000 | 0.486620 | 0.637611 | Reject as default |
 | Semantic rerank, Top 30 | 0.78125 | 0.484162 | 0.656499 | Reject globally; keep experiment |
@@ -205,7 +222,9 @@ For an isolated named development run:
 ./scripts/start_experiment.sh experiment-name --split development
 ```
 
-An optional fold can be selected:
+The script starts the visualizer only after its health endpoint responds and
+opens it automatically. To suppress browser opening for a run, use
+`TIKTOK_OPEN_VISUALIZER=0`. An optional fold can be selected:
 
 ```bash
 ./scripts/start_experiment.sh experiment-name \
@@ -259,19 +278,14 @@ pre-rerank order.
 
 ## Current Optimization Route
 
-The next technical route is:
+The current retained route is:
 
-1. classify Development-160 misses as recall, ranking, state, dialogue, or
-   extraction failures,
-2. stabilize intent across clarification replies,
-3. add a should-ask over-generality gate,
-4. rank questions by candidate partition value,
-5. pass stable non-label diagnostics across the A/B seam,
-6. test rejected-constraint ranking,
-7. test conditional, constraint-preserving semantic reranking only when failure
-   analysis supports it,
-8. freeze the simplest robust development configuration,
-9. complete public documentation, demo, and the submission package.
+1. retain the deterministic A11 extraction fixes,
+2. retain and test the AB1 A/B contract without changing its interface,
+3. keep A8, A9, A10, and A12 variants reverted unless new evidence supports a
+   fresh experiment,
+4. freeze the simplest robust configuration,
+5. complete public documentation, demo, and the submission package.
 
 See [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md) and the A/B
 workstream documents for experiment gates and ownership.
@@ -297,7 +311,8 @@ hard filters, duplicate/invalid ASINs, and Candidate Pool shortages.
 ## Limitations
 
 - The historical public holdout is exposed and cannot support a sealed claim.
-- Current intent inference is still too current-utterance-sensitive.
+- Current intent inference is still too current-utterance-sensitive; the A8
+  persistence experiment was not retained.
 - Clarification remains priority-biased and does not yet have a complete
   should-ask uncertainty gate.
 - Rule-based extraction has vocabulary and negation-scope limits.
