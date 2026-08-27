@@ -276,7 +276,7 @@ ablation leaves the Track 4 long-term-profile gap open.
 
 ### AB1 - Shared contract and active-route semantics freeze
 
-**Status: retained at `e992b89`.** AB1 appends requested Route weights,
+**Status: retained at `40a5182`.** AB1 appends requested Route weights,
 actually executed Routes, and the actual fallback Route to shared diagnostics.
 It preserves the original request/query contract and positional diagnostics
 compatibility. Development metrics, scenarios, sessions, and four folds are
@@ -314,6 +314,8 @@ make execution and fallback observable. Requested weights use the exact shared
 three-Route vocabulary and `[0, 1]` range; execution stages use a closed
 inventory. A reported fallback must be marked used, included in executed
 Routes, and survive successful downstream reranking.
+Downstream wrappers preserve legacy `{}` plus `[]` as unreported rather than
+inventing execution semantics from the old free-form `route` field.
 
 ## R3 - B-Side Targeted Retrieval and Ranking
 

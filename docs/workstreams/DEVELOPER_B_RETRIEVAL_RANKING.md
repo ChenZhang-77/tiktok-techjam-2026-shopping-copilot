@@ -88,7 +88,7 @@ B8 rejected-constraint ranking
   -> B12 adaptive candidate depth, only if supported
 ```
 
-AB1 passed at `e992b89`. Do not begin B9-B12 before B8 receives its own
+AB1 passed at `40a5182`. Do not begin B9-B12 before B8 receives its own
 keep/revert decision and dual review. A11 remains the retained A-side baseline;
 B8 is now the next executable B-owned module.
 
@@ -99,12 +99,14 @@ must define any retrieval-produced score, coverage, partition, relaxation,
 route, or fallback field that A uses. Do not move dialogue policy into B.
 
 AB1 freezes shared names, types, ranges, missing-data behavior, fallback
-consistency, and compatibility tests at `e992b89`.
+consistency, and compatibility tests at `40a5182`.
 `requested_route_weights` records Strategy intent,
 `executed_routes` records actual execution, and `fallback_route` records the
 degraded Route. The current default retriever therefore does not become dense
 merely because Browsing carries a non-zero semantic weight. Full evidence:
 `docs/ab1_route_semantics_evidence.md`.
+If a wrapped legacy retriever leaves `{}` plus `[]`, keep all appended AB1
+fields unreported; do not infer execution from its free-form `route` string.
 
 ## B8 — Rejected-constraint ranking
 

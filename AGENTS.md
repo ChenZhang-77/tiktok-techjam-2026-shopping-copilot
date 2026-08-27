@@ -209,7 +209,7 @@ components lack independent hash-bound evidence and remain unproven. The
 shared request schema and question policy are unchanged. See
 `docs/a11_extraction_scope_evidence.md`.
 
-AB1 Shared Contract and Active-Route Semantics Freeze is retained at `e992b89`.
+AB1 Shared Contract and Active-Route Semantics Freeze is retained at `40a5182`.
 It appends `requested_route_weights`, `executed_routes`, and `fallback_route`
 to `RetrievalDiagnostics` without changing the request schema, query, Strategy
 weights, ranking, or question policy. Empty requested/executed fields mean an
@@ -220,6 +220,9 @@ names use the closed execution inventory in `starter/contracts.py`. A reported
 fallback must be marked used and must name an executed Route. Reranking must
 preserve an upstream fallback. Development metrics, scenarios, sessions, and
 all four folds match A11 exactly. See `docs/ab1_route_semantics_evidence.md`.
+Wrappers around legacy `{}` plus `[]` producers must keep all three appended
+AB1 fields unreported instead of guessing Route execution from the old
+free-form `route` field.
 The next module is B8 Rejected-Constraint Ranking.
 
 Dense retrieval, weighted RRF, and the CrossEncoder reranker are optional,

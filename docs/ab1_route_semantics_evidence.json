@@ -5,7 +5,7 @@
     "owners": ["developer_a_control_plane", "developer_b_retrieval_ranking"],
     "hypothesis": "Freezing requested, executed, and fallback Route diagnostics makes the shared A/B seam truthful without changing retrieval order or dialogue policy.",
     "decision": "retain_route_execution_semantics",
-    "runtime_code_commit": "e992b89",
+    "runtime_code_commit": "40a5182",
     "reporting_code_commit": "2ebb954"
   },
   "shared_contract": {
@@ -34,8 +34,8 @@
   },
   "candidate": {
     "report": "docs/ab1_reports/development_route_semantics.json",
-    "sha256": "f113d831f4d43d0028ca986c754534de4f8a591e611a9af25a1ce3d3320edb91",
-    "clean_code_commit": "e992b89",
+    "sha256": "db17e6af8a939fd23ea53ddb615448e3986b5eb185fdf174d7d68dc4e4e1106d",
+    "clean_code_commit": "40a5182",
     "session_outcome_sha256": "41f7a9dede01e03439a76615adca62cbac1181619970d9ff345dca00608a5621",
     "metrics": {
       "hit_rate_at_10": 0.8625,
@@ -66,19 +66,19 @@
   "fold_reports": {
     "fold_1": {
       "path": "docs/ab1_reports/fold_1_route_semantics.json",
-      "sha256": "903221cd53eb2d6131d8c645a9ffb773657cc726403b71677e1b15e4d55a8a7f"
+      "sha256": "265a6872f6c7f7a0477868b92ed9850320cc182f742c545d0e65b48126499ced"
     },
     "fold_2": {
       "path": "docs/ab1_reports/fold_2_route_semantics.json",
-      "sha256": "f9ce8dac331afe9b68969597b986435b34a7ca0cce8aba618fa971ff7fd9fe43"
+      "sha256": "57e477234a085905318e2a76186968cd699b255b5f56335e61a417e8436f6dbc"
     },
     "fold_3": {
       "path": "docs/ab1_reports/fold_3_route_semantics.json",
-      "sha256": "66c1d7220f36d4901f567d1f822bbbb8a7c1f51a5387c15419d703db2605fd65"
+      "sha256": "9f5739a8cb3df38df75dae73504b8fb78503e2745826d27a9a7af6dea626119b"
     },
     "fold_4": {
       "path": "docs/ab1_reports/fold_4_route_semantics.json",
-      "sha256": "4ecc88580504b2e0117eb11b370d377c737f86364499e1ecb87c04679c15870d"
+      "sha256": "c9a904e888c060bdd587a2fea78efd090882df8a377218a115b323bc4c7f3b00"
     }
   },
   "compatibility_examples": {
@@ -102,7 +102,7 @@
   "known_risks": [
     "AB1 improves truthfulness and observability, not ranking quality; metric parity is the keep gate.",
     "The retained default still does not execute dense retrieval even when Browsing Strategy requests a non-zero semantic weight.",
-    "Legacy injected retrievers may leave the appended diagnostics empty, which must be treated as unreported rather than executed or failed."
+    "Legacy injected retrievers may leave the appended diagnostics empty; downstream wrappers preserve that unreported state rather than guessing execution or failure from the free-form route field."
   ],
   "next_module": "B8 Rejected-Constraint Ranking"
 }

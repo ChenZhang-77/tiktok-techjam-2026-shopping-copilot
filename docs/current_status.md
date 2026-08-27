@@ -266,7 +266,7 @@ independent hash-bound reports were retained. See
 ## Next Decision
 
 AB1 Shared Contract and Active-Route Semantics Freeze is retained at clean code
-commit `e992b89`. It appends truthful requested, executed, and fallback Route
+commit `40a5182`. It appends truthful requested, executed, and fallback Route
 fields to `RetrievalDiagnostics`; the request/query schema, Strategy weights,
 ranking, and question policy remain unchanged. Development metrics, scenario
 metrics, all 160 session outcomes, and all four folds exactly match A11.
@@ -274,7 +274,8 @@ metrics, all 160 session outcomes, and all four folds exactly match A11.
 The retained contract rejects unknown Route names and out-of-range requested
 weights. When AB1 fields are reported, `fallback_used`, `fallback_route`, and
 `executed_routes` must agree; downstream reranking preserves upstream fallback
-evidence.
+evidence. A reranker wrapping a legacy producer keeps all appended AB1 fields
+unreported on both success and fallback paths.
 
 Across 726 Development retrievals, lexical and structured were each requested
 and executed 726 times. Dense was requested 475 times by Strategy but executed

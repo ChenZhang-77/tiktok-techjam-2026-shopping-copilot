@@ -367,7 +367,7 @@
     }
   ],
   "code_provenance": {
-    "commit": "e992b89",
+    "commit": "40a5182",
     "worktree_clean": true
   },
   "observed_run_counts": {
@@ -410,8 +410,8 @@
       "dense": 103
     },
     "executed_route_counts": {
-      "lexical": 166,
-      "structured": 166
+      "structured": 166,
+      "lexical": 166
     },
     "requested_not_executed_route_counts": {
       "dense": 103
@@ -428,53 +428,53 @@
     "rerank_pool_size": null
   },
   "timing": {
-    "initialization_ms": 2171.994625,
-    "evaluation_wall_ms": 5147.656792,
+    "initialization_ms": 2115.287833,
+    "evaluation_wall_ms": 5196.876625,
     "responses": {
       "response_count": 166,
-      "total_ms": 5121.237337,
-      "mean_ms": 30.850827,
-      "p50_ms": 29.666,
-      "p95_ms": 57.193291,
-      "max_ms": 67.022
+      "total_ms": 5165.096588,
+      "mean_ms": 31.11504,
+      "p50_ms": 30.502583,
+      "p95_ms": 55.440375,
+      "max_ms": 74.075458
     },
     "retrieval": {
       "latency": {
         "response_count": 166,
-        "total_ms": 4366.507793,
-        "mean_ms": 26.304264,
-        "p50_ms": 25.244709,
-        "p95_ms": 52.125458,
-        "max_ms": 61.840291
+        "total_ms": 4395.174241,
+        "mean_ms": 26.476953,
+        "p50_ms": 25.704458,
+        "p95_ms": 50.26075,
+        "max_ms": 67.620209
       },
       "lexical_latency": {
         "response_count": 166,
-        "total_ms": 2432.99417,
-        "mean_ms": 14.656591,
-        "p50_ms": 14.76725,
-        "p95_ms": 26.784208,
-        "max_ms": 35.91
+        "total_ms": 2462.147081,
+        "mean_ms": 14.832211,
+        "p50_ms": 14.855458,
+        "p95_ms": 27.591542,
+        "max_ms": 43.609917
       },
       "constraint_rerank_latency": {
         "response_count": 166,
-        "total_ms": 1067.912255,
-        "mean_ms": 6.433206,
-        "p50_ms": 5.207666,
-        "p95_ms": 17.524292,
-        "max_ms": 25.701
+        "total_ms": 1070.144588,
+        "mean_ms": 6.446654,
+        "p50_ms": 5.487708,
+        "p95_ms": 17.048875,
+        "max_ms": 22.692875
       },
       "structured_filter_latency": {
         "response_count": 166,
-        "total_ms": 79.808285,
-        "mean_ms": 0.480773,
+        "total_ms": 76.343755,
+        "mean_ms": 0.459902,
         "p50_ms": 0.000209,
-        "p95_ms": 2.0975,
-        "max_ms": 4.444458
+        "p95_ms": 2.069167,
+        "max_ms": 4.094417
       }
     }
   },
   "resources": {
-    "peak_rss_bytes": 554663936,
+    "peak_rss_bytes": 488456192,
     "peak_rss_kind": "process_peak_rss"
   },
   "evaluation": {
