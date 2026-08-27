@@ -166,14 +166,15 @@ The next optimization phase starts from diagnosis, not from another model:
 
 ## R0 Result
 
-R0 is complete at clean code commit `40dc07e`. The Development-160 baseline
+R0 is complete at clean code commit `0b9bc74`. The Development-160 baseline
 remained HitRate@10 `0.7625`, MRR `0.526989`, MTTC `5.30625`, and recommended
 technical score `0.653222`; R0 changed no runtime behavior.
 
-Of 38 missed sessions, the earliest observed cause was Extraction in 37 and
-Intent / Strategy Routing in one. The same Extraction dominance appeared in all
-four fixed folds. The target entered the retained lexical pool in 145 of 160
-sessions, so the next optimization should stay on the A-side control plane.
+Of 38 missed sessions, the earliest observed cause was Intent / Strategy
+Routing in 25, State / Override in seven, and Extraction in six. Intent /
+Strategy Routing was the largest class in every fixed fold. The target entered
+the retained lexical pool in 145 of 160 sessions, so the next optimization
+should stay on the A-side control plane.
 This is deterministic evidence triage, not proof that every downstream failure
 would disappear after one extraction change. The durable report is
 `docs/r0_development_failure_taxonomy.md`, with turn-level offline evidence in
@@ -181,10 +182,11 @@ the adjacent JSON artifact.
 
 ## Next Decision
 
-The next dependency-ordered module is A8 Stateful Intent Persistence. R0 ranks
-A11 Extraction and Scope Hardening as the strongest evidence-led behavior
-experiment, but A8 must first define stable cross-turn `IntentAssessment`
-semantics; then AB0 must establish Candidate decision evidence before A9.
+The next evidence-ranked and dependency-ordered module is A8 Stateful Intent
+Persistence. It must define stable cross-turn `IntentAssessment` semantics;
+then AB0 must establish Candidate decision evidence before A9. A11 Extraction
+and Scope Hardening remains supported by six primary Extraction misses and
+should stay after the A8/AB0 dependencies specified in the roadmap.
 
 The complete dependency order lives only in `docs/optimization_roadmap.md`.
 Immediate blockers to remember: A9 cannot start from the current Top-K text

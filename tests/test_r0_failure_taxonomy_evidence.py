@@ -18,7 +18,7 @@ class R0FailureTaxonomyEvidenceTest(unittest.TestCase):
     def test_report_is_a_clean_development_only_run(self) -> None:
         self.assertEqual(self.report["version"], "r0-v2")
         self.assertEqual(self.report["sample_count"], 160)
-        self.assertEqual(self.report["code_provenance"]["commit"], "40dc07e")
+        self.assertEqual(self.report["code_provenance"]["commit"], "0b9bc74")
         self.assertTrue(self.report["code_provenance"]["worktree_clean"])
         self.assertEqual(
             self.report["protocol"],
@@ -29,13 +29,21 @@ class R0FailureTaxonomyEvidenceTest(unittest.TestCase):
                 "target_identifiers_written_to_report": False,
             },
         )
+        self.assertEqual(
+            self.report["experiment_record"]["decision"],
+            "retain_offline_audit_and_follow_dependency_order",
+        )
+        self.assertEqual(
+            self.report["experiment_record"]["gained_lost_sessions"],
+            {"gained": 0, "lost": 0, "reason": "no runtime behavior comparator"},
+        )
 
     def test_all_misses_use_the_canonical_taxonomy_and_fixed_folds(self) -> None:
         self.assertEqual(self.report["hit_count"], 122)
         self.assertEqual(self.report["miss_count"], 38)
         self.assertEqual(
             self.report["failure_summary"]["primary_cause_counts"],
-            {"extraction": 37, "intent_strategy_routing": 1},
+            {"extraction": 6, "intent_strategy_routing": 25, "state_override": 7},
         )
         self.assertEqual(
             {name: fold["sample_count"] for name, fold in self.report["fold_summary"].items()},
@@ -55,7 +63,7 @@ class R0FailureTaxonomyEvidenceTest(unittest.TestCase):
             self.report["target_recall"]["retained_depth"],
             {"hits": 145, "recall": 0.90625, "sessions": 160},
         )
-        self.assertEqual(self.report["next_experiment"]["id"], "A11")
+        self.assertEqual(self.report["next_experiment"]["id"], "A8")
 
 
 if __name__ == "__main__":

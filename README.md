@@ -260,12 +260,13 @@ pre-rerank order.
 
 ## Current Optimization Route
 
-R0 is complete: the clean Development-160 audit classified 37 of 38 misses as
-Extraction and one as Intent / Strategy Routing, while the target entered the
-retained lexical pool in 145 of 160 sessions. See
+R0 is complete: the corrected clean Development-160 audit classified 25 of 38
+misses as Intent / Strategy Routing, seven as State / Override, and six as
+Extraction, while the target entered the retained lexical pool in 145 of 160
+sessions. See
 [`docs/r0_development_failure_taxonomy.md`](docs/r0_development_failure_taxonomy.md).
-The evidence ranks A11 highly, but the dependency-ordered next module is A8
-stateful intent persistence, followed by AB0. `AGENTS.md` owns the taxonomy and
+The evidence-ranked and dependency-ordered next module is A8 stateful intent
+persistence, followed by AB0. `AGENTS.md` owns the taxonomy and
 leakage boundary; [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md)
 owns the complete order.
 

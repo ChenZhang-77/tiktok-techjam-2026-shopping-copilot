@@ -8,17 +8,34 @@ runtime request/diagnostic.
 
 - Sessions: 160
 - Hits: 122
-- Misses classified: 38
+- Miss sessions: 38
+- Behavior-classified misses: 38
+- Invalid misses left unclassified: 0
 - Control Plane primary causes: 38
 - Retrieval / Ranking primary causes: 0
+
+## Experiment record
+
+- **ID / owner:** R0 / shared offline diagnostics
+- **Primary behavior change:** none; offline analysis only
+- **Hypothesis:** Development-160 misses are dominated by an upstream canonical failure class that can select the next smallest experiment.
+- **Comparator:** retained structured Development-160 baseline, same runtime
+- **Gained / lost sessions:** 0 / 0; no runtime behavior comparator
+- **Latency / memory / fallback impact:** unchanged at runtime
+- **Keep gate:** complete fixed-fold Development evidence, canonical causes,
+  and no target leakage or runtime behavior change
+- **Revert gate:** any target leakage, holdout/full selection, runtime change,
+  or non-reproducible fold assignment
+- **Decision:** Retain offline audit tooling and evidence; follow the roadmap
+  dependency order
 
 ## Primary causes
 
 | Cause | Misses |
 | --- | ---: |
-| extraction | 37 |
-| state_override | 0 |
-| intent_strategy_routing | 1 |
+| extraction | 6 |
+| state_override | 7 |
+| intent_strategy_routing | 25 |
 | query_construction | 0 |
 | question_policy | 0 |
 | retrieval_recall | 0 |
@@ -27,17 +44,17 @@ runtime request/diagnostic.
 
 ## Fold consistency
 
-- **fold_1**: samples=40, misses=11; extraction=11
-- **fold_2**: samples=40, misses=9; extraction=9
-- **fold_3**: samples=40, misses=8; extraction=7, intent_strategy_routing=1
-- **fold_4**: samples=40, misses=10; extraction=10
+- **fold_1**: samples=40, misses=11; extraction=1, intent_strategy_routing=8, state_override=2
+- **fold_2**: samples=40, misses=9; extraction=2, intent_strategy_routing=6, state_override=1
+- **fold_3**: samples=40, misses=8; extraction=2, intent_strategy_routing=5, state_override=1
+- **fold_4**: samples=40, misses=10; extraction=1, intent_strategy_routing=6, state_override=3
 
 ## Scenario breakdown
 
 - **boundary**: extraction=1
-- **browsing**: extraction=11, intent_strategy_routing=1
-- **buying**: extraction=18
-- **intent_override**: extraction=7
+- **browsing**: extraction=4, intent_strategy_routing=8
+- **buying**: extraction=1, intent_strategy_routing=17
+- **intent_override**: state_override=7
 
 ## Target recall from retained lexical pools
 
@@ -53,15 +70,16 @@ runtime request/diagnostic.
 
 ## Recommended next experiment
 
-**A11** — harden extraction and clause scope.
+**A8** — stabilize intent assessment before B routing.
 
 This recommendation is evidence-ranked but still subject to the dependency
 order in `docs/optimization_roadmap.md`.
 
 ## Example misses
 
-- **extraction**: public_0002 (disclosed_value_not_extracted:100 leather), public_0011 (disclosed_value_not_extracted:100 cotton), public_0016 (disclosed_value_not_extracted:imported), public_0020 (disclosed_value_not_extracted:color grey), public_0022 (disclosed_value_not_extracted:fabric 100 cotton soft comfy breathable and keep you cool)
-- **intent_strategy_routing**: public_0037 (buying_to_browsing_without_exploration)
+- **extraction**: public_0016 (disclosed_value_not_extracted:imported), public_0026 (disclosed_value_not_extracted:100 synthetic), public_0100 (disclosed_value_not_extracted:manmade sole), public_0153 (disclosed_value_not_extracted:rubber sole), public_0170 (disclosed_value_not_extracted:made in the usa or imported)
+- **state_override**: public_0002 (override_old_value_still_active), public_0071 (override_old_value_still_active), public_0089 (override_old_value_still_active), public_0096 (override_old_value_still_active), public_0103 (override_old_value_still_active)
+- **intent_strategy_routing**: public_0011 (buying_to_browsing_without_exploration), public_0020 (buying_to_browsing_without_exploration), public_0022 (buying_to_browsing_without_exploration), public_0028 (buying_to_browsing_without_exploration), public_0037 (buying_to_browsing_without_exploration)
 
 ## Interpretation limits
 
