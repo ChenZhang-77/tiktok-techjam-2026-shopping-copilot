@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import re
 from collections import Counter
-from typing import TYPE_CHECKING
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Literal
 
 from starter.core.context_engine import CATEGORY_TERMS, COLORS, MATERIALS, STYLE_TERMS, USE_CASES
 from starter.core.response_guard import ALLOWED_ASK_ATTRIBUTES
@@ -10,6 +11,32 @@ from starter.core.state import SessionState
 
 if TYPE_CHECKING:
     from starter.core.decision_evidence import DecisionEvidence
+
+
+ClarificationReason = Literal[
+    "final_turn",
+    "no_available_attribute",
+    "candidate_partition_available",
+    "stable_without_useful_partition",
+    "degraded_evidence_conservative",
+    "evidence_unavailable_conservative",
+    "insufficient_evidence_conservative",
+]
+
+
+@dataclass(frozen=True)
+class ClarificationDecision:
+    should_ask: bool
+    ask_attribute: str | None
+    question: str
+    reason: ClarificationReason
+
+    def to_diagnostics(self) -> dict:
+        return {
+            "should_ask": self.should_ask,
+            "reason": self.reason,
+            "ask_attribute": self.ask_attribute,
+        }
 
 
 QUESTION_TEXT = {
@@ -103,30 +130,22 @@ def _frontload_concrete_buying_attribute(state: SessionState, available: list[st
     return "material" if "material" in available else None
 
 
-def choose_clarification(
+def _select_clarification_attribute(
     state: SessionState,
     *,
-    turn: int,
-    candidate_texts: list[str] | None = None,
-    decision_evidence: DecisionEvidence | None = None,
-) -> tuple[str | None, str]:
-    # AB0 makes the complete summary available here. A9 will decide whether to
-    # consume it; AB0 deliberately preserves the existing ask policy.
-    _ = decision_evidence
-    if turn >= 10:
-        return None, ""
-
+    candidate_texts: list[str] | None,
+) -> tuple[str | None, list[str]]:
     priority = BUYING_PRIORITY if state.intent == "buying" else BROWSING_PRIORITY
     available = _available_attributes(state, priority)
     if not available:
-        return None, ""
+        return None, available
 
     concrete_attribute = _frontload_concrete_buying_attribute(state, available)
     if concrete_attribute is not None:
-        return concrete_attribute, QUESTION_TEXT[concrete_attribute]
+        return concrete_attribute, available
 
     if "feature" in available:
-        return "feature", QUESTION_TEXT["feature"]
+        return "feature", available
 
     scores = candidate_attribute_scores(candidate_texts or [])
     ranked = sorted(
@@ -134,6 +153,85 @@ def choose_clarification(
         key=lambda attribute: (-scores[attribute], priority.index(attribute)),
     )
     if ranked:
-        return ranked[0], QUESTION_TEXT[ranked[0]]
+        return ranked[0], available
+    return available[0], available
 
-    return available[0], QUESTION_TEXT[available[0]]
+
+def decide_clarification(
+    state: SessionState,
+    *,
+    turn: int,
+    candidate_texts: list[str] | None = None,
+    decision_evidence: DecisionEvidence | None = None,
+) -> ClarificationDecision:
+    if turn >= 10:
+        return ClarificationDecision(False, None, "", "final_turn")
+
+    selected, available = _select_clarification_attribute(
+        state,
+        candidate_texts=candidate_texts,
+    )
+    if selected is None:
+        return ClarificationDecision(False, None, "", "no_available_attribute")
+    if decision_evidence is None:
+        return ClarificationDecision(
+            True,
+            selected,
+            QUESTION_TEXT[selected],
+            "evidence_unavailable_conservative",
+        )
+    if decision_evidence.degraded:
+        return ClarificationDecision(
+            True,
+            selected,
+            QUESTION_TEXT[selected],
+            "degraded_evidence_conservative",
+        )
+
+    useful_partitions = {
+        attribute
+        for attribute, score in decision_evidence.attribute_partition_scores.items()
+        if attribute in available and score > 0.0
+    }
+    if useful_partitions:
+        return ClarificationDecision(
+            True,
+            selected,
+            QUESTION_TEXT[selected],
+            "candidate_partition_available",
+        )
+    if (
+        decision_evidence.stability_status == "available"
+        and decision_evidence.candidate_stability is not None
+        and decision_evidence.candidate_stability >= 0.8
+    ):
+        return ClarificationDecision(
+            False,
+            None,
+            "",
+            "stable_without_useful_partition",
+        )
+    return ClarificationDecision(
+        True,
+        selected,
+        QUESTION_TEXT[selected],
+        "insufficient_evidence_conservative",
+    )
+
+
+def choose_clarification(
+    state: SessionState,
+    *,
+    turn: int,
+    candidate_texts: list[str] | None = None,
+    decision_evidence: DecisionEvidence | None = None,
+) -> tuple[str | None, str]:
+    """Compatibility wrapper for callers that only need the public question."""
+
+    decision = decide_clarification(
+        state,
+        turn=turn,
+        candidate_texts=candidate_texts,
+        decision_evidence=decision_evidence,
+    )
+    return decision.ask_attribute, decision.question

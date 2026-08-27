@@ -113,12 +113,21 @@ class AgentSmokeTest(unittest.TestCase):
         response = agent.respond("decision-evidence", "Show me product ideas", 1, 2)
 
         evidence = response["diagnostics"]["decision_evidence"]
+        clarification = response["diagnostics"]["clarification"]
         self.assertEqual(len(response["recommendations"]), 2)
         self.assertEqual(evidence["pool_size"], 3)
         self.assertEqual(evidence["evidence_candidate_count"], 3)
         self.assertIn("material", evidence["attribute_partition_scores"])
         self.assertNotIn("candidate_ids", evidence)
         self.assertNotIn("candidate_texts", evidence)
+        self.assertEqual(
+            clarification,
+            {
+                "should_ask": True,
+                "reason": "candidate_partition_available",
+                "ask_attribute": "use_case",
+            },
+        )
 
     def test_buying_intent_persists_after_a_no_preference_reply(self) -> None:
         retriever = _RecordingRetriever()

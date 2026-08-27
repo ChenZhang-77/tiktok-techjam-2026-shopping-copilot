@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Protocol
 
 from starter.contracts import RetrievalRequest, RetrievalResult
-from starter.core.clarification import choose_clarification
+from starter.core.clarification import decide_clarification
 from starter.core.context_engine import (
     detect_no_preference_attributes,
     detect_override,
@@ -194,16 +194,17 @@ class Agent:
                 for item in raw_recommendations
                 if isinstance(item, dict)
             ]
-            ask_attribute, question = choose_clarification(
+            clarification = decide_clarification(
                 state,
                 turn=turn,
                 candidate_texts=candidate_texts,
                 decision_evidence=decision_evidence,
             )
-            if ask_attribute:
-                response["ask_attribute"] = ask_attribute
+            diagnostics["clarification"] = clarification.to_diagnostics()
+            if clarification.ask_attribute:
+                response["ask_attribute"] = clarification.ask_attribute
                 base_message = response.get("message") if isinstance(response, dict) else ""
-                response["message"] = f"{base_message} {question}".strip()
+                response["message"] = f"{base_message} {clarification.question}".strip()
         guarded = guard_response(
             response,
             catalog_ids=self._catalog_ids,
