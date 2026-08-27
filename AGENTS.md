@@ -180,8 +180,8 @@ coordinated measured contract defines otherwise.
 The A9 threshold-only should-ask gate is a rejected ablation, not retained
 runtime behavior. It reduced Development HitRate and worsened MTTC. The retained
 reports lack turn-level question traces, so they do not support an exact
-question-count claim. Continue with A10a question value; any future A9 variant
-must first retain a hash-bound turn audit.
+question-count claim. Any future A9 variant must first retain a hash-bound turn
+audit; the historical next step from A9 was the now-completed A10a experiment.
 
 The A10a full-pool question-value candidate is also rejected and reverted. Its
 post-feature variant regressed every main Development metric. Existing
