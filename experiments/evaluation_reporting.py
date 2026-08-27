@@ -321,6 +321,7 @@ def evaluate_split(
     fusion_rrf_k: float = 60.0,
     rerank_candidate_limit: int = 30,
     conditional_dense_config: ConditionalDenseConfig | None = None,
+    constraint_reranker_config: RerankerConfig | None = None,
 ) -> dict:
     if fold_name and split != "development":
         raise ValueError("A development fold can only be used with the development split")
@@ -332,10 +333,11 @@ def evaluate_split(
         "fusion",
         "semantic_rerank",
         "conditional_dense",
+        "constraint_preserving_rerank",
     }:
         raise ValueError(
             "retrieval_mode must be structured, no_guarded_filter, lexical, dense, fusion, "
-            "semantic_rerank, or conditional_dense"
+            "semantic_rerank, conditional_dense, or constraint_preserving_rerank"
         )
 
     samples = load_jsonl(dataset_path)
@@ -356,23 +358,44 @@ def evaluate_split(
         "fusion",
         "semantic_rerank",
         "conditional_dense",
+        "constraint_preserving_rerank",
     }
     structured_config = StructuredConfig(enabled=structured_filter_enabled)
     dense_config = DenseConfig()
     conditional_dense_configuration = None
-    if retrieval_mode == "conditional_dense":
+    if retrieval_mode in {"conditional_dense", "constraint_preserving_rerank"}:
         conditional_config = (
             conditional_dense_config
             if conditional_dense_config is not None
             else ConditionalDenseConfig()
         )
-        retriever = ConditionalDenseRetriever.from_catalog(
+        conditional_dense_retriever = ConditionalDenseRetriever.from_catalog(
             catalog_path,
             config=conditional_config,
             dense_config=dense_config,
         )
-        dense_configuration = retriever.dense_configuration()
-        conditional_dense_configuration = retriever.configuration_snapshot()
+        dense_configuration = conditional_dense_retriever.dense_configuration()
+        conditional_dense_configuration = (
+            conditional_dense_retriever.configuration_snapshot()
+        )
+        if retrieval_mode == "constraint_preserving_rerank":
+            reranker_config = (
+                constraint_reranker_config
+                if constraint_reranker_config is not None
+                else RerankerConfig(
+                    candidate_limit=rerank_candidate_limit,
+                    anchor_count=3,
+                    base_score_weight=0.35,
+                    minimum_constraint_confidence=0.75,
+                    constraint_guard_enabled=True,
+                )
+            )
+            retriever = RerankingRetriever(
+                conditional_dense_retriever,
+                config=reranker_config,
+            )
+        else:
+            retriever = conditional_dense_retriever
     elif retrieval_mode == "fusion":
         retriever = FusionRetriever.from_catalog(
             catalog_path,
@@ -399,7 +422,7 @@ def evaluate_split(
         dense_configuration = None
     reranker_configuration = (
         retriever.configuration_snapshot()
-        if retrieval_mode == "semantic_rerank"
+        if retrieval_mode in {"semantic_rerank", "constraint_preserving_rerank"}
         else None
     )
     observer = AgentObserver(
@@ -460,9 +483,23 @@ def evaluate_split(
                     }
                     if retrieval_mode == "conditional_dense"
                     else (
-                        {"semantic_rerank_failure": "exact_pre_rerank_candidate_order"}
-                        if retrieval_mode == "semantic_rerank"
-                        else None
+                        {
+                            "conditional_dense_gate_skip": "exact_structured_order",
+                            "conditional_dense_degradation": "exact_structured_order",
+                            "semantic_rerank_failure": (
+                                "exact_pre_rerank_candidate_order"
+                            ),
+                        }
+                        if retrieval_mode == "constraint_preserving_rerank"
+                        else (
+                            {
+                                "semantic_rerank_failure": (
+                                    "exact_pre_rerank_candidate_order"
+                                )
+                            }
+                            if retrieval_mode == "semantic_rerank"
+                            else None
+                        )
                     )
                 )
             )
@@ -514,6 +551,16 @@ def main() -> None:
         const="conditional_dense",
         dest="retrieval_mode",
         help="Fuse dense only for broad Browsing and preserve exact structured fallback.",
+    )
+    retrieval_mode.add_argument(
+        "--constraint-preserving-rerank",
+        action="store_const",
+        const="constraint_preserving_rerank",
+        dest="retrieval_mode",
+        help=(
+            "Apply the Top-3-anchored local CrossEncoder to ranks 4-30 after "
+            "the retained conditional-dense route."
+        ),
     )
     retrieval_mode.add_argument(
         "--dense-only",

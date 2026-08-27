@@ -101,6 +101,84 @@ class _LegacyRouteDiagnosticsStubAgent(_StubAgent):
 
 
 class DevelopmentReportingTest(unittest.TestCase):
+    def test_constraint_preserving_rerank_wraps_b9_and_records_both_stage_configs(self) -> None:
+        empty_result = {"scenario_metrics": {}}
+        with (
+            patch("experiments.evaluation_reporting.load_jsonl", return_value=[]),
+            patch(
+                "experiments.evaluation_reporting.load_split_manifest",
+                return_value={"version": "test"},
+            ),
+            patch("experiments.evaluation_reporting.validate_development_fold_manifest"),
+            patch("experiments.evaluation_reporting.filter_samples", return_value=[]),
+            patch("experiments.evaluation_reporting.catalog_index", return_value=(set(), set(), {})),
+            patch(
+                "experiments.evaluation_reporting.ConditionalDenseRetriever.from_catalog"
+            ) as from_catalog,
+            patch("experiments.evaluation_reporting.RerankingRetriever") as reranker,
+            patch("experiments.evaluation_reporting.Agent", return_value=_StubAgent()),
+            patch("experiments.evaluation_reporting.evaluate", return_value=empty_result),
+            patch(
+                "experiments.evaluation_reporting.code_provenance",
+                return_value={"commit": "test", "worktree_clean": True},
+            ),
+        ):
+            from_catalog.return_value.configuration_snapshot.return_value = {
+                "gate": "browsing_with_sparse_active_constraints",
+            }
+            from_catalog.return_value.dense_configuration.return_value = {
+                "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+            }
+            reranker.return_value.configuration_snapshot.return_value = {
+                "candidate_limit": 30,
+                "anchor_count": 3,
+                "base_score_weight": 0.35,
+                "constraint_guard_enabled": True,
+            }
+
+            report = evaluate_split(
+                catalog_path="catalog.jsonl",
+                dataset_path="dataset.jsonl",
+                split="development",
+                public_split_path="split.json",
+                development_fold_path="folds.json",
+                retrieval_mode="constraint_preserving_rerank",
+            )
+
+        from_catalog.assert_called_once_with(
+            "catalog.jsonl",
+            config=ConditionalDenseConfig(),
+            dense_config=DenseConfig(),
+        )
+        reranker.assert_called_once_with(
+            from_catalog.return_value,
+            config=RerankerConfig(
+                candidate_limit=30,
+                anchor_count=3,
+                base_score_weight=0.35,
+                minimum_constraint_confidence=0.75,
+                constraint_guard_enabled=True,
+            ),
+        )
+        reranker.return_value.close.assert_called_once_with()
+        self.assertEqual(
+            report["evaluation"]["retrieval_mode"],
+            "constraint_preserving_rerank",
+        )
+        self.assertEqual(
+            report["evaluation"]["conditional_dense_configuration"]["gate"],
+            "browsing_with_sparse_active_constraints",
+        )
+        self.assertEqual(report["evaluation"]["reranker_configuration"]["anchor_count"], 3)
+        self.assertEqual(
+            report["evaluation"]["fallback_configuration"],
+            {
+                "conditional_dense_gate_skip": "exact_structured_order",
+                "conditional_dense_degradation": "exact_structured_order",
+                "semantic_rerank_failure": "exact_pre_rerank_candidate_order",
+            },
+        )
+
     def test_conditional_dense_mode_records_gate_dense_and_exact_fallback_policy(self) -> None:
         empty_result = {"scenario_metrics": {}}
         with (

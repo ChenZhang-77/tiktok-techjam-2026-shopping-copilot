@@ -299,6 +299,10 @@ class HybridRetriever:
                         self._structured_evidence[parent_asin],
                         request.active_constraints,
                     ),
+                    "rejected_constraint_matches": structured_matches(
+                        self._structured_evidence[parent_asin],
+                        request.rejected_constraints,
+                    ),
                 },
             )
             for rank, parent_asin in enumerate(ranked_ids, start=1)

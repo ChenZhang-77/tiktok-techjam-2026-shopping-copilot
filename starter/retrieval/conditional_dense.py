@@ -69,6 +69,7 @@ class _FusionEntry:
     evidence_text: str | None
     route_ranks: dict[str, int]
     route_scores: dict[str, float]
+    constraint_evidence: dict[str, list[dict]]
 
 
 class ConditionalDenseRetriever:
@@ -319,6 +320,7 @@ class ConditionalDenseRetriever:
                         evidence_text=candidate.evidence_text,
                         route_ranks={},
                         route_scores={},
+                        constraint_evidence={},
                     )
                     next_seen += 1
                 entry = fused[parent_asin]
@@ -326,6 +328,16 @@ class ConditionalDenseRetriever:
                 entry.route_ranks[route] = rank
                 if candidate.score is not None:
                     entry.route_scores[route] = candidate.score
+                if route == "structured":
+                    for field_name in (
+                        "structured_matches",
+                        "rejected_constraint_matches",
+                    ):
+                        value = candidate.diagnostics.get(field_name)
+                        if isinstance(value, list):
+                            entry.constraint_evidence[field_name] = [
+                                dict(item) for item in value if isinstance(item, dict)
+                            ]
                 if not entry.evidence_text and candidate.evidence_text:
                     entry.evidence_text = candidate.evidence_text
             route_ids[route] = seen
@@ -347,6 +359,7 @@ class ConditionalDenseRetriever:
                 source="fusion",
                 evidence_text=entry.evidence_text,
                 diagnostics={
+                    **entry.constraint_evidence,
                     "route_ranks": dict(entry.route_ranks),
                     "route_scores": dict(entry.route_scores),
                     "fusion_rank": rank,

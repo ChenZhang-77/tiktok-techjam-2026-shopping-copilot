@@ -119,6 +119,21 @@ class ConditionalDenseRetrieverTest(unittest.TestCase):
 
     def test_broad_browsing_executes_dense_and_fuses_valid_unique_candidates(self) -> None:
         retriever, base, dense = self._retriever()
+        base.result = replace(
+            base.result,
+            candidates=[
+                replace(
+                    candidate,
+                    diagnostics={
+                        "structured_matches": [{"attribute": "color", "value": "black"}],
+                        "rejected_constraint_matches": [],
+                    },
+                )
+                if candidate.parent_asin == "A"
+                else candidate
+                for candidate in base.result.candidates
+            ],
+        )
 
         first = retriever.retrieve(_request())
         second = retriever.retrieve(_request())
@@ -141,6 +156,12 @@ class ConditionalDenseRetrieverTest(unittest.TestCase):
         self.assertFalse(first.diagnostics.fallback_used)
         self.assertIn("conditional_dense_gate:broad_browsing", first.diagnostics.notes)
         self.assertEqual(first.diagnostics.route_candidate_counts["dense"], 4)
+        fused_a = next(item for item in first.candidates if item.parent_asin == "A")
+        self.assertEqual(
+            fused_a.diagnostics["structured_matches"],
+            [{"attribute": "color", "value": "black"}],
+        )
+        self.assertEqual(fused_a.diagnostics["rejected_constraint_matches"], [])
 
     def test_buying_and_constrained_browsing_keep_the_exact_structured_order(self) -> None:
         cases = (
