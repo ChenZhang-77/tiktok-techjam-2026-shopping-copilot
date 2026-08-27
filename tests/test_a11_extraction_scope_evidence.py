@@ -43,7 +43,7 @@ class A11ExtractionScopeEvidenceTest(unittest.TestCase):
             path = ROOT / report.get("report", report.get("path"))
             self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), report["sha256"])
 
-        self.assertEqual(self.candidate["code_provenance"]["commit"], "f40e265")
+        self.assertEqual(self.candidate["code_provenance"]["commit"], "969c9fa")
         self.assertTrue(self.candidate["code_provenance"]["worktree_clean"])
         self.assertEqual(self.candidate["evaluation"]["split"], "development")
         for report in [
@@ -55,7 +55,7 @@ class A11ExtractionScopeEvidenceTest(unittest.TestCase):
                     encoding="utf-8"
                 )
             )
-            self.assertEqual(payload["code_provenance"]["commit"], "f40e265")
+            self.assertEqual(payload["code_provenance"]["commit"], "969c9fa")
             self.assertTrue(payload["code_provenance"]["worktree_clean"])
         self.assertFalse(self.record["evaluation_boundary"]["full_or_holdout_used"])
         self.assertFalse(self.record["evaluation_boundary"]["target_information_in_runtime"])
