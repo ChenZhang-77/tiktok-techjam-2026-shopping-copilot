@@ -88,9 +88,11 @@ B8 rejected-constraint ranking
   -> B12 adaptive candidate depth, only if supported
 ```
 
-AB1 passed at `a676855`. Do not begin B9-B12 before B8 receives its own
-keep/revert decision and dual review. A11 remains the retained A-side baseline;
-B8 is now the next executable B-owned module.
+AB1 passed at `a676855`. B8's bounded candidate at `f53a7ee` was reverted at
+`3952788`: all 726 Development retrieval turns carried zero rejected
+constraints, so parity did not satisfy its keep gate. Do not begin B9 until
+that revert decision passes dual review. A11 remains the retained A-side
+baseline; B9 is the next executable B-owned module after that gate.
 
 ## AB0 and AB1 obligations for B
 
@@ -110,6 +112,11 @@ fields unreported; do not infer execution from its free-form `route` string.
 Reject requested-only or executed-only partial reports at the contract seam.
 
 ## B8 — Rejected-constraint ranking
+
+**Decision: do not retain under current evidence.** The tested exact,
+confidence-aware penalty and neutral missing-data behavior passed targeted
+tests, but Development-160 and all folds had zero activation. Full evidence:
+`docs/b8_rejected_constraint_evidence.md`.
 
 Hypothesis: a product that strongly exhibits an explicitly rejected attribute
 should move down, while missing evidence should remain neutral.

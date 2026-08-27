@@ -226,7 +226,12 @@ free-form `route` field.
 Requested and executed fields form one report unit: both are non-empty for a
 reported execution, or both are empty for legacy/unreported evidence. Partial
 states are invalid at the shared contract boundary.
-The next module is B8 Rejected-Constraint Ranking.
+B8 Rejected-Constraint Ranking was tested at `f53a7ee` and reverted at
+`3952788`. Development-160 contained zero rejected-constraint observations
+across 726 retrieval turns, so exact metric/fold/session parity was non-evidence
+and failed the keep gate. See `docs/b8_rejected_constraint_evidence.md`.
+After B8 dual review, the next module is B9 Browsing-First Conditional Dense
+Route.
 
 Dense retrieval, weighted RRF, and the CrossEncoder reranker are optional,
 reproducible experiments with deterministic fallback. They are disabled by

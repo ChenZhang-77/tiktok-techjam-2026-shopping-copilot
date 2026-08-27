@@ -23,6 +23,7 @@ Development-160 results:
 | A11 broad extraction candidate | 0.72500 | 0.479085 | 5.61250 | 0.613976 | Reject |
 | A11 bounded extraction scope | 0.86250 | 0.545568 | 4.67500 | 0.721420 | Retain |
 | AB1 route-execution semantics | 0.86250 | 0.545568 | 4.67500 | 0.721420 | Retain parity/observability |
+| B8 rejected-constraint candidate | 0.86250 | 0.545568 | 4.67500 | 0.721420 | Revert; zero Development activation |
 
 The current retained runtime combines the structured retrieval path, bounded
 A11 Control Plane extraction, and AB1 route-execution diagnostics. A11 passed
@@ -51,6 +52,17 @@ Across 726 retrievals, dense was requested 475 times and executed zero times by
 the retained Hybrid path. This closes a truthfulness/diagnostics blocker without
 claiming a ranking gain or active dense coverage. Evidence:
 `docs/ab1_route_semantics_evidence.md`.
+
+## Why B8 Rejected-Constraint Ranking Was Not Retained
+
+The candidate used exact catalog evidence, a `0.80` confidence threshold, and
+a capped `0.18` soft penalty. It passed deterministic behavior tests, including
+neutral missing metadata, positive-overrides-rejection, and no-preference.
+However, Development-160 contained zero rejected constraints across 726 turns.
+Every metric, session, scenario, and fold therefore matched AB1 without
+exercising the code. This failed the documented intended-bucket keep gate and
+the candidate was reverted. Evidence:
+`docs/b8_rejected_constraint_evidence.md`.
 
 ## Why Structured Was Retained
 

@@ -17,6 +17,7 @@ bounded A11 runtime reached Development score `0.721420` with all four folds
 positive. Do not repeat the obsolete “B not integrated”, “40 tests”, or
 pre-A11 status from the historical handoff.
 
-Current module: AB1 Shared Contract and Active-Route Semantics Freeze. Do not
+AB1 is complete. B8 was tested and reverted because Development-160 had zero
+rejection-turn coverage; B9 is the next B-owned module after B8 review. Do not
 change `RetrievalRequest` for query components without shared A/B evidence and
-compatibility tests. A12 remains blocked until AB1 completes.
+compatibility tests. A12 remains separately deferred.

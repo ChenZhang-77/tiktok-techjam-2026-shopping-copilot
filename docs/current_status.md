@@ -283,12 +283,18 @@ and executed 726 times. Dense was requested 475 times by Strategy but executed
 zero times by the retained Hybrid path. All responses reported AB1 semantics,
 with zero fallback Routes. See `docs/ab1_route_semantics_evidence.md`.
 
-The next dependency-ordered module is B8 Rejected-Constraint Ranking. It must
-test a bounded confidence-aware penalty, keep missing product evidence neutral,
-and preserve Intent Override quality. Score margin remains forbidden as a gate.
+B8 Rejected-Constraint Ranking was implemented and measured at `f53a7ee`, then
+reverted at `3952788`. Its exact, confidence-aware, capped soft penalty passed
+targeted tests, but Development-160 contained zero rejected constraints across
+726 retrieval turns. Metrics, scenarios, sessions, and four folds therefore
+matched AB1 without exercising the variable. This failed the keep gate; see
+`docs/b8_rejected_constraint_evidence.md`.
+
+After B8 dual review, the next dependency-ordered module is B9 Browsing-First
+Conditional Dense Route. Score margin remains forbidden as a gate.
 
 The complete dependency order lives only in `docs/optimization_roadmap.md`.
-Do not start B9 until B8 has its own keep/revert decision and dual review.
+Do not start B9 until the B8 revert decision passes dual review.
 
 If submission is imminent, skip new behavior work and execute the delivery
 track in `docs/demo_and_submission_plan.md`.

@@ -42,6 +42,9 @@ definitions instead of creating local variants.
   rejected expansions, and AB1 handoff
 - `a10b_query_plan_evidence.md` — retained A-internal QueryPlan boundary
 - `ab0_decision_evidence.md` — complete A-side decision-evidence inventory
+- `ab1_route_semantics_evidence.md` — retained shared route diagnostics
+- `b8_rejected_constraint_evidence.md` — tested and reverted B8 candidate;
+  zero Development rejection coverage
 
 ## Historical evidence
 

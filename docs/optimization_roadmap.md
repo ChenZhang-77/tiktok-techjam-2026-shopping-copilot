@@ -325,11 +325,17 @@ Detailed ownership, files, tests, and handoff requirements are in
 
 ### B8 - Rejected-constraint ranking
 
-Problem: rejected constraints cross the seam but are not a calibrated negative
-signal in the retained path.
+**Status: tested at `f53a7ee`; not retained; reverted at `3952788`.** The
+candidate used exact product evidence, rejection confidence at least `0.80`,
+and a capped `0.18` soft penalty. Missing metadata, lower confidence,
+no-preference, and a current positive value remained neutral. Targeted tests
+passed, but the fixed Development-160 run observed zero rejected constraints in
+all 726 retrieval turns. Exact metric/session/fold parity therefore could not
+satisfy the intended-bucket keep gate. Evidence:
+`docs/b8_rejected_constraint_evidence.md`.
 
-Test exact, confidence-aware negative scoring without broad exclusion. Missing
-metadata remains neutral. Focus on rejection and Intent Override cases.
+Revisit only with a separately approved evaluation set containing real
+rejection turns. Do not tune on Full-200 or the exposed holdout.
 
 ### B9 - Browsing-first conditional dense route
 

@@ -18,7 +18,9 @@ global semantic reranking remain documented ablations and are disabled by
 default. Any new route must follow the gates in the current B-side workstream
 rather than enabling old experiments globally.
 
-Current module: AB1 Shared Contract and Active-Route Semantics Freeze. Follow
-`optimization_roadmap.md` and the B workstream for its exact ownership and
-compatibility gates. B9 remains blocked until AB1 passes; once unblocked it is
-Browsing-first for literal Track 4 alignment.
+AB1 is complete. B8's bounded rejected-constraint candidate was reverted after
+Development-160 supplied zero rejection turns; read
+`b8_rejected_constraint_evidence.md` before revisiting it. The current module,
+after B8 dual review, is B9 Browsing-First Conditional Dense Route for literal
+Track 4 alignment. Follow `optimization_roadmap.md` and the B workstream for
+its gates.

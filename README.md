@@ -110,9 +110,11 @@ Shared types and leakage validation are in `starter/contracts.py`.
 AB1 now freezes the shared diagnostic semantics: requested weights, actually
 executed Routes, and the actual fallback Route are separately observable. The
 retained Hybrid path records non-zero dense requests from Browsing Strategy but
-does not claim dense execution. The next module is B8 Rejected-Constraint
-Ranking; see the roadmap rather than inferring that each planned behavior is
-already implemented.
+does not claim dense execution. B8's bounded rejected-constraint candidate was
+not retained because Development-160 supplied zero rejection turns; unchanged
+metrics under zero activation were not treated as proof. The next module after
+B8 review is B9 Browsing-First Conditional Dense Route. See the roadmap rather
+than inferring that each planned behavior is already implemented.
 
 ## What the Ablations Showed
 
@@ -304,7 +306,11 @@ quality remains a disclosed risk. See
 AB1 retained exact Development/fold/session parity while making requested and
 executed Routes truthful. See
 [`docs/ab1_route_semantics_evidence.md`](docs/ab1_route_semantics_evidence.md).
-The dependency-ordered next module is B8 Rejected-Constraint Ranking.
+B8's exact, confidence-aware penalty passed targeted tests but was reverted
+because all 726 Development turns carried zero rejected constraints. See
+[`docs/b8_rejected_constraint_evidence.md`](docs/b8_rejected_constraint_evidence.md).
+The dependency-ordered next module after review is B9 Browsing-First
+Conditional Dense Route.
 `AGENTS.md` owns the taxonomy and
 leakage boundary; [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md)
 owns the complete order.
