@@ -1,9 +1,16 @@
 from __future__ import annotations
 
+import json
 import unittest
+from pathlib import Path
 
 from starter.contracts import Candidate, RetrievalDiagnostics, RetrievalResult
-from starter.core.decision_evidence import build_decision_evidence
+from starter.core.decision_evidence import (
+    CONSTRAINT_COVERAGE_STATUSES,
+    SCORE_MARGIN_STATUSES,
+    STABILITY_STATUSES,
+    build_decision_evidence,
+)
 from starter.core.state import SessionState
 
 
@@ -126,6 +133,54 @@ class DecisionEvidenceTest(unittest.TestCase):
 
         self.assertIsNone(evidence.candidate_stability)
         self.assertEqual(evidence.stability_status, "previous_response_degraded")
+
+    def test_candidate_shortage_is_degraded_before_response_fill(self) -> None:
+        state = SessionState(session_id="s1", user_profile={})
+        state.previous_candidate_ids = ["A", "B"]
+        result = RetrievalResult(
+            candidates=[Candidate("A")],
+            diagnostics=RetrievalDiagnostics(route="fixture", candidate_count=1),
+        )
+
+        evidence = build_decision_evidence(result, state=state, turn=2, top_k=2)
+
+        self.assertTrue(evidence.degraded)
+        self.assertIsNone(evidence.candidate_stability)
+        self.assertEqual(evidence.stability_status, "current_retrieval_degraded")
+
+    def test_stability_is_unavailable_after_nested_previous_degradation(self) -> None:
+        state = SessionState(session_id="s1", user_profile={})
+        state.previous_candidate_ids = ["A", "B"]
+        state.previous_diagnostics = {
+            "fallback_used": False,
+            "decision_evidence": {"degraded": True},
+        }
+        result = RetrievalResult(
+            candidates=[Candidate("A"), Candidate("B")],
+            diagnostics=RetrievalDiagnostics(route="fixture", candidate_count=2),
+        )
+
+        evidence = build_decision_evidence(result, state=state, turn=2, top_k=2)
+
+        self.assertIsNone(evidence.candidate_stability)
+        self.assertEqual(evidence.stability_status, "previous_response_degraded")
+
+    def test_status_vocabulary_matches_the_machine_readable_inventory(self) -> None:
+        inventory_path = Path(__file__).parents[1] / "docs" / "ab0_decision_evidence.json"
+        inventory = json.loads(inventory_path.read_text(encoding="utf-8"))["field_inventory"]
+
+        self.assertEqual(
+            inventory["stability_status"]["allowed_values"],
+            list(STABILITY_STATUSES),
+        )
+        self.assertEqual(
+            inventory["score_margin_status"]["allowed_values"],
+            list(SCORE_MARGIN_STATUSES),
+        )
+        self.assertEqual(
+            inventory["constraint_coverage_status"]["allowed_values"],
+            list(CONSTRAINT_COVERAGE_STATUSES),
+        )
 
 
 if __name__ == "__main__":

@@ -2,10 +2,60 @@ from __future__ import annotations
 
 import math
 from dataclasses import asdict, dataclass
+from typing import Literal
 
 from starter.contracts import RetrievalResult
 from starter.core.clarification import candidate_attribute_scores
 from starter.core.state import SessionState
+
+
+STABILITY_STATUSES = (
+    "available",
+    "no_previous_candidates",
+    "no_comparable_candidates",
+    "current_retrieval_degraded",
+    "previous_response_degraded",
+    "retrieval_unavailable",
+)
+SCORE_MARGIN_STATUSES = (
+    "route_local_uncalibrated",
+    "insufficient_candidates",
+    "missing_scores",
+    "invalid_scores",
+    "non_monotonic_scores",
+    "retrieval_unavailable",
+)
+CONSTRAINT_COVERAGE_STATUSES = (
+    "available",
+    "no_active_constraints",
+    "no_candidates",
+    "structured_matches_unavailable",
+    "retrieval_unavailable",
+)
+
+StabilityStatus = Literal[
+    "available",
+    "no_previous_candidates",
+    "no_comparable_candidates",
+    "current_retrieval_degraded",
+    "previous_response_degraded",
+    "retrieval_unavailable",
+]
+ScoreMarginStatus = Literal[
+    "route_local_uncalibrated",
+    "insufficient_candidates",
+    "missing_scores",
+    "invalid_scores",
+    "non_monotonic_scores",
+    "retrieval_unavailable",
+]
+ConstraintCoverageStatus = Literal[
+    "available",
+    "no_active_constraints",
+    "no_candidates",
+    "structured_matches_unavailable",
+    "retrieval_unavailable",
+]
 
 
 @dataclass(frozen=True)
@@ -22,12 +72,12 @@ class DecisionEvidence:
     previous_candidate_depth: int
     candidate_stability: float | None
     stability_metric: str
-    stability_status: str
+    stability_status: StabilityStatus
     top_score_margin: float | None
-    score_margin_status: str
+    score_margin_status: ScoreMarginStatus
     score_margin_usable: bool
     constraint_coverage: float | None
-    constraint_coverage_status: str
+    constraint_coverage_status: ConstraintCoverageStatus
     attribute_partition_scores: dict[str, float]
     evidence_candidate_count: int
     relaxation_used: bool
@@ -56,7 +106,7 @@ def _ordered_unique(values: list[str], depth: int) -> tuple[str, ...]:
 def _candidate_stability(
     current_ids: tuple[str, ...],
     previous_ids: tuple[str, ...],
-) -> tuple[float | None, str]:
+) -> tuple[float | None, StabilityStatus]:
     if not previous_ids:
         return None, "no_previous_candidates"
     union = set(current_ids) | set(previous_ids)
@@ -66,7 +116,7 @@ def _candidate_stability(
     return round(overlap, 6), "available"
 
 
-def _score_margin(result: RetrievalResult) -> tuple[float | None, str, bool]:
+def _score_margin(result: RetrievalResult) -> tuple[float | None, ScoreMarginStatus, bool]:
     if len(result.candidates) < 2:
         return None, "insufficient_candidates", False
     first = result.candidates[0].score
@@ -92,7 +142,7 @@ def _score_margin(result: RetrievalResult) -> tuple[float | None, str, bool]:
 def _constraint_coverage(
     result: RetrievalResult,
     active_constraints: list[dict],
-) -> tuple[float | None, str]:
+) -> tuple[float | None, ConstraintCoverageStatus]:
     active_keys = {
         (
             str(item.get("attribute") or ""),
@@ -130,6 +180,7 @@ def build_decision_evidence(
     state: SessionState,
     turn: int,
     top_k: int,
+    response_fallback_used: bool = False,
 ) -> DecisionEvidence:
     """Summarize full retrieval evidence without exposing Candidate IDs/text."""
 
@@ -171,11 +222,29 @@ def build_decision_evidence(
         diagnostics.fallback_used
         or diagnostics.route_failures
         or not pool_size_consistent
+        or len(current_ids) < top_k
+        or response_fallback_used
     )
     previous_diagnostics = state.previous_diagnostics or {}
+    previous_decision_evidence = previous_diagnostics.get("decision_evidence")
+    previous_retrieval = previous_diagnostics.get("retrieval")
+    previous_degraded = bool(
+        previous_diagnostics.get("fallback_used")
+        or (
+            isinstance(previous_decision_evidence, dict)
+            and previous_decision_evidence.get("degraded") is True
+        )
+        or (
+            isinstance(previous_retrieval, dict)
+            and (
+                previous_retrieval.get("fallback_used")
+                or previous_retrieval.get("route_failures")
+            )
+        )
+    )
     if current_degraded:
         stability, stability_status = None, "current_retrieval_degraded"
-    elif previous_diagnostics.get("fallback_used"):
+    elif previous_degraded:
         stability, stability_status = None, "previous_response_degraded"
     else:
         stability, stability_status = _candidate_stability(current_ids, previous_ids)

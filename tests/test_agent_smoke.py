@@ -252,6 +252,10 @@ class AgentSmokeTest(unittest.TestCase):
             [{"parent_asin": "A"}, {"parent_asin": "B"}, {"parent_asin": "C"}],
         )
         self.assertTrue(response["diagnostics"]["fallback_used"])
+        self.assertTrue(response["diagnostics"]["decision_evidence"]["degraded"])
+        self.assertIsNone(
+            response["diagnostics"]["decision_evidence"]["candidate_stability"]
+        )
 
     def test_agent_routes_retrieval_through_the_public_seam(self) -> None:
         retriever = _RecordingRetriever()

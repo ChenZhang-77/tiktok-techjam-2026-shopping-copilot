@@ -23,11 +23,15 @@ class AB0DecisionEvidenceRecordTest(unittest.TestCase):
     def test_field_inventory_covers_the_complete_runtime_type(self) -> None:
         runtime_fields = {item.name for item in fields(DecisionEvidence)}
         self.assertEqual(set(self.record["field_inventory"]), runtime_fields)
-        for definition in self.record["field_inventory"].values():
-            self.assertEqual(
-                set(definition),
-                {"producer", "type_range", "lifecycle", "fallback", "ownership", "seam"},
-            )
+        base_keys = {"producer", "type_range", "lifecycle", "fallback", "ownership", "seam"}
+        closed_statuses = {
+            "stability_status",
+            "score_margin_status",
+            "constraint_coverage_status",
+        }
+        for name, definition in self.record["field_inventory"].items():
+            expected_keys = base_keys | ({"allowed_values"} if name in closed_statuses else set())
+            self.assertEqual(set(definition), expected_keys)
             self.assertTrue(all(str(value).strip() for value in definition.values()))
         margin = self.record["field_inventory"]["score_margin_usable"]
         self.assertIn("false", margin["fallback"])

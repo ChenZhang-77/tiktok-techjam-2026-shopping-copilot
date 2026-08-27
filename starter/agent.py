@@ -153,11 +153,31 @@ class Agent:
                 "usage": {"prompt_tokens": 0, "completion_tokens": 0},
             }
         if state is not None:
+            raw_recommendations = (
+                response.get("recommendations") if isinstance(response, dict) else []
+            )
+            if not isinstance(raw_recommendations, list):
+                raw_recommendations = []
+            valid_response_ids: set[str] = set()
+            for item in raw_recommendations:
+                if not isinstance(item, dict):
+                    continue
+                parent_asin = str(item.get("parent_asin", "")).strip()
+                if parent_asin in self._catalog_ids:
+                    valid_response_ids.add(parent_asin)
+            response_diagnostics = (
+                response.get("diagnostics") if isinstance(response, dict) else {}
+            )
+            response_fallback_used = bool(
+                isinstance(response_diagnostics, dict)
+                and response_diagnostics.get("fallback_used")
+            ) or len(valid_response_ids) < top_k
             decision_evidence = build_decision_evidence(
                 retrieval_result,
                 state=state,
                 turn=turn,
                 top_k=top_k,
+                response_fallback_used=response_fallback_used,
             )
             diagnostics = response.get("diagnostics") if isinstance(response, dict) else {}
             if not isinstance(diagnostics, dict):
@@ -165,7 +185,6 @@ class Agent:
             diagnostics["decision_evidence"] = decision_evidence.to_diagnostics()
             diagnostics.update(state_diagnostics(state))
             response["diagnostics"] = diagnostics
-            raw_recommendations = response.get("recommendations") if isinstance(response, dict) else []
             candidate_evidence = {
                 candidate.parent_asin: candidate.evidence_text or ""
                 for candidate in (retrieval_result.candidates[:top_k] if retrieval_result else [])
