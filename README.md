@@ -74,7 +74,7 @@ user message
   -> cross-field hard/soft constraint ranking
   -> guarded structured filtering
   -> deterministic relaxation and fill
-  -> clarification decision
+  -> priority-biased clarification selection
   -> response guard
 ```
 
@@ -100,14 +100,15 @@ Shared types and leakage validation are in `starter/contracts.py`.
 
 | Track 4 pillar | Project behavior |
 | --- | --- |
-| Intent Routing and Hybrid Pipeline | Buying/Browsing changes Strategy depth, weights, filtering, and clarification; alternative semantic routes are measured, not assumed |
+| Intent Routing and Hybrid Pipeline | Buying/Browsing currently changes structured Strategy behavior; dense and semantic routes are measured but disabled, so literal Browsing-dense coverage remains open |
 | Multi-Turn Scenario Evolution | Session state accumulates constraints, tracks no-preference/rejection, and deactivates stale intent on override |
 | Dynamic Context Programming | The Agent rebuilds the query from active state and records Strategy, Candidate, relaxation, and fallback diagnostics |
 | Product and Efficiency Metrics | Development evaluation reports HitRate@10, MRR, MTTC, Efficiency, scenario results, latency, memory, and failures |
 
 The next optimization phase makes intent persistence and proactive guidance
-more genuinely candidate-aware. See the roadmap rather than inferring that each
-planned behavior is already implemented.
+more genuinely candidate-aware. A non-zero requested Strategy weight is not
+evidence that the retained retriever executed that route. See the roadmap rather
+than inferring that each planned behavior is already implemented.
 
 ## What the Ablations Showed
 
@@ -261,17 +262,19 @@ pre-rerank order.
 
 The next technical route is:
 
-1. classify Development-160 misses as recall, ranking, state, dialogue, or
-   extraction failures,
-2. stabilize intent across clarification replies,
-3. add a should-ask over-generality gate,
-4. rank questions by candidate partition value,
-5. pass stable non-label diagnostics across the A/B seam,
-6. test rejected-constraint ranking,
-7. test conditional, constraint-preserving semantic reranking only when failure
-   analysis supports it,
-8. freeze the simplest robust development configuration,
-9. complete public documentation, demo, and the submission package.
+1. classify Development-160 failures offline with the canonical causal
+   taxonomy in `AGENTS.md`,
+2. persist an explainable A-owned `IntentAssessment`,
+3. complete AB0 by proving the source and fallback of every proposed
+   `DecisionEvidence` signal,
+4. add the should-ask gate using only retained AB0 evidence,
+5. rank questions by Candidate evidence without changing query construction,
+6. build an A-internal `QueryPlan` while keeping the current single-query
+   contract, then harden extraction only for R0-supported failures,
+7. freeze any shared fields and actual route semantics in AB1,
+8. test rejected-constraint ranking, then a Browsing-first conditional dense
+   route and constraint-preserving semantic rerank,
+9. freeze the simplest robust development configuration and complete delivery.
 
 See [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md) and the A/B
 workstream documents for experiment gates and ownership.
@@ -303,6 +306,11 @@ hard filters, duplicate/invalid ASINs, and Candidate Pool shortages.
 - Rule-based extraction has vocabulary and negation-scope limits.
 - Profile ranking is disabled at weight 0.0.
 - Dense/fusion/semantic paths are not the default runtime.
+- The retained runtime therefore does not yet literally satisfy the
+  Browsing-dense/semantic Track 4 pillar; it currently has measured disabled
+  alternatives and a guarded follow-up route.
+- Long-term profile value has not been demonstrated; profile ranking remains
+  disabled at weight 0.0.
 - Public sessions are deterministic simulations derived from product metadata,
   not real shopping conversations.
 - Private organizer evaluation is the remaining external test of paraphrase and

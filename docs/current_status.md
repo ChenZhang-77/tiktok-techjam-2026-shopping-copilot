@@ -31,14 +31,14 @@ Do not implement a backlog item merely because it appears in a roadmap. The
 user must still ask for implementation. A planning or review request is
 read-only.
 
-## Verified Checkout Snapshot
+## Verified Behavior Checkpoint
 
 Verified on 2026-08-27:
 
 | Item | Value |
 | --- | --- |
-| Branch | `yuqing` |
-| HEAD | `bddf7d7e8ad7dda6880ae4d8e08d0c4c082e29e2` |
+| Historical branch at verification | `yuqing` |
+| Behavior commit | `bddf7d7e8ad7dda6880ae4d8e08d0c4c082e29e2` |
 | Local tracking ref | `origin/main` at the same commit when last inspected |
 | Full test suite | 148 passed |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
@@ -46,6 +46,8 @@ Verified on 2026-08-27:
 
 Branch and remote facts can drift. Re-check them before reporting or changing
 the repository. Do not fetch, push, merge, or open a PR unless the user asks.
+Documentation-only commits after this checkpoint do not invalidate the metrics;
+any runtime behavior change does.
 
 ## Verified Development Result
 
@@ -124,6 +126,11 @@ The shared contract lives in `starter/contracts.py`. Developer A must not send
 evaluator labels. Developer B must not import Agent state implementation
 internals.
 
+The current Strategy can express a non-zero Browsing semantic weight, but the
+retained default `HybridRetriever` does not execute a semantic route. Treat that
+field as requested intent rather than proof of active execution until AB1 makes
+requested versus executed route semantics explicit.
+
 ## Measured but Disabled Paths
 
 These paths exist for reproducible experiments and failure coverage. They are
@@ -160,10 +167,15 @@ The next optimization phase starts from diagnosis, not from another model:
 ## Next Decision
 
 The next technical action is R0 in `docs/optimization_roadmap.md`: classify
-Development-160 failures into recall, ranking, state, dialogue, and extraction
-causes. The first behavior experiment after that should normally be A8,
-stateful intent persistence. B-side conditional semantic work is blocked on a
-stable A-side intent signal.
+Development-160 failures using the canonical causal taxonomy in `AGENTS.md`.
+Offline diagnosis may use the development target to distinguish Retrieval
+Recall from Ranking / Filtering; runtime code and diagnostics may not.
+
+The behavior sequence is R0, A8 persistent `IntentAssessment`, AB0
+`DecisionEvidence` availability, A9 should-ask, A10a candidate question value,
+A10b internal `QueryPlan`/A11 as diagnosed, and AB1 contract/route freeze before
+new B-side work. Do not start A9 from the current Top-K text evidence alone, and
+do not start B9 against unstable intent or route semantics.
 
 If submission is imminent, skip new behavior work and execute the delivery
 track in `docs/demo_and_submission_plan.md`.
@@ -190,6 +202,20 @@ track in `docs/demo_and_submission_plan.md`.
 | `docs/workstreams/DEVELOPER_B_RETRIEVAL_RANKING.md` | Standalone B-side route |
 | `docs/demo_and_submission_plan.md` | Demo, README, Devpost, packaging, rehearsal |
 | `CONTEXT.md` | Stable shared vocabulary only |
+
+## Remaining Track 4 Coverage Gaps
+
+- Browsing-specific diverse dense retrieval is implemented only as disabled
+  experimental machinery, not retained runtime behavior.
+- Semantic reranking is reproducible but globally rejected; conditional use is
+  still a hypothesis.
+- Profile ranking remains disabled at weight `0.0`; long-term profile value has
+  not been demonstrated.
+- Candidate-aware clarification exists, but a complete should-ask gate has not
+  yet been retained.
+
+These are explicit gaps, not implied capabilities. If an experiment is rejected
+again, preserve the measured result and disclose the literal coverage gap.
 
 ## Safe Verification Commands
 

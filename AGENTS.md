@@ -127,6 +127,32 @@ Offline failure analysis may inspect development targets to classify recall or
 ranking misses. Target data must remain outside runtime requests, diagnostics,
 configuration, and sample-specific rules.
 
+The boundary is explicit:
+
+| Allowed only in offline Development-160 analysis | Forbidden from Agent runtime |
+| --- | --- |
+| target ASIN, hit/miss, target rank, pre/post-rank position | `SessionState`, `RetrievalRequest`, runtime diagnostics, prompts, Strategy, rules, or models |
+| aggregate and per-scenario failure counts | sample-specific exceptions or target-keyed configuration |
+
+Do not use the exposed holdout or Full-200 result to create, select, or tune a
+rule. Offline target access explains a development failure; it does not create
+runtime evidence.
+
+Use one canonical R0 taxonomy everywhere, in causal order:
+
+1. Extraction
+2. State / Override
+3. Intent / Strategy Routing
+4. Query Construction
+5. Question Policy
+6. Retrieval Recall
+7. Ranking / Filtering
+8. Response / Contract
+
+Assign the earliest causal stage as the primary class and optional later stages
+as secondary causes. Record evaluator/timing anomalies separately as
+`evaluation_validity` flags; they are not Agent behavior classes.
+
 ## 6. Retained Runtime and Measured Alternatives
 
 The current default is deterministic and local:
@@ -179,6 +205,16 @@ Developer A may send:
 - rejected constraints,
 - asked attributes.
 
+The current contract sends one distilled `query` string. Query components may
+exist in A10b as an A-owned internal `QueryPlan`, but they do not cross the seam
+unless an A/B-coordinated A10c experiment proves that B must consume them
+independently.
+
+Before A9, complete AB0: define a compact, non-label `DecisionEvidence` input
+for the Control Plane. Prefer deriving its first version in A from the existing
+full `RetrievalResult` plus prior returned Candidate IDs. A field belongs in
+`RetrievalDiagnostics` only when B must compute it or its meaning must be shared.
+
 Developer A must not send evaluator-only labels. Developer B must not require a
 SessionState implementation object or import Control Plane internals.
 
@@ -207,6 +243,10 @@ Owns:
 - response guard and `starter/agent.py` orchestration,
 - Control Plane diagnostics and tests.
 
+Developer A also owns `IntentAssessment` lifecycle and the should-ask decision.
+Developer B may consume a coordinated Strategy/gate, but does not infer dialogue
+intent from evaluator labels or replace A's confidence policy.
+
 Does not own catalog indexing, BM25 internals, dense cache, RRF, semantic model
 execution, or ranking implementation.
 
@@ -227,6 +267,10 @@ clarification policy, response guard, or `starter/agent.py` orchestration.
 
 Neither side changes shared contract or route-weight semantics alone.
 
+`DecisionEvidence` is an A-side decision model, not a second retrieval stack.
+B owns the meaning of any retrieval-produced score, coverage, partition, route,
+or fallback field used to populate it.
+
 ## 9. State and Dialogue Rules
 
 State must preserve:
@@ -238,9 +282,16 @@ State must preserve:
 - no-preference attributes,
 - asked attributes,
 - previous distilled query,
-- previous Candidate IDs, Strategy, and diagnostics,
+- previous returned Candidate IDs with their Top-K/depth meaning, Strategy, and
+  diagnostics,
 - override events,
 - `user_profile` as an optional weak prior only.
+
+Before A8 implementation, freeze `IntentAssessment` semantics: intent,
+confidence, observed evidence, source turn, and transition reason. Because the
+assessment affects later turns, it must either be persisted directly or be
+deterministically derived from persisted evidence; a current-turn-only score is
+not sufficient. Do not expose evaluator-derived confidence.
 
 Never use blind full-history concatenation as the retrieval query.
 
@@ -300,6 +351,14 @@ Every experiment needs:
 - latency/memory/fallback impact,
 - keep and revert gates,
 - recorded decision.
+
+Use the canonical R0 taxonomy from Section 5. Do not introduce local synonyms
+such as `query`, `dialogue`, or `timing failure` without mapping them to the
+canonical class or the separate evaluation-validity flag.
+
+AB0 is a blocker, not an implementation shortcut: document the source,
+lifecycle, owner, calibration, and fallback of every signal A9 will use before
+writing the should-ask rule.
 
 Run blockers-first according to `docs/optimization_roadmap.md`. Do not combine
 several speculative changes and attempt to explain the aggregate later.
@@ -397,6 +456,8 @@ The project is ready only when:
 - clarification is useful, non-repetitive, and optional when unnecessary,
 - retained retrieval/ranking is evidence-backed and failure-safe,
 - optional semantic work is described honestly,
+- literal Track 4 dense/semantic and profile coverage gaps are disclosed when
+  the retained runtime does not implement them,
 - results and limitations are reproducible and current,
 - README, AGENTS, workstreams, demo, submission package, and contributions agree,
 - every major tradeoff can be explained without framework buzzwords.

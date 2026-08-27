@@ -14,9 +14,15 @@ for B-stage selection. Use the four deterministic folds in
 `docs/development_folds_v1.json` for cross-validation within the 160-session
 Development Set.
 
-Use `--split full` exactly once after the complete B configuration is frozen.
-That Final Public Run is for non-confirmatory reporting and must not trigger
-further tuning. See `docs/adr/0001-treat-public-holdout-as-exposed.md`.
+The one Full-200 Final Public Run has already occurred. Do not run
+`--split full` again during optimization and do not use it to select behavior. See
+`docs/adr/0001-treat-public-holdout-as-exposed.md`.
+
+Offline Development-160 analysis may use target ASIN, hit/miss, and target rank
+to distinguish Retrieval Recall from Ranking / Filtering. Those fields must
+never enter Agent state, requests, Strategy, runtime diagnostics, prompts,
+rules, or models. Do not use Full-200 or the exposed holdout for diagnosis-led
+tuning.
 
 Rebuild and validate the fold manifest with:
 
@@ -45,7 +51,7 @@ Recommended note format:
 
 ## Command
 
-## Public Score
+## Development Result
 
 - HitRate@10:
 - MRR:
@@ -63,18 +69,36 @@ Recommended note format:
 ```
 
 The original B1-B7 build sequence is complete. Do not restart it or assume that
-implemented experimental routes should be enabled. The current optimization
-sequence is:
+implemented experimental routes should be enabled. Use the canonical R0
+taxonomy from `../AGENTS.md`, with the earliest causal stage as primary:
 
-1. `r0-failure-taxonomy`: classify misses as state, question, query, recall,
-   ranking, or timing failures without changing behavior.
-2. `a8-state-confidence`: repair state/scope errors and expose stable confidence.
-3. `a9-question-value`: improve the ask-or-retrieve decision.
-4. `a10-query-builder`: make query construction state-aware and auditable.
-5. `ab1-contract-freeze`: freeze shared diagnostics and route semantics.
-6. `b8-rejected-constraints`: test confidence-gated negative evidence.
-7. `b9-conditional-semantic`: route semantic help only to justified buckets.
-8. `b10-protected-rerank`: protect strong structured matches while reranking a
+```text
+Extraction -> State / Override -> Intent / Strategy Routing
+-> Query Construction -> Question Policy -> Retrieval Recall
+-> Ranking / Filtering -> Response / Contract
+```
+
+Record evaluator/timing anomalies separately as `evaluation_validity` flags.
+The current optimization sequence is:
+
+1. `r0-failure-taxonomy`: classify Development-160 failures offline without
+   changing runtime behavior.
+2. `a8-intent-assessment`: persist intent evidence, confidence, and transition
+   reasons without mixing in extraction/scope work.
+3. `ab0-decision-evidence`: prove the source, owner, lifecycle, and fallback of
+   every proposed A9 input; keep ask behavior unchanged.
+4. `a9-should-ask`: improve the ask-or-retrieve decision using only retained
+   AB0 signals.
+5. `a10a-question-value`: rank candidate questions without changing query
+   construction.
+6. `a10b-query-plan`: make A-side query construction state-aware and auditable
+   while preserving the existing single query contract.
+7. `a11-extraction-scope`: address only extraction failures demonstrated by R0.
+8. `ab1-contract-freeze`: freeze any required shared fields and actual route
+   semantics before B work.
+9. `b8-rejected-constraints`: test confidence-gated negative evidence.
+10. `b9-browsing-dense`: test a guarded Browsing-first dense route.
+11. `b10-protected-rerank`: protect strong structured matches while reranking a
    bounded tail.
 
 Run lexical recall or adaptive-depth work only if the R0 taxonomy supports it.

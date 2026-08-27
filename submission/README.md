@@ -39,3 +39,8 @@ submission/
 Do not call the public 40-session slice sealed or unseen. Do not claim dense,
 RRF, or semantic reranking as part of the default runtime unless a later frozen
 configuration actually retains them.
+
+Likewise, do not claim a candidate-evidence should-ask gate, persistent intent
+confidence, or profile personalization until the corresponding retained
+implementation and Development-160 evidence exist. Disclose literal Track 4
+dense/semantic/profile gaps when they remain disabled.

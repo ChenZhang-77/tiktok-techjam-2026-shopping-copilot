@@ -86,7 +86,8 @@ unstable aggregate improvement.
 The next defensible semantic experiment is conditional and
 constraint-preserving, after A-side intent is stabilized:
 
-- stable Buying or low-confidence Browsing only,
+- broad or low-confidence Browsing first, matching the literal Track 4 route,
+- stable Buying only as a separate evidence-supported hypothesis,
 - disabled immediately after Intent Override,
 - structured Top 3 anchored,
 - positions 4-30 reranked,
@@ -94,6 +95,11 @@ constraint-preserving, after A-side intent is stabilized:
 - exact pre-rerank fallback.
 
 Evidence: `docs/b5_semantic_rerank_cv.json`.
+
+Until such a route passes its gate, Browsing-dense retrieval and semantic
+ranking remain explicit Track 4 coverage gaps rather than retained-runtime
+claims. The same rule applies to profile ranking, which remains disabled at
+weight 0.0.
 
 ## Runtime Cost and Reliability
 

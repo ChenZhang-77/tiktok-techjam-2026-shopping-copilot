@@ -59,9 +59,12 @@ schema change with the A side and add compatibility tests first.
 
 ## Diagnosed bottlenecks
 
-The next B-side work is not “add more models.” It is to identify which misses
-are caused by recall, ranking, dialogue state, or evaluator timing, then make the
-smallest justified intervention.
+The next B-side work is not “add more models.” R0 uses the canonical causal
+taxonomy in `AGENTS.md`: Extraction, State / Override, Intent / Strategy
+Routing, Query Construction, Question Policy, Retrieval Recall, Ranking /
+Filtering, and Response / Contract. Evaluator/timing anomalies are separate
+`evaluation_validity` flags. B changes behavior only for a diagnosed B-owned
+class.
 
 1. Current reports do not give a complete per-session miss taxonomy.
 2. Rejected constraints are represented in dialogue state but are not yet a
@@ -77,16 +80,33 @@ smallest justified intervention.
 
 ```text
 R0 failure taxonomy
-  -> A8 stateful intent / confidence
-  -> AB1 contract and diagnostics freeze
+  -> A8 persistent IntentAssessment
+  -> AB0 DecisionEvidence availability
+  -> A9 should-ask gate
+  -> A10a candidate question value
+  -> A10b internal QueryPlan / A11 diagnosed extraction work
+  -> AB1 shared contract and route-semantics freeze
   -> B8 rejected-constraint ranking
-  -> B9 conditional semantic route
-  -> B10 constraint-preserving rerank
+  -> B9 Browsing-first conditional dense route
+  -> B10 constraint-preserving semantic rerank
   -> B11 lexical recall refinement, only if supported
   -> B12 adaptive candidate depth, only if supported
 ```
 
-Do not begin B9 or B10 against unstable A-side state semantics.
+Do not begin B8-B12 while A9 lacks real DecisionEvidence or while A-side intent
+and shared route semantics are unstable. B may still contribute to R0, AB0, and
+AB1 within its ownership.
+
+## AB0 and AB1 obligations for B
+
+AB0 should first reuse the existing full `RetrievalResult` and diagnostics. B
+must define any retrieval-produced score, coverage, partition, relaxation,
+route, or fallback field that A uses. Do not move dialogue policy into B.
+
+AB1 freezes shared names, types, score ranges, missing-data behavior, and
+compatibility tests. It must also distinguish requested Strategy from executed
+route: the current default retriever does not become semantic merely because a
+Strategy contains a non-zero semantic weight.
 
 ## B8 — Rejected-constraint ranking
 
@@ -116,15 +136,18 @@ Keep only if fold-level evidence improves the intended failure bucket and does
 not materially reduce overall HitRate@10. Revert if gains depend on one fold,
 metadata sparsity causes false penalties, or intent-override performance falls.
 
-## B9 — Conditional semantic route
+## B9 — Browsing-first conditional dense route
 
-The previous global semantic reranker is a rejected ablation, not a foundation
-to enable by default. Revisit semantics only behind a narrow routing gate.
+Track 4 explicitly associates Browsing with diverse dense retrieval. The
+previous global dense/fusion/semantic variants are rejected ablations, not a
+foundation to enable by default. Revisit dense retrieval behind a narrow,
+observable Browsing gate first.
 
 Candidate gate:
 
-- consider semantic help for stable Buying sessions or low-confidence Browsing
-  queries with a broad lexical pool;
+- use broad or low-confidence Browsing as the primary compliance hypothesis;
+- treat stable Buying as a separate secondary experiment only when R0 evidence
+  supports it;
 - disable it immediately after an unresolved intent override;
 - require a minimum candidate-set size and bounded latency budget;
 - fall back deterministically to the retained structured order on any model,
@@ -134,6 +157,9 @@ Measure route activation rate, bucket-specific deltas, added latency, memory,
 and fallback count. Compare against the retained route on the same four folds.
 Keep only if the routed subset improves without making the global score or
 Intent Override materially worse.
+
+If no dense route passes, record the negative result and the remaining literal
+Track 4 coverage gap. Do not call an implemented-but-disabled route active.
 
 ## B10 — Constraint-preserving rerank
 
@@ -169,7 +195,9 @@ Avoid broad expansions that inflate the pool without improving final ranks.
 
 ## B12 — Adaptive candidate depth
 
-Run only after a stable query-confidence signal exists.
+Run only after A8 has a stable IntentAssessment and AB1 defines the exact gate
+or Strategy field B consumes. B must not invent a second intent-confidence
+policy.
 
 - use a shallow pool for narrow, high-confidence intent;
 - deepen the pool for broad or low-confidence intent;

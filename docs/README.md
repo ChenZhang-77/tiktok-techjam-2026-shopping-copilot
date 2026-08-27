@@ -10,6 +10,11 @@ from old reports.
 3. `optimization_roadmap.md` — dependency-ordered whole-project route
 4. `ablation_summary.md` — what was retained, rejected, and why
 
+`../AGENTS.md` is the sole authority for the R0 failure taxonomy and the
+offline-target/runtime boundary. `optimization_roadmap.md` is the sole authority
+for dependency order. Workstream and experiment documents must reference those
+definitions instead of creating local variants.
+
 ## Workstream execution
 
 - `workstreams/DEVELOPER_A_CONTROL_PLANE.md` — A-side dialogue/state route

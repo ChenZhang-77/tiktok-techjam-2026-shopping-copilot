@@ -7,24 +7,31 @@ exists. Confirm actual files before making submission claims.
 ## Message to judges
 
 Shopping Copilot is a stateful catalog-grounded agent. It carries forward valid
-preferences, handles corrections and no-preference language, decides whether a
-clarifying question is worth the turn, and returns deterministic Top 10 catalog
-recommendations through a local retrieval/ranking pipeline.
+preferences, handles corrections and no-preference language, and returns
+deterministic Top 10 catalog recommendations with non-repeating, currently
+priority-biased clarification through a local retrieval/ranking pipeline. A
+complete candidate-evidence should-ask gate is planned work, not a retained
+capability.
 
 The defensible technical story is:
 
 ```text
 conversation
   -> active intent and constraint state
-  -> ask-or-retrieve decision
   -> distilled retrieval request
   -> lexical candidates plus structured scoring
+  -> priority-biased clarification selection
   -> response guard and catalog-valid Top 10
 ```
 
 Do not claim that dense retrieval, RRF, or semantic reranking powers the default
 system. They were evaluated and rejected globally; that negative evidence is a
 strength when presented honestly.
+
+Do not imply that the retained runtime satisfies the literal Browsing-dense or
+LLM semantic-ranking pillar. Those routes are reproducible, measured, and
+disabled. If a conditional experiment is not retained, present that outcome as
+an explicit coverage gap. Profile ranking is likewise disabled at weight 0.0.
 
 ## Evidence available now
 
@@ -44,10 +51,11 @@ Use fixed, preselected public sessions and rehearse within the official time
 limit. Choose exact session IDs only after verifying that each visibly
 demonstrates its intended behavior.
 
-1. **Straight buying intent** — show a narrow request, stable state, no wasted
-   question, and relevant Top 10 results.
-2. **Broad browsing intent** — show why one high-value clarification is useful
-   and how it changes the candidate set.
+1. **Straight buying intent** — show a narrow request, current state, the actual
+   clarification behavior, and relevant Top 10 results. Claim “no wasted
+   question” only after A9 is retained and the chosen case verifies it.
+2. **Broad browsing intent** — show how the current clarification changes the
+   candidate set. Describe it as “high-value” only after AB0/A9 evidence exists.
 3. **Intent override** — show an earlier preference being replaced without
    contaminating the new query.
 4. **No-preference / boundary case** — show the system dropping the correct
@@ -72,6 +80,10 @@ Evaluator-only fields may help analysis but must be visually labeled and must
 never feed agent state, prompts, retrieval, ranking, or route selection. A demo
 recording should keep the separation visible so judges cannot mistake analysis
 data for online inputs.
+
+Development targets may be used here to select and explain an offline demo
+case, but the recording must not imply that target rank or hit/miss was available
+to the running Agent.
 
 ## README and written submission structure
 

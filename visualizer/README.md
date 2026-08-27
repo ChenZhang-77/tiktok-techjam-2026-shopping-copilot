@@ -58,10 +58,11 @@ hit/miss labels, and future turns must never flow into agent state, retrieval,
 ranking, prompts, or routing. Keep the two views visibly labeled in screenshots
 and demo recordings.
 
-The integrated agent may ask a clarification when the control plane judges that
-its expected information gain is worth the extra turn. A `null`
-`ask_attribute` is therefore a decision, not evidence that questioning is
-unimplemented.
+The integrated agent may currently ask a non-repeating, priority-biased
+clarification while returning recommendations. It does not yet have a retained
+candidate-evidence should-ask gate, so do not label the current choice as
+expected information gain. After A9 is retained, this page may describe a
+`null` `ask_attribute` as a measured no-ask decision.
 
 See `../docs/demo_and_submission_plan.md` for the rehearsed demo flow and
 submission safety checklist.

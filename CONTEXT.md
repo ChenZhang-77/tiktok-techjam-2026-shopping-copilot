@@ -50,11 +50,23 @@ Non-label operational evidence about route availability, pool sizes, filtering,
 fallbacks, latency, and candidate overlap.
 _Avoid_: evaluator diagnostics, target data
 
-**Intent Confidence**:
-An agent-side estimate of how stable and specific the current intent is, based
-only on the conversation observed so far. It may guide questioning or retrieval
-depth but must not use evaluator labels.
-_Avoid_: probability of target hit, evaluation confidence
+**Intent Assessment**:
+The A-owned, cross-turn interpretation of current intent, its bounded confidence
+or ordinal stability, conversation-derived evidence, source turn, and transition
+reason. It is persisted or deterministically derived from persisted evidence.
+_Avoid_: current-utterance label, probability of target hit
+
+**Decision Evidence**:
+A compact A-side view of non-label Candidate and state evidence available at the
+should-ask decision point. Every field has a declared producer, meaning,
+lifecycle, and missing-data fallback.
+_Avoid_: Top-K text alone, evaluator diagnostics
+
+**Query Plan**:
+An A-owned structured trace of exact/category, active hard/soft, semantic/use-case,
+and rejected/overridden evidence. In A10b it compiles to the existing single
+`RetrievalRequest.query` string and does not cross the A/B seam.
+_Avoid_: a shared contract change by default, full-history concatenation
 
 **Over-Generality**:
 A state in which the current intent leaves too many materially different
@@ -88,6 +100,24 @@ An implemented experiment whose measured development tradeoff did not justify
 retaining it in the default runtime. Its code or reports are not evidence that
 the method is active.
 _Avoid_: failed implementation
+
+**Offline Failure Class**:
+The earliest causal execution stage explaining a Development-160 failure. The
+canonical order is Extraction, State / Override, Intent / Strategy Routing,
+Query Construction, Question Policy, Retrieval Recall, Ranking / Filtering,
+and Response / Contract. Later contributing stages may be secondary causes.
+_Avoid_: per-document taxonomy, evaluator timing as Agent behavior
+
+**Offline Evaluation Evidence**:
+Development-only target ASIN, hit/miss, target rank, and pre/post-rank position
+used to diagnose failures. It may appear in offline reports but never in Agent
+state, requests, runtime diagnostics, prompts, Strategy, rules, or models.
+_Avoid_: runtime signal, holdout tuning
+
+**Evaluation Validity Flag**:
+An offline marker for evaluator/timing/data anomalies that may invalidate or
+qualify a sample analysis. It is separate from the Agent failure taxonomy.
+_Avoid_: timing failure as an Agent behavior class
 
 ## Evaluation language
 

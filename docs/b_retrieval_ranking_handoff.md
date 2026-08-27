@@ -16,3 +16,8 @@ Current reality: the retained default is lexical retrieval plus structured
 scoring. Dense retrieval, RRF, and global semantic reranking remain documented
 ablations and are disabled by default. Any new route must follow the gates in
 the current B-side workstream rather than enabling old experiments globally.
+
+New B runtime behavior is blocked until R0, A8, AB0, selected A9/A10/A11 work,
+and AB1 freeze the input evidence and actual route semantics. B9 is
+Browsing-first for literal Track 4 alignment; stable Buying is a separate
+secondary hypothesis.
