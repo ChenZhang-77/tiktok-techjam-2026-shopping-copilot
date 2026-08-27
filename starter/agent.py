@@ -19,7 +19,7 @@ from starter.core.planner import Strategy, StrategyConfig, plan_strategy
 from starter.core.query_builder import QueryPlan, build_query_plan
 from starter.core.response_guard import guard_response
 from starter.core.state import SessionState
-from starter.retrieval import HybridRetriever
+from starter.retrieval import ConditionalDenseRetriever
 
 
 class Retriever(Protocol):
@@ -61,7 +61,7 @@ class Agent:
             else CatalogVocabulary.empty()
         )
         if retriever is None:
-            self.retriever = HybridRetriever(self.catalog_path)
+            self.retriever = ConditionalDenseRetriever.from_catalog(self.catalog_path)
         else:
             self.retriever = retriever
         self._sessions: dict[str, SessionState] = {}

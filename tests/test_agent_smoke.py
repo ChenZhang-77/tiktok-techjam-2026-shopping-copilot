@@ -7,7 +7,7 @@ from pathlib import Path
 
 from starter.agent import Agent
 from starter.contracts import Candidate, RetrievalDiagnostics, RetrievalRequest, RetrievalResult
-from starter.retrieval import HybridRetriever
+from starter.retrieval import ConditionalDenseRetriever, HybridRetriever
 
 
 class _RecordingRetriever:
@@ -189,6 +189,7 @@ class AgentSmokeTest(unittest.TestCase):
                 encoding="utf-8",
             )
             agent = Agent(catalog_path)
+            self.assertIsInstance(agent.retriever, ConditionalDenseRetriever)
             agent.reset("buying", {})
             agent.reset("browsing", {})
 
@@ -215,7 +216,9 @@ class AgentSmokeTest(unittest.TestCase):
             ["lexical", "structured"],
         )
         self.assertNotIn("dense", browsing_retrieval["executed_routes"])
-        self.assertIsNone(browsing_retrieval["fallback_route"])
+        self.assertTrue(browsing_retrieval["fallback_used"])
+        self.assertEqual(browsing_retrieval["fallback_route"], "structured")
+        self.assertIn("dense", browsing_retrieval["route_failures"])
 
     def test_candidate_pool_evidence_reaches_agent_clarification(self) -> None:
         def make_agent(*, include_evidence: bool) -> Agent:
