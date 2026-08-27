@@ -15,7 +15,7 @@ from starter.core.context_engine import (
 from starter.core.diagnostics import state_diagnostics
 from starter.core.decision_evidence import build_decision_evidence
 from starter.core.planner import Strategy, StrategyConfig, plan_strategy
-from starter.core.query_builder import build_distilled_query
+from starter.core.query_builder import QueryPlan, build_query_plan
 from starter.core.response_guard import guard_response
 from starter.core.state import SessionState
 from starter.retrieval import HybridRetriever
@@ -99,6 +99,7 @@ class Agent:
     ) -> dict:
         state = self._sessions.get(session_id)
         query_text = user_message
+        query_plan: QueryPlan | None = None
         strategy = None
         if state is not None:
             state.record_user_turn(turn, user_message)
@@ -127,7 +128,13 @@ class Agent:
             )
             strategy = plan_strategy(state, turn=turn, top_k=top_k, config=self.strategy_config)
             state.previous_strategy = strategy.to_dict()
-            query_text = build_distilled_query(user_message, state.active_constraints)
+            query_plan = build_query_plan(
+                user_message,
+                state.active_constraints,
+                rejected_constraints=state.rejected_constraints,
+                overridden_constraints=state.overridden_constraints,
+            )
+            query_text = query_plan.rendered_query
             state.previous_distilled_query = query_text
         try:
             response, retrieval_result = self._respond_impl(
@@ -184,6 +191,8 @@ class Agent:
                 diagnostics = {}
             diagnostics["decision_evidence"] = decision_evidence.to_diagnostics()
             diagnostics.update(state_diagnostics(state))
+            if query_plan is not None:
+                diagnostics["query_plan"] = query_plan.to_diagnostics()
             response["diagnostics"] = diagnostics
             candidate_evidence = {
                 candidate.parent_asin: candidate.evidence_text or ""

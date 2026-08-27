@@ -338,6 +338,14 @@ class AgentSmokeTest(unittest.TestCase):
             self.assertIn("strategy", first["diagnostics"])
             self.assertIn("active_constraints", first["diagnostics"])
             self.assertIn("distilled_query", first["diagnostics"])
+            self.assertEqual(
+                first["diagnostics"]["query_plan"]["rendered_query"],
+                first["diagnostics"]["distilled_query"],
+            )
+            self.assertNotIn(
+                "leather",
+                third["diagnostics"]["query_plan"]["excluded_terms"],
+            )
             self.assertEqual(agent._sessions["s1"].previous_diagnostics["strategy"], third["diagnostics"]["strategy"])
             self.assertIsNotNone(first["ask_attribute"])
             self.assertIn(first["ask_attribute"], agent._sessions["s1"].asked_attributes)
@@ -359,6 +367,7 @@ class AgentSmokeTest(unittest.TestCase):
             self.assertEqual([item["normalized_value"] for item in state.overridden_constraints], ["leather"])
             self.assertNotIn("leather", state.previous_distilled_query)
             self.assertIn("cotton", state.previous_distilled_query)
+            self.assertIn("leather", state.previous_diagnostics["query_plan"]["excluded_terms"])
             self.assertEqual(state.previous_diagnostics["last_override"]["reason"], "attribute replacement")
 
 
