@@ -279,18 +279,42 @@ class ContextEngineTest(unittest.TestCase):
         vocabulary = CatalogVocabulary.from_products([
             {"categories": ["Hiking Boots"]}
         ])
-        message = "Avoid hiking and black and white hiking boots."
+        for message, attribute, value in (
+            (
+                "Avoid hiking and black and white hiking boots.",
+                "use_case",
+                "hiking",
+            ),
+            (
+                "Avoid boots and black and white hiking boots.",
+                "category",
+                "boots",
+            ),
+            (
+                "Avoid hiking boots and black and white hiking boots.",
+                "category",
+                "hiking boots",
+            ),
+        ):
+            active = {
+                (item["attribute"], item["normalized_value"])
+                for item in extract_constraints(
+                    message,
+                    3,
+                    vocabulary=vocabulary,
+                )
+            }
+            rejected = {
+                (item["attribute"], item["normalized_value"])
+                for item in detect_rejected_constraints(
+                    message,
+                    3,
+                    vocabulary=vocabulary,
+                )
+            }
 
-        rejected = {
-            (item["attribute"], item["normalized_value"])
-            for item in detect_rejected_constraints(
-                message,
-                3,
-                vocabulary=vocabulary,
-            )
-        }
-
-        self.assertIn(("use_case", "hiking"), rejected)
+            self.assertNotIn((attribute, value), active)
+            self.assertIn((attribute, value), rejected)
 
     def test_rejected_brand_and_budget_share_positive_matcher_inventory(self) -> None:
         message = "Avoid brand Nike and anything under $80."

@@ -490,8 +490,20 @@ def _negative_category_context(
             for head_start, head_end in direct_head_spans
         ):
             heads.add(category)
+    protected_heads = {
+        category
+        for category in heads
+        if all(
+            any(
+                head_start <= category_start and category_end <= head_end
+                for head_start, head_end in direct_head_spans
+            )
+            for category_start, category_end, span_category in category_spans
+            if span_category == category
+        )
+    }
     return _NegativeCategoryContext(
-        active_values=frozenset(heads),
+        active_values=frozenset(protected_heads),
         protected_spans=tuple(sorted(set(direct_head_spans))),
     )
 
