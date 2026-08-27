@@ -164,12 +164,27 @@ The next optimization phase starts from diagnosis, not from another model:
    enablement damages MRR and Intent Override.
 6. The public-facing README, final package, and demo narrative lag the runtime.
 
+## R0 Result
+
+R0 is complete at clean code commit `40dc07e`. The Development-160 baseline
+remained HitRate@10 `0.7625`, MRR `0.526989`, MTTC `5.30625`, and recommended
+technical score `0.653222`; R0 changed no runtime behavior.
+
+Of 38 missed sessions, the earliest observed cause was Extraction in 37 and
+Intent / Strategy Routing in one. The same Extraction dominance appeared in all
+four fixed folds. The target entered the retained lexical pool in 145 of 160
+sessions, so the next optimization should stay on the A-side control plane.
+This is deterministic evidence triage, not proof that every downstream failure
+would disappear after one extraction change. The durable report is
+`docs/r0_development_failure_taxonomy.md`, with turn-level offline evidence in
+the adjacent JSON artifact.
+
 ## Next Decision
 
-The next technical action is R0 in `docs/optimization_roadmap.md`: classify
-Development-160 failures using the canonical causal taxonomy in `AGENTS.md`.
-Offline diagnosis may use the development target to distinguish Retrieval
-Recall from Ranking / Filtering; runtime code and diagnostics may not.
+The next dependency-ordered module is A8 Stateful Intent Persistence. R0 ranks
+A11 Extraction and Scope Hardening as the strongest evidence-led behavior
+experiment, but A8 must first define stable cross-turn `IntentAssessment`
+semantics; then AB0 must establish Candidate decision evidence before A9.
 
 The complete dependency order lives only in `docs/optimization_roadmap.md`.
 Immediate blockers to remember: A9 cannot start from the current Top-K text
@@ -195,6 +210,7 @@ track in `docs/demo_and_submission_plan.md`.
 | `AGENTS.md` | Operational contract for coding agents |
 | `docs/current_status.md` | Current verified state and next decision |
 | `docs/optimization_roadmap.md` | Project-wide optimization sequence and gates |
+| `docs/r0_development_failure_taxonomy.md` | Clean Development-160 failure audit and next-experiment evidence |
 | `docs/ablation_summary.md` | Human-readable keep/reject evidence |
 | `docs/workstreams/DEVELOPER_A_CONTROL_PLANE.md` | Standalone A-side route |
 | `docs/workstreams/DEVELOPER_B_RETRIEVAL_RANKING.md` | Standalone B-side route |

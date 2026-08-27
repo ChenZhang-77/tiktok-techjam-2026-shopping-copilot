@@ -72,7 +72,12 @@ The original B1-B7 build sequence is complete. Do not restart it or assume that
 implemented experimental routes should be enabled. Use the canonical R0
 taxonomy from `../AGENTS.md`, with the earliest causal stage as primary. Record
 evaluator/timing anomalies separately as `evaluation_validity` flags.
-The current experiment is `r0-failure-taxonomy`; it changes no runtime behavior.
+R0 is complete. Its clean Development-160 artifacts are
+`../docs/r0_development_failure_taxonomy.md` and
+`../docs/r0_development_failure_taxonomy.json`; it changed no runtime behavior.
+The audit classified 37 of 38 misses as Extraction and one as Intent / Strategy
+Routing. The evidence-ranked experiment is A11, but the dependency-ordered next
+module remains A8.
 The authoritative dependency order is maintained only in
 `../docs/optimization_roadmap.md`. Use the selected A/B workstream for its
 hypothesis, inputs, tests, and keep/revert gate. Do not copy the full sequence
