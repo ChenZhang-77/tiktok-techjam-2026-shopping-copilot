@@ -34,14 +34,19 @@ CANDIDATE_TERMS = {
     "style": STYLE_TERMS,
     "use_case": USE_CASES,
 }
-WORD_SEPARATOR_RE = re.compile(r"\W+", re.UNICODE)
-NORMALIZED_CANDIDATE_TERMS = {
+CANDIDATE_SINGLE_TERMS = {
+    attribute: {term for term in terms if " " not in term}
+    for attribute, terms in CANDIDATE_TERMS.items()
+}
+CANDIDATE_PHRASE_PATTERNS = {
     attribute: {
-        term: WORD_SEPARATOR_RE.sub(" ", term.lower()).strip()
+        term: re.compile(rf"\b{re.escape(term)}\b", re.IGNORECASE)
         for term in terms
+        if " " in term
     }
     for attribute, terms in CANDIDATE_TERMS.items()
 }
+WORD_RE = re.compile(r"\w+", re.UNICODE)
 
 
 def _available_attributes(state: SessionState, priority: tuple[str, ...]) -> list[str]:
@@ -62,15 +67,16 @@ def _available_attributes(state: SessionState, priority: tuple[str, ...]) -> lis
 
 def candidate_attribute_scores(candidate_texts: list[str]) -> dict[str, float]:
     scores: dict[str, float] = {}
-    normalized_texts = [
-        f" {WORD_SEPARATOR_RE.sub(' ', text.lower()).strip()} "
-        for text in candidate_texts
-    ]
-    for attribute, terms in NORMALIZED_CANDIDATE_TERMS.items():
+    token_sets = [set(WORD_RE.findall(text.lower())) for text in candidate_texts]
+    for attribute, terms in CANDIDATE_SINGLE_TERMS.items():
         counts: Counter[str] = Counter()
         covered = 0
-        for text in normalized_texts:
-            hits = {term for term, normalized in terms.items() if f" {normalized} " in text}
+        phrase_patterns = CANDIDATE_PHRASE_PATTERNS[attribute]
+        for text, tokens in zip(candidate_texts, token_sets):
+            hits = terms & tokens
+            hits.update(
+                term for term, pattern in phrase_patterns.items() if pattern.search(text)
+            )
             if hits:
                 covered += 1
                 counts.update(hits)
