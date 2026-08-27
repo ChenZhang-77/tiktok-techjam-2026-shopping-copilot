@@ -27,7 +27,6 @@ class SessionState:
     active_constraints: list[dict] = field(default_factory=list)
     overridden_constraints: list[dict] = field(default_factory=list)
     rejected_constraints: list[dict] = field(default_factory=list)
-    expired_constraints: list[dict] = field(default_factory=list)
     no_preference_attributes: set[str] = field(default_factory=set)
     asked_attributes: set[str] = field(default_factory=set)
     previous_distilled_query: str = ""
@@ -68,7 +67,6 @@ class SessionState:
         no_preference_attributes: list[str] | None = None,
         rejected_constraints: list[dict] | None = None,
     ) -> None:
-        self._expire_low_confidence_features()
         for attribute in no_preference_attributes or []:
             self.mark_no_preference(attribute)
             self._deactivate_attribute(attribute, destination=self.rejected_constraints)
@@ -116,27 +114,6 @@ class SessionState:
             ) not in rejected_keys
         ]
         self.add_constraints(filtered)
-
-    def _expire_low_confidence_features(self) -> None:
-        kept: list[dict] = []
-        for constraint in self.active_constraints:
-            source_turn = constraint.get("source_turn")
-            age = (
-                self.current_turn - source_turn
-                if isinstance(source_turn, int) and not isinstance(source_turn, bool)
-                else 0
-            )
-            if (
-                constraint.get("attribute") == "feature"
-                and float(constraint.get("confidence") or 0.0) <= 0.35
-                and age >= 2
-            ):
-                expired = dict(constraint)
-                expired["active"] = False
-                self.expired_constraints.append(expired)
-                continue
-            kept.append(constraint)
-        self.active_constraints = kept
 
     def _deactivate_value(self, attribute: str, value: str, *, destination: list[dict]) -> None:
         kept: list[dict] = []

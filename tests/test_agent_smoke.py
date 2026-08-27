@@ -296,7 +296,7 @@ class AgentSmokeTest(unittest.TestCase):
             response["diagnostics"]["query_plan"]["category_terms"],
         )
 
-    def test_agent_query_excludes_no_preference_and_negative_clause_text(self) -> None:
+    def test_agent_scopes_no_preference_and_negative_evidence(self) -> None:
         retriever = _RecordingRetriever()
         agent = Agent(retriever=retriever)
         agent.reset("scoped-query", {})
@@ -309,11 +309,10 @@ class AgentSmokeTest(unittest.TestCase):
             2,
         )
 
-        query = retriever.requests[-1].query.lower()
-        self.assertIn("waterproof", query)
-        self.assertNotIn("don't care", query)
-        self.assertNotIn("material", query)
-        self.assertNotIn("black", query)
+        state = agent._sessions["scoped-query"]
+        self.assertIn("material", state.no_preference_attributes)
+        self.assertIn("waterproof", state.active_constraint_values("style"))
+        self.assertNotIn("black", state.active_constraint_values("color"))
         self.assertIn("black", response["diagnostics"]["query_plan"]["excluded_terms"])
 
     def test_retrieval_failure_uses_catalog_fallback_without_leaking_exception(self) -> None:

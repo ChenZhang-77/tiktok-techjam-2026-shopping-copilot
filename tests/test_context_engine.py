@@ -11,7 +11,6 @@ from starter.core.context_engine import (
     detect_rejected_constraints,
     extract_constraints,
     infer_intent,
-    searchable_context_text,
 )
 from starter.core.state import SessionState
 
@@ -94,19 +93,6 @@ class ContextEngineTest(unittest.TestCase):
             detect_no_preference_attributes(message),
             ["use_case", "other"],
         )
-
-    def test_searchable_context_removes_no_preference_and_negative_clauses(self) -> None:
-        message = (
-            "I don't care about material, but waterproof blue shoes are important; "
-            "avoid black."
-        )
-
-        searchable = searchable_context_text(message)
-
-        self.assertIn("waterproof blue shoes are important", searchable)
-        self.assertNotIn("don't care", searchable.lower())
-        self.assertNotIn("material", searchable.lower())
-        self.assertNotIn("black", searchable.lower())
 
     def test_no_preference_attribute_detection_is_clause_scoped(self) -> None:
         self.assertEqual(

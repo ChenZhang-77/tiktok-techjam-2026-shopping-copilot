@@ -12,7 +12,6 @@ from starter.core.context_engine import (
     detect_rejected_constraints,
     assess_intent,
     extract_constraints,
-    searchable_context_text,
 )
 from starter.core.diagnostics import state_diagnostics
 from starter.core.decision_evidence import build_decision_evidence
@@ -150,7 +149,7 @@ class Agent:
             strategy = plan_strategy(state, turn=turn, top_k=top_k, config=self.strategy_config)
             state.previous_strategy = strategy.to_dict()
             query_plan = build_query_plan(
-                searchable_context_text(user_message),
+                user_message,
                 state.active_constraints,
                 rejected_constraints=state.rejected_constraints,
                 overridden_constraints=state.overridden_constraints,

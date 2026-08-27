@@ -264,17 +264,6 @@ def _no_preference_spans(text: str) -> list[tuple[int, int]]:
     return spans
 
 
-def searchable_context_text(user_message: str) -> str:
-    text = str(user_message or "")
-    masked = _mask_spans(
-        text,
-        [*_negative_spans(text), *_no_preference_spans(text)],
-    )
-    cleaned = re.sub(r"\b(?:but|however)\b", " ", masked, flags=re.I)
-    cleaned = re.sub(r"\s*[,;:.!?]\s*", " ", cleaned)
-    return re.sub(r"\s+", " ", cleaned).strip()
-
-
 def _constraint(attribute: str, raw: str, turn: int, text: str, confidence: float, hard: bool) -> Constraint:
     normalized = re.sub(r"\s+", " ", raw.lower()).strip()
     return Constraint(

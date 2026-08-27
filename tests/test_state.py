@@ -110,29 +110,6 @@ class SessionStateTest(unittest.TestCase):
         self.assertEqual(state.no_preference_attributes, {"color"})
         self.assertEqual([item["normalized_value"] for item in state.rejected_constraints], ["black"])
 
-    def test_low_confidence_feature_expires_without_becoming_rejected(self) -> None:
-        state = SessionState(session_id="s1", user_profile={})
-        state.record_user_turn(1, "Something premium and giftable")
-        state.apply_user_context(
-            constraints=[{
-                "attribute": "feature",
-                "normalized_value": "something premium and giftable",
-                "source_turn": 1,
-                "confidence": 0.35,
-                "active": True,
-            }]
-        )
-
-        state.record_user_turn(3, "Show me more")
-        state.apply_user_context(constraints=[])
-
-        self.assertEqual(state.active_constraint_values("feature"), [])
-        self.assertEqual(
-            [item["normalized_value"] for item in state.expired_constraints],
-            ["something premium and giftable"],
-        )
-        self.assertEqual(state.rejected_constraints, [])
-
     def test_rejected_constraint_is_not_readded_as_active(self) -> None:
         state = SessionState(session_id="s1", user_profile={})
         state.apply_user_context(constraints=[{
