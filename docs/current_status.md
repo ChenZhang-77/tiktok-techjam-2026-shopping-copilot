@@ -37,7 +37,7 @@ Verified on 2026-08-27:
 
 | Item | Value |
 | --- | --- |
-| Branch at B12 verification | `b/b12-prerequisite-audit` |
+| Branch at B12 verification | `b/b12-adaptive-depth` |
 | Retained behavior commit | `0f47710` |
 | B12 selection data | Development-160 plus four fixed folds only |
 | B10a experiment branch | `b/b10a-constraint-preserving-crossencoder` |
