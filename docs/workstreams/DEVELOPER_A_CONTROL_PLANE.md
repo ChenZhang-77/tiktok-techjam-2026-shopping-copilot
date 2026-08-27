@@ -73,6 +73,9 @@ and private-set robustness.
 A8 Stateful Intent Persistence is retained at `b3c4aeb`. The next executable
 module is the shared AB0 DecisionEvidence source audit; A9 remains blocked until
 AB0 defines every proposed signal and fallback without changing ask behavior.
+The retained A8 confidence is an A-owned ordinal stability signal with
+`low`/`medium`/`high` diagnostic bands, not a calibrated probability or B-side
+gate.
 
 ## Ownership
 

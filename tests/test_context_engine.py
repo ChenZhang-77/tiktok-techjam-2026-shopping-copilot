@@ -202,6 +202,19 @@ class ContextEngineTest(unittest.TestCase):
                 transition_reason="accumulated",
             )
 
+    def test_intent_confidence_is_exposed_as_an_ordinal_non_probability_band(self) -> None:
+        assessments = [
+            IntentAssessment("browsing", 0.60, (), 1, "accumulated"),
+            IntentAssessment("browsing", 0.72, (), 1, "retained"),
+            IntentAssessment("buying", 0.90, (), 1, "accumulated"),
+        ]
+
+        self.assertEqual(
+            [assessment.confidence_band for assessment in assessments],
+            ["low", "medium", "high"],
+        )
+        self.assertEqual(assessments[1].to_dict()["confidence_band"], "medium")
+
 
 if __name__ == "__main__":
     unittest.main()

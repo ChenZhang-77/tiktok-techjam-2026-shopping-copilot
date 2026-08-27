@@ -105,6 +105,9 @@ class A8StatefulIntentEvidenceTest(unittest.TestCase):
         self.assertEqual(self.record["full_status"], "not_run_during_A8")
         self.assertEqual(self.record["development_160"]["gained_sessions"], [])
         self.assertEqual(self.record["development_160"]["lost_sessions"], [])
+        confidence = self.record["confidence_semantics"]
+        self.assertEqual(confidence["kind"], "A-owned ordinal stability signal, not a calibrated probability")
+        self.assertFalse(confidence["B_side_gate"])
 
 
 if __name__ == "__main__":

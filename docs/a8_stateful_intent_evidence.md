@@ -4,9 +4,13 @@
 
 Retain A8 at code commit `b3c4aeb`. The runtime now persists a complete
 `IntentAssessment` across turns instead of re-inferring intent from only the
-latest reply. The assessment contains `intent`, bounded `confidence`,
-conversation-derived `evidence`, `source_turn`, and one of four transition
+latest reply. The assessment contains `intent`, an A-owned ordinal stability
+`confidence`, conversation-derived `evidence`, `source_turn`, and one of four transition
 reasons: `retained`, `accumulated`, `relaxed`, or `explicit_override`.
+
+Confidence is not a calibrated probability. Its public A-side diagnostic band
+is `low` for values below `0.65`, `medium` for values below `0.80`, and `high`
+otherwise. Neither the raw value nor its band is a B-side ranking/filter gate.
 
 This is a control-plane and explainability win with a modest Buying ordering
 gain. It is **not** evidence of a robust aggregate score improvement.
@@ -19,7 +23,8 @@ gain. It is **not** evidence of a robust aggregate score improvement.
   real exploration, accumulated specificity, and overrides to change intent.
 - **Failure class:** Intent / Strategy Routing.
 - **Primary behavior:** persist and consume `IntentAssessment`; expose the
-  transition through A-side diagnostics and `Strategy.reason`.
+  complete assessment through A-side diagnostics and only the transition
+  reason through `Strategy.reason`.
 - **Comparator:** retained structured runtime in
   `docs/b2_reports/development_structured.json`.
 - **Evaluation:** fixed Development-160 plus the four checked-in folds only.

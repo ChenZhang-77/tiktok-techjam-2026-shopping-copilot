@@ -89,10 +89,21 @@ class IntentAssessment:
         return {
             "intent": self.intent,
             "confidence": self.confidence,
+            "confidence_band": self.confidence_band,
             "evidence": list(self.evidence),
             "source_turn": self.source_turn,
             "transition_reason": self.transition_reason,
         }
+
+    @property
+    def confidence_band(self) -> Literal["low", "medium", "high"]:
+        """Return an ordinal stability band; the numeric value is not a probability."""
+
+        if self.confidence < 0.65:
+            return "low"
+        if self.confidence < 0.80:
+            return "medium"
+        return "high"
 
 
 @dataclass(frozen=True)

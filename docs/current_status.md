@@ -183,8 +183,9 @@ the adjacent JSON artifact.
 ## A8 Result
 
 A8 is retained at clean code commit `b3c4aeb`. `IntentAssessment` is now a
-persistent `SessionState` value with intent, confidence, evidence, source turn,
-and an explicit transition reason. Strategy diagnostics expose that decision;
+persistent `SessionState` value with intent, A-owned ordinal confidence,
+evidence, source turn, and an explicit transition reason. A diagnostics expose
+the complete decision while `Strategy.reason` exposes only the transition;
 the A/B request contract is unchanged.
 
 On Development-160, HitRate@10 remains `0.7625`, MRR increases from `0.526989`

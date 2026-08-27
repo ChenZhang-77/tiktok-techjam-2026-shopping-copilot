@@ -3,7 +3,7 @@
   "owner": "Developer A",
   "failure_class_addressed": "Intent / Strategy Routing",
   "hypothesis": "A persisted IntentAssessment with explicit transition reasons prevents ordinary clarification replies from flipping Buying to Browsing while still allowing accumulated evidence, exploration, and overrides to change route intent.",
-  "primary_behavior_changed": "Intent is assessed from current and persisted conversation evidence, stored in SessionState, and exposed through A-side diagnostics and Strategy.reason.",
+  "primary_behavior_changed": "Intent is assessed from current and persisted conversation evidence, stored in SessionState, and exposed through A-side diagnostics; only the transition reason crosses through Strategy.reason.",
   "run_code_commit": "b3c4aeb",
   "code_worktree_clean_before_runs": true,
   "dataset": "data/public_set.jsonl",
@@ -22,6 +22,7 @@
     "tests/test_state.py"
   ],
   "contract_change": "none",
+  "confidence_semantics": {"kind": "A-owned ordinal stability signal, not a calibrated probability", "low": "[0.00, 0.65)", "medium": "[0.65, 0.80)", "high": "[0.80, 1.00]", "B_side_gate": false},
   "target_data_runtime_scan": "No target, hit/miss, target-rank, scenario-label, or sample-specific input was added to runtime state, requests, diagnostics, rules, or models.",
   "commands": {
     "tests": ".venv/bin/python -m unittest discover -s tests -v",
