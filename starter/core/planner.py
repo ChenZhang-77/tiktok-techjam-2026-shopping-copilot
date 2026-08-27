@@ -55,6 +55,7 @@ def plan_strategy(state: SessionState, *, turn: int, top_k: int, config: Strateg
     )
 
     if intent == "buying":
+        depth_policy = "intent_constraint_default"
         depth_floor = (
             config.buying_depth_constrained
             if active_count >= 2
@@ -69,6 +70,7 @@ def plan_strategy(state: SessionState, *, turn: int, top_k: int, config: Strateg
                 config.buying_depth_sparse,
                 config.buying_depth_constrained,
             )
+            depth_policy = "adaptive_narrow"
         depth = max(top_k, depth_floor)
         return Strategy(
             intent="buying",
@@ -80,7 +82,8 @@ def plan_strategy(state: SessionState, *, turn: int, top_k: int, config: Strateg
             clarification_enabled=turn < 10,
             fallback_mode="lexical",
             reason=(
-                f"buying intent ({assessment_reason}) with {active_count} active constraints"
+                f"buying intent ({assessment_reason}) with {active_count} active constraints; "
+                f"depth policy={depth_policy}"
             ),
         )
 

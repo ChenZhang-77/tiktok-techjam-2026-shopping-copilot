@@ -88,6 +88,10 @@ class PlannerTest(unittest.TestCase):
         strategy = plan_strategy(state, turn=2, top_k=10)
 
         self.assertEqual(strategy.retrieval_depth, 60)
+        self.assertIn("depth policy=adaptive_narrow", strategy.reason)
+
+        large_response = plan_strategy(state, turn=2, top_k=100)
+        self.assertEqual(large_response.retrieval_depth, 100)
 
     def test_medium_confidence_and_missing_assessment_preserve_fixed_fallback(self) -> None:
         constrained = [
