@@ -53,17 +53,15 @@ class ContextEngineTest(unittest.TestCase):
         self.assertNotIn(("category", "top"), values)
         self.assertFalse(any(attribute == "size" for attribute, _ in values))
 
-    def test_catalog_vocabulary_extracts_multi_word_product_evidence(self) -> None:
+    def test_catalog_vocabulary_extracts_multi_word_category_evidence(self) -> None:
         vocabulary = CatalogVocabulary.from_products([
             {
                 "categories": ["Shoes", "Trail Running Shoes"],
-                "store": "New Balance",
-                "features": ["100% Synthetic", "Rubber sole"],
             }
         ])
 
         constraints = extract_constraints(
-            "New Balance trail running shoes with 100% synthetic and a rubber sole.",
+            "I need trail running shoes.",
             1,
             vocabulary=vocabulary,
         )
@@ -73,35 +71,6 @@ class ContextEngineTest(unittest.TestCase):
         }
 
         self.assertIn(("category", "trail running shoes"), values)
-        self.assertIn(("brand", "new balance"), values)
-        self.assertIn(("feature", "100 synthetic"), values)
-        self.assertIn(("feature", "rubber sole"), values)
-
-    def test_single_word_catalog_brand_requires_an_explicit_brand_signal(self) -> None:
-        vocabulary = CatalogVocabulary.from_products([
-            {"store": "Sole", "features": ["Rubber sole"]},
-            {"store": "Nike", "features": []},
-        ])
-
-        implicit = extract_constraints(
-            "I want a rubber sole.",
-            1,
-            vocabulary=vocabulary,
-        )
-        explicit = extract_constraints(
-            "I want shoes from Nike.",
-            1,
-            vocabulary=vocabulary,
-        )
-
-        self.assertNotIn(
-            ("brand", "sole"),
-            {(item["attribute"], item["normalized_value"]) for item in implicit},
-        )
-        self.assertIn(
-            ("brand", "nike"),
-            {(item["attribute"], item["normalized_value"]) for item in explicit},
-        )
 
     def test_session_state_accumulates_constraints_without_duplicates(self) -> None:
         state = SessionState(session_id="s1", user_profile={})
@@ -175,11 +144,11 @@ class ContextEngineTest(unittest.TestCase):
             {("color", "black"), ("material", "leather")},
         )
 
-    def test_catalog_feature_in_negative_clause_is_auditable_but_not_active(self) -> None:
+    def test_catalog_category_in_negative_clause_is_auditable_but_not_active(self) -> None:
         vocabulary = CatalogVocabulary.from_products([
-            {"features": ["Canvas upper", "Rubber sole"]}
+            {"categories": ["Trail Running Shoes", "Mid Calf Boots"]}
         ])
-        message = "I want a canvas upper, but avoid a rubber sole."
+        message = "I want trail running shoes, but avoid mid calf boots."
 
         active = {
             (item["attribute"], item["normalized_value"])
@@ -194,9 +163,9 @@ class ContextEngineTest(unittest.TestCase):
             )
         }
 
-        self.assertIn(("feature", "canvas upper"), active)
-        self.assertNotIn(("feature", "rubber sole"), active)
-        self.assertIn(("feature", "rubber sole"), rejected)
+        self.assertIn(("category", "trail running shoes"), active)
+        self.assertNotIn(("category", "mid calf boots"), active)
+        self.assertIn(("category", "mid calf boots"), rejected)
 
     def test_intent_infers_buying_from_hard_constraints(self) -> None:
         self.assertEqual(

@@ -70,7 +70,7 @@ def _write_catalog(path: Path) -> None:
         {
             "parent_asin": "A",
             "title": "Leather running shoe",
-            "categories": ["Clothing", "Shoes"],
+            "categories": ["Clothing", "Shoes", "Trail Running Shoes"],
             "features": ["black leather"],
             "details": {},
             "store": "Example",
@@ -272,7 +272,7 @@ class AgentSmokeTest(unittest.TestCase):
         self.assertEqual(response["recommendations"], [{"parent_asin": "A"}, {"parent_asin": "B"}])
         self.assertEqual(response["diagnostics"]["retrieval"]["route"], "bm25")
 
-    def test_agent_builds_catalog_vocabulary_for_multi_word_query_evidence(self) -> None:
+    def test_agent_builds_catalog_vocabulary_for_multi_word_category_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             catalog_path = Path(directory) / "catalog.jsonl"
             _write_catalog(catalog_path)
@@ -281,14 +281,14 @@ class AgentSmokeTest(unittest.TestCase):
 
             response = agent.respond(
                 "catalog-context",
-                "I need black leather shoes.",
+                "I need trail running shoes.",
                 1,
                 2,
             )
 
         self.assertIn(
-            "black leather",
-            response["diagnostics"]["query_plan"]["semantic_terms"],
+            "trail running shoes",
+            response["diagnostics"]["query_plan"]["category_terms"],
         )
 
     def test_agent_query_excludes_no_preference_and_negative_clause_text(self) -> None:

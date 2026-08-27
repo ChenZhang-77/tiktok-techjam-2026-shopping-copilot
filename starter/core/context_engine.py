@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import re
-from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Literal, Mapping
@@ -44,7 +43,6 @@ STANDALONE_SIZE_RE = re.compile(
 DESCRIPTIVE_SIZE_RE = re.compile(r"\b(small|medium|large|wide|narrow)\b", re.I)
 BUDGET_RE = re.compile(r"\b(?:under|below|less than|around|about|up to|budget)\s*\$?\s*(\d+(?:\.\d{1,2})?)\b|\$\s*(\d+(?:\.\d{1,2})?)", re.I)
 BRAND_RE = re.compile(r"\b(?:brand|from|by)\s+([A-Z][A-Za-z0-9&' -]{1,30})")
-BRAND_SIGNAL_RE = re.compile(r"\b(?:brand|from|by)\b", re.I)
 TOKEN_RE = re.compile(r"[a-z0-9]+", re.I)
 OVERRIDE_RE = re.compile(
     r"\b(?:actually|instead|ignore|forget|rather|change|changed my mind|what i need)\b",
@@ -94,15 +92,13 @@ def _flatten_catalog_values(value: object) -> list[str]:
 
 @dataclass(frozen=True)
 class CatalogVocabulary:
-    """A-side vocabulary derived only from the frozen runtime catalog."""
+    """A-side category vocabulary derived only from the frozen runtime catalog."""
 
     category_terms: frozenset[str]
-    brand_terms: frozenset[str]
-    feature_terms: frozenset[str]
 
     @classmethod
     def empty(cls) -> CatalogVocabulary:
-        return cls(frozenset(), frozenset(), frozenset())
+        return cls(frozenset())
 
     @classmethod
     def from_catalog(cls, catalog_path: str | Path) -> CatalogVocabulary:
@@ -120,32 +116,12 @@ class CatalogVocabulary:
         products: Iterable[Mapping[str, object]],
     ) -> CatalogVocabulary:
         categories: set[str] = set()
-        brands: set[str] = set()
-        feature_counts: Counter[str] = Counter()
         for product in products:
             for raw in _flatten_catalog_values(product.get("categories")):
                 normalized = _normalized_phrase(raw)
                 if 2 <= len(normalized.split()) <= 8:
                     categories.add(normalized)
-            brand = _normalized_phrase(product.get("store"))
-            if brand and len(brand.split()) <= 6:
-                brands.add(brand)
-            for field in ("features", "details"):
-                for raw in _flatten_catalog_values(product.get(field)):
-                    normalized = _normalized_phrase(raw)
-                    token_count = len(normalized.split())
-                    if normalized and token_count <= 12:
-                        feature_counts[normalized] += 1
-        features = {
-            phrase
-            for phrase, count in feature_counts.items()
-            if len(phrase.split()) > 1 or count >= 5
-        }
-        return cls(
-            category_terms=frozenset(categories),
-            brand_terms=frozenset(brands),
-            feature_terms=frozenset(features),
-        )
+        return cls(category_terms=frozenset(categories))
 
 
 @dataclass(frozen=True)
@@ -226,8 +202,6 @@ def _word_matches(text: str, phrases: set[str]) -> list[str]:
 def _catalog_phrase_matches(
     text: str,
     phrases: frozenset[str],
-    *,
-    minimum_width: int = 1,
 ) -> list[str]:
     tokens = [token.lower() for token in TOKEN_RE.findall(text)]
     if not tokens or not phrases:
@@ -235,7 +209,7 @@ def _catalog_phrase_matches(
     maximum = min(12, len(tokens), max(len(phrase.split()) for phrase in phrases))
     occupied = [False] * len(tokens)
     matches: list[tuple[int, str]] = []
-    for width in range(maximum, minimum_width - 1, -1):
+    for width in range(maximum, 0, -1):
         for start in range(0, len(tokens) - width + 1):
             end = start + width
             if any(occupied[start:end]):
@@ -246,24 +220,6 @@ def _catalog_phrase_matches(
             matches.append((start, phrase))
             occupied[start:end] = [True] * width
     return [phrase for _, phrase in sorted(matches)]
-
-
-def _explicit_catalog_brand_matches(
-    text: str,
-    brand_terms: frozenset[str],
-) -> list[str]:
-    matches: list[str] = []
-    for marker in BRAND_SIGNAL_RE.finditer(text):
-        following = [
-            token.lower()
-            for token in TOKEN_RE.findall(text[marker.end():])[:6]
-        ]
-        for width in range(len(following), 0, -1):
-            phrase = " ".join(following[:width])
-            if phrase in brand_terms:
-                matches.append(phrase)
-                break
-    return list(dict.fromkeys(matches))
 
 
 def _size_matches(text: str) -> list[str]:
@@ -367,35 +323,13 @@ def extract_constraints(
         constraints.append(_constraint("style", value, turn, text, 0.70, False))
 
     catalog_categories: list[str] = []
-    catalog_brands: list[str] = []
-    catalog_features: list[str] = []
     if vocabulary is not None:
         catalog_categories = _catalog_phrase_matches(
             positive_text,
             vocabulary.category_terms,
         )
-        catalog_brands = _catalog_phrase_matches(
-            positive_text,
-            vocabulary.brand_terms,
-            minimum_width=2,
-        )
-        catalog_brands = list(dict.fromkeys([
-            *catalog_brands,
-            *_explicit_catalog_brand_matches(
-                positive_text,
-                vocabulary.brand_terms,
-            ),
-        ]))
-        catalog_features = _catalog_phrase_matches(
-            positive_text,
-            vocabulary.feature_terms,
-        )
     for value in catalog_categories:
         constraints.append(_constraint("category", value, turn, text, 0.80, hard))
-    for value in catalog_brands:
-        constraints.append(_constraint("brand", value, turn, text, 0.76, hard))
-    for value in catalog_features:
-        constraints.append(_constraint("feature", value, turn, text, 0.76, hard))
 
     for value in _size_matches(positive_text):
         constraints.append(_constraint("size", value, turn, text, 0.74, hard))
@@ -405,11 +339,10 @@ def extract_constraints(
         if amount:
             constraints.append(_constraint("budget", f"${amount}", turn, text, 0.84, hard))
 
-    if vocabulary is None:
-        for match in BRAND_RE.finditer(positive_text):
-            raw = match.group(1).strip(" .,!?:;")
-            if raw and raw.lower() not in {"a", "an", "the"}:
-                constraints.append(_constraint("brand", raw, turn, text, 0.62, False))
+    for match in BRAND_RE.finditer(positive_text):
+        raw = match.group(1).strip(" .,!?:;")
+        if raw and raw.lower() not in {"a", "an", "the"}:
+            constraints.append(_constraint("brand", raw, turn, text, 0.62, False))
 
     if (
         not constraints
@@ -478,14 +411,6 @@ def detect_rejected_constraints(
         if vocabulary is not None:
             for value in _catalog_phrase_matches(window, vocabulary.category_terms):
                 rejected.append(_constraint("category", value, turn, text, 0.76, hard))
-            for value in _catalog_phrase_matches(
-                window,
-                vocabulary.brand_terms,
-                minimum_width=2,
-            ):
-                rejected.append(_constraint("brand", value, turn, text, 0.74, hard))
-            for value in _catalog_phrase_matches(window, vocabulary.feature_terms):
-                rejected.append(_constraint("feature", value, turn, text, 0.74, hard))
 
     unique: dict[tuple[str, str], Constraint] = {}
     for item in rejected:
