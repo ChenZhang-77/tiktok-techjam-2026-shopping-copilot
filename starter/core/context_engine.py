@@ -202,6 +202,27 @@ def _word_matches(text: str, phrases: set[str]) -> list[str]:
     return matches
 
 
+def _phrase_spans(text: str, phrase: str) -> list[tuple[int, int]]:
+    return [
+        match.span()
+        for match in re.finditer(
+            rf"(?<![A-Za-z0-9'-]){re.escape(phrase)}(?![A-Za-z0-9'-])",
+            text,
+            re.I,
+        )
+    ]
+
+
+def _catalog_separator_is_supported(
+    left: re.Match[str],
+    right: re.Match[str],
+    separator: str,
+) -> bool:
+    if re.fullmatch(r"(?:\s+|\s*-\s*)", separator) is not None:
+        return True
+    return separator in {"'", "’"} and right.group(0).lower() == "s"
+
+
 def _catalog_phrase_matches(
     text: str,
     phrases: frozenset[str],
@@ -222,13 +243,13 @@ def _catalog_phrase_matches(
             if any(occupied[start:end]):
                 continue
             selected = token_matches[start:end]
-            separators = [
-                text[left.end():right.start()]
-                for left, right in zip(selected, selected[1:])
-            ]
             if any(
-                re.fullmatch(r"(?:\s+|\s*-\s*)", separator) is None
-                for separator in separators
+                not _catalog_separator_is_supported(
+                    left,
+                    right,
+                    text[left.end():right.start()],
+                )
+                for left, right in zip(selected, selected[1:])
             ):
                 continue
             phrase = " ".join(token.group(0).lower() for token in selected)
@@ -401,6 +422,28 @@ def _matched_constraints(
     return constraints
 
 
+def _negative_head_categories(
+    text: str,
+    vocabulary: CatalogVocabulary | None,
+) -> set[str]:
+    """Keep a category head positive when a negated same-attribute list modifies it."""
+
+    category_values = set(_word_matches(text, CATEGORY_TERMS))
+    if vocabulary is not None:
+        category_values.update(
+            _catalog_phrase_matches(text, vocabulary.category_terms)
+        )
+    modifier_groups = (MATERIALS, COLORS, STYLE_TERMS, USE_CASES)
+    heads: set[str] = set()
+    for category in category_values:
+        for category_start, _ in _phrase_spans(text, category):
+            prefix = text[:category_start]
+            if any(len(_word_matches(prefix, phrases)) >= 2 for phrases in modifier_groups):
+                heads.add(category)
+                break
+    return heads
+
+
 def extract_constraints(
     user_message: str,
     turn: int,
@@ -422,6 +465,9 @@ def extract_constraints(
         hard=hard,
         rejected=False,
     )
+    for start, end in _negative_spans(text):
+        for value in _negative_head_categories(text[start:end], vocabulary):
+            constraints.append(_constraint("category", value, turn, text, 0.78, hard))
 
     if (
         not constraints
@@ -474,14 +520,20 @@ def detect_rejected_constraints(
     rejected: list[Constraint] = []
     for start, end in _negative_spans(text):
         window = text[start:end]
+        positive_category_heads = _negative_head_categories(window, vocabulary)
         rejected.extend(
-            _matched_constraints(
-                window,
-                turn,
-                text,
-                vocabulary=vocabulary,
-                hard=True,
-                rejected=True,
+            item
+            for item in _matched_constraints(
+                    window,
+                    turn,
+                    text,
+                    vocabulary=vocabulary,
+                    hard=True,
+                    rejected=True,
+                )
+            if not (
+                item.attribute == "category"
+                and item.normalized_value in positive_category_heads
             )
         )
 

@@ -96,6 +96,18 @@ class ContextEngineTest(unittest.TestCase):
         }
         self.assertIn(("category", "trail running"), joined)
 
+    def test_catalog_category_supports_controlled_possessive_boundaries(self) -> None:
+        vocabulary = CatalogVocabulary.from_products([
+            {"categories": ["Women's Clothing"]}
+        ])
+
+        for message in ("I need women's clothing.", "I need women’s clothing."):
+            values = {
+                (item["attribute"], item["normalized_value"])
+                for item in extract_constraints(message, 1, vocabulary=vocabulary)
+            }
+            self.assertIn(("category", "women s clothing"), values)
+
     def test_session_state_accumulates_constraints_without_duplicates(self) -> None:
         state = SessionState(session_id="s1", user_profile={})
         state.add_constraints(extract_constraints("I need black leather shoes", 1))
@@ -167,6 +179,8 @@ class ContextEngineTest(unittest.TestCase):
             {"black", "white", "red"},
         )
         self.assertIn(("color", "blue"), active)
+        self.assertIn(("category", "shoes"), active)
+        self.assertNotIn(("category", "shoes"), rejected)
         self.assertFalse(
             {("color", "black"), ("color", "white"), ("color", "red")}
             & active
