@@ -67,5 +67,50 @@ class PlannerTest(unittest.TestCase):
         self.assertIn("accumulated", strategy.reason)
         self.assertNotIn("confidence", strategy.reason)
 
+    def test_high_confidence_narrow_buying_uses_shallower_existing_floor(self) -> None:
+        state = SessionState(session_id="s1", user_profile={})
+        state.set_intent_assessment(
+            IntentAssessment(
+                intent="buying",
+                confidence=0.90,
+                evidence=("active_concrete_attributes:color,material",),
+                source_turn=2,
+                transition_reason="accumulated",
+            )
+        )
+        state.apply_user_context(
+            constraints=[
+                {"attribute": "material", "normalized_value": "leather", "hard": True},
+                {"attribute": "color", "normalized_value": "black", "hard": True},
+            ]
+        )
+
+        strategy = plan_strategy(state, turn=2, top_k=10)
+
+        self.assertEqual(strategy.retrieval_depth, 60)
+
+    def test_medium_confidence_and_missing_assessment_preserve_fixed_fallback(self) -> None:
+        constrained = [
+            {"attribute": "material", "normalized_value": "leather", "hard": True},
+            {"attribute": "color", "normalized_value": "black", "hard": True},
+        ]
+        medium = SessionState(session_id="medium", user_profile={})
+        medium.set_intent_assessment(
+            IntentAssessment(
+                intent="buying",
+                confidence=0.72,
+                evidence=(),
+                source_turn=1,
+                transition_reason="accumulated",
+            )
+        )
+        medium.apply_user_context(constraints=constrained)
+        legacy = SessionState(session_id="legacy", user_profile={})
+        legacy.intent = "buying"
+        legacy.apply_user_context(constraints=constrained)
+
+        self.assertEqual(plan_strategy(medium, turn=1, top_k=10).retrieval_depth, 80)
+        self.assertEqual(plan_strategy(legacy, turn=1, top_k=10).retrieval_depth, 80)
+
 if __name__ == "__main__":
     unittest.main()

@@ -55,7 +55,21 @@ def plan_strategy(state: SessionState, *, turn: int, top_k: int, config: Strateg
     )
 
     if intent == "buying":
-        depth = max(top_k, config.buying_depth_constrained if active_count >= 2 else config.buying_depth_sparse)
+        depth_floor = (
+            config.buying_depth_constrained
+            if active_count >= 2
+            else config.buying_depth_sparse
+        )
+        if (
+            assessment is not None
+            and assessment.confidence_band == "high"
+            and active_count >= 2
+        ):
+            depth_floor = min(
+                config.buying_depth_sparse,
+                config.buying_depth_constrained,
+            )
+        depth = max(top_k, depth_floor)
         return Strategy(
             intent="buying",
             lexical_weight=config.buying_lexical_weight,
