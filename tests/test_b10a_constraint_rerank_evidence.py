@@ -61,6 +61,10 @@ class B10aConstraintRerankEvidenceTest(unittest.TestCase):
                 )
             )
             self.assertTrue(payload["code_provenance"]["worktree_clean"])
+            self.assertEqual(
+                payload["code_provenance"]["commit"],
+                report["clean_code_commit"],
+            )
             self.assertEqual(payload["evaluation"]["split"], "development")
         self.assertFalse(self.record["evaluation_boundary"]["full_or_holdout_used"])
         self.assertFalse(
@@ -95,7 +99,13 @@ class B10aConstraintRerankEvidenceTest(unittest.TestCase):
             cost["semantic_rerank_max_ms"],
             self.top3["timing"]["retrieval"]["semantic_rerank_latency"]["max_ms"],
         )
-        self.assertEqual(cost["peak_rss_bytes"], self.top3["resources"]["peak_rss_bytes"])
+        self.assertEqual(
+            cost["parent_process_peak_rss_bytes"],
+            self.top3["resources"]["peak_rss_bytes"],
+        )
+        self.assertIn("parent_process_only", cost["resource_measurement_scope"])
+        self.assertIsNone(cost["worker_peak_rss_bytes"])
+        self.assertIsNone(cost["total_peak_rss_bytes"])
         self.assertEqual(self.top3["reported_token_usage"]["total_tokens"], 0)
 
     def test_current_default_remains_exactly_b9(self) -> None:

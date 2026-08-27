@@ -360,7 +360,7 @@ experiment. See `docs/b9_conditional_dense_evidence.md`.
 
 ### B10a - Constraint-preserving CrossEncoder rerank
 
-**Status: rejected as default; optional experiment retained at `7dc3d42`.** The
+**Status: rejected as default; optional experiment retained at `93b5b19`.** The
 Top-3 candidate lowered MRR by `0.031377` and TechnicalScore by `0.000663`, and
 split folds 2/2. A single-variable Top-5 follow-up still lowered MRR by
 `0.023304` and TechnicalScore by `0.001366`. B9 default outputs remain exact.

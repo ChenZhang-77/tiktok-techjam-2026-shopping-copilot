@@ -246,7 +246,7 @@ Do not describe dense as globally active. The retained route is conditional;
 global RRF and CrossEncoder reranking remain rejected experiments, and an
 actual LLM ranker has not been implemented. B10a Top-3 and Top-5
 constraint-preserving CrossEncoder candidates both failed the MRR and
-TechnicalScore gate; the B9 default remains exact at `7dc3d42`. See
+TechnicalScore gate; the B9 default remains exact at `93b5b19`. See
 `docs/b10a_constraint_rerank_evidence.md`. B10b is not justified without new R0
 evidence; continue to B11/B12 only when their documented prerequisites hold.
 

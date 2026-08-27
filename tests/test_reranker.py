@@ -6,6 +6,7 @@ from dataclasses import replace
 
 from starter.contracts import Candidate, RetrievalDiagnostics, RetrievalRequest, RetrievalResult
 from starter.core.planner import Strategy
+from starter.core.state import SessionState
 from starter.retrieval.reranker import (
     LocalCrossEncoderBackend,
     RerankerConfig,
@@ -107,6 +108,57 @@ class RecordingBackend:
 
 
 class RerankingRetrieverTest(unittest.TestCase):
+    def test_guard_consumes_the_persisted_rejection_shape_from_session_state(self) -> None:
+        state = SessionState(session_id="persisted-rejection", user_profile={})
+        state.apply_user_context(
+            constraints=[],
+            rejected_constraints=[
+                {
+                    "attribute": "material",
+                    "normalized_value": "leather",
+                    "confidence": 0.95,
+                }
+            ],
+        )
+        self.assertEqual(state.rejected_constraints[0]["active"], False)
+        base = FakeRetriever()
+        base.result = replace(
+            base.result,
+            candidates=[
+                replace(
+                    candidate,
+                    diagnostics={
+                        "structured_matches": [],
+                        "rejected_constraint_matches": (
+                            [{"attribute": "material", "value": "leather"}]
+                            if candidate.parent_asin == "C"
+                            else []
+                        ),
+                    },
+                )
+                for candidate in base.result.candidates
+            ],
+        )
+        result = RerankingRetriever(
+            base,
+            config=RerankerConfig(
+                candidate_limit=4,
+                constraint_guard_enabled=True,
+            ),
+            backend=RecordingBackend([0.1, 0.2, 1.0, 0.9]),
+        ).retrieve(
+            _request(rejected_constraints=list(state.rejected_constraints))
+        )
+
+        self.assertEqual(
+            [candidate.parent_asin for candidate in result.candidates],
+            ["D", "B", "A", "C"],
+        )
+        self.assertEqual(
+            result.candidates[-1].diagnostics["constraint_guard_status"],
+            "contradicted",
+        )
+
     def test_constraint_preserving_mode_anchors_top_three_and_scores_only_ranks_four_to_thirty(self) -> None:
         base = FakeRetriever()
         base.catalog_ids = frozenset(chr(code) for code in range(ord("A"), ord("Z") + 1))

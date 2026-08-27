@@ -2,9 +2,9 @@
 
 ## Decision
 
-Do not enable B10a in the default runtime. The Top-3 candidate was evaluated at
-clean commit `122c374`; a single-variable Top-5 follow-up and a B9-default
-parity run were evaluated at clean commit `7dc3d42`. Both candidates failed the
+Do not enable B10a in the default runtime. The corrected Top-3 candidate, a
+single-variable Top-5 follow-up, all four Top-3 folds, and a B9-default parity
+run were evaluated at clean commit `93b5b19`. Both candidates failed the
 predeclared MRR and TechnicalScore gate. The current default remains B9.
 
 The local CrossEncoder adapter and `--constraint-preserving-rerank` evaluation
@@ -21,9 +21,12 @@ LLM ranker, and does not close Track 4's LLM Semantic Ranking gap.
 - follow-up protected prefix: Top 5, with every other variable unchanged;
 - blend: `0.35` retained base score plus `0.65` normalized semantic-rank signal;
 - base score uses `fusion_score` or structured `ranking_score` when available;
-- an exact high-confidence rejected-constraint match cannot move ahead of a
-  non-contradicted candidate;
-- missing evidence is neutral and is never labeled a contradiction;
+- an exact high-confidence persisted rejection match cannot move ahead of a
+  non-contradicted candidate, including A's real `active=false` record shape;
+- an explicit hard match stays ahead of neutral unknown evidence, while missing
+  evidence remains neutral and is never labeled a contradiction;
+- `no_preference` and a current positive preference suppress stale rejection
+  influence;
 - model failure returns the exact pre-rerank order;
 - runtime model access is local-only.
 
@@ -46,15 +49,16 @@ were spent on it.
 ## Operational cost
 
 The Top-3 run executed semantic reranking on all 707 retrieval turns, always
-with a 27-candidate tail. Mean semantic-rerank latency was `66.28 ms`, p95 was
-`69.53 ms`, and the cold-start maximum was `2078.72 ms`. Overall retrieval mean
-and p95 were `90.70 ms` and `112.20 ms`. Observed peak RSS was about `1.050 GB`.
-There were zero route failures, response exceptions, invalid payloads, or
-tokens.
+with a 27-candidate tail. Mean semantic-rerank latency was `68.82 ms`, p95 was
+`72.41 ms`, and the cold-start maximum was `2032.46 ms`. Overall retrieval mean
+and p95 were `93.05 ms` and `114.99 ms`. The reported `1.100 GB` peak RSS is
+the evaluator parent process only; it excludes the spawned CrossEncoder worker,
+so worker and total process-tree peak memory are unavailable. There were zero
+route failures, response exceptions, invalid payloads, or tokens.
 
 ## Default parity and data boundary
 
-At `7dc3d42`, the default `--conditional-dense` route exactly reproduced the B9
+At `93b5b19`, the default `--conditional-dense` route exactly reproduced the B9
 aggregate metrics, scenario metrics, and all 160 session outcomes. The shared
 request contract and Agent policy were not changed.
 

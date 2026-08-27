@@ -22,7 +22,7 @@ user explicitly requests it.
 ## Current integrated state
 
 - Retained B9 runtime commit: `7f520ba`.
-- Current full test suite: `272/272` passing.
+- Current full test suite: `274/274` passing.
 - Retained default route: structured scoring, plus pinned local dense/RRF only
   behind the broad-Browsing gate.
 - Global dense/RRF and CrossEncoder remain rejected experiments; an LLM ranker
@@ -92,7 +92,7 @@ B8 rejected-constraint ranking
 AB1 passed at `a676855`. B8's bounded candidate at `f53a7ee` was reverted at
 `3952788` because all 726 Development retrieval turns carried zero rejected
 constraints. B9 is retained at `7f520ba`; B10a is rejected as the default, and
-the current B9 route is outcome-exact at B10a experiment head `7dc3d42`.
+the current B9 route is outcome-exact at B10a experiment head `93b5b19`.
 
 ## AB0 and AB1 obligations for B
 

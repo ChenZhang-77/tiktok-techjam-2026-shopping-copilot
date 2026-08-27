@@ -41,7 +41,7 @@ Verified on 2026-08-27:
 | Retained behavior commit | `7f520ba` |
 | B9 selection data | Development-160 plus four fixed folds only |
 | B10a experiment branch | `b/b10a-constraint-preserving-crossencoder` |
-| Latest local full test suite | 272 passed |
+| Latest local full test suite | 274 passed |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | structured retrieval plus gated local dense/RRF for broad Browsing |
 
@@ -308,8 +308,10 @@ B10a Top-3 and Top-5 anchored CrossEncoder candidates are rejected. Top 3
 raised HitRate by `0.0125` but lowered MRR by `0.031377` and TechnicalScore by
 `0.000663`; its four folds split 2/2. Top 5 still lowered MRR by `0.023304` and
 TechnicalScore by `0.001366`. The optional learned-reranker path averaged about
-`66.28 ms` per executed retrieval and had a roughly `2.08 s` cold-start maximum.
-At `7dc3d42`, the B9 default exactly reproduced all aggregate, scenario, and
+`68.82 ms` per executed retrieval and had a roughly `2.03 s` cold-start maximum.
+Its reported `1.100 GB` RSS is parent-process-only; spawned worker and total
+process-tree peak memory remain unavailable.
+At `93b5b19`, the B9 default exactly reproduced all aggregate, scenario, and
 session outcomes. See `docs/b10a_constraint_rerank_evidence.md`.
 
 B10b is recorded as not justified without new R0 evidence. B11/B12 remain
