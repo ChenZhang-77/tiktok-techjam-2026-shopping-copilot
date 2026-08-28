@@ -110,6 +110,16 @@ class SessionStateTest(unittest.TestCase):
         self.assertEqual(state.no_preference_attributes, {"color"})
         self.assertEqual([item["normalized_value"] for item in state.rejected_constraints], ["black"])
 
+    def test_later_explicit_preference_is_not_hidden_by_no_preference(self) -> None:
+        state = SessionState(session_id="s1", user_profile={})
+        state.apply_user_context(constraints=[], no_preference_attributes=["feature"])
+        state.apply_user_context(
+            constraints=[{"attribute": "feature", "normalized_value": "mesh"}]
+        )
+
+        self.assertEqual(state.active_constraint_values("feature"), ["mesh"])
+        self.assertNotIn("feature", state.no_preference_attributes)
+
     def test_rejected_constraint_is_not_readded_as_active(self) -> None:
         state = SessionState(session_id="s1", user_profile={})
         state.apply_user_context(constraints=[{

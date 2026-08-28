@@ -31,6 +31,16 @@ class ContextEngineTest(unittest.TestCase):
         self.assertEqual(by_attribute["material"]["source_turn"], 2)
         self.assertTrue(by_attribute["material"]["hard"])
 
+    def test_extracts_unknown_values_from_explicit_feature_list(self) -> None:
+        constraints = extract_constraints(
+            "For that, what matters is: Imported; Rubber sole.",
+            2,
+        )
+        features = {item["normalized_value"] for item in constraints if item["attribute"] == "feature"}
+        self.assertIn("imported", features)
+        self.assertIn("rubber sole", features)
+
+
     def test_uncertain_message_is_preserved_as_soft_feature(self) -> None:
         constraints = extract_constraints("Something that feels premium and giftable", 1)
 

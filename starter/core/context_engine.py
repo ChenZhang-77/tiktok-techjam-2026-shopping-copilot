@@ -60,6 +60,10 @@ NEGATION_MARKER_RE = re.compile(
     re.I,
 )
 CLAUSE_END_RE = re.compile(r"[.;?!]|\b(?:but|however|rather)\b", re.I)
+EXPLICIT_FEATURE_LIST_RE = re.compile(
+    r"\b(?:what matters is|key feature is|important is)\s*:\s*(.+)$",
+    re.I,
+)
 EXPLORATION_RE = re.compile(
     r"\b(?:browse|browsing|explore|exploring|just looking|not sure|ideas|open to options)\b",
     re.I,
@@ -353,6 +357,33 @@ def _is_hard_request(text: str) -> bool:
     ))
 
 
+def _explicit_feature_constraints(
+    text: str,
+    turn: int,
+    source_text: str,
+    known_constraints: list[Constraint],
+    hard: bool,
+) -> list[Constraint]:
+    match = EXPLICIT_FEATURE_LIST_RE.search(text)
+    if match is None:
+        return []
+    known_values = {
+        item.normalized_value
+        for item in known_constraints
+        if item.normalized_value
+    }
+    constraints: list[Constraint] = []
+    for raw_value in re.split(r"\s*;\s*", match.group(1)):
+        value = raw_value.strip(" .,!\t\n")
+        normalized = re.sub(r"\s+", " ", value.lower()).strip()
+        if not normalized or normalized in known_values:
+            continue
+        if len(TOKEN_RE.findall(value)) > 12:
+            continue
+        constraints.append(_constraint("feature", value, turn, source_text, 0.58, hard))
+    return constraints
+
+
 def _matched_constraints(
     text: str,
     turn: int,
@@ -550,6 +581,9 @@ def extract_constraints(
         vocabulary=vocabulary,
         hard=hard,
         rejected=False,
+    )
+    constraints.extend(
+        _explicit_feature_constraints(text, turn, text, constraints, hard)
     )
     for start, end in _negative_spans(text):
         category_context = _negative_category_context(

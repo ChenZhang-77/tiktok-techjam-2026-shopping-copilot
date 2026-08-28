@@ -399,6 +399,9 @@ def audit_session(
             and intent == "browsing"
             and not any(marker in lowered_message for marker in EXPLORATION_MARKERS)
             and "actually" not in lowered_message
+            and not lowered_message.startswith(
+                "i don't have an additional preference"
+            )
         ):
             intent_strategy_flags.append("buying_to_browsing_without_exploration")
         if intent is not None:

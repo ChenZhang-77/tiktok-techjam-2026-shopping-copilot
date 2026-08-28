@@ -104,6 +104,12 @@ class SessionState:
                 ],
                 "reason": "category reset" if "category" in override_attributes else "attribute replacement",
             })
+        # "No preference" suppresses future questions, but it must not hide a
+        # later explicit preference supplied by the user.
+        for constraint in constraints:
+            attribute = str(constraint.get("attribute") or "")
+            if attribute:
+                self.no_preference_attributes.discard(attribute)
         filtered = [
             constraint
             for constraint in constraints
