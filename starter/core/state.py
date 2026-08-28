@@ -108,7 +108,12 @@ class SessionState:
         # later explicit preference supplied by the user.
         for constraint in constraints:
             attribute = str(constraint.get("attribute") or "")
-            if attribute:
+            confidence = constraint.get("confidence")
+            is_explicit = (
+                confidence is None
+                or (isinstance(confidence, (int, float)) and confidence >= 0.50)
+            )
+            if attribute and is_explicit:
                 self.no_preference_attributes.discard(attribute)
         filtered = [
             constraint

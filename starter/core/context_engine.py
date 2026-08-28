@@ -375,8 +375,10 @@ def _explicit_feature_constraints(
     constraints: list[Constraint] = []
     for raw_value in re.split(r"\s*;\s*", match.group(1)):
         value = raw_value.strip(" .,!\t\n")
+        if "\0" in value:
+            continue
         normalized = re.sub(r"\s+", " ", value.lower()).strip()
-        if not normalized or normalized in known_values:
+        if not normalized or not TOKEN_RE.search(value) or normalized in known_values:
             continue
         if len(TOKEN_RE.findall(value)) > 12:
             continue
@@ -583,7 +585,7 @@ def extract_constraints(
         rejected=False,
     )
     constraints.extend(
-        _explicit_feature_constraints(text, turn, text, constraints, hard)
+        _explicit_feature_constraints(positive_text, turn, text, constraints, hard)
     )
     for start, end in _negative_spans(text):
         category_context = _negative_category_context(
@@ -612,9 +614,13 @@ def detect_override(user_message: str) -> bool:
     return OVERRIDE_RE.search(str(user_message or "")) is not None
 
 
+def detect_no_preference(user_message: str) -> bool:
+    return NO_PREFERENCE_RE.search(str(user_message or "")) is not None
+
+
 def detect_no_preference_attributes(user_message: str) -> list[str]:
     text = str(user_message or "")
-    if NO_PREFERENCE_RE.search(text) is None:
+    if not detect_no_preference(text):
         return []
     lowered = " ".join(
         text[start:end].lower()

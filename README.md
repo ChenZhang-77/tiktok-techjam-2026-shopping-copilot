@@ -33,6 +33,24 @@ conditional-dense default:
 | Efficiency | 0.633125 |
 | TechnicalScore | 0.722074 |
 
+Latest local A-side state-correction checkpoint (Development-160 only):
+
+| Metric | Result |
+| --- | ---: |
+| HitRate@10 | 0.925000 |
+| MRR | 0.552760 |
+| MTTC | 4.13125 |
+| Efficiency | 0.686875 |
+| TechnicalScore | 0.765703 |
+
+This checkpoint fixes negation scope, prevents low-confidence fallback text
+from revoking `no-preference`, and aligns the offline taxonomy with the shared
+no-preference detector. It preserves the existing A/B runtime interface and
+does not add an LLM. It was run only on Development-160 with zero response
+exceptions, invalid payloads, and fallbacks. It is not a holdout result and
+does not claim that any single fix caused the full metric change without a
+separate ablation.
+
 Historical Full-200 public snapshot:
 
 | Metric | Result |

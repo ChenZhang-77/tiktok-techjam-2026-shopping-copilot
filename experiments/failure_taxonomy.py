@@ -7,6 +7,8 @@ from pathlib import Path
 import re
 from typing import Any, Iterable
 
+from starter.core.context_engine import detect_no_preference
+
 
 CAUSE_ORDER = (
     "extraction",
@@ -399,9 +401,7 @@ def audit_session(
             and intent == "browsing"
             and not any(marker in lowered_message for marker in EXPLORATION_MARKERS)
             and "actually" not in lowered_message
-            and not lowered_message.startswith(
-                "i don't have an additional preference"
-            )
+            and not detect_no_preference(user_message)
         ):
             intent_strategy_flags.append("buying_to_browsing_without_exploration")
         if intent is not None:

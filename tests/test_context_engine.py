@@ -6,6 +6,7 @@ from starter.core.context_engine import (
     CatalogVocabulary,
     IntentAssessment,
     assess_intent,
+    detect_no_preference,
     detect_no_preference_attributes,
     detect_override,
     detect_rejected_constraints,
@@ -39,6 +40,27 @@ class ContextEngineTest(unittest.TestCase):
         features = {item["normalized_value"] for item in constraints if item["attribute"] == "feature"}
         self.assertIn("imported", features)
         self.assertIn("rubber sole", features)
+
+    def test_feature_list_does_not_promote_negated_clause(self) -> None:
+        message = "What matters is: waterproof; anything but rubber sole."
+        constraints = extract_constraints(message, 1)
+        positive_values = {item["normalized_value"] for item in constraints}
+        rejected = detect_rejected_constraints(message, 1)
+
+        self.assertIn("waterproof", positive_values)
+        self.assertNotIn("anything but rubber sole", positive_values)
+        self.assertIn(
+            ("material", "rubber"),
+            {(item["attribute"], item["normalized_value"]) for item in rejected},
+        )
+
+    def test_no_preference_detector_accepts_generic_and_attribute_forms(self) -> None:
+        self.assertTrue(detect_no_preference("I don't have an additional preference."))
+        self.assertTrue(detect_no_preference("Use your judgment."))
+        self.assertEqual(
+            detect_no_preference_attributes("I don't have an additional preference."),
+            [],
+        )
 
 
     def test_uncertain_message_is_preserved_as_soft_feature(self) -> None:

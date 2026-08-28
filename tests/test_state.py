@@ -120,6 +120,18 @@ class SessionStateTest(unittest.TestCase):
         self.assertEqual(state.active_constraint_values("feature"), ["mesh"])
         self.assertNotIn("feature", state.no_preference_attributes)
 
+    def test_low_confidence_fallback_does_not_restore_no_preference(self) -> None:
+        state = SessionState(session_id="s1", user_profile={})
+        state.apply_user_context(constraints=[], no_preference_attributes=["feature"])
+        state.apply_user_context(constraints=[{
+            "attribute": "feature",
+            "normalized_value": "show me more options",
+            "confidence": 0.35,
+        }])
+
+        self.assertIn("feature", state.no_preference_attributes)
+        self.assertEqual(state.active_constraint_values("feature"), [])
+
     def test_rejected_constraint_is_not_readded_as_active(self) -> None:
         state = SessionState(session_id="s1", user_profile={})
         state.apply_user_context(constraints=[{

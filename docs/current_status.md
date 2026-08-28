@@ -83,6 +83,31 @@ aggregate but regresses Buying MRR and fold 1, with its positive fold result
 concentrated in fold 4. It remains disabled; see
 `docs/b12_adaptive_depth_evidence.md`.
 
+## Latest A-Side State-Correction Checkpoint
+
+After the checkpoint above, the local `Zhang-Chen` working tree was corrected
+for three known A-side correctness issues: negated feature-list clauses are no
+longer promoted into positive constraints, low-confidence fallback text cannot
+revoke `no-preference`, and offline taxonomy uses the shared no-preference
+detector. The correction adds no LLM and does not change the B-side retrieval
+interface.
+
+Development-160 was rerun after the correction:
+
+| Metric | Result |
+| --- | ---: |
+| HitRate@10 | 0.925000 |
+| MRR | 0.552760 |
+| MTTC | 4.13125 |
+| Efficiency | 0.686875 |
+| TechnicalScore | 0.765703 |
+
+The run produced 649 responses with zero response exceptions, invalid payloads,
+and fallbacks. This is a Development-only correctness checkpoint, not a sealed
+holdout validation and not an ablation proving the contribution of each fix.
+The exact output was retained outside the repository and is intentionally not
+part of the shared checkout.
+
 ## Historical Final Public Result
 
 The one Full-200 Final Public Run was executed from frozen commit `98d3325`:
