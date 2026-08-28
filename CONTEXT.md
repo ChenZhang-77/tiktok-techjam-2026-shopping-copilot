@@ -98,7 +98,9 @@ _Avoid_: globally enabled experiment
 **Retained Runtime**:
 The configuration enabled by default after passing the declared development
 gate. For the current checkpoint, this is lexical retrieval plus structured
-scoring.
+scoring for every request, with B9 local dense retrieval and weighted RRF only
+behind the measured broad-Browsing gate. B12 adaptive depth is optional and
+disabled by default.
 _Avoid_: every implemented path
 
 **Rejected Ablation**:

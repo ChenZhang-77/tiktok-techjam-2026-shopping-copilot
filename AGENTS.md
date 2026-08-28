@@ -45,7 +45,8 @@ Re-check Git state because branch and remote facts can drift.
 
 Key evidence documents:
 
-- `docs/b7_pre_freeze_development.json`: retained Development-160 result.
+- `docs/b12_reports/development_default_parity.json`: current B9-default
+  Development-160 result reproduced with B12 disabled.
 - `docs/b7_final_public_summary.json`: historical Full-200 snapshot.
 - `docs/ablation_summary.md`: human-readable keep/reject decisions.
 - `docs/adr/0001-treat-public-holdout-as-exposed.md`: evaluation boundary.

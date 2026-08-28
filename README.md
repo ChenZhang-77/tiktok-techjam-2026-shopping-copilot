@@ -154,23 +154,26 @@ bound JSON reports under `docs/` for numerical provenance.
 ## Repository Layout
 
 ```text
-starter/                              Agent, Control Plane, retrieval/ranking
-evaluator/                            official deterministic local evaluator
-experiments/                          split and reporting infrastructure
-tests/                                behavior, contract, fallback, evidence tests
-scripts/                              catalog, cache, experiment, visualizer helpers
-visualizer/                           local dialogue and metric inspection UI
-docs/current_status.md                verified state and next decision
-docs/optimization_roadmap.md          project-wide blockers-first route
-docs/ablation_summary.md              human-readable keep/reject evidence
-docs/workstreams/                     standalone A and B routes
-docs/demo_and_submission_plan.md      delivery, demo, packaging, rehearsal
-submission/                           final minimal package work area
-data/public_set.jsonl                 200 public sessions
+starter/                    Agent, Control Plane, retrieval, and ranking runtime
+evaluator/                  official deterministic local evaluator
+experiments/                Development split, reporting, and offline analysis
+tests/                      behavior, contract, fallback, and evidence tests
+scripts/                    catalog, cache, experiment, and visualizer helpers
+visualizer/                 local dialogue and metric inspection UI
+submission/                 final minimal package staging area
+data/                       public sessions and ignored frozen catalog download
+docs/README.md              documentation navigation index
+docs/project_structure.md   detailed ownership and file-placement rules
+docs/workstreams/           standalone A-side and B-side routes
+docs/*_reports/             raw hash-bound experiment reports
+docs/archive/               completed planning artifacts, not active backlog
 ```
 
-Generated catalog, model, embedding, cache, and experiment-run files are
-ignored by Git.
+The evidence-heavy `docs/` layout is intentional: summary JSON, raw reports,
+tests, and decision documents are hash-bound by stable paths. Generated
+catalog, model, embedding, cache, and ordinary experiment-run files are ignored
+by Git. See [`docs/project_structure.md`](docs/project_structure.md) before
+adding or moving directories.
 
 ## Quickstart
 

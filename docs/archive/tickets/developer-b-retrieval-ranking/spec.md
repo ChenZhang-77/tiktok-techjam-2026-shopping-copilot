@@ -1,4 +1,9 @@
-Status: ready-for-agent
+Status: completed
+
+Archive note: this spec and its nine completed tickets record the original
+B1-B7 build. They are not the current backlog. Use `docs/current_status.md`,
+`docs/optimization_roadmap.md`, and the active workstream documents for current
+decisions.
 
 # Developer B Retrieval / Ranking Plane
 

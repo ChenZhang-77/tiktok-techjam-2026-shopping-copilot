@@ -16,7 +16,7 @@ Read, in order:
 5. One workstream document:
    - A: `docs/workstreams/DEVELOPER_A_CONTROL_PLANE.md`
    - B: `docs/workstreams/DEVELOPER_B_RETRIEVAL_RANKING.md`
-5. The files named by the selected experiment.
+6. The files named by the selected experiment.
 
 At the beginning of the conversation, report:
 
@@ -349,6 +349,7 @@ track in `docs/demo_and_submission_plan.md`.
 | `README.md` | Public project entry, setup, architecture, results, limitations |
 | `AGENTS.md` | Operational contract for coding agents |
 | `docs/current_status.md` | Current verified state and next decision |
+| `docs/project_structure.md` | Directory responsibilities, evidence layout, and archive policy |
 | `docs/optimization_roadmap.md` | Project-wide optimization sequence and gates |
 | `docs/r0_development_failure_taxonomy.md` | Clean Development-160 failure audit and next-experiment evidence |
 | `docs/a8_stateful_intent_evidence.md` | Stateful intent keep/reject evidence and tradeoff boundary |
@@ -358,6 +359,9 @@ track in `docs/demo_and_submission_plan.md`.
 | `docs/a10b_query_plan_evidence.md` | Retained A-internal QueryPlan roles, parity, and A11 boundary |
 | `docs/a11_extraction_scope_evidence.md` | Retained bounded extraction scope, rejected expansions, folds, and remaining risks |
 | `docs/b9_conditional_dense_evidence.md` | Retained Browsing-only dense gate, quality, route truth, cost, and folds |
+| `docs/b10a_constraint_rerank_evidence.md` | Rejected constraint-preserving CrossEncoder variants |
+| `docs/b11_prerequisite_evidence.md` | B11 prerequisite failure and no-start decision |
+| `docs/b12_adaptive_depth_evidence.md` | Exploratory adaptive depth result and default-off boundary |
 | `docs/ablation_summary.md` | Human-readable keep/reject evidence |
 | `docs/human_optimization_recap_zh.md` | Plain-language Chinese A1/B1-to-current recap and metric guide |
 | `docs/workstreams/DEVELOPER_A_CONTROL_PLANE.md` | Standalone A-side route |
