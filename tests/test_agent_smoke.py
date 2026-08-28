@@ -7,6 +7,7 @@ from pathlib import Path
 
 from starter.agent import Agent
 from starter.contracts import Candidate, RetrievalDiagnostics, RetrievalRequest, RetrievalResult
+from starter.retrieval import ConditionalDenseRetriever, HybridRetriever
 
 
 class _RecordingRetriever:
@@ -70,7 +71,7 @@ def _write_catalog(path: Path) -> None:
         {
             "parent_asin": "A",
             "title": "Leather running shoe",
-            "categories": ["Clothing", "Shoes"],
+            "categories": ["Clothing", "Shoes", "Trail Running Shoes"],
             "features": ["black leather"],
             "details": {},
             "store": "Example",
@@ -90,6 +91,81 @@ def _write_catalog(path: Path) -> None:
 
 
 class AgentSmokeTest(unittest.TestCase):
+    def test_full_candidate_pool_reaches_decision_evidence_without_public_raw_evidence(self) -> None:
+        retriever = _RecordingRetriever()
+
+        def retrieve(request: RetrievalRequest) -> RetrievalResult:
+            retriever.requests.append(request)
+            return RetrievalResult(
+                candidates=[
+                    Candidate("A", evidence_text="leather shoes"),
+                    Candidate("B", evidence_text="leather shoes"),
+                    Candidate("C", evidence_text="cotton shoes"),
+                ],
+                diagnostics=RetrievalDiagnostics(route="fixture", candidate_count=3),
+            )
+
+        retriever.catalog_ids = frozenset({"A", "B", "C"})
+        retriever.fallback_ids = ("A", "B", "C")
+        retriever.retrieve = retrieve
+        agent = Agent(retriever=retriever)
+        agent.reset("decision-evidence", {})
+
+        response = agent.respond("decision-evidence", "Show me product ideas", 1, 2)
+
+        evidence = response["diagnostics"]["decision_evidence"]
+        self.assertEqual(len(response["recommendations"]), 2)
+        self.assertEqual(evidence["pool_size"], 3)
+        self.assertEqual(evidence["evidence_candidate_count"], 3)
+        self.assertIn("material", evidence["attribute_partition_scores"])
+        self.assertNotIn("candidate_ids", evidence)
+        self.assertNotIn("candidate_texts", evidence)
+
+    def test_buying_intent_persists_after_a_no_preference_reply(self) -> None:
+        retriever = _RecordingRetriever()
+        agent = Agent(retriever=retriever)
+        agent.reset("intent-persistence", {})
+
+        first = agent.respond(
+            "intent-persistence",
+            "I need black leather shoes",
+            1,
+            2,
+        )
+        second = agent.respond(
+            "intent-persistence",
+            "I don't have an additional preference for size.",
+            2,
+            2,
+        )
+
+        self.assertEqual([request.intent for request in retriever.requests], ["buying", "buying"])
+        self.assertEqual(second["diagnostics"]["intent_assessment"]["intent"], "buying")
+        self.assertEqual(
+            second["diagnostics"]["intent_assessment"]["transition_reason"],
+            "retained",
+        )
+        self.assertEqual(first["diagnostics"]["intent_assessment"]["source_turn"], 1)
+        self.assertEqual(second["diagnostics"]["intent_assessment"]["source_turn"], 1)
+
+    def test_browsing_route_changes_only_after_specific_evidence(self) -> None:
+        retriever = _RecordingRetriever()
+        agent = Agent(retriever=retriever)
+        agent.reset("intent-accumulation", {})
+
+        agent.respond("intent-accumulation", "I'm just browsing shoes ideas", 1, 2)
+        second = agent.respond(
+            "intent-accumulation",
+            "Black leather would work",
+            2,
+            2,
+        )
+
+        self.assertEqual([request.intent for request in retriever.requests], ["browsing", "buying"])
+        self.assertEqual(
+            second["diagnostics"]["strategy"]["intent"],
+            second["diagnostics"]["intent_assessment"]["intent"],
+        )
     def test_buying_and_browsing_execute_different_candidate_pool_plans(self) -> None:
         rows = [
             {
@@ -113,6 +189,7 @@ class AgentSmokeTest(unittest.TestCase):
                 encoding="utf-8",
             )
             agent = Agent(catalog_path)
+            self.assertIsInstance(agent.retriever, ConditionalDenseRetriever)
             agent.reset("buying", {})
             agent.reset("browsing", {})
 
@@ -127,9 +204,25 @@ class AgentSmokeTest(unittest.TestCase):
         self.assertFalse(browsing_retrieval["structured_filter_applied"])
         self.assertEqual(buying_retrieval["route_candidate_counts"]["lexical"], 80)
         self.assertEqual(buying_retrieval["route_candidate_counts"]["structured"], 80)
+        self.assertIn(
+            "depth policy=intent_constraint_default",
+            buying["diagnostics"]["strategy"]["reason"],
+        )
         self.assertEqual(buying_retrieval["ranking_pool_sizes"]["post_structured_filter"], 50)
         self.assertEqual(browsing_retrieval["route_candidate_counts"]["lexical"], 100)
         self.assertEqual(browsing_retrieval["route_candidate_counts"]["structured"], 100)
+        self.assertEqual(
+            browsing_retrieval["requested_route_weights"],
+            {"lexical": 0.62, "structured": 0.20, "dense": 0.18},
+        )
+        self.assertEqual(
+            browsing_retrieval["executed_routes"],
+            ["lexical", "structured"],
+        )
+        self.assertNotIn("dense", browsing_retrieval["executed_routes"])
+        self.assertTrue(browsing_retrieval["fallback_used"])
+        self.assertEqual(browsing_retrieval["fallback_route"], "structured")
+        self.assertIn("dense", browsing_retrieval["route_failures"])
 
     def test_candidate_pool_evidence_reaches_agent_clarification(self) -> None:
         def make_agent(*, include_evidence: bool) -> Agent:
@@ -177,6 +270,10 @@ class AgentSmokeTest(unittest.TestCase):
             [{"parent_asin": "A"}, {"parent_asin": "B"}, {"parent_asin": "C"}],
         )
         self.assertTrue(response["diagnostics"]["fallback_used"])
+        self.assertTrue(response["diagnostics"]["decision_evidence"]["degraded"])
+        self.assertIsNone(
+            response["diagnostics"]["decision_evidence"]["candidate_stability"]
+        )
 
     def test_agent_routes_retrieval_through_the_public_seam(self) -> None:
         retriever = _RecordingRetriever()
@@ -192,6 +289,86 @@ class AgentSmokeTest(unittest.TestCase):
         self.assertIn("leather", request.query)
         self.assertEqual(response["recommendations"], [{"parent_asin": "A"}, {"parent_asin": "B"}])
         self.assertEqual(response["diagnostics"]["retrieval"]["route"], "bm25")
+
+    def test_agent_builds_catalog_vocabulary_for_multi_word_category_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            catalog_path = Path(directory) / "catalog.jsonl"
+            _write_catalog(catalog_path)
+            retriever = HybridRetriever(catalog_path)
+            agent = Agent(catalog_path, retriever=retriever)
+            agent.reset("catalog-context", {})
+
+            try:
+                response = agent.respond(
+                    "catalog-context",
+                    "I need trail running shoes.",
+                    1,
+                    2,
+                )
+            finally:
+                retriever.close()
+
+        self.assertIn(
+            "trail running shoes",
+            response["diagnostics"]["query_plan"]["category_terms"],
+        )
+
+    def test_injected_catalog_retriever_supplies_its_own_vocabulary_path(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            catalog_path = Path(directory) / "catalog.jsonl"
+            _write_catalog(catalog_path)
+            retriever = HybridRetriever(catalog_path)
+            agent = Agent(retriever=retriever)
+            agent.reset("injected-catalog-context", {})
+
+            try:
+                response = agent.respond(
+                    "injected-catalog-context",
+                    "I need trail running shoes.",
+                    1,
+                    2,
+                )
+            finally:
+                retriever.close()
+
+        self.assertEqual(agent.catalog_path, catalog_path)
+        self.assertIn(
+            "trail running shoes",
+            response["diagnostics"]["query_plan"]["category_terms"],
+        )
+
+    def test_explicit_catalog_path_must_match_injected_retriever(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            catalog_path = Path(directory) / "catalog.jsonl"
+            other_path = Path(directory) / "other.jsonl"
+            _write_catalog(catalog_path)
+            _write_catalog(other_path)
+            retriever = HybridRetriever(catalog_path)
+
+            try:
+                with self.assertRaisesRegex(ValueError, "catalog_path"):
+                    Agent(other_path, retriever=retriever)
+            finally:
+                retriever.close()
+
+    def test_agent_scopes_no_preference_and_negative_evidence(self) -> None:
+        retriever = _RecordingRetriever()
+        agent = Agent(retriever=retriever)
+        agent.reset("scoped-query", {})
+        agent.respond("scoped-query", "I need blue leather shoes.", 1, 2)
+
+        response = agent.respond(
+            "scoped-query",
+            "I don't care about material, but waterproof is important; avoid black.",
+            2,
+            2,
+        )
+
+        state = agent._sessions["scoped-query"]
+        self.assertIn("material", state.no_preference_attributes)
+        self.assertIn("waterproof", state.active_constraint_values("style"))
+        self.assertNotIn("black", state.active_constraint_values("color"))
+        self.assertIn("black", response["diagnostics"]["query_plan"]["excluded_terms"])
 
     def test_retrieval_failure_uses_catalog_fallback_without_leaking_exception(self) -> None:
         retriever = _RecordingRetriever(fail=True)
@@ -259,6 +436,14 @@ class AgentSmokeTest(unittest.TestCase):
             self.assertIn("strategy", first["diagnostics"])
             self.assertIn("active_constraints", first["diagnostics"])
             self.assertIn("distilled_query", first["diagnostics"])
+            self.assertEqual(
+                first["diagnostics"]["query_plan"]["rendered_query"],
+                first["diagnostics"]["distilled_query"],
+            )
+            self.assertNotIn(
+                "leather",
+                third["diagnostics"]["query_plan"]["excluded_terms"],
+            )
             self.assertEqual(agent._sessions["s1"].previous_diagnostics["strategy"], third["diagnostics"]["strategy"])
             self.assertIsNotNone(first["ask_attribute"])
             self.assertIn(first["ask_attribute"], agent._sessions["s1"].asked_attributes)
@@ -280,6 +465,7 @@ class AgentSmokeTest(unittest.TestCase):
             self.assertEqual([item["normalized_value"] for item in state.overridden_constraints], ["leather"])
             self.assertNotIn("leather", state.previous_distilled_query)
             self.assertIn("cotton", state.previous_distilled_query)
+            self.assertIn("leather", state.previous_diagnostics["query_plan"]["excluded_terms"])
             self.assertEqual(state.previous_diagnostics["last_override"]["reason"], "attribute replacement")
 
 

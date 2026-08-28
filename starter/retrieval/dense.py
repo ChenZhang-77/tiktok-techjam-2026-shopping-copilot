@@ -12,6 +12,7 @@ from starter.contracts import (
     RetrievalDiagnostics,
     RetrievalRequest,
     RetrievalResult,
+    requested_route_weights,
     validate_retrieval_request_object,
 )
 from starter.retrieval.hybrid import HybridRetriever
@@ -98,6 +99,9 @@ class NumpySentenceBackend:
         ordered = sorted(selected.tolist(), key=lambda index: (-float(scores[index]), index))
         return [(index, float(scores[index])) for index in ordered]
 
+    def prepare(self) -> None:
+        self._load_model()
+
 
 class DenseRetriever:
     """Optional local dense route with deterministic BM25 degradation."""
@@ -180,15 +184,31 @@ class DenseRetriever:
         return None
 
     def retrieve(self, request: RetrievalRequest) -> RetrievalResult:
+        attempted = self.retrieve_dense_attempt(request)
+        if not attempted.diagnostics.fallback_used:
+            return attempted
+        reason = attempted.diagnostics.route_failures.get(
+            "dense",
+            self._unavailable_reason or "dense_route_unavailable",
+        )
+        return self._fallback_result(request, reason, attempted=attempted)
+
+    def retrieve_dense_attempt(self, request: RetrievalRequest) -> RetrievalResult:
+        """Run only dense work, returning failure status without invoking fallback."""
+
         validate_retrieval_request_object(request)
         if self._backend is not None:
             started = time.perf_counter()
             try:
                 ranked = self._backend.rank(request.query, request.strategy.retrieval_depth)
             except Exception:
+                latency_ms = (time.perf_counter() - started) * 1000.0
                 self._backend = None
                 self._unavailable_reason = "dense_query_failed"
-                return self._fallback_result(request, self._unavailable_reason)
+                return self._failed_attempt(
+                    self._unavailable_reason,
+                    latency_ms=latency_ms,
+                )
             latency_ms = (time.perf_counter() - started) * 1000.0
             candidates = [
                 Candidate(
@@ -211,12 +231,56 @@ class DenseRetriever:
                     stage_latencies_ms={"dense": round(latency_ms, 6)},
                     cache_state={"dense": "compatible"},
                     ranking_pool_sizes={"dense": len(candidates)},
+                    requested_route_weights=requested_route_weights(
+                        request.strategy
+                    ),
+                    executed_routes=["dense"],
                 ),
             )
-        return self._fallback_result(
-            request,
+        return self._failed_attempt(
             self._unavailable_reason or "dense_route_unavailable",
         )
+
+    @staticmethod
+    def _failed_attempt(
+        reason: str,
+        *,
+        latency_ms: float | None = None,
+    ) -> RetrievalResult:
+        rounded_latency = round(latency_ms, 6) if latency_ms is not None else None
+        return RetrievalResult(
+            candidates=[],
+            diagnostics=RetrievalDiagnostics(
+                route="dense",
+                candidate_count=0,
+                fallback_used=True,
+                latency_ms=rounded_latency,
+                notes=[reason],
+                stage_latencies_ms=(
+                    {"dense": rounded_latency}
+                    if rounded_latency is not None
+                    else {}
+                ),
+                cache_state={"dense": reason},
+                route_failures={"dense": reason},
+            ),
+        )
+
+    def prepare(self) -> str | None:
+        """Load the local query model before a request reaches the dense Route."""
+
+        if self._backend is None:
+            return self._unavailable_reason or "dense_route_unavailable"
+        prepare_backend = getattr(self._backend, "prepare", None)
+        if not callable(prepare_backend):
+            return None
+        try:
+            prepare_backend()
+        except Exception:
+            self._backend = None
+            self._unavailable_reason = "dense_warmup_failed"
+            return self._unavailable_reason
+        return None
 
     def configuration_snapshot(self) -> dict:
         metadata_path = self.config.cache_dir / "metadata.json"
@@ -249,12 +313,45 @@ class DenseRetriever:
             "query_text_template": QUERY_TEXT_TEMPLATE,
         }
 
-    def _fallback_result(self, request: RetrievalRequest, reason: str) -> RetrievalResult:
+    def _fallback_result(
+        self,
+        request: RetrievalRequest,
+        reason: str,
+        *,
+        attempted: RetrievalResult | None = None,
+    ) -> RetrievalResult:
         result = self._lexical.retrieve(request)
+        attempted_latency = (
+            float(attempted.diagnostics.latency_ms)
+            if attempted is not None and attempted.diagnostics.latency_ms is not None
+            else 0.0
+        )
         diagnostics = replace(
             result.diagnostics,
             fallback_used=True,
+            latency_ms=round(
+                float(result.diagnostics.latency_ms or 0.0) + attempted_latency,
+                6,
+            ),
             notes=[*result.diagnostics.notes, reason],
-            cache_state={**result.diagnostics.cache_state, "dense": reason},
+            stage_latencies_ms={
+                **result.diagnostics.stage_latencies_ms,
+                **(
+                    attempted.diagnostics.stage_latencies_ms
+                    if attempted is not None
+                    else {}
+                ),
+            },
+            cache_state={
+                **result.diagnostics.cache_state,
+                **(
+                    attempted.diagnostics.cache_state
+                    if attempted is not None
+                    else {}
+                ),
+                "dense": reason,
+            },
+            route_failures={**result.diagnostics.route_failures, "dense": reason},
+            fallback_route=result.diagnostics.route,
         )
         return RetrievalResult(candidates=result.candidates, diagnostics=diagnostics)

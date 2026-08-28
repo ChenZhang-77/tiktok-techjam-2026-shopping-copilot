@@ -2,10 +2,14 @@ from __future__ import annotations
 
 import re
 from collections import Counter
+from typing import TYPE_CHECKING
 
 from starter.core.context_engine import CATEGORY_TERMS, COLORS, MATERIALS, STYLE_TERMS, USE_CASES
 from starter.core.response_guard import ALLOWED_ASK_ATTRIBUTES
 from starter.core.state import SessionState
+
+if TYPE_CHECKING:
+    from starter.core.decision_evidence import DecisionEvidence
 
 
 QUESTION_TEXT = {
@@ -30,6 +34,19 @@ CANDIDATE_TERMS = {
     "style": STYLE_TERMS,
     "use_case": USE_CASES,
 }
+CANDIDATE_SINGLE_TERMS = {
+    attribute: {term for term in terms if " " not in term}
+    for attribute, terms in CANDIDATE_TERMS.items()
+}
+CANDIDATE_PHRASE_PATTERNS = {
+    attribute: {
+        term: re.compile(rf"\b{re.escape(term)}\b", re.IGNORECASE)
+        for term in terms
+        if " " in term
+    }
+    for attribute, terms in CANDIDATE_TERMS.items()
+}
+WORD_RE = re.compile(r"\w+", re.UNICODE)
 
 
 def _available_attributes(state: SessionState, priority: tuple[str, ...]) -> list[str]:
@@ -48,22 +65,18 @@ def _available_attributes(state: SessionState, priority: tuple[str, ...]) -> lis
     ]
 
 
-def _term_hits(text: str, terms: set[str]) -> set[str]:
-    lowered = text.lower()
-    return {
-        term
-        for term in terms
-        if re.search(rf"\b{re.escape(term)}\b", lowered)
-    }
-
-
 def candidate_attribute_scores(candidate_texts: list[str]) -> dict[str, float]:
     scores: dict[str, float] = {}
-    for attribute, terms in CANDIDATE_TERMS.items():
+    token_sets = [set(WORD_RE.findall(text.lower())) for text in candidate_texts]
+    for attribute, terms in CANDIDATE_SINGLE_TERMS.items():
         counts: Counter[str] = Counter()
         covered = 0
-        for text in candidate_texts:
-            hits = _term_hits(text, terms)
+        phrase_patterns = CANDIDATE_PHRASE_PATTERNS[attribute]
+        for text, tokens in zip(candidate_texts, token_sets):
+            hits = terms & tokens
+            hits.update(
+                term for term, pattern in phrase_patterns.items() if pattern.search(text)
+            )
             if hits:
                 covered += 1
                 counts.update(hits)
@@ -95,7 +108,11 @@ def choose_clarification(
     *,
     turn: int,
     candidate_texts: list[str] | None = None,
+    decision_evidence: DecisionEvidence | None = None,
 ) -> tuple[str | None, str]:
+    # AB0 makes the complete summary available here. A9 will decide whether to
+    # consume it; AB0 deliberately preserves the existing ask policy.
+    _ = decision_evidence
     if turn >= 10:
         return None, ""
 

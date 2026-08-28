@@ -18,8 +18,11 @@ from experiments.development_folds import (
 )
 from starter.agent import Agent
 from starter.contracts import validate_agent_response
+from starter.core.planner import StrategyConfig
 from starter.core.response_guard import ALLOWED_ASK_ATTRIBUTES
 from starter.retrieval import (
+    ConditionalDenseConfig,
+    ConditionalDenseRetriever,
     DenseConfig,
     DenseRetriever,
     FusionConfig,
@@ -64,6 +67,11 @@ class AgentObserver:
         self._route_candidate_counts: dict[str, list[int]] = {}
         self._route_overlap_counts: dict[str, list[int]] = {}
         self._route_failure_counts: dict[str, int] = {}
+        self._requested_route_counts: dict[str, int] = {}
+        self._executed_route_counts: dict[str, int] = {}
+        self._requested_not_executed_route_counts: dict[str, int] = {}
+        self._fallback_route_counts: dict[str, int] = {}
+        self._route_semantics_unreported_responses = 0
         self._structured_filter_applied_responses = 0
         self._relaxed_constraint_responses = 0
         self._filtered_pool_step_count = 0
@@ -114,6 +122,49 @@ class AgentObserver:
                     if isinstance(reason, str):
                         key = f"{route}:{reason}"
                         self._route_failure_counts[key] = self._route_failure_counts.get(key, 0) + 1
+            requested_weights = retrieval.get("requested_route_weights")
+            executed_routes = retrieval.get("executed_routes")
+            if (
+                not isinstance(requested_weights, dict)
+                or not requested_weights
+                or not isinstance(executed_routes, list)
+                or not executed_routes
+            ):
+                self._route_semantics_unreported_responses += 1
+            valid_executed = {
+                route
+                for route in executed_routes
+                if isinstance(executed_routes, list)
+                and isinstance(route, str)
+                and route
+            } if isinstance(executed_routes, list) else set()
+            for route in valid_executed:
+                self._executed_route_counts[route] = (
+                    self._executed_route_counts.get(route, 0) + 1
+                )
+            if isinstance(requested_weights, dict):
+                for route, weight in requested_weights.items():
+                    if (
+                        isinstance(route, str)
+                        and route
+                        and isinstance(weight, (int, float))
+                        and not isinstance(weight, bool)
+                        and math.isfinite(weight)
+                        and weight > 0
+                    ):
+                        self._requested_route_counts[route] = (
+                            self._requested_route_counts.get(route, 0) + 1
+                        )
+                        if route not in valid_executed:
+                            self._requested_not_executed_route_counts[route] = (
+                                self._requested_not_executed_route_counts.get(route, 0)
+                                + 1
+                            )
+            fallback_route = retrieval.get("fallback_route")
+            if isinstance(fallback_route, str) and fallback_route:
+                self._fallback_route_counts[fallback_route] = (
+                    self._fallback_route_counts.get(fallback_route, 0) + 1
+                )
             if retrieval.get("structured_filter_applied") is True:
                 self._structured_filter_applied_responses += 1
             relaxed = retrieval.get("relaxed_constraints")
@@ -220,6 +271,15 @@ class AgentObserver:
                 for pair, values in self._route_overlap_counts.items()
             },
             "route_failure_counts": dict(self._route_failure_counts),
+            "requested_route_counts": dict(self._requested_route_counts),
+            "executed_route_counts": dict(self._executed_route_counts),
+            "requested_not_executed_route_counts": dict(
+                self._requested_not_executed_route_counts
+            ),
+            "fallback_route_counts": dict(self._fallback_route_counts),
+            "route_semantics_unreported_responses": (
+                self._route_semantics_unreported_responses
+            ),
             "structured_filter_applied_responses": self._structured_filter_applied_responses,
             "relaxed_constraint_responses": self._relaxed_constraint_responses,
             "filtered_pool_step_count": self._filtered_pool_step_count,
@@ -261,6 +321,9 @@ def evaluate_split(
     retrieval_mode: str = "structured",
     fusion_rrf_k: float = 60.0,
     rerank_candidate_limit: int = 30,
+    conditional_dense_config: ConditionalDenseConfig | None = None,
+    constraint_reranker_config: RerankerConfig | None = None,
+    strategy_config: StrategyConfig | None = None,
 ) -> dict:
     if fold_name and split != "development":
         raise ValueError("A development fold can only be used with the development split")
@@ -271,10 +334,12 @@ def evaluate_split(
         "dense",
         "fusion",
         "semantic_rerank",
+        "conditional_dense",
+        "constraint_preserving_rerank",
     }:
         raise ValueError(
             "retrieval_mode must be structured, no_guarded_filter, lexical, dense, fusion, "
-            "or semantic_rerank"
+            "semantic_rerank, conditional_dense, or constraint_preserving_rerank"
         )
 
     samples = load_jsonl(dataset_path)
@@ -290,10 +355,50 @@ def evaluate_split(
 
     initialization_started = time.perf_counter()
     catalog_ids, categories, products = catalog_index(catalog_path)
-    structured_filter_enabled = retrieval_mode in {"structured", "fusion", "semantic_rerank"}
+    structured_filter_enabled = retrieval_mode in {
+        "structured",
+        "fusion",
+        "semantic_rerank",
+        "conditional_dense",
+        "constraint_preserving_rerank",
+    }
     structured_config = StructuredConfig(enabled=structured_filter_enabled)
     dense_config = DenseConfig()
-    if retrieval_mode == "fusion":
+    conditional_dense_configuration = None
+    if retrieval_mode in {"conditional_dense", "constraint_preserving_rerank"}:
+        conditional_config = (
+            conditional_dense_config
+            if conditional_dense_config is not None
+            else ConditionalDenseConfig()
+        )
+        conditional_dense_retriever = ConditionalDenseRetriever.from_catalog(
+            catalog_path,
+            config=conditional_config,
+            dense_config=dense_config,
+        )
+        dense_configuration = conditional_dense_retriever.dense_configuration()
+        conditional_dense_configuration = (
+            conditional_dense_retriever.configuration_snapshot()
+        )
+        if retrieval_mode == "constraint_preserving_rerank":
+            reranker_config = (
+                constraint_reranker_config
+                if constraint_reranker_config is not None
+                else RerankerConfig(
+                    candidate_limit=rerank_candidate_limit,
+                    anchor_count=3,
+                    base_score_weight=0.35,
+                    minimum_constraint_confidence=0.75,
+                    constraint_guard_enabled=True,
+                )
+            )
+            retriever = RerankingRetriever(
+                conditional_dense_retriever,
+                config=reranker_config,
+            )
+        else:
+            retriever = conditional_dense_retriever
+    elif retrieval_mode == "fusion":
         retriever = FusionRetriever.from_catalog(
             catalog_path,
             config=FusionConfig(rrf_k=fusion_rrf_k),
@@ -319,11 +424,11 @@ def evaluate_split(
         dense_configuration = None
     reranker_configuration = (
         retriever.configuration_snapshot()
-        if retrieval_mode == "semantic_rerank"
+        if retrieval_mode in {"semantic_rerank", "constraint_preserving_rerank"}
         else None
     )
     observer = AgentObserver(
-        Agent(catalog_path, retriever=retriever),
+        Agent(catalog_path, strategy_config=strategy_config, retriever=retriever),
         catalog_ids=catalog_ids,
     )
     initialization_ms = (time.perf_counter() - initialization_started) * 1000.0
@@ -360,7 +465,12 @@ def evaluate_split(
         "development_fold_version": development_folds.get("version") if development_folds else None,
         "retrieval_mode": retrieval_mode,
         "structured_filter": structured_filter_enabled,
+        "adaptive_depth_enabled": bool(
+            strategy_config is not None
+            and strategy_config.adaptive_depth_enabled
+        ),
         "fusion_rrf_k": fusion_rrf_k if retrieval_mode == "fusion" else None,
+        "conditional_dense_configuration": conditional_dense_configuration,
         "reranker_configuration": reranker_configuration,
         "dense_configuration": (
             dense_configuration
@@ -372,9 +482,31 @@ def evaluate_split(
                 fusion_fallback_configuration()
                 if retrieval_mode == "fusion"
                 else (
-                    {"semantic_rerank_failure": "exact_pre_rerank_candidate_order"}
-                    if retrieval_mode == "semantic_rerank"
-                    else None
+                    {
+                        "gate_skip": "exact_structured_order",
+                        "dense_failure": "exact_structured_order",
+                        "slow_dense_result": "exact_structured_order_after_execution",
+                    }
+                    if retrieval_mode == "conditional_dense"
+                    else (
+                        {
+                            "conditional_dense_gate_skip": "exact_structured_order",
+                            "conditional_dense_degradation": "exact_structured_order",
+                            "semantic_rerank_failure": (
+                                "exact_pre_rerank_candidate_order"
+                            ),
+                        }
+                        if retrieval_mode == "constraint_preserving_rerank"
+                        else (
+                            {
+                                "semantic_rerank_failure": (
+                                    "exact_pre_rerank_candidate_order"
+                                )
+                            }
+                            if retrieval_mode == "semantic_rerank"
+                            else None
+                        )
+                    )
                 )
             )
         ),
@@ -420,6 +552,23 @@ def main() -> None:
         help="Fuse weighted lexical, structured, and available dense Route rankings.",
     )
     retrieval_mode.add_argument(
+        "--conditional-dense",
+        action="store_const",
+        const="conditional_dense",
+        dest="retrieval_mode",
+        help="Fuse dense only for broad Browsing and preserve exact structured fallback.",
+    )
+    retrieval_mode.add_argument(
+        "--constraint-preserving-rerank",
+        action="store_const",
+        const="constraint_preserving_rerank",
+        dest="retrieval_mode",
+        help=(
+            "Apply the Top-3-anchored local CrossEncoder to ranks 4-30 after "
+            "the retained conditional-dense route."
+        ),
+    )
+    retrieval_mode.add_argument(
         "--dense-only",
         action="store_const",
         const="dense",
@@ -444,10 +593,55 @@ def main() -> None:
         "--rerank-limit",
         type=int,
         default=30,
-        help="Maximum structured candidates scored by --semantic-rerank (1-100).",
+        help=(
+            "Maximum candidates considered by --semantic-rerank or "
+            "--constraint-preserving-rerank (1-100)."
+        ),
+    )
+    parser.add_argument(
+        "--rerank-anchor-count",
+        type=int,
+        default=3,
+        help="Protected prefix size for --constraint-preserving-rerank.",
+    )
+    parser.add_argument(
+        "--rerank-base-score-weight",
+        type=float,
+        default=0.35,
+        help="Retained base-score weight for --constraint-preserving-rerank.",
+    )
+    parser.add_argument(
+        "--conditional-dense-max-active-constraints",
+        type=int,
+        default=1,
+    )
+    parser.add_argument(
+        "--conditional-dense-min-base-candidates",
+        type=int,
+        default=30,
+    )
+    parser.add_argument(
+        "--conditional-dense-max-accepted-latency-ms",
+        type=float,
+        default=250.0,
     )
     parser.add_argument("--output", default="results.json")
+    parser.add_argument(
+        "--adaptive-depth",
+        action="store_true",
+        help="Opt into the exploratory B12 A-owned adaptive-depth mapping.",
+    )
     args = parser.parse_args()
+
+    constraint_reranker_config = None
+    if args.retrieval_mode == "constraint_preserving_rerank":
+        constraint_reranker_config = RerankerConfig(
+            candidate_limit=args.rerank_limit,
+            anchor_count=args.rerank_anchor_count,
+            base_score_weight=args.rerank_base_score_weight,
+            minimum_constraint_confidence=0.75,
+            constraint_guard_enabled=True,
+        )
 
     result = evaluate_split(
         catalog_path=args.catalog,
@@ -459,6 +653,18 @@ def main() -> None:
         retrieval_mode=args.retrieval_mode,
         fusion_rrf_k=args.rrf_k,
         rerank_candidate_limit=args.rerank_limit,
+        conditional_dense_config=ConditionalDenseConfig(
+            max_active_constraints=args.conditional_dense_max_active_constraints,
+            min_base_candidates=args.conditional_dense_min_base_candidates,
+            rrf_k=args.rrf_k,
+            max_accepted_dense_latency_ms=(
+                args.conditional_dense_max_accepted_latency_ms
+            ),
+        ),
+        constraint_reranker_config=constraint_reranker_config,
+        strategy_config=StrategyConfig(
+            adaptive_depth_enabled=args.adaptive_depth,
+        ),
     )
     Path(args.output).write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({key: value for key, value in result.items() if key != "sessions"}, indent=2))

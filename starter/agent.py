@@ -6,18 +6,20 @@ from typing import Protocol
 from starter.contracts import RetrievalRequest, RetrievalResult
 from starter.core.clarification import choose_clarification
 from starter.core.context_engine import (
+    CatalogVocabulary,
     detect_no_preference_attributes,
     detect_override,
     detect_rejected_constraints,
+    assess_intent,
     extract_constraints,
-    infer_intent,
 )
 from starter.core.diagnostics import state_diagnostics
+from starter.core.decision_evidence import build_decision_evidence
 from starter.core.planner import Strategy, StrategyConfig, plan_strategy
-from starter.core.query_builder import build_distilled_query
+from starter.core.query_builder import QueryPlan, build_query_plan
 from starter.core.response_guard import guard_response
 from starter.core.state import SessionState
-from starter.retrieval import HybridRetriever
+from starter.retrieval import ConditionalDenseRetriever
 
 
 class Retriever(Protocol):
@@ -33,13 +35,35 @@ class Agent:
 
     def __init__(
         self,
-        catalog_path: str | Path = "data/catalog.jsonl",
+        catalog_path: str | Path | None = None,
         strategy_config: StrategyConfig | None = None,
         retriever: Retriever | None = None,
     ) -> None:
-        self.catalog_path = Path(catalog_path)
+        requested_catalog_path = Path(catalog_path) if catalog_path is not None else None
+        retriever_catalog_path = getattr(retriever, "catalog_path", None)
+        if retriever is not None and retriever_catalog_path is not None:
+            effective_catalog_path = Path(retriever_catalog_path)
+            if (
+                requested_catalog_path is not None
+                and requested_catalog_path.resolve() != effective_catalog_path.resolve()
+            ):
+                raise ValueError(
+                    "catalog_path must match the injected retriever.catalog_path"
+                )
+        else:
+            effective_catalog_path = requested_catalog_path or Path("data/catalog.jsonl")
+        self.catalog_path = effective_catalog_path
         self.strategy_config = strategy_config or StrategyConfig()
-        self.retriever = retriever if retriever is not None else HybridRetriever(self.catalog_path)
+        catalog_backed_retriever = retriever is None or retriever_catalog_path is not None
+        self.context_vocabulary = (
+            CatalogVocabulary.from_catalog(self.catalog_path)
+            if catalog_backed_retriever
+            else CatalogVocabulary.empty()
+        )
+        if retriever is None:
+            self.retriever = ConditionalDenseRetriever.from_catalog(self.catalog_path)
+        else:
+            self.retriever = retriever
         self._sessions: dict[str, SessionState] = {}
         self._catalog_ids = set(self.retriever.catalog_ids)
         self._fallback_ids = list(self.retriever.fallback_ids)
@@ -55,7 +79,7 @@ class Agent:
         turn: int,
         top_k: int,
         strategy: Strategy | None = None,
-    ) -> tuple[dict, dict[str, str]]:
+    ) -> tuple[dict, RetrievalResult]:
         if session_id not in self._sessions:
             raise RuntimeError("reset must be called before respond")
         if strategy is None:
@@ -87,11 +111,7 @@ class Agent:
             },
             "usage": {"prompt_tokens": 0, "completion_tokens": 0},
         }
-        evidence = {
-            candidate.parent_asin: candidate.evidence_text or ""
-            for candidate in result.candidates[:top_k]
-        }
-        return response, evidence
+        return response, result
 
     def respond(
         self,
@@ -102,25 +122,57 @@ class Agent:
     ) -> dict:
         state = self._sessions.get(session_id)
         query_text = user_message
+        query_plan: QueryPlan | None = None
         strategy = None
         if state is not None:
             state.record_user_turn(turn, user_message)
-            constraints = extract_constraints(user_message, turn)
+            constraints = extract_constraints(
+                user_message,
+                turn,
+                vocabulary=self.context_vocabulary,
+            )
+            override = detect_override(user_message)
+            no_preference_attributes = detect_no_preference_attributes(user_message)
+            rejected_constraints = detect_rejected_constraints(
+                user_message,
+                turn,
+                vocabulary=self.context_vocabulary,
+            )
             state.apply_user_context(
                 constraints=constraints,
-                override=detect_override(user_message),
-                no_preference_attributes=detect_no_preference_attributes(user_message),
-                rejected_constraints=detect_rejected_constraints(user_message, turn),
+                override=override,
+                no_preference_attributes=no_preference_attributes,
+                rejected_constraints=rejected_constraints,
             )
-            state.intent = infer_intent(user_message, constraints)
+            state.set_intent_assessment(
+                assess_intent(
+                    user_message,
+                    constraints,
+                    active_constraints=state.active_constraints,
+                    turn=turn,
+                    previous=state.intent_assessment,
+                    override=override,
+                    no_preference_attributes=tuple(
+                        sorted(state.no_preference_attributes)
+                    ),
+                )
+            )
             strategy = plan_strategy(state, turn=turn, top_k=top_k, config=self.strategy_config)
             state.previous_strategy = strategy.to_dict()
-            query_text = build_distilled_query(user_message, state.active_constraints)
+            query_plan = build_query_plan(
+                user_message,
+                state.active_constraints,
+                rejected_constraints=state.rejected_constraints,
+                overridden_constraints=state.overridden_constraints,
+            )
+            query_text = query_plan.rendered_query
             state.previous_distilled_query = query_text
         try:
-            response, candidate_evidence = self._respond_impl(session_id, query_text, turn, top_k, strategy)
+            response, retrieval_result = self._respond_impl(
+                session_id, query_text, turn, top_k, strategy
+            )
         except Exception:
-            candidate_evidence = {}
+            retrieval_result = None
             response = {
                 "message": "Here are the closest matches I found.",
                 "ask_attribute": None,
@@ -139,18 +191,55 @@ class Agent:
                 "usage": {"prompt_tokens": 0, "completion_tokens": 0},
             }
         if state is not None:
+            raw_recommendations = (
+                response.get("recommendations") if isinstance(response, dict) else []
+            )
+            if not isinstance(raw_recommendations, list):
+                raw_recommendations = []
+            valid_response_ids: set[str] = set()
+            for item in raw_recommendations:
+                if not isinstance(item, dict):
+                    continue
+                parent_asin = str(item.get("parent_asin", "")).strip()
+                if parent_asin in self._catalog_ids:
+                    valid_response_ids.add(parent_asin)
+            response_diagnostics = (
+                response.get("diagnostics") if isinstance(response, dict) else {}
+            )
+            response_fallback_used = bool(
+                isinstance(response_diagnostics, dict)
+                and response_diagnostics.get("fallback_used")
+            ) or len(valid_response_ids) < top_k
+            decision_evidence = build_decision_evidence(
+                retrieval_result,
+                state=state,
+                turn=turn,
+                top_k=top_k,
+                response_fallback_used=response_fallback_used,
+            )
             diagnostics = response.get("diagnostics") if isinstance(response, dict) else {}
             if not isinstance(diagnostics, dict):
                 diagnostics = {}
+            diagnostics["decision_evidence"] = decision_evidence.to_diagnostics()
             diagnostics.update(state_diagnostics(state))
+            if query_plan is not None:
+                diagnostics["query_plan"] = query_plan.to_diagnostics()
             response["diagnostics"] = diagnostics
-            raw_recommendations = response.get("recommendations") if isinstance(response, dict) else []
+            candidate_evidence = {
+                candidate.parent_asin: candidate.evidence_text or ""
+                for candidate in (retrieval_result.candidates[:top_k] if retrieval_result else [])
+            }
             candidate_texts = [
                 candidate_evidence.get(str(item.get("parent_asin", "")).strip(), "")
                 for item in raw_recommendations
                 if isinstance(item, dict)
             ]
-            ask_attribute, question = choose_clarification(state, turn=turn, candidate_texts=candidate_texts)
+            ask_attribute, question = choose_clarification(
+                state,
+                turn=turn,
+                candidate_texts=candidate_texts,
+                decision_evidence=decision_evidence,
+            )
             if ask_attribute:
                 response["ask_attribute"] = ask_attribute
                 base_message = response.get("message") if isinstance(response, dict) else ""

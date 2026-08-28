@@ -32,6 +32,74 @@ class ContractsTest(unittest.TestCase):
         diagnostics = RetrievalDiagnostics("bm25", 10, False, 1.5, ["legacy-note"])
 
         self.assertEqual(diagnostics.notes, ["legacy-note"])
+        self.assertEqual(diagnostics.requested_route_weights, {})
+        self.assertEqual(diagnostics.executed_routes, [])
+        self.assertIsNone(diagnostics.fallback_route)
+
+    def test_retrieval_diagnostics_exposes_requested_and_executed_routes(self) -> None:
+        diagnostics = RetrievalDiagnostics(
+            route="structured",
+            candidate_count=10,
+            requested_route_weights={
+                "lexical": 0.62,
+                "structured": 0.20,
+                "dense": 0.18,
+            },
+            executed_routes=["lexical", "structured"],
+            fallback_route=None,
+        )
+
+        payload = diagnostics.to_dict()
+
+        self.assertEqual(
+            payload["requested_route_weights"],
+            {"lexical": 0.62, "structured": 0.20, "dense": 0.18},
+        )
+        self.assertEqual(payload["executed_routes"], ["lexical", "structured"])
+        self.assertIsNone(payload["fallback_route"])
+
+    def test_retrieval_diagnostics_rejects_invalid_route_execution_semantics(self) -> None:
+        invalid_fields = (
+            {"requested_route_weights": {"dense": -0.1}},
+            {"requested_route_weights": {"dense": float("nan")}},
+            {"requested_route_weights": {"dense": 1.1}},
+            {"requested_route_weights": {"": 0.2}},
+            {"requested_route_weights": {"semantic": 1.0}},
+            {"requested_route_weights": {"lexical": 1.0}},
+            {
+                "requested_route_weights": {
+                    "lexical": 0.7,
+                    "structured": 0.3,
+                    "dense": 0.0,
+                }
+            },
+            {"executed_routes": ["lexical", "lexical"]},
+            {"executed_routes": [""]},
+            {"executed_routes": ["bogus"]},
+            {"executed_routes": ["lexical"]},
+            {"fallback_route": ""},
+            {
+                "executed_routes": ["lexical", "structured"],
+                "fallback_route": "structured",
+            },
+            {
+                "fallback_used": True,
+                "executed_routes": ["lexical", "structured"],
+            },
+            {
+                "fallback_used": True,
+                "executed_routes": ["lexical"],
+                "fallback_route": "structured",
+            },
+        )
+
+        for fields in invalid_fields:
+            with self.subTest(fields=fields), self.assertRaises(ValueError):
+                RetrievalDiagnostics(
+                    route="structured",
+                    candidate_count=10,
+                    **fields,
+                )
 
     def test_agent_response_validator_rejects_schema_drift(self) -> None:
         with self.assertRaises(ValueError):

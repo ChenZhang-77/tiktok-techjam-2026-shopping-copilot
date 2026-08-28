@@ -10,7 +10,12 @@ from experiments.evaluation_reporting import (
     code_provenance,
     evaluate_split,
 )
-from starter.retrieval import DenseConfig, FusionConfig, RerankerConfig
+from starter.retrieval import (
+    ConditionalDenseConfig,
+    DenseConfig,
+    FusionConfig,
+    RerankerConfig,
+)
 
 
 class _StubAgent:
@@ -50,6 +55,13 @@ class _RouteDiagnosticsStubAgent(_StubAgent):
                     "route_candidate_counts": {"lexical": 10, "dense": 8},
                     "route_overlap_counts": {"lexical|dense": 4},
                     "route_failures": {"structured": "route_error"},
+                    "requested_route_weights": {
+                        "lexical": 0.6,
+                        "structured": 0.2,
+                        "dense": 0.2,
+                    },
+                    "executed_routes": ["lexical", "structured"],
+                    "fallback_route": "structured",
                     "structured_filter_applied": True,
                     "relaxed_constraints": [{"attribute": "material"}],
                     "filtered_pool_sizes": [{"before": 10, "after": 4}],
@@ -71,7 +83,165 @@ class _SubtlyInvalidStubAgent(_StubAgent):
         }
 
 
+class _LegacyRouteDiagnosticsStubAgent(_StubAgent):
+    def respond(self, session_id: str, user_message: str, turn: int, top_k: int) -> dict:
+        return {
+            "message": "ok",
+            "ask_attribute": None,
+            "recommendations": [],
+            "diagnostics": {
+                "fallback_used": False,
+                "retrieval": {
+                    "requested_route_weights": {},
+                    "executed_routes": [],
+                    "fallback_route": None,
+                },
+            },
+        }
+
+
 class DevelopmentReportingTest(unittest.TestCase):
+    def test_constraint_preserving_rerank_wraps_b9_and_records_both_stage_configs(self) -> None:
+        empty_result = {"scenario_metrics": {}}
+        with (
+            patch("experiments.evaluation_reporting.load_jsonl", return_value=[]),
+            patch(
+                "experiments.evaluation_reporting.load_split_manifest",
+                return_value={"version": "test"},
+            ),
+            patch("experiments.evaluation_reporting.validate_development_fold_manifest"),
+            patch("experiments.evaluation_reporting.filter_samples", return_value=[]),
+            patch("experiments.evaluation_reporting.catalog_index", return_value=(set(), set(), {})),
+            patch(
+                "experiments.evaluation_reporting.ConditionalDenseRetriever.from_catalog"
+            ) as from_catalog,
+            patch("experiments.evaluation_reporting.RerankingRetriever") as reranker,
+            patch("experiments.evaluation_reporting.Agent", return_value=_StubAgent()),
+            patch("experiments.evaluation_reporting.evaluate", return_value=empty_result),
+            patch(
+                "experiments.evaluation_reporting.code_provenance",
+                return_value={"commit": "test", "worktree_clean": True},
+            ),
+        ):
+            from_catalog.return_value.configuration_snapshot.return_value = {
+                "gate": "browsing_with_sparse_active_constraints",
+            }
+            from_catalog.return_value.dense_configuration.return_value = {
+                "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+            }
+            reranker.return_value.configuration_snapshot.return_value = {
+                "candidate_limit": 30,
+                "anchor_count": 3,
+                "base_score_weight": 0.35,
+                "constraint_guard_enabled": True,
+            }
+
+            report = evaluate_split(
+                catalog_path="catalog.jsonl",
+                dataset_path="dataset.jsonl",
+                split="development",
+                public_split_path="split.json",
+                development_fold_path="folds.json",
+                retrieval_mode="constraint_preserving_rerank",
+            )
+
+        from_catalog.assert_called_once_with(
+            "catalog.jsonl",
+            config=ConditionalDenseConfig(),
+            dense_config=DenseConfig(),
+        )
+        reranker.assert_called_once_with(
+            from_catalog.return_value,
+            config=RerankerConfig(
+                candidate_limit=30,
+                anchor_count=3,
+                base_score_weight=0.35,
+                minimum_constraint_confidence=0.75,
+                constraint_guard_enabled=True,
+            ),
+        )
+        reranker.return_value.close.assert_called_once_with()
+        self.assertEqual(
+            report["evaluation"]["retrieval_mode"],
+            "constraint_preserving_rerank",
+        )
+        self.assertEqual(
+            report["evaluation"]["conditional_dense_configuration"]["gate"],
+            "browsing_with_sparse_active_constraints",
+        )
+        self.assertEqual(report["evaluation"]["reranker_configuration"]["anchor_count"], 3)
+        self.assertEqual(
+            report["evaluation"]["fallback_configuration"],
+            {
+                "conditional_dense_gate_skip": "exact_structured_order",
+                "conditional_dense_degradation": "exact_structured_order",
+                "semantic_rerank_failure": "exact_pre_rerank_candidate_order",
+            },
+        )
+
+    def test_conditional_dense_mode_records_gate_dense_and_exact_fallback_policy(self) -> None:
+        empty_result = {"scenario_metrics": {}}
+        with (
+            patch("experiments.evaluation_reporting.load_jsonl", return_value=[]),
+            patch(
+                "experiments.evaluation_reporting.load_split_manifest",
+                return_value={"version": "test"},
+            ),
+            patch("experiments.evaluation_reporting.validate_development_fold_manifest"),
+            patch("experiments.evaluation_reporting.filter_samples", return_value=[]),
+            patch("experiments.evaluation_reporting.catalog_index", return_value=(set(), set(), {})),
+            patch(
+                "experiments.evaluation_reporting.ConditionalDenseRetriever.from_catalog"
+            ) as from_catalog,
+            patch("experiments.evaluation_reporting.Agent", return_value=_StubAgent()),
+            patch("experiments.evaluation_reporting.evaluate", return_value=empty_result),
+            patch(
+                "experiments.evaluation_reporting.code_provenance",
+                return_value={"commit": "test", "worktree_clean": True},
+            ),
+        ):
+            from_catalog.return_value.configuration_snapshot.return_value = {
+                "gate": "browsing_with_sparse_active_constraints",
+                "max_active_constraints": 1,
+                "min_base_candidates": 30,
+                "rrf_k": 60.0,
+                "max_accepted_dense_latency_ms": 250.0,
+                "latency_budget_kind": "post_execution_acceptance_budget",
+            }
+            from_catalog.return_value.dense_configuration.return_value = {
+                "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+                "cache_available": True,
+            }
+
+            report = evaluate_split(
+                catalog_path="catalog.jsonl",
+                dataset_path="dataset.jsonl",
+                split="development",
+                public_split_path="split.json",
+                development_fold_path="folds.json",
+                retrieval_mode="conditional_dense",
+            )
+
+        from_catalog.assert_called_once_with(
+            "catalog.jsonl",
+            config=ConditionalDenseConfig(),
+            dense_config=DenseConfig(),
+        )
+        self.assertEqual(report["evaluation"]["retrieval_mode"], "conditional_dense")
+        self.assertEqual(
+            report["evaluation"]["conditional_dense_configuration"]["max_active_constraints"],
+            1,
+        )
+        self.assertTrue(report["evaluation"]["dense_configuration"]["cache_available"])
+        self.assertEqual(
+            report["evaluation"]["fallback_configuration"],
+            {
+                "gate_skip": "exact_structured_order",
+                "dense_failure": "exact_structured_order",
+                "slow_dense_result": "exact_structured_order_after_execution",
+            },
+        )
+
     def test_semantic_rerank_mode_wraps_retained_structured_candidates(self) -> None:
         empty_result = {"scenario_metrics": {}}
         with (
@@ -129,11 +299,35 @@ class DevelopmentReportingTest(unittest.TestCase):
         self.assertEqual(diagnostics["route_candidate_counts"]["dense"]["max"], 8)
         self.assertEqual(diagnostics["route_overlap_counts"]["lexical|dense"]["mean"], 4.0)
         self.assertEqual(diagnostics["route_failure_counts"], {"structured:route_error": 1})
+        self.assertEqual(
+            diagnostics["requested_route_counts"],
+            {"lexical": 1, "structured": 1, "dense": 1},
+        )
+        self.assertEqual(
+            diagnostics["executed_route_counts"],
+            {"lexical": 1, "structured": 1},
+        )
+        self.assertEqual(
+            diagnostics["requested_not_executed_route_counts"],
+            {"dense": 1},
+        )
+        self.assertEqual(diagnostics["fallback_route_counts"], {"structured": 1})
+        self.assertEqual(diagnostics["route_semantics_unreported_responses"], 0)
         self.assertEqual(diagnostics["structured_filter_applied_responses"], 1)
         self.assertEqual(diagnostics["relaxed_constraint_responses"], 1)
         self.assertEqual(diagnostics["filtered_pool_step_count"], 1)
         self.assertEqual(diagnostics["cache_state_counts"], {"dense:dense_cache_missing": 1})
         self.assertEqual(diagnostics["rerank_pool_size"]["mean"], 30.0)
+
+    def test_empty_legacy_route_semantics_are_reported_as_unavailable(self) -> None:
+        observer = AgentObserver(_LegacyRouteDiagnosticsStubAgent(), catalog_ids=set())
+
+        observer.respond("session", "query", 1, 10)
+
+        self.assertEqual(
+            observer.retrieval_diagnostics()["route_semantics_unreported_responses"],
+            1,
+        )
 
     def test_fusion_mode_uses_central_rrf_config_and_records_degraded_route_policy(self) -> None:
         empty_result = {"scenario_metrics": {}}

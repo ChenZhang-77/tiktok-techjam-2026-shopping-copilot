@@ -45,7 +45,8 @@ Re-check Git state because branch and remote facts can drift.
 
 Key evidence documents:
 
-- `docs/b7_pre_freeze_development.json`: retained Development-160 result.
+- `docs/b12_reports/development_default_parity.json`: current B9-default
+  Development-160 result reproduced with B12 disabled.
 - `docs/b7_final_public_summary.json`: historical Full-200 snapshot.
 - `docs/ablation_summary.md`: human-readable keep/reject decisions.
 - `docs/adr/0001-treat-public-holdout-as-exposed.md`: evaluation boundary.
@@ -127,26 +128,133 @@ Offline failure analysis may inspect development targets to classify recall or
 ranking misses. Target data must remain outside runtime requests, diagnostics,
 configuration, and sample-specific rules.
 
+The boundary is explicit:
+
+| Allowed only in offline Development-160 analysis | Forbidden from Agent runtime |
+| --- | --- |
+| target ASIN, hit/miss, target rank, pre/post-rank position | `SessionState`, `RetrievalRequest`, runtime diagnostics, prompts, Strategy, rules, or models |
+| aggregate and per-scenario failure counts | sample-specific exceptions or target-keyed configuration |
+
+Do not use the exposed holdout or Full-200 result to create, select, or tune a
+rule. Offline target access explains a development failure; it does not create
+runtime evidence.
+
+Use one canonical R0 taxonomy everywhere, in causal order:
+
+1. Extraction
+2. State / Override
+3. Intent / Strategy Routing
+4. Query Construction
+5. Question Policy
+6. Retrieval Recall
+7. Ranking / Filtering
+8. Response / Contract
+
+Assign the earliest causal stage as the primary class and optional later stages
+as secondary causes. Record evaluator/timing anomalies separately as
+`evaluation_validity` flags; they are not Agent behavior classes.
+
 ## 6. Retained Runtime and Measured Alternatives
 
 The current default is deterministic and local:
 
 ```text
 message
+  -> scoped extraction with frozen-catalog multi-word categories
   -> state/context update
   -> Buying/Browsing Strategy
   -> distilled current query
   -> field-weighted SQLite FTS5 Candidate Pool
   -> hard/soft cross-field constraint ranking
   -> guarded structured filter and relaxation/fill
+  -> B9 broad-Browsing gate -> pinned local dense retrieval + weighted RRF
+     (otherwise exact structured order)
+  -> A-side DecisionEvidence summary
   -> clarification
   -> response guard
 ```
 
-Dense retrieval, weighted RRF, and the CrossEncoder reranker are optional,
-reproducible experiments with deterministic fallback. They are disabled by
-default because development evidence did not justify global enablement. Do not
-describe them as active runtime routes.
+`DecisionEvidence` is an A-side adapter over the complete `RetrievalResult` and
+cross-turn state. It does not extend the shared request/result schema and AB0
+does not change ask/no-ask behavior. Public diagnostics may expose bounded
+summaries/statuses, never raw Candidate IDs/text. `top_score_margin` is
+route-local and uncalibrated, so `score_margin_usable` remains false until a
+coordinated measured contract defines otherwise.
+
+The A9 threshold-only should-ask gate is a rejected ablation, not retained
+runtime behavior. It reduced Development HitRate and worsened MTTC. The retained
+reports lack turn-level question traces, so they do not support an exact
+question-count claim. Any future A9 variant must first retain a hash-bound turn
+audit; the historical next step from A9 was the now-completed A10a experiment.
+
+The A10a full-pool question-value candidate is also rejected and reverted. Its
+post-feature variant regressed every main Development metric. Existing
+partition evidence covers only category/material/color/style/use_case, so it
+must not be treated as comparable evidence for feature/size/brand/budget/other.
+The candidate protected feature priority but still treated the other uncovered
+attributes as implicitly low. Bounded A11 did not add comparable partition
+coverage for those attributes. Revisit A10a only if AB1 coordinates missing B
+semantics plus an explicit fallback for uncovered attributes. A10b was the
+historical next step and is now complete.
+
+A10b Internal QueryPlan is retained at `9560344`. It is A-owned and separates
+category/hard/soft/semantic/residual/excluded evidence, but renders only the
+existing single `RetrievalRequest.query`; the shared schema is unchanged.
+Rejected and overridden terms must never render positive.
+
+A11 Extraction and Scope Hardening is retained at reviewed runtime code commit
+`350cce2`, with the earlier R0 tracing fix at `b0c953d`. Retain only the bounded
+slice: catalog-derived multi-word categories, clause/list-scoped positive,
+negative, and no-preference extraction, numeric/hyphen disambiguation, and
+catalog-path consistency for injected retrievers. The combined broad candidate
+was rejected; its feature-vocabulary, feature-expiry, brand, and residual-cleanup
+components lack independent hash-bound evidence and remain unproven. The
+shared request schema and question policy are unchanged. See
+`docs/a11_extraction_scope_evidence.md`.
+
+AB1 Shared Contract and Active-Route Semantics Freeze is retained at `a676855`.
+It appends `requested_route_weights`, `executed_routes`, and `fallback_route`
+to `RetrievalDiagnostics` without changing the request schema, query, Strategy
+weights, ranking, or question policy. Empty requested/executed fields mean an
+older producer did not report AB1 semantics; they must not be interpreted as a
+successful or failed execution. Reported weights use the exact `lexical`,
+`structured`, and `dense` inventory with values in `[0, 1]`; executed/fallback
+names use the closed execution inventory in `starter/contracts.py`. A reported
+fallback must be marked used and must name an executed Route. Reranking must
+preserve an upstream fallback. Development metrics, scenarios, sessions, and
+all four folds match A11 exactly. See `docs/ab1_route_semantics_evidence.md`.
+Wrappers around legacy `{}` plus `[]` producers must keep all three appended
+AB1 fields unreported instead of guessing Route execution from the old
+free-form `route` field.
+Requested and executed fields form one report unit: both are non-empty for a
+reported execution, or both are empty for legacy/unreported evidence. Partial
+states are invalid at the shared contract boundary.
+B8 Rejected-Constraint Ranking was tested at `f53a7ee` and reverted at
+`3952788`. Development-160 contained zero rejected-constraint observations
+across 726 retrieval turns, so exact metric/fold/session parity was non-evidence
+and failed the keep gate. See `docs/b8_rejected_constraint_evidence.md`.
+B9 Browsing-First Conditional Dense Route is retained at `7f520ba`. The default
+Agent executes pinned local dense retrieval plus weighted RRF only when the
+typed request is Browsing, Strategy requests dense, at most one active
+constraint exists, and the structured Candidate Pool has at least 30 entries.
+Gate skips and degraded dense results preserve the exact structured order.
+Across Development-160, dense and fusion executed 102 times, only Browsing
+outcomes changed, and no fixed fold regressed. The observed cost is material:
+startup increased by about 1.5 seconds and peak RSS by about 546 MB. See
+`docs/b9_conditional_dense_evidence.md`.
+
+Do not describe dense as globally active. The retained route is conditional;
+global RRF and CrossEncoder reranking remain rejected experiments, and an
+actual LLM ranker has not been implemented. B10a Top-3 and Top-5
+constraint-preserving CrossEncoder candidates both failed the MRR and
+TechnicalScore gate; the B9 default remains exact at `93b5b19`. See
+`docs/b10a_constraint_rerank_evidence.md`. B10b is not justified without new R0
+evidence. B11 is also not started: the current R0 refresh finds zero
+retrieval/ranking primary causes and retained-depth recall of 157/160. See
+`docs/b11_prerequisite_evidence.md`. B12 remains an explicit, disabled-by-default
+experiment at `82891c8`: its aggregate result is favorable, but there was no
+contemporaneous keep/revert gate and the gain is concentrated in fold 4. The
+B9 default is preserved exactly. See `docs/b12_adaptive_depth_evidence.md`.
 
 The current optimization order is defined in
 `docs/optimization_roadmap.md`. Diagnose failures before introducing another
@@ -157,7 +265,7 @@ model or route.
 The stable seam is:
 
 ```text
-HybridRetriever.retrieve(request: RetrievalRequest) -> RetrievalResult
+Retriever.retrieve(request: RetrievalRequest) -> RetrievalResult
 Agent.respond(session_id, user_message, turn, top_k) -> public response dict
 ```
 
@@ -167,6 +275,15 @@ Shared types live in `starter/contracts.py`:
 - `Candidate`
 - `RetrievalDiagnostics`
 - `RetrievalResult`
+
+AB1 Route diagnostics distinguish intent from execution:
+
+- `requested_route_weights` records the Strategy request using shared
+  `lexical`, `structured`, and `dense` names;
+- `executed_routes` contains only Routes that actually ran;
+- `fallback_route` names the degraded Route, or is `null` when a reported
+  execution did not fall back;
+- `{}` plus `[]` is legacy/unreported evidence, not proof that no Route ran.
 
 Developer A may send:
 
@@ -178,6 +295,17 @@ Developer A may send:
 - no-preference attributes,
 - rejected constraints,
 - asked attributes.
+
+The current contract sends one distilled `query` string. Structured query
+components may remain an A-owned internal plan, but they do not cross the seam
+unless an A/B-coordinated experiment proves that B must consume them
+independently.
+
+Before implementing a should-ask policy, document the source, owner, lifecycle,
+calibration, and missing-data behavior of every Candidate signal it consumes.
+Prefer deriving A-side decision evidence from the existing full
+`RetrievalResult` and persisted state. A field belongs in
+`RetrievalDiagnostics` only when B must compute it or its meaning must be shared.
 
 Developer A must not send evaluator-only labels. Developer B must not require a
 SessionState implementation object or import Control Plane internals.
@@ -207,6 +335,11 @@ Owns:
 - response guard and `starter/agent.py` orchestration,
 - Control Plane diagnostics and tests.
 
+Developer A also owns the cross-turn intent-assessment lifecycle and the
+should-ask decision.
+Developer B may consume a coordinated Strategy/gate, but does not infer dialogue
+intent from evaluator labels or replace A's confidence policy.
+
 Does not own catalog indexing, BM25 internals, dense cache, RRF, semantic model
 execution, or ranking implementation.
 
@@ -227,6 +360,10 @@ clarification policy, response guard, or `starter/agent.py` orchestration.
 
 Neither side changes shared contract or route-weight semantics alone.
 
+An A-side decision-evidence adapter is not a second retrieval stack. B owns the
+meaning of any retrieval-produced score, coverage, partition, route, or fallback
+field used to populate it.
+
 ## 9. State and Dialogue Rules
 
 State must preserve:
@@ -238,9 +375,16 @@ State must preserve:
 - no-preference attributes,
 - asked attributes,
 - previous distilled query,
-- previous Candidate IDs, Strategy, and diagnostics,
+- previous returned Candidate IDs with their Top-K/depth meaning, Strategy, and
+  diagnostics,
 - override events,
 - `user_profile` as an optional weak prior only.
+
+Before implementing cross-turn intent confidence, freeze its intent, confidence,
+observed-evidence, source-turn, and transition-reason semantics. Because the
+assessment affects later turns, it must either be persisted directly or be
+deterministically derived from persisted evidence; a current-turn-only score is
+not sufficient. Do not expose evaluator-derived confidence.
 
 Never use blind full-history concatenation as the retrieval query.
 
@@ -269,7 +413,7 @@ Explicit current intent always wins over profile evidence.
 
 ## 10. Retrieval and Ranking Rules
 
-- Preserve the deterministic structured default as the last-known-good path.
+- Preserve the deterministic structured order as the last-known-good fallback.
 - Build evidence across title, categories, features, details, store, and
   description; do not depend on sparse details or price.
 - Hard filtering requires high confidence and adequate coverage.
@@ -300,6 +444,14 @@ Every experiment needs:
 - latency/memory/fallback impact,
 - keep and revert gates,
 - recorded decision.
+
+Use the canonical R0 taxonomy from Section 5. Do not introduce local synonyms
+such as `query`, `dialogue`, or `timing failure` without mapping them to the
+canonical class or the separate evaluation-validity flag.
+
+Evidence availability is a blocker, not an implementation shortcut: verify each
+should-ask signal before writing the policy. The current experiment IDs and
+dependency order belong in `docs/optimization_roadmap.md`.
 
 Run blockers-first according to `docs/optimization_roadmap.md`. Do not combine
 several speculative changes and attempt to explain the aggregate later.
@@ -397,6 +549,8 @@ The project is ready only when:
 - clarification is useful, non-repetitive, and optional when unnecessary,
 - retained retrieval/ranking is evidence-backed and failure-safe,
 - optional semantic work is described honestly,
+- literal Track 4 dense/semantic and profile coverage gaps are disclosed when
+  the retained runtime does not implement them,
 - results and limitations are reproducible and current,
 - README, AGENTS, workstreams, demo, submission package, and contributions agree,
 - every major tradeoff can be explained without framework buzzwords.

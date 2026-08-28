@@ -1,0 +1,139 @@
+{
+  "version": "b12-v2",
+  "experiment": {
+    "id": "B12",
+    "owners": ["developer_a_control_plane", "developer_b_retrieval_ranking"],
+    "hypothesis": "A can map its persisted ordinal intent assessment into the existing bounded Strategy.retrieval_depth field so narrow high-confidence Buying retrieves fewer candidates without teaching B a second confidence policy.",
+    "failure_class": "intent_strategy_routing",
+    "primary_behavior_changed": "Optional A-owned high-confidence narrow-Buying candidate-depth selection",
+    "expected_files": [
+      "starter/core/planner.py",
+      "experiments/evaluation_reporting.py",
+      "tests/test_planner.py",
+      "tests/test_agent_smoke.py",
+      "tests/test_b12_adaptive_depth_evidence.py",
+      "docs/b12_reports/",
+      "docs/b12_adaptive_depth_evidence.json",
+      "docs/b12_adaptive_depth_evidence.md",
+      "project status and roadmap documents"
+    ],
+    "optional_code_commit": "82891c8",
+    "decision": "do_not_retain_as_default_keep_reproducible_exploratory_option"
+  },
+  "experiment_discipline": {
+    "predeclared_keep_gate_available": false,
+    "predeclared_revert_gate_available": false,
+    "aggregate_run_before_fixed_folds": true,
+    "aggregate_result_used_to_open_fold_evaluation": true,
+    "consequence": "The favorable aggregate result cannot be promoted to a retained default because no contemporaneous keep/revert gate was recorded and the gain is concentrated in fold_4.",
+    "posthoc_thresholds_used_for_selection": false
+  },
+  "policy": {
+    "default_enabled": false,
+    "experiment_flag": "--adaptive-depth",
+    "decision_owner": "A_control_plane",
+    "adaptive_gate": {
+      "intent": "buying",
+      "intent_confidence_band": "high",
+      "minimum_active_constraints": 2
+    },
+    "adaptive_depth_floor": "min(buying_depth_sparse, buying_depth_constrained)",
+    "default_configured_floor": 60,
+    "effective_depth": "max(top_k, selected_depth_floor)",
+    "reason_label": "adaptive_narrow",
+    "fixed_fallback": "With the flag disabled, or when IntentAssessment is unavailable or the adaptive gate is false, preserve the B9 intent-and-active-constraint mapping.",
+    "B_consumption": "B reads only the validated bounded request.strategy.retrieval_depth value; raw IntentAssessment and confidence do not cross the seam.",
+    "calibration_boundary": "IntentAssessment confidence remains an A-owned ordinal stability band, not a calibrated probability."
+  },
+  "evaluation_boundary": {
+    "selection_split": "Development-160",
+    "fixed_folds": "development-folds-v1",
+    "full_or_holdout_used": false,
+    "target_information_in_runtime": false,
+    "target_information_used_offline": true,
+    "offline_target_use": "Development-only metric and session comparison; no evaluator field crossed SessionState, Strategy, RetrievalRequest, diagnostics, retrieval, or ranking."
+  },
+  "baseline": {
+    "name": "B9 conditional dense",
+    "report": "docs/b9_reports/development_conditional_dense.json",
+    "sha256": "02510624bc55e283e23efada06eee6a132ca170d7e3aa32b644430bd7dcdbef4",
+    "metrics": {"hit_rate_at_10": 0.8625, "mrr": 0.547329, "mttc": 4.66875, "efficiency": 0.633125, "recommended_technical_score": 0.722074}
+  },
+  "current_default_parity": {
+    "report": "docs/b12_reports/development_default_parity.json",
+    "sha256": "03de431eee9f60d2e3c8963392d37a9d864fb230fb5c5245e0f85b6a8f2a34b9",
+    "clean_code_commit": "82891c8",
+    "adaptive_depth_enabled": false,
+    "metrics_equal_b9": true,
+    "scenario_metrics_equal_b9": true,
+    "sessions_equal_b9": true
+  },
+  "candidate": {
+    "report": "docs/b12_reports/development_adaptive_depth.json",
+    "sha256": "30ffdc76871f246b0b653506e6559622ed5e4a7c6d070927b9f28c572932ebe2",
+    "clean_code_commit": "82891c8",
+    "adaptive_depth_enabled": true,
+    "metrics": {"hit_rate_at_10": 0.86875, "mrr": 0.549735, "mttc": 4.60625, "efficiency": 0.639375, "recommended_technical_score": 0.72717},
+    "delta_vs_b9": {"hit_rate_at_10": 0.00625, "mrr": 0.002406, "mttc": -0.0625, "efficiency": 0.00625, "recommended_technical_score": 0.005096}
+  },
+  "scenario_deltas": {
+    "buying": {"hit_rate_at_10": 0.0, "mrr": -0.001799, "mttc": -0.03125, "efficiency": 0.003124, "recommended_technical_score": 0.000085},
+    "browsing": {"hit_rate_at_10": 0.015625, "mrr": 0.007812, "mttc": -0.125, "efficiency": 0.012501, "recommended_technical_score": 0.012656},
+    "intent_override": {"hit_rate_at_10": 0.0, "mrr": 0.0, "mttc": 0.0, "efficiency": 0.0, "recommended_technical_score": 0.0},
+    "boundary": {"hit_rate_at_10": 0.0, "mrr": 0.0, "mttc": 0.0, "efficiency": 0.0, "recommended_technical_score": 0.0}
+  },
+  "session_changes": {
+    "changed": 3,
+    "gained_hits": 1,
+    "lost_hits": 0,
+    "details": {
+      "public_0135": "Buying hit remains turn 2; best rank worsens 4 to 6.",
+      "public_0178": "Buying hit arrives earlier at turn 5 instead of 7; best rank worsens 7 to 9.",
+      "public_0195": "Browsing changes from miss after 10 turns to hit at turn 3, rank 2."
+    },
+    "response_count_difference_explanation": "Candidate has 716 versus 725 responses: public_0195 saves seven turns and public_0178 saves two turns."
+  },
+  "fold_reports": {
+    "fold_1": {"baseline_path": "docs/b9_reports/fold_1_conditional_dense.json", "baseline_sha256": "0c17b62ba82a0c6aece803293c405d17a12a58c5272ab733feeb63b3addcef55", "candidate_path": "docs/b12_reports/fold_1_adaptive_depth.json", "candidate_sha256": "0a1a2279bc52fe03561830c336c399d74d972a56a7d6053082270049ee2ce303", "hit_rate_delta": 0.0, "mrr_delta": -0.002083, "mttc_delta": 0.0, "technical_score_delta": -0.000625},
+    "fold_2": {"baseline_path": "docs/b9_reports/fold_2_conditional_dense.json", "baseline_sha256": "a9d3fd768f5f660c2b2f479b7b00ec95413ccc26937708c8ef3b3cf641568735", "candidate_path": "docs/b12_reports/fold_2_adaptive_depth.json", "candidate_sha256": "17c075a99bc3563a8a6ff0d00844d04b31b8249256c84dcc4d0f1d51250a83f6", "hit_rate_delta": 0.0, "mrr_delta": 0.0, "mttc_delta": 0.0, "technical_score_delta": 0.0},
+    "fold_3": {"baseline_path": "docs/b9_reports/fold_3_conditional_dense.json", "baseline_sha256": "fb039d513c27ef3c25b92bc222d356e8c61ddd29d3f6db70b960d7f2456c3651", "candidate_path": "docs/b12_reports/fold_3_adaptive_depth.json", "candidate_sha256": "0132e0fb051ad4368e4e33c554d22b0b8b146ed028cc1a6b4aca3c990394bb34", "hit_rate_delta": 0.0, "mrr_delta": 0.0, "mttc_delta": 0.0, "technical_score_delta": 0.0},
+    "fold_4": {"baseline_path": "docs/b9_reports/fold_4_conditional_dense.json", "baseline_sha256": "4edb8017a5878efa98f6104523853e13ea1ea364248e7a6d85db5a6750566ba5", "candidate_path": "docs/b12_reports/fold_4_adaptive_depth.json", "candidate_sha256": "2350b2300a758fb78e9a9ad5dc63136160a10949ab2b7613904050a87be75802", "hit_rate_delta": 0.025, "mrr_delta": 0.011706, "mttc_delta": -0.25, "technical_score_delta": 0.021012}
+  },
+  "cost": {
+    "default_response_count": 725,
+    "candidate_response_count": 716,
+    "default_observed_lexical_candidate_mean": 95.144828,
+    "candidate_observed_lexical_candidate_mean": 88.994413,
+    "observed_mean_delta": -6.150415,
+    "interpretation": "Candidate counts are deterministic observations, but the response mix differs because two sessions finish earlier; do not attribute the full aggregate mean reduction to depth selection alone.",
+    "controlled_latency_or_memory_claim": false,
+    "timing_note": "Default and candidate reports were run concurrently; their timing and RSS are not used for a causal cost claim."
+  },
+  "runtime_observations": {
+    "candidate_dense_executed_turns": 102,
+    "candidate_fusion_executed_turns": 102,
+    "candidate_respond_exceptions": 0,
+    "candidate_invalid_response_payloads": 0,
+    "candidate_reported_fallbacks": 0,
+    "candidate_route_failures": 0
+  },
+  "verification": {
+    "red_test": "The opt-in high-confidence narrow-Buying test returned depth 80 before the candidate and expected 60.",
+    "full_tests_after_evidence": "287/287",
+    "targeted_properties": [
+      "the default flag is false and preserves B9 depth behavior",
+      "A owns the confidence-band decision and B consumes only Strategy.retrieval_depth",
+      "the optional rule requires Buying, high ordinal confidence, and at least two active constraints",
+      "effective depth remains max(top_k, selected floor)",
+      "medium confidence and missing IntentAssessment preserve the prior fixed mapping"
+    ]
+  },
+  "decision_rationale": [
+    "The candidate improves every aggregate metric, gains one hit, and loses no hit.",
+    "Buying MRR regresses and both changed Buying sessions have worse best rank, despite one arriving two turns earlier.",
+    "Fold 1 regresses slightly, folds 2 and 3 are parity, and the positive fold result is concentrated in fold 4.",
+    "No contemporaneous keep/revert gate was recorded before observing results, so a retained-default decision would be post hoc.",
+    "The candidate therefore remains reproducible behind an explicit disabled-by-default flag; B9 remains the default runtime."
+  ],
+  "next_module": "R4 integrated selection and freeze with B9 as the default B route"
+}

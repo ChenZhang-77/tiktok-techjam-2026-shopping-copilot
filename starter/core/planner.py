@@ -16,6 +16,7 @@ class StrategyConfig:
     browsing_lexical_weight: float = 0.62
     browsing_structured_weight: float = 0.20
     browsing_semantic_weight: float = 0.18
+    adaptive_depth_enabled: bool = False
 
 
 @dataclass(frozen=True)
@@ -49,9 +50,30 @@ def plan_strategy(state: SessionState, *, turn: int, top_k: int, config: Strateg
     intent = state.intent or "browsing"
     active_count = sum(1 for item in state.active_constraints if item.get("active", True))
     has_hard = any(bool(item.get("hard")) for item in state.active_constraints if item.get("active", True))
+    assessment = state.intent_assessment
+    assessment_reason = (
+        assessment.transition_reason if assessment is not None else "legacy intent"
+    )
 
     if intent == "buying":
-        depth = max(top_k, config.buying_depth_constrained if active_count >= 2 else config.buying_depth_sparse)
+        depth_policy = "intent_constraint_default"
+        depth_floor = (
+            config.buying_depth_constrained
+            if active_count >= 2
+            else config.buying_depth_sparse
+        )
+        if (
+            config.adaptive_depth_enabled
+            and assessment is not None
+            and assessment.confidence_band == "high"
+            and active_count >= 2
+        ):
+            depth_floor = min(
+                config.buying_depth_sparse,
+                config.buying_depth_constrained,
+            )
+            depth_policy = "adaptive_narrow"
+        depth = max(top_k, depth_floor)
         return Strategy(
             intent="buying",
             lexical_weight=config.buying_lexical_weight,
@@ -61,7 +83,10 @@ def plan_strategy(state: SessionState, *, turn: int, top_k: int, config: Strateg
             allow_hard_filter=has_hard and active_count >= 2,
             clarification_enabled=turn < 10,
             fallback_mode="lexical",
-            reason=f"buying intent with {active_count} active constraints",
+            reason=(
+                f"buying intent ({assessment_reason}) with {active_count} active constraints; "
+                f"depth policy={depth_policy}"
+            ),
         )
 
     depth = max(top_k, config.browsing_depth_sparse if active_count <= 1 else config.browsing_depth_constrained)
@@ -74,5 +99,7 @@ def plan_strategy(state: SessionState, *, turn: int, top_k: int, config: Strateg
         allow_hard_filter=False,
         clarification_enabled=turn < 10,
         fallback_mode="broad_lexical",
-        reason=f"browsing intent with {active_count} active constraints",
+        reason=(
+            f"browsing intent ({assessment_reason}) with {active_count} active constraints"
+        ),
     )

@@ -1,0 +1,75 @@
+{
+  "experiment": "A10a_candidate_question_value",
+  "hypothesis": "After feature is exhausted, ranking the remaining clarification attributes by full-pool Candidate partition score will improve MTTC without recall loss compared with the existing Top-K selection.",
+  "failure_class_addressed": "question_policy",
+  "baseline_code_commit": "3988b8b",
+  "candidate_code_commit": "304a3d6",
+  "runtime_revert_commit": "7a63ef2",
+  "runtime_disposition": "reverted",
+  "candidate_rule": {
+    "should_ask_changed": false,
+    "feature_first_changed": false,
+    "selection_change": "After feature is unavailable, rank available supported attributes by DecisionEvidence.attribute_partition_scores over the full Candidate pool before the existing Top-K fallback.",
+    "diagnostic_change": "Expose selected attribute, bounded value, source, and reason.",
+    "target_or_evaluator_label_used_at_runtime": false,
+    "query_construction_changed": false,
+    "shared_contract_change": "none"
+  },
+  "partition_coverage_audit": {
+    "supported_attributes": ["category", "material", "color", "style", "use_case"],
+    "uncovered_question_attributes": ["feature", "size", "brand", "budget", "other"],
+    "status": "partial_not_comparable_across_all_question_attributes",
+    "source": "starter.core.clarification.CANDIDATE_TERMS",
+    "candidate_missing_evidence_handling": "Feature retained legacy priority, but after feature was exhausted size, brand, budget, and other could not compete with any supported attribute having a positive score; missing evidence was therefore implicitly low.",
+    "consequence": "Full candidate-question-value ranking cannot safely replace legacy priority until A owns comparable evidence or B adds coordinated field semantics through AB1."
+  },
+  "reports": {
+    "baseline": {
+      "path": "docs/ab0_reports/development_structured.json",
+      "sha256": "e0a473b3c5b208175c4ca1d2ecffd052c81882cde15ca96331e4bf4991fba430"
+    },
+    "candidate": {
+      "path": "docs/a10a_reports/development_full_pool_after_feature.json",
+      "sha256": "41812b99bc828ede9f743a65bc4186ad8037259664ab9ea7e7fadf5b85fc7e4a"
+    }
+  },
+  "development_160": {
+    "baseline": {
+      "hit_rate_at_10": 0.7625,
+      "mrr": 0.529812,
+      "mttc": 5.35,
+      "efficiency": 0.565,
+      "recommended_technical_score": 0.653194
+    },
+    "candidate": {
+      "hit_rate_at_10": 0.75625,
+      "mrr": 0.520012,
+      "mttc": 5.3625,
+      "efficiency": 0.56375,
+      "recommended_technical_score": 0.646879
+    },
+    "delta": {
+      "hit_rate_at_10": -0.00625,
+      "mrr": -0.0098,
+      "mttc": 0.0125,
+      "efficiency": -0.00125,
+      "recommended_technical_score": -0.006315
+    },
+    "gained_sessions": [],
+    "lost_sessions": ["public_0064"],
+    "scenario_score_delta": {
+      "boundary": 0.0025,
+      "browsing": -0.005859,
+      "buying": -0.000312,
+      "intent_override": -0.026473
+    }
+  },
+  "selection_trace_status": "not present in the hash-bound evaluator reports and not used as a retained quantitative claim",
+  "fold_status": "not run because the primary Development-160 candidate regressed HitRate, MRR, MTTC, Efficiency, and technical score",
+  "holdout_status": "not run during A10a",
+  "full_status": "not run during A10a",
+  "keep_gate": "Candidate questions are explainable, MTTC improves without recall loss, and query construction remains unchanged.",
+  "decision": "reject_and_revert",
+  "revisit_gate": "Comparable evidence exists for feature, size, brand, budget, and other through A11 or an AB1-coordinated B diagnostic; uncovered attributes have an explicit legacy-priority fallback; then run a new Development experiment.",
+  "next_module": "A10b Internal QueryPlan"
+}

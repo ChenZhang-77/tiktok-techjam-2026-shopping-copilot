@@ -8,40 +8,48 @@ distinguishes targeted Buying from open-ended Browsing, retrieves products from
 a frozen 50,000-item Amazon catalog, ranks candidates with explicit constraint
 evidence, and returns safe recommendations with an optional clarification.
 
-The project is intentionally lightweight: the retained runtime requires no
-external API, hosted model, vector database, or token budget. Dense retrieval,
-fusion, and semantic reranking were implemented and measured as reproducible
-experiments, then disabled by default because their tradeoffs were not robust.
+The retained runtime requires no external API, hosted model, vector database,
+or token budget. B9 conditionally executes a pinned local MiniLM dense route for
+broad Browsing and otherwise preserves the structured order. B12's bounded
+adaptive depth is reproducible but disabled by default. Global dense,
+CrossEncoder, and LLM reranking are not enabled.
 
 ## Current Status
 
 The verified integrated checkout and next optimization decision are documented
 in [`docs/current_status.md`](docs/current_status.md). The project-wide route is
-[`docs/optimization_roadmap.md`](docs/optimization_roadmap.md).
+[`docs/optimization_roadmap.md`](docs/optimization_roadmap.md). For a plain-
+language Chinese walkthrough from A1/B1 through the current result, read
+[`docs/human_optimization_recap_zh.md`](docs/human_optimization_recap_zh.md).
 
-Verified result for the retained A11 + B structured runtime:
+Verified Development-160 result for the retained bounded A11 plus B9
+conditional-dense default:
 
 | Metric | Result |
 | --- | ---: |
-| HitRate@10 | 0.818750 |
-| MRR | 0.515156 |
-| MTTC | 4.875000 |
-| Efficiency | 0.612500 |
-| TechnicalScore | 0.686422 |
+| HitRate@10 | 0.86250 |
+| MRR | 0.547329 |
+| MTTC | 4.66875 |
+| Efficiency | 0.633125 |
+| TechnicalScore | 0.722074 |
 
-The same retained checkout was also checked once on the exposed public
-Holdout-40 boundary:
+Latest local A-side state-correction checkpoint (Development-160 only):
 
-| Metric | Holdout-40 |
+| Metric | Result |
 | --- | ---: |
-| HitRate@10 | 0.850000 |
-| MRR | 0.462976 |
-| MTTC | 5.100000 |
-| TechnicalScore | 0.681893 |
+| HitRate@10 | 0.925000 |
+| MRR | 0.552760 |
+| MTTC | 4.13125 |
+| Efficiency | 0.686875 |
+| TechnicalScore | 0.765703 |
 
-The A11 gain comes from deterministic context extraction hardening: catalog
-category plurals are recognized, `mesh` is recognized as a material, and the
-apostrophe in `I'm` is no longer misread as size `M`.
+This checkpoint fixes negation scope, prevents low-confidence fallback text
+from revoking `no-preference`, and aligns the offline taxonomy with the shared
+no-preference detector. It preserves the existing A/B runtime interface and
+does not add an LLM. It was run only on Development-160 with zero response
+exceptions, invalid payloads, and fallbacks. It is not a holdout result and
+does not claim that any single fix caused the full metric change without a
+separate ablation.
 
 Historical Full-200 public snapshot:
 
@@ -81,6 +89,7 @@ What is still true?
 
 ```text
 user message
+  -> scoped extraction with frozen-catalog multi-word categories
   -> SessionState and context update
   -> current Buying/Browsing Strategy
   -> distilled query from active constraints
@@ -88,7 +97,9 @@ user message
   -> cross-field hard/soft constraint ranking
   -> guarded structured filtering
   -> deterministic relaxation and fill
-  -> clarification decision
+  -> broad-Browsing gate -> local dense retrieval + weighted RRF
+     (otherwise exact structured order)
+  -> priority-biased clarification selection
   -> response guard
 ```
 
@@ -105,7 +116,7 @@ Important behaviors:
 The stable integration seam is:
 
 ```text
-HybridRetriever.retrieve(request: RetrievalRequest) -> RetrievalResult
+Retriever.retrieve(request: RetrievalRequest) -> RetrievalResult
 ```
 
 Shared types and leakage validation are in `starter/contracts.py`.
@@ -114,16 +125,21 @@ Shared types and leakage validation are in `starter/contracts.py`.
 
 | Track 4 pillar | Project behavior |
 | --- | --- |
-| Intent Routing and Hybrid Pipeline | Buying/Browsing changes Strategy depth, weights, filtering, and clarification; alternative semantic routes are measured, not assumed |
+| Intent Routing and Hybrid Pipeline | Buying/Browsing changes Strategy and execution; B9 conditionally runs local dense retrieval plus weighted RRF for broad Browsing, with exact structured fallback |
 | Multi-Turn Scenario Evolution | Session state accumulates constraints, tracks no-preference/rejection, and deactivates stale intent on override |
 | Dynamic Context Programming | The Agent rebuilds the query from active state and records Strategy, Candidate, relaxation, and fallback diagnostics |
 | Product and Efficiency Metrics | Development evaluation reports HitRate@10, MRR, MTTC, Efficiency, scenario results, latency, memory, and failures |
 
-AB1 is the retained A/B integration contract: A constructs a
-`RetrievalRequest`, B returns a `RetrievalResult`, and A applies the response
-guard. The request validator rejects evaluator-only fields such as target ASIN
-and ground truth. Profile weighting is disabled (`profile_weight=0.0`) because
-its Development gain did not generalize to Holdout-40.
+AB1 freezes requested, executed, and fallback Route semantics. B8's bounded
+rejected-constraint candidate was reverted because Development-160 supplied
+zero rejection turns. B9 is retained at `7f520ba`: dense and fusion actually
+executed on 102 of 725 retrieval turns, only Browsing outcomes changed, and all
+four fixed folds were non-regressing. B10a then tested Top-3 and Top-5 anchored
+CrossEncoder tails; both reduced MRR and TechnicalScore, so the B9 default is
+unchanged and an actual LLM reranker is not justified by this evidence. B12's
+optional bounded depth candidate has favorable aggregate metrics but remains
+disabled because it lacks a contemporaneous keep/revert gate and gains are
+concentrated in fold 4.
 
 ## What the Ablations Showed
 
@@ -134,15 +150,21 @@ Development-160:
 | Official weak BM25 | 0.12500 | 0.068034 | 0.106710 | Comparison |
 | Pure lexical | 0.71875 | 0.485851 | 0.617005 | Reject as default |
 | Retained structured path | 0.76250 | 0.526989 | 0.653222 | Retain |
-| A11 extraction hardening | 0.81875 | 0.515156 | 0.686422 | Retain |
+| A11 broad extraction candidate | 0.72500 | 0.479085 | 0.613976 | Reject |
+| A11 bounded extraction scope | 0.86250 | 0.545568 | 0.721420 | Retain |
+| B9 broad-Browsing conditional dense | 0.86250 | 0.547329 | 0.722074 | Retain conditionally |
+| B12 bounded adaptive depth | 0.86875 | 0.549735 | 0.727170 | Exploratory; default off |
+| B10a CrossEncoder, Top 3 anchored | 0.87500 | 0.515952 | 0.721411 | Reject as default |
+| B10a CrossEncoder, Top 5 anchored | 0.86875 | 0.524025 | 0.720708 | Reject as default |
 | Dense only | 0.33750 | 0.160501 | 0.272650 | Reject as default |
 | Weighted RRF, k=10 | 0.75000 | 0.486620 | 0.637611 | Reject as default |
 | Semantic rerank, Top 30 | 0.78125 | 0.484162 | 0.656499 | Reject globally; keep experiment |
 
-Semantic reranking gained recall in some Buying/Browsing sessions but reduced
-MRR, regressed Intent Override, split the folds 2/2, and added substantial
-latency and memory. The next defensible semantic experiment is conditional and
-constraint-preserving, after A-side intent is stabilized.
+Global semantic reranking gained recall in some Buying/Browsing sessions but
+reduced MRR, regressed Intent Override, split the folds 2/2, and added
+substantial latency and memory. B9 instead retained a narrow Browsing-only
+dense route. B10a's safer anchored variants also failed: Top 3 split the folds
+2/2 and reduced MRR by `0.031377`; Top 5 still reduced MRR by `0.023304`.
 
 See [`docs/ablation_summary.md`](docs/ablation_summary.md) for decisions and the
 bound JSON reports under `docs/` for numerical provenance.
@@ -150,32 +172,35 @@ bound JSON reports under `docs/` for numerical provenance.
 ## Repository Layout
 
 ```text
-starter/                              Agent, Control Plane, retrieval/ranking
-evaluator/                            official deterministic local evaluator
-experiments/                          split and reporting infrastructure
-tests/                                behavior, contract, fallback, evidence tests
-scripts/                              catalog, cache, experiment, visualizer helpers
-visualizer/                           local dialogue and metric inspection UI
-docs/current_status.md                verified state and next decision
-docs/optimization_roadmap.md          project-wide blockers-first route
-docs/ablation_summary.md              human-readable keep/reject evidence
-docs/workstreams/                     standalone A and B routes
-docs/demo_and_submission_plan.md      delivery, demo, packaging, rehearsal
-submission/                           final minimal package work area
-data/public_set.jsonl                 200 public sessions
+starter/                    Agent, Control Plane, retrieval, and ranking runtime
+evaluator/                  official deterministic local evaluator
+experiments/                Development split, reporting, and offline analysis
+tests/                      behavior, contract, fallback, and evidence tests
+scripts/                    catalog, cache, experiment, and visualizer helpers
+visualizer/                 local dialogue and metric inspection UI
+submission/                 final minimal package staging area
+data/                       public sessions and ignored frozen catalog download
+docs/README.md              documentation navigation index
+docs/project_structure.md   detailed ownership and file-placement rules
+docs/workstreams/           standalone A-side and B-side routes
+docs/*_reports/             raw hash-bound experiment reports
+docs/archive/               completed planning artifacts, not active backlog
 ```
 
-Generated catalog, model, embedding, cache, and experiment-run files are
-ignored by Git.
+The evidence-heavy `docs/` layout is intentional: summary JSON, raw reports,
+tests, and decision documents are hash-bound by stable paths. Generated
+catalog, model, embedding, cache, and ordinary experiment-run files are ignored
+by Git. See [`docs/project_structure.md`](docs/project_structure.md) before
+adding or moving directories.
 
 ## Quickstart
 
 Requirements:
 
-- Python 3.10 or newer for the default standard-library runtime.
+- Python 3.10 or newer for deterministic structured fallback behavior.
 - The official frozen catalog release.
-- Python 3.12 plus `requirements-dense.txt` only for optional semantic
-  experiments.
+- Python 3.12 plus `requirements-dense.txt`, the pinned model, and a compatible
+  embedding cache to activate the retained B9 dense route.
 
 Clone and enter the repository:
 
@@ -197,8 +222,8 @@ Run the complete test suite:
 .venv/bin/python -m unittest discover -s tests -v
 ```
 
-If no project virtual environment is present, the default runtime uses only
-the Python standard library:
+If no project virtual environment or dense cache is present, the Agent degrades
+to its deterministic standard-library structured path:
 
 ```bash
 python3 -m unittest discover -s tests -v
@@ -222,9 +247,7 @@ For an isolated named development run:
 ./scripts/start_experiment.sh experiment-name --split development
 ```
 
-The script starts the visualizer only after its health endpoint responds and
-opens it automatically. To suppress browser opening for a run, use
-`TIKTOK_OPEN_VISUALIZER=0`. An optional fold can be selected:
+An optional fold can be selected:
 
 ```bash
 ./scripts/start_experiment.sh experiment-name \
@@ -247,7 +270,7 @@ That information is evaluator-only and is never a valid Agent or retrieval
 input. A public demo must clearly separate the Agent-visible view from the
 evaluator/debug view.
 
-## Optional Semantic Experiments
+## Local Dense and Optional Semantic Setup
 
 Install pinned optional dependencies in a Python 3.12 environment:
 
@@ -256,7 +279,7 @@ python3.12 -m venv .venv
 .venv/bin/python -m pip install -r requirements-dense.txt
 ```
 
-Dense benchmark cache:
+Retained B9 dense cache:
 
 ```bash
 .venv/bin/python -m scripts.build_dense_index \
@@ -273,33 +296,80 @@ Semantic reranker cache and Development-160 experiment:
 ```
 
 Model downloads are cache-preparation actions, not ordinary runtime behavior.
-After preparation, loading is local-only and failures return the exact
-pre-rerank order.
+After preparation, loading is local-only. Missing/incompatible cache or model
+failures return the exact structured order.
 
 ## Current Optimization Route
 
-The current retained route is:
-
-1. retain the deterministic A11 extraction fixes,
-2. retain and test the AB1 A/B contract without changing its interface,
-3. keep A8, A9, A10, and A12 variants reverted unless new evidence supports a
-   fresh experiment,
-4. freeze the simplest robust configuration,
-5. complete public documentation, demo, and the submission package.
-
-See [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md) and the A/B
-workstream documents for experiment gates and ownership.
+R0 is complete: the corrected clean Development-160 audit classified 25 of 38
+misses as Intent / Strategy Routing, seven as State / Override, and six as
+Extraction, while the target entered the retained lexical pool in 145 of 160
+sessions. See
+[`docs/r0_development_failure_taxonomy.md`](docs/r0_development_failure_taxonomy.md).
+The retained A8 module now persists a complete cross-turn `IntentAssessment`.
+Development-160 HitRate stayed `0.7625`, MRR rose by `0.002823`, Buying improved
+in three of four folds, and Browsing did not regress; the overall score was
+effectively neutral and Intent Override regressed slightly. See
+[`docs/a8_stateful_intent_evidence.md`](docs/a8_stateful_intent_evidence.md).
+AB0 now makes a compact full-pool `DecisionEvidence` available before
+clarification with exact 160-session / 818-turn dialogue parity and no shared
+contract change. See
+[`docs/ab0_decision_evidence.md`](docs/ab0_decision_evidence.md). The
+tested A9 should-ask gate was rejected and reverted after HitRate fell to
+`0.7500` and MTTC rose to `5.43125`.
+See [`docs/a9_should_ask_evidence.md`](docs/a9_should_ask_evidence.md). The
+A10a full-pool question-value candidate was also rejected and reverted after
+HitRate fell to `0.75625`, MRR to `0.520012`, and MTTC rose to `5.3625`; current
+partition evidence is incomplete across allowed attributes. See
+[`docs/a10a_question_value_evidence.md`](docs/a10a_question_value_evidence.md).
+A10b now retains an A-internal `QueryPlan` that separates positive roles,
+residual text, and excluded values while continuing to send B the same single
+query string. Development-160 metrics and all session outcomes are unchanged.
+See [`docs/a10b_query_plan_evidence.md`](docs/a10b_query_plan_evidence.md).
+A11 now retains bounded catalog-derived multi-word category extraction,
+clause-scoped positive/negative/no-preference evidence, and numeric/hyphen
+disambiguation. Review fixes also keep comma-delimited negative/no-preference
+lists scoped, prevent catalog phrases from crossing punctuation, and bind
+injected retrievers to their actual catalog. Development-160 improved to HR
+`0.8625`, MRR `0.545568`, MTTC `4.675`, and technical score `0.721420`; all four
+fixed folds improved. The combined broad candidate was rejected, while its
+individual components remain unproven without independent evidence. Boundary
+quality remains a disclosed risk. See
+[`docs/a11_extraction_scope_evidence.md`](docs/a11_extraction_scope_evidence.md).
+AB1 retained exact Development/fold/session parity while making requested and
+executed Routes truthful. See
+[`docs/ab1_route_semantics_evidence.md`](docs/ab1_route_semantics_evidence.md).
+B8's exact, confidence-aware penalty passed targeted tests but was reverted
+because all 726 Development turns carried zero rejected constraints. See
+[`docs/b8_rejected_constraint_evidence.md`](docs/b8_rejected_constraint_evidence.md).
+B9 now retains the Browsing-first conditional dense Route at `7f520ba`; see
+[`docs/b9_conditional_dense_evidence.md`](docs/b9_conditional_dense_evidence.md).
+B10a is rejected as a runtime default while its reproducible experiment remains
+available; see
+[`docs/b10a_constraint_rerank_evidence.md`](docs/b10a_constraint_rerank_evidence.md).
+B10b is not justified without new R0 evidence. The refreshed B11 audit found
+zero retrieval/ranking primary misses and 157/160 retained-depth lexical
+recall, so B11 was not started. B12 remains an explicit exploratory option at
+`82891c8`; it is disabled by default because no contemporaneous selection gate
+was recorded and its fold gain is concentrated. Its favorable candidate
+metrics are reported as an experiment, not the default; see
+[`docs/b11_prerequisite_evidence.md`](docs/b11_prerequisite_evidence.md) and
+[`docs/b12_adaptive_depth_evidence.md`](docs/b12_adaptive_depth_evidence.md).
+`AGENTS.md` owns the taxonomy and
+leakage boundary; [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md)
+owns the complete order.
 
 ## Reliability and Cost
 
-Historical retained Development-160 evidence:
+Retained B9 Development-160 evidence:
 
 | Measure | Value |
 | --- | ---: |
-| Initialization | about 1.25 s |
-| Mean retrieval latency | about 36.87 ms |
-| p95 retrieval latency | about 82.69 ms |
-| Peak RSS | about 574 MB |
+| Initialization | about 3.58 s |
+| Mean retrieval latency | about 21.73 ms |
+| p95 retrieval latency | about 40.44 ms |
+| Peak RSS | about 1.109 GB |
+| Dense route mean / p95 | about 4.70 / 5.03 ms |
 | Prompt/completion tokens | 0 / 0 |
 | Response exceptions | 0 |
 | Invalid response payloads | 0 |
@@ -311,13 +381,20 @@ hard filters, duplicate/invalid ASINs, and Candidate Pool shortages.
 ## Limitations
 
 - The historical public holdout is exposed and cannot support a sealed claim.
-- Current intent inference is still too current-utterance-sensitive; the A8
-  persistence experiment was not retained.
+- Stateful intent is retained, but confidence remains an ordinal A-side signal,
+  not a calibrated probability. B12's A-owned bounded-depth experiment is
+  disabled by default; two primary State / Override misses remain.
 - Clarification remains priority-biased and does not yet have a complete
   should-ask uncertainty gate.
-- Rule-based extraction has vocabulary and negation-scope limits.
+- Four primary Development Extraction misses remain. Broader extraction
+  alternatives remain unproven without independent hash-bound evidence.
 - Profile ranking is disabled at weight 0.0.
-- Dense/fusion/semantic paths are not the default runtime.
+- B9 closes the literal Browsing-dense route only for its narrow gate; global
+  dense remains rejected and an actual LLM ranker is still absent.
+- B9 adds about 1.5 seconds of initialization and about 546 MB of observed peak
+  RSS for a small rank/turn gain with no additional hits.
+- Long-term profile value has not been demonstrated; profile ranking remains
+  disabled at weight 0.0.
 - Public sessions are deterministic simulations derived from product metadata,
   not real shopping conversations.
 - Private organizer evaluation is the remaining external test of paraphrase and

@@ -3,9 +3,24 @@ from __future__ import annotations
 import unittest
 
 from starter.core.state import SessionState
+from starter.core.context_engine import IntentAssessment
 
 
 class SessionStateTest(unittest.TestCase):
+    def test_intent_assessment_persists_the_complete_cross_turn_decision(self) -> None:
+        state = SessionState(session_id="s1", user_profile={})
+        assessment = IntentAssessment(
+            intent="buying",
+            confidence=0.9,
+            evidence=("current_hard_constraint",),
+            source_turn=2,
+            transition_reason="accumulated",
+        )
+
+        state.set_intent_assessment(assessment)
+
+        self.assertIs(state.intent_assessment, assessment)
+        self.assertEqual(state.intent, "buying")
     def test_history_accumulates_and_records_agent_response(self) -> None:
         state = SessionState(session_id="s1", user_profile={"summary": "test"})
 
@@ -94,6 +109,28 @@ class SessionStateTest(unittest.TestCase):
         self.assertEqual(state.active_constraint_values("color"), [])
         self.assertEqual(state.no_preference_attributes, {"color"})
         self.assertEqual([item["normalized_value"] for item in state.rejected_constraints], ["black"])
+
+    def test_later_explicit_preference_is_not_hidden_by_no_preference(self) -> None:
+        state = SessionState(session_id="s1", user_profile={})
+        state.apply_user_context(constraints=[], no_preference_attributes=["feature"])
+        state.apply_user_context(
+            constraints=[{"attribute": "feature", "normalized_value": "mesh"}]
+        )
+
+        self.assertEqual(state.active_constraint_values("feature"), ["mesh"])
+        self.assertNotIn("feature", state.no_preference_attributes)
+
+    def test_low_confidence_fallback_does_not_restore_no_preference(self) -> None:
+        state = SessionState(session_id="s1", user_profile={})
+        state.apply_user_context(constraints=[], no_preference_attributes=["feature"])
+        state.apply_user_context(constraints=[{
+            "attribute": "feature",
+            "normalized_value": "show me more options",
+            "confidence": 0.35,
+        }])
+
+        self.assertIn("feature", state.no_preference_attributes)
+        self.assertEqual(state.active_constraint_values("feature"), [])
 
     def test_rejected_constraint_is_not_readded_as_active(self) -> None:
         state = SessionState(session_id="s1", user_profile={})

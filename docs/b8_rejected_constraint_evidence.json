@@ -1,0 +1,104 @@
+{
+  "version": "b8-v1",
+  "experiment": {
+    "id": "B8",
+    "owner": "developer_b_retrieval_ranking",
+    "hypothesis": "An exact, high-confidence rejected attribute can apply a bounded soft ranking penalty while missing evidence remains neutral.",
+    "candidate_code_commit": "f53a7ee",
+    "default_revert_commit": "3952788",
+    "decision": "do_not_retain_zero_development_coverage"
+  },
+  "candidate_behavior": {
+    "confidence_threshold": 0.8,
+    "maximum_total_penalty": 0.18,
+    "product_evidence": "exact normalized value match in catalog-derived product text",
+    "missing_product_evidence": "neutral",
+    "low_confidence_rejection": "neutral",
+    "hard_exclusion": false,
+    "newer_active_same_value": "suppresses the older rejection",
+    "no_preference_attribute": "suppresses positive and negative influence",
+    "candidate_diagnostics": [
+      "rejection_penalty",
+      "rejected_constraint_matches"
+    ]
+  },
+  "evaluation_boundary": {
+    "selection_split": "Development-160",
+    "fixed_folds": "development-folds-v1",
+    "full_or_holdout_used": false,
+    "target_information_in_runtime": false,
+    "target_information_used_offline": true,
+    "offline_target_use": "Development-only failure audit; no target field crossed RetrievalRequest or Agent runtime"
+  },
+  "baseline": {
+    "report": "docs/ab1_reports/development_route_semantics.json",
+    "sha256": "8220ad97e1ebbdd8d5bd5ae834d7d064079afc49e1c6820d5e9dfae39ff0a8a2"
+  },
+  "candidate": {
+    "report": "docs/b8_reports/development_candidate.json",
+    "sha256": "15ceb85d46f44733491c2cebad56d614e171c652d8fab0c634f53f65d954ff30",
+    "clean_code_commit": "f53a7ee",
+    "session_outcome_sha256": "41f7a9dede01e03439a76615adca62cbac1181619970d9ff345dca00608a5621",
+    "metrics": {
+      "hit_rate_at_10": 0.8625,
+      "mrr": 0.545568,
+      "mttc": 4.675,
+      "efficiency": 0.6325,
+      "recommended_technical_score": 0.72142
+    },
+    "metrics_equal_baseline": true,
+    "sessions_equal_baseline": true,
+    "scenario_metrics_equal_baseline": true
+  },
+  "activation_audit": {
+    "report": "docs/b8_reports/development_rejection_audit.json",
+    "sha256": "1a06386c69173c6cda85988e9afd79961dcd6ced6095435218f5c93cfb9a68a3",
+    "sample_count": 160,
+    "retrieval_turn_count": 726,
+    "turns_with_rejected_constraints": 0,
+    "observed_rejected_constraint_count": 0,
+    "consequence": "No Development turn could activate the B8 ranking variable, so metric parity is non-evidence for usefulness."
+  },
+  "fold_reports": {
+    "fold_1": {
+      "path": "docs/b8_reports/fold_1_candidate.json",
+      "sha256": "e71f3eaecf84c6d40992d20a5541f35c0b33a5361b7cf953930b898228bd1496",
+      "equal_baseline": true
+    },
+    "fold_2": {
+      "path": "docs/b8_reports/fold_2_candidate.json",
+      "sha256": "515deaecd12563c489560481721906858f8bb4bd6227a57d213a1a3601344b78",
+      "equal_baseline": true
+    },
+    "fold_3": {
+      "path": "docs/b8_reports/fold_3_candidate.json",
+      "sha256": "efd9da8d1f69f22c9acc42a0b2ae82c51b8637fe52a168853824b3971ffe887e",
+      "equal_baseline": true
+    },
+    "fold_4": {
+      "path": "docs/b8_reports/fold_4_candidate.json",
+      "sha256": "4b182b41b659daf24f50a0b9f767b87649f78a99537d0593e3c42b64ea1e0a18",
+      "equal_baseline": true
+    }
+  },
+  "verification": {
+    "candidate_focused_tests": "86/86",
+    "candidate_full_tests": "243/243",
+    "reverted_full_tests": "238/238",
+    "targeted_properties": [
+      "exact high-confidence rejection lowers a matching product",
+      "missing product evidence is neutral",
+      "low-confidence rejection is neutral",
+      "active positive same value overrides an older rejection",
+      "no-preference removes positive and negative influence",
+      "penalty and matched evidence are exposed in candidate diagnostics"
+    ]
+  },
+  "decision_rationale": [
+    "The candidate mechanics pass targeted deterministic tests.",
+    "Development-160 and every fixed fold contain zero rejected-constraint observations.",
+    "The documented B8 keep gate requires intended-bucket evidence and fold support; exact parity under zero activation does not satisfy it.",
+    "The default runtime therefore reverts the candidate rather than tuning on Full-200 or the exposed holdout."
+  ],
+  "next_module": "B9 Browsing-First Conditional Dense Route"
+}

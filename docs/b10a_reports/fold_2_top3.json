@@ -1,0 +1,594 @@
+{
+  "sample_count": 40,
+  "hit_rate_at_10": 0.9,
+  "mrr": 0.570308,
+  "mttc": 4.55,
+  "efficiency": 0.645,
+  "recommended_technical_score": 0.750092,
+  "reported_token_usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  },
+  "scenario_metrics": {
+    "boundary": {
+      "sample_count": 2,
+      "hit_rate_at_10": 1.0,
+      "mrr": 0.6,
+      "mttc": 6.0,
+      "efficiency": 0.5,
+      "recommended_technical_score": 0.78
+    },
+    "browsing": {
+      "sample_count": 16,
+      "hit_rate_at_10": 0.9375,
+      "mrr": 0.462574,
+      "mttc": 3.625,
+      "efficiency": 0.7375,
+      "recommended_technical_score": 0.755022
+    },
+    "buying": {
+      "sample_count": 16,
+      "hit_rate_at_10": 0.8125,
+      "mrr": 0.56875,
+      "mttc": 4.9375,
+      "efficiency": 0.60625,
+      "recommended_technical_score": 0.698125
+    },
+    "intent_override": {
+      "sample_count": 6,
+      "hit_rate_at_10": 1.0,
+      "mrr": 0.851852,
+      "mttc": 5.5,
+      "efficiency": 0.55,
+      "recommended_technical_score": 0.865556
+    }
+  },
+  "sessions": [
+    {
+      "sample_id": "public_0003",
+      "scenario_type": "intent_override",
+      "hit": true,
+      "first_hit_turn": 7,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0011",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 8,
+      "reciprocal_rank": 0.125
+    },
+    {
+      "sample_id": "public_0020",
+      "scenario_type": "buying",
+      "hit": false,
+      "first_hit_turn": null,
+      "best_rank": null,
+      "reciprocal_rank": 0.0
+    },
+    {
+      "sample_id": "public_0021",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 4,
+      "best_rank": 2,
+      "reciprocal_rank": 0.5
+    },
+    {
+      "sample_id": "public_0022",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 6,
+      "best_rank": 3,
+      "reciprocal_rank": 0.3333333333333333
+    },
+    {
+      "sample_id": "public_0026",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 7,
+      "best_rank": 4,
+      "reciprocal_rank": 0.25
+    },
+    {
+      "sample_id": "public_0027",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 7,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0029",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0034",
+      "scenario_type": "intent_override",
+      "hit": true,
+      "first_hit_turn": 6,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0036",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 3,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0041",
+      "scenario_type": "boundary",
+      "hit": true,
+      "first_hit_turn": 7,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0047",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 4,
+      "best_rank": 10,
+      "reciprocal_rank": 0.1
+    },
+    {
+      "sample_id": "public_0049",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 7,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0052",
+      "scenario_type": "intent_override",
+      "hit": true,
+      "first_hit_turn": 7,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0054",
+      "scenario_type": "buying",
+      "hit": false,
+      "first_hit_turn": null,
+      "best_rank": null,
+      "reciprocal_rank": 0.0
+    },
+    {
+      "sample_id": "public_0065",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 1,
+      "best_rank": 6,
+      "reciprocal_rank": 0.16666666666666666
+    },
+    {
+      "sample_id": "public_0067",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 1,
+      "best_rank": 4,
+      "reciprocal_rank": 0.25
+    },
+    {
+      "sample_id": "public_0072",
+      "scenario_type": "intent_override",
+      "hit": true,
+      "first_hit_turn": 3,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0082",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 1,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0091",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0093",
+      "scenario_type": "buying",
+      "hit": false,
+      "first_hit_turn": null,
+      "best_rank": null,
+      "reciprocal_rank": 0.0
+    },
+    {
+      "sample_id": "public_0096",
+      "scenario_type": "intent_override",
+      "hit": true,
+      "first_hit_turn": 6,
+      "best_rank": 9,
+      "reciprocal_rank": 0.1111111111111111
+    },
+    {
+      "sample_id": "public_0100",
+      "scenario_type": "browsing",
+      "hit": false,
+      "first_hit_turn": null,
+      "best_rank": null,
+      "reciprocal_rank": 0.0
+    },
+    {
+      "sample_id": "public_0106",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 7,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0111",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 8,
+      "best_rank": 10,
+      "reciprocal_rank": 0.1
+    },
+    {
+      "sample_id": "public_0113",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 3,
+      "reciprocal_rank": 0.3333333333333333
+    },
+    {
+      "sample_id": "public_0114",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0116",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0119",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 1,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0122",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 3,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0138",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 7,
+      "reciprocal_rank": 0.14285714285714285
+    },
+    {
+      "sample_id": "public_0141",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 4,
+      "best_rank": 5,
+      "reciprocal_rank": 0.2
+    },
+    {
+      "sample_id": "public_0147",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 3,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0164",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 1,
+      "best_rank": 6,
+      "reciprocal_rank": 0.16666666666666666
+    },
+    {
+      "sample_id": "public_0168",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 1,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0181",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 7,
+      "best_rank": 3,
+      "reciprocal_rank": 0.3333333333333333
+    },
+    {
+      "sample_id": "public_0182",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 1,
+      "best_rank": 4,
+      "reciprocal_rank": 0.25
+    },
+    {
+      "sample_id": "public_0186",
+      "scenario_type": "intent_override",
+      "hit": true,
+      "first_hit_turn": 4,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0192",
+      "scenario_type": "boundary",
+      "hit": true,
+      "first_hit_turn": 5,
+      "best_rank": 5,
+      "reciprocal_rank": 0.2
+    },
+    {
+      "sample_id": "public_0196",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 4,
+      "reciprocal_rank": 0.25
+    }
+  ],
+  "code_provenance": {
+    "commit": "93b5b19",
+    "worktree_clean": true
+  },
+  "observed_run_counts": {
+    "respond_exceptions": 0,
+    "invalid_response_payloads": 0,
+    "reported_fallbacks": 0,
+    "internal_fallbacks": 0,
+    "internal_fallbacks_note": "B1 Agent diagnostics expose fallback_used at the public boundary."
+  },
+  "retrieval_diagnostics": {
+    "route_candidate_counts": {
+      "lexical": {
+        "response_count": 178,
+        "total": 17300,
+        "mean": 97.191011,
+        "min": 60,
+        "max": 120
+      },
+      "structured": {
+        "response_count": 178,
+        "total": 17300,
+        "mean": 97.191011,
+        "min": 60,
+        "max": 120
+      },
+      "dense": {
+        "response_count": 38,
+        "total": 4560,
+        "mean": 120.0,
+        "min": 120,
+        "max": 120
+      },
+      "fusion": {
+        "response_count": 38,
+        "total": 7880,
+        "mean": 207.368421,
+        "min": 164,
+        "max": 236
+      }
+    },
+    "route_overlap_counts": {
+      "lexical|structured": {
+        "response_count": 178,
+        "total": 17300,
+        "mean": 97.191011,
+        "min": 60,
+        "max": 120
+      },
+      "structured|dense": {
+        "response_count": 38,
+        "total": 1240,
+        "mean": 32.631579,
+        "min": 4,
+        "max": 76
+      }
+    },
+    "route_failure_counts": {},
+    "requested_route_counts": {
+      "lexical": 178,
+      "structured": 178,
+      "dense": 121
+    },
+    "executed_route_counts": {
+      "semantic_rerank": 178,
+      "lexical": 178,
+      "structured": 178,
+      "dense": 38,
+      "fusion": 38
+    },
+    "requested_not_executed_route_counts": {
+      "dense": 83
+    },
+    "fallback_route_counts": {},
+    "route_semantics_unreported_responses": 0,
+    "structured_filter_applied_responses": 45,
+    "relaxed_constraint_responses": 1,
+    "filtered_pool_step_count": 68,
+    "cache_state_counts": {
+      "lexical_index:memory_ready": 178,
+      "structured_evidence:memory_ready": 178,
+      "semantic_reranker:local_only_ready": 178,
+      "dense:compatible": 38
+    },
+    "rerank_pool_size": {
+      "response_count": 178,
+      "total": 4806,
+      "mean": 27.0,
+      "min": 27,
+      "max": 27
+    }
+  },
+  "timing": {
+    "initialization_ms": 3793.593125,
+    "evaluation_wall_ms": 18670.23175,
+    "responses": {
+      "response_count": 178,
+      "total_ms": 18350.242671,
+      "mean_ms": 103.091251,
+      "p50_ms": 94.130792,
+      "p95_ms": 116.957959,
+      "max_ms": 1994.196042
+    },
+    "retrieval": {
+      "latency": {
+        "response_count": 178,
+        "total_ms": 17420.631813,
+        "mean_ms": 97.868718,
+        "p50_ms": 88.7275,
+        "p95_ms": 110.297333,
+        "max_ms": 1989.732251
+      },
+      "lexical_latency": {
+        "response_count": 178,
+        "total_ms": 2411.701627,
+        "mean_ms": 13.548886,
+        "p50_ms": 14.212333,
+        "p95_ms": 25.106958,
+        "max_ms": 34.272708
+      },
+      "constraint_rerank_latency": {
+        "response_count": 178,
+        "total_ms": 945.200082,
+        "mean_ms": 5.310113,
+        "p50_ms": 4.928666,
+        "p95_ms": 13.201708,
+        "max_ms": 17.063625
+      },
+      "structured_filter_latency": {
+        "response_count": 178,
+        "total_ms": 60.789244,
+        "mean_ms": 0.341513,
+        "p50_ms": 0.000125,
+        "p95_ms": 1.830458,
+        "max_ms": 3.43075
+      },
+      "semantic_rerank_latency": {
+        "response_count": 178,
+        "total_ms": 13082.814175,
+        "mean_ms": 73.498956,
+        "p50_ms": 66.347583,
+        "p95_ms": 68.760042,
+        "max_ms": 1984.644542
+      },
+      "dense_latency": {
+        "response_count": 38,
+        "total_ms": 188.38425,
+        "mean_ms": 4.95748,
+        "p50_ms": 4.645542,
+        "p95_ms": 5.646833,
+        "max_ms": 12.440375
+      },
+      "fusion_latency": {
+        "response_count": 38,
+        "total_ms": 15.786464,
+        "mean_ms": 0.415433,
+        "p50_ms": 0.41125,
+        "p95_ms": 0.4765,
+        "max_ms": 0.512708
+      }
+    }
+  },
+  "resources": {
+    "peak_rss_bytes": 1107083264,
+    "peak_rss_kind": "process_peak_rss"
+  },
+  "evaluation": {
+    "dataset": "data/public_set.jsonl",
+    "split": "development",
+    "split_manifest": "docs/public_split_v1.json",
+    "split_version": "public-split-v1",
+    "development_fold": "fold_2",
+    "development_fold_manifest": "docs/development_folds_v1.json",
+    "development_fold_version": "development-folds-v1",
+    "retrieval_mode": "constraint_preserving_rerank",
+    "structured_filter": true,
+    "fusion_rrf_k": null,
+    "conditional_dense_configuration": {
+      "gate": "browsing_with_sparse_active_constraints",
+      "max_active_constraints": 1,
+      "min_base_candidates": 30,
+      "rrf_k": 60.0,
+      "max_accepted_dense_latency_ms": 250.0,
+      "latency_budget_kind": "post_execution_acceptance_budget",
+      "dense_warmup_status": "ready"
+    },
+    "reranker_configuration": {
+      "candidate_limit": 30,
+      "anchor_count": 3,
+      "tail_start_rank": 4,
+      "base_score_weight": 0.35,
+      "semantic_rank_weight": 0.65,
+      "constraint_guard_enabled": true,
+      "minimum_constraint_confidence": 0.75,
+      "model_id": "cross-encoder/ms-marco-MiniLM-L2-v2",
+      "model_revision": "1b5cd67b15209f24824c50370e0397743aa9b787",
+      "model_cache_dir": "models/huggingface/hub",
+      "batch_size": 16,
+      "max_length": 256,
+      "timeout_ms": 5000.0,
+      "runtime_network_access": false,
+      "failure_fallback": "exact_pre_rerank_candidate_order"
+    },
+    "dense_configuration": {
+      "cache_dir": "embeddings/minilm-l6-v2-v1",
+      "cache_schema_version": 1,
+      "cache_status": "compatible",
+      "cache_available": true,
+      "cache_size_bytes": 77501054,
+      "build_seconds": 255.086887,
+      "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+      "model_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+      "dimension": 384,
+      "dtype": "float32",
+      "normalized": true,
+      "product_text_template": "product-fields-v1",
+      "query_text_template": "distilled-query-v1"
+    },
+    "fallback_configuration": {
+      "conditional_dense_gate_skip": "exact_structured_order",
+      "conditional_dense_degradation": "exact_structured_order",
+      "semantic_rerank_failure": "exact_pre_rerank_candidate_order"
+    }
+  }
+}

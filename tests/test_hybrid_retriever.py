@@ -130,6 +130,36 @@ def _request(intent: str) -> RetrievalRequest:
 
 
 class HybridRetrieverTest(unittest.TestCase):
+    def test_rejected_constraint_matches_are_explicit_and_missing_evidence_stays_unknown(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            catalog_path = Path(directory) / "catalog.jsonl"
+            _write_catalog(catalog_path)
+            retriever = HybridRetriever(catalog_path)
+            request = replace(
+                _request("buying"),
+                rejected_constraints=[
+                    {
+                        "attribute": "material",
+                        "normalized_value": "leather",
+                        "confidence": 0.95,
+                        "active": True,
+                    }
+                ],
+            )
+
+            result = retriever.retrieve(request)
+            by_id = {candidate.parent_asin: candidate for candidate in result.candidates}
+
+            self.assertEqual(
+                by_id["A"].diagnostics["rejected_constraint_matches"][0]["value"],
+                "leather",
+            )
+            self.assertEqual(
+                by_id["E"].diagnostics["rejected_constraint_matches"],
+                [],
+            )
+            self.assertNotIn("constraint_guard_status", by_id["E"].diagnostics)
+
     def test_representative_orders_match_the_embedded_buying_and_browsing_path(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             catalog_path = Path(directory) / "catalog.jsonl"
@@ -147,6 +177,19 @@ class HybridRetrieverTest(unittest.TestCase):
                     }[intent]
 
                     self.assertEqual(actual, golden)
+                    self.assertEqual(
+                        result.diagnostics.requested_route_weights,
+                        {
+                            "lexical": request.strategy.lexical_weight,
+                            "structured": request.strategy.structured_weight,
+                            "dense": request.strategy.semantic_weight,
+                        },
+                    )
+                    self.assertEqual(
+                        result.diagnostics.executed_routes,
+                        ["lexical", "structured"],
+                    )
+                    self.assertIsNone(result.diagnostics.fallback_route)
 
     def test_field_weight_order_matches_the_embedded_bm25_baseline(self) -> None:
         rows = [

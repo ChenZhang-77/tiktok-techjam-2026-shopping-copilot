@@ -19,6 +19,11 @@ def _constraint_summary(items: list[dict]) -> list[dict]:
 def state_diagnostics(state: SessionState) -> dict:
     diagnostics = {
         "intent": state.intent,
+        "intent_assessment": (
+            state.intent_assessment.to_dict()
+            if state.intent_assessment is not None
+            else None
+        ),
         "active_constraints": _constraint_summary(state.active_constraints),
         "overridden_constraints": _constraint_summary(state.overridden_constraints),
         "rejected_constraints": _constraint_summary(state.rejected_constraints),

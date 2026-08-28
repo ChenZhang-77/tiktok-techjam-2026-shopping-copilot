@@ -25,6 +25,18 @@ The current search expression derived from active customer intent without stale
 or overridden preferences.
 _Avoid_: full history, raw query
 
+**QueryPlan**:
+An A-owned current-turn decomposition of category, hard, soft, semantic,
+residual, and excluded evidence. It renders the existing single Distilled Query
+for B; it is not a shared typed-query contract.
+_Avoid_: RetrievalRequest schema extension, treating excluded terms as positive
+
+**Catalog Vocabulary**:
+An A-owned deterministic set of multi-word category phrases derived from the
+frozen runtime catalog. The retained A11 vocabulary does not include broad
+feature phrases or inferred single-word brands.
+_Avoid_: target vocabulary, evaluator labels, unrestricted feature dictionary
+
 **Active Constraint**:
 A current customer requirement or preference that may influence retrieval or
 ranking and has not been overridden, rejected, or marked no-preference.
@@ -50,12 +62,6 @@ Non-label operational evidence about route availability, pool sizes, filtering,
 fallbacks, latency, and candidate overlap.
 _Avoid_: evaluator diagnostics, target data
 
-**Intent Confidence**:
-An agent-side estimate of how stable and specific the current intent is, based
-only on the conversation observed so far. It may guide questioning or retrieval
-depth but must not use evaluator labels.
-_Avoid_: probability of target hit, evaluation confidence
-
 **Over-Generality**:
 A state in which the current intent leaves too many materially different
 candidate interpretations for reliable ranking.
@@ -66,11 +72,23 @@ The expected reduction in decision-relevant uncertainty from asking one
 clarifying question, weighed against its extra-turn cost.
 _Avoid_: always ask when an attribute is missing
 
+Current boundary: the A-side Candidate vocabulary supplies comparable partition
+evidence only for category/material/color/style/use-case. Missing evidence for
+feature/size/brand/budget/other is not a zero Question Value and must not be
+ranked as though it were.
+
 **Candidate Stability**:
 How little the leading Candidate Pool changes under small, valid changes to the
 query or active state. Low stability may justify clarification or a guarded
 fallback.
 _Avoid_: deterministic execution
+
+**Decision Evidence**:
+An A-side, label-free summary of the complete current Candidate Pool and
+cross-turn state made available before clarification. It carries bounded
+availability/status fields, never target data or raw Candidate text/IDs in
+public diagnostics. An uncalibrated route-local score margin is not a gate.
+_Avoid_: evaluator evidence, target rank, automatic should-ask rule
 
 **Conditional Route**:
 An optional retrieval or reranking route activated only for a declared,
@@ -80,7 +98,9 @@ _Avoid_: globally enabled experiment
 **Retained Runtime**:
 The configuration enabled by default after passing the declared development
 gate. For the current checkpoint, this is lexical retrieval plus structured
-scoring.
+scoring for every request, with B9 local dense retrieval and weighted RRF only
+behind the measured broad-Browsing gate. B12 adaptive depth is optional and
+disabled by default.
 _Avoid_: every implemented path
 
 **Rejected Ablation**:
@@ -88,6 +108,24 @@ An implemented experiment whose measured development tradeoff did not justify
 retaining it in the default runtime. Its code or reports are not evidence that
 the method is active.
 _Avoid_: failed implementation
+
+**Offline Failure Class**:
+The earliest causal execution stage explaining a Development-160 failure. The
+canonical order is Extraction, State / Override, Intent / Strategy Routing,
+Query Construction, Question Policy, Retrieval Recall, Ranking / Filtering,
+and Response / Contract. Later contributing stages may be secondary causes.
+_Avoid_: per-document taxonomy, evaluator timing as Agent behavior
+
+**Offline Evaluation Evidence**:
+Development-only target ASIN, hit/miss, target rank, and pre/post-rank position
+used to diagnose failures. It may appear in offline reports but never in Agent
+state, requests, runtime diagnostics, prompts, Strategy, rules, or models.
+_Avoid_: runtime signal, holdout tuning
+
+**Evaluation Validity Flag**:
+An offline marker for evaluator/timing/data anomalies that may invalidate or
+qualify a sample analysis. It is separate from the Agent failure taxonomy.
+_Avoid_: timing failure as an Agent behavior class
 
 ## Evaluation language
 

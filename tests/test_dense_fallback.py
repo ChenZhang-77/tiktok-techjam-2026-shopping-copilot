@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import tempfile
+import time
 import unittest
 from dataclasses import replace
 from pathlib import Path
@@ -67,6 +68,65 @@ def _request() -> RetrievalRequest:
 
 
 class DenseFallbackTest(unittest.TestCase):
+    def test_prepare_warms_a_compatible_backend_without_querying_products(self) -> None:
+        class PreparedBackend:
+            def __init__(self) -> None:
+                self.prepare_calls = 0
+
+            def prepare(self) -> None:
+                self.prepare_calls += 1
+
+            def rank(self, query: str, top_n: int) -> list[tuple[int, float]]:
+                return [(0, 1.0)]
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "catalog.jsonl"
+            cache = root / "cache"
+            cache.mkdir()
+            _write_catalog(catalog)
+            _write_compatible_cache(cache, catalog)
+            backend = PreparedBackend()
+            retriever = DenseRetriever(
+                catalog,
+                config=DenseConfig(cache_dir=cache),
+                backend_factory=lambda _config, _ids: backend,
+            )
+
+            status = retriever.prepare()
+
+            self.assertIsNone(status)
+            self.assertEqual(backend.prepare_calls, 1)
+            self.assertEqual(retriever.configuration_snapshot()["cache_status"], "compatible")
+
+    def test_prepare_failure_disables_dense_and_preserves_structured_fallback(self) -> None:
+        class FailingPrepareBackend:
+            def prepare(self) -> None:
+                raise OSError("model unavailable")
+
+            def rank(self, query: str, top_n: int) -> list[tuple[int, float]]:
+                raise AssertionError("disabled backend must not be queried")
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "catalog.jsonl"
+            cache = root / "cache"
+            cache.mkdir()
+            _write_catalog(catalog)
+            _write_compatible_cache(cache, catalog)
+            retriever = DenseRetriever(
+                catalog,
+                config=DenseConfig(cache_dir=cache),
+                backend_factory=lambda _config, _ids: FailingPrepareBackend(),
+            )
+
+            status = retriever.prepare()
+            result = retriever.retrieve(_request())
+
+            self.assertEqual(status, "dense_warmup_failed")
+            self.assertTrue(result.diagnostics.fallback_used)
+            self.assertIn("dense_warmup_failed", result.diagnostics.notes)
+
     def test_compatible_cache_rejects_invalid_request_before_backend_query(self) -> None:
         class FakeBackend:
             called = False
@@ -101,6 +161,7 @@ class DenseFallbackTest(unittest.TestCase):
     def test_query_time_dense_failure_reaches_lexical_fallback(self) -> None:
         class FailingBackend:
             def rank(self, query: str, top_n: int) -> list[tuple[int, float]]:
+                time.sleep(0.005)
                 raise OSError("model unavailable")
 
         with tempfile.TemporaryDirectory() as directory:
@@ -121,6 +182,8 @@ class DenseFallbackTest(unittest.TestCase):
             self.assertEqual([item.parent_asin for item in result.candidates], ["A", "B"])
             self.assertTrue(result.diagnostics.fallback_used)
             self.assertIn("dense_query_failed", result.diagnostics.notes)
+            self.assertGreaterEqual(result.diagnostics.stage_latencies_ms["dense"], 4.0)
+            self.assertGreaterEqual(result.diagnostics.latency_ms, 4.0)
 
     def test_hash_mismatched_cache_reaches_lexical_fallback(self) -> None:
         class FakeBackend:
@@ -229,6 +292,12 @@ class DenseFallbackTest(unittest.TestCase):
             self.assertEqual(result.candidates[0].diagnostics["dense_rank"], 1)
             self.assertFalse(result.diagnostics.fallback_used)
             self.assertEqual(result.diagnostics.route, "dense")
+            self.assertEqual(
+                result.diagnostics.requested_route_weights,
+                {"lexical": 0.72, "structured": 0.28, "dense": 0.0},
+            )
+            self.assertEqual(result.diagnostics.executed_routes, ["dense"])
+            self.assertIsNone(result.diagnostics.fallback_route)
             snapshot = retriever.configuration_snapshot()
             self.assertEqual(snapshot["cache_status"], "compatible")
             self.assertTrue(snapshot["cache_available"])
@@ -254,6 +323,15 @@ class DenseFallbackTest(unittest.TestCase):
             self.assertTrue(first.diagnostics.fallback_used)
             self.assertIn("dense_cache_missing", first.diagnostics.notes)
             self.assertEqual(first.diagnostics.route, "structured")
+            self.assertEqual(
+                first.diagnostics.route_failures,
+                {"dense": "dense_cache_missing"},
+            )
+            self.assertEqual(
+                first.diagnostics.executed_routes,
+                ["lexical", "structured"],
+            )
+            self.assertEqual(first.diagnostics.fallback_route, "structured")
             snapshot = retriever.configuration_snapshot()
             self.assertEqual(snapshot["cache_status"], "dense_cache_missing")
             self.assertFalse(snapshot["cache_available"])

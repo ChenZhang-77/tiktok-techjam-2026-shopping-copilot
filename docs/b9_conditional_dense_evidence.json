@@ -1,0 +1,130 @@
+{
+  "version": "b9-v1",
+  "experiment": {
+    "id": "B9",
+    "owner": "developer_b_retrieval_ranking",
+    "hypothesis": "A narrow broad-Browsing gate can add diverse dense candidates without changing Buying or Intent Override outcomes.",
+    "runtime_code_commit": "7f520ba",
+    "decision": "retain_broad_browsing_conditional_dense"
+  },
+  "gate": {
+    "intent": "browsing",
+    "maximum_active_constraints": 1,
+    "minimum_structured_candidate_count": 30,
+    "requires_positive_strategy_dense_weight": true,
+    "rrf_k": 60.0,
+    "max_accepted_dense_latency_ms": 250.0,
+    "latency_budget_kind": "post_execution_acceptance_budget",
+    "model_warmup": "startup",
+    "gate_skip": "exact retained structured order",
+    "dense_failure": "exact retained structured order",
+    "slow_dense_result": "discard dense result and return exact structured order"
+  },
+  "dense_route": {
+    "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+    "model_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    "dimension": 384,
+    "dtype": "float32",
+    "normalized": true,
+    "cache_schema_version": 1,
+    "cache_size_bytes": 77501054,
+    "product_text_template": "product-fields-v1",
+    "query_text_template": "distilled-query-v1"
+  },
+  "evaluation_boundary": {
+    "selection_split": "Development-160",
+    "fixed_folds": "development-folds-v1",
+    "full_or_holdout_used": false,
+    "target_information_in_runtime": false
+  },
+  "baseline": {
+    "report": "docs/ab1_reports/development_route_semantics.json",
+    "sha256": "8220ad97e1ebbdd8d5bd5ae834d7d064079afc49e1c6820d5e9dfae39ff0a8a2"
+  },
+  "candidate": {
+    "report": "docs/b9_reports/development_conditional_dense.json",
+    "sha256": "02510624bc55e283e23efada06eee6a132ca170d7e3aa32b644430bd7dcdbef4",
+    "clean_code_commit": "7f520ba",
+    "session_outcome_sha256": "da333cbc5d1879ecbde86e133dab6f4b75d8bb3bf10111329a486f9888f859e4",
+    "metrics": {
+      "hit_rate_at_10": 0.8625,
+      "mrr": 0.547329,
+      "mttc": 4.66875,
+      "efficiency": 0.633125,
+      "recommended_technical_score": 0.722074
+    },
+    "deltas": {
+      "hit_rate_at_10": 0.0,
+      "mrr": 0.001761,
+      "mttc": -0.00625,
+      "efficiency": 0.000625,
+      "recommended_technical_score": 0.000654
+    },
+    "scenario_result": {
+      "browsing_technical_score_delta": 0.001633,
+      "buying_equal_baseline": true,
+      "intent_override_equal_baseline": true,
+      "boundary_equal_baseline": true
+    },
+    "changed_sessions": {
+      "count": 4,
+      "all_browsing": true,
+      "beneficial": 3,
+      "regressed": 1,
+      "gained_hits": 0,
+      "lost_hits": 0
+    }
+  },
+  "route_observation": {
+    "retrieval_turn_count": 725,
+    "dense_requested_turns": 474,
+    "dense_executed_turns": 102,
+    "fusion_executed_turns": 102,
+    "dense_requested_not_executed_turns": 372,
+    "reported_fallbacks": 0,
+    "route_failures": 0,
+    "route_semantics_unreported_responses": 0
+  },
+  "cost": {
+    "baseline_initialization_ms": 2124.346125,
+    "candidate_initialization_ms": 3579.492208,
+    "baseline_peak_rss_bytes": 562872320,
+    "candidate_peak_rss_bytes": 1109049344,
+    "candidate_dense_mean_ms": 4.701189,
+    "candidate_dense_p95_ms": 5.0285,
+    "candidate_retrieval_mean_ms": 21.733536,
+    "candidate_retrieval_p95_ms": 40.439958,
+    "candidate_retrieval_max_ms": 57.354458,
+    "interpretation": "Warmup removes user-visible lazy-load spikes, but startup increases by about 1.46 seconds and peak RSS increases by about 546 MB."
+  },
+  "fold_reports": {
+    "fold_1": {
+      "path": "docs/b9_reports/fold_1_conditional_dense.json",
+      "sha256": "0c17b62ba82a0c6aece803293c405d17a12a58c5272ab733feeb63b3addcef55",
+      "technical_score_delta": 0.000238
+    },
+    "fold_2": {
+      "path": "docs/b9_reports/fold_2_conditional_dense.json",
+      "sha256": "a9d3fd768f5f660c2b2f479b7b00ec95413ccc26937708c8ef3b3cf641568735",
+      "technical_score_delta": 0.0
+    },
+    "fold_3": {
+      "path": "docs/b9_reports/fold_3_conditional_dense.json",
+      "sha256": "fb039d513c27ef3c25b92bc222d356e8c61ddd29d3f6db70b960d7f2456c3651",
+      "technical_score_delta": 0.0
+    },
+    "fold_4": {
+      "path": "docs/b9_reports/fold_4_conditional_dense.json",
+      "sha256": "4edb8017a5878efa98f6104523853e13ea1ea364248e7a6d85db5a6750566ba5",
+      "technical_score_delta": 0.002375
+    }
+  },
+  "known_limits": [
+    "The quality gain is small and comes from rank/turn improvements, not additional hits.",
+    "Peak memory is about twice the AB1 process peak and must be disclosed in deployment planning.",
+    "The gate uses typed intent, Strategy dense weight, constraint count, and Candidate Pool size; it does not parse Strategy.reason or consume an unavailable intent-confidence field.",
+    "The latency budget is post-execution acceptance, not a preemptive timeout; startup warmup prevents the measured lazy-load spike.",
+    "An unavailable or incompatible local model/cache degrades to the exact retained structured order."
+  ],
+  "next_module": "B10a Constraint-Preserving CrossEncoder Rerank"
+}

@@ -64,19 +64,26 @@ gain with unstable folds or severe Intent Override regression is not enough.
 
 ```text
 R0 failure taxonomy
-  -> A8 stateful intent
-      -> A9 should-ask gate
-          -> A10 question value and query distillation
-              -> AB1 diagnostics contract
-                  -> B8 rejected-constraint ranking
-                  -> B9 conditional semantic route
-                  -> B10 constraint-preserving rerank
-                      -> R4 integrated freeze
-                          -> R5 delivery and rehearsal
+  -> A8 persistent IntentAssessment
+      -> AB0 DecisionEvidence availability
+          -> A9 should-ask gate
+              -> A10a candidate question value
+                  -> A10b internal QueryPlan
+                      -> A11 extraction/scope hardening when R0 supports it
+                          -> AB1 shared contract and route-semantics freeze
+                              -> A12 profile disposition
+                                  -> B8 rejected-constraint ranking
+                                  -> B9 Browsing-first conditional dense retrieval
+                                  -> B10a constraint-preserving CrossEncoder rerank
+                                  -> B10b LLM semantic ranking only as a distinct experiment
+                                      -> B11/B12 only when diagnosed
+                                          -> R4 integrated freeze
+                                              -> R5 delivery and rehearsal
 ```
 
-B9 is blocked by A8 because conditional semantic routing cannot be evaluated
-reliably when the intent signal flips on ordinary clarification replies.
+B9's A8 and AB1 blockers are complete, and B9 is retained. B10a has been
+measured and rejected; B10b is not justified by the current R0/B10a evidence.
+B11 and B12 must not start unless their explicit prerequisites are satisfied.
 
 ## R0 - Development Failure Taxonomy
 
@@ -84,18 +91,34 @@ reliably when the intent signal flips on ordinary clarification replies.
 
 Identify why each Development-160 miss occurs before changing behavior.
 
-Classify each miss into one primary cause and optional secondary causes:
+Classify each miss into one primary cause and optional secondary causes. Use
+the earliest causal stage as primary:
 
 | Class | Evidence |
 | --- | --- |
-| Recall | target absent from lexical/structured/dense Top-N |
-| Ranking | target in the Candidate Pool but outside final Top 10 or ranked poorly |
-| State | stale, rejected, or overridden context affected the active query |
-| Dialogue | clarification was unnecessary, repeated, or failed to reveal useful evidence |
 | Extraction | a disclosed constraint was missed, misclassified, or given wrong scope |
+| State / Override | stale, rejected, or overridden context remained active or valid context was lost |
+| Intent / Strategy Routing | extracted state was correct but Buying/Browsing or Strategy was wrong |
+| Query Construction | correct active evidence was omitted, duplicated, flattened, or made positive/negative incorrectly |
+| Question Policy | clarification was unnecessary, repeated, unavailable, or failed to reveal useful evidence |
+| Retrieval Recall | target absent from the retained internal Candidate Pool |
+| Ranking / Filtering | target was recalled but filtered, ordered outside Top 10, or ranked poorly |
+| Response / Contract | a valid retrieved result was lost, duplicated, invalidated, or serialized incorrectly |
 
-Record target rank only in offline development analysis. It must never enter a
-runtime request, diagnostic, or learned rule keyed by sample/target.
+Example: failing to recognize “black” or “leather” is Extraction; recognizing
+it correctly but omitting or corrupting it while building the query is Query
+Construction.
+
+Record evaluator/timing anomalies separately as `evaluation_validity` flags;
+they are not Agent behavior classes.
+
+| Allowed only offline on Development-160 | Forbidden from runtime and tuning |
+| --- | --- |
+| target ASIN, hit/miss, target rank, pre/post-rank position | Agent, SessionState, RetrievalRequest, Strategy, runtime diagnostics, prompts, rules, or models |
+| aggregate and per-scenario failure counts | Full-200/holdout selection, sample-specific exceptions, target-keyed configuration |
+
+The offline target determines whether a failure is Retrieval Recall or Ranking
+/ Filtering. It must never become a feature available to the running system.
 
 ### Required outputs
 
@@ -107,9 +130,9 @@ runtime request, diagnostic, or learned rule keyed by sample/target.
 
 ### Completion gate
 
-The team can state whether the dominant bottleneck is A-side state/dialogue,
-B-side recall, B-side ranking, or mixed. No runtime code change is required for
-the first audit.
+The team can state the dominant canonical class, show the primary/secondary
+rule, and recommend one smallest next experiment. No runtime code change is
+required for the first audit.
 
 ## R1 - A-Side Decision Quality
 
@@ -117,6 +140,13 @@ Detailed ownership, files, tests, and handoff requirements are in
 `docs/workstreams/DEVELOPER_A_CONTROL_PLANE.md`.
 
 ### A8 - Stateful intent persistence
+
+**Status: retained at `83a6bcd`.** The persistent assessment and transition
+semantics passed focused/full tests. Development HitRate is unchanged, Buying
+improves in three of four folds, Browsing does not regress, and Intent Override
+has a small disclosed regression. See `docs/a8_stateful_intent_evidence.md`.
+Confidence is an A-owned ordinal stability signal, not a calibrated probability
+or an authorized B-side gate.
 
 Problem: intent is derived from the current utterance and can flip from Buying
 to Browsing after a normal one-attribute clarification reply.
@@ -128,7 +158,46 @@ Buying and Intent Override without regressing Browsing.
 Keep only if route changes are observable, explainable, and cross-validation
 supports the scenario tradeoff.
 
+Before implementation, define persistent `IntentAssessment` semantics:
+`intent`, `confidence`, observed `evidence`, `source_turn`, and
+`transition_reason`. It must survive later turns directly or be deterministically
+derived from persisted evidence. A current-turn-only confidence score does not
+solve intent persistence.
+
+### AB0 - Candidate decision evidence availability
+
+**Status: retained at `3988b8b`.** Full-pool evidence now reaches the A-side
+decision point through a compact adapter with deterministic availability
+statuses. Shared contracts and ask/no-ask behavior are unchanged. Score margin
+remains uncalibrated and unusable. See `docs/ab0_decision_evidence.md`.
+
+This is a design-and-plumbing blocker before A9, not a new ranking experiment.
+
+Start from the full existing `RetrievalResult` and prior returned Candidate IDs.
+Define a compact A-side `DecisionEvidence` with only signals whose source and
+fallback are known, for example pool size, calibrated top-score margin,
+constraint coverage, Top-K stability, attribute partitions, relaxation, route
+failure, and turn/exhaustion state.
+
+For each field record:
+
+- producer and owner,
+- current source or required new computation,
+- current-turn versus cross-turn lifecycle,
+- behavior when scores or metadata are unavailable,
+- whether it is A-internal or part of the shared contract.
+
+Prefer an A-side adapter first. Coordinate a `RetrievalDiagnostics` extension
+only for evidence B must calculate or define. AB0 changes no dialogue policy and
+must add contract/leakage tests if the shared schema changes.
+
 ### A9 - Should-ask gate
+
+**Status: rejected and reverted.** The clean candidate at `30765cd` lowered
+HitRate by `0.0125`, worsened MTTC by `0.08125`, and lost two sessions. The
+hash-bound report does not include turn-level question counts, so no retained
+question-count claim is made. See `docs/a9_should_ask_evidence.md`. Any future
+A9 variant must add a hash-bound turn audit as well as pass the technical gate.
 
 Problem: clarification is usually attempted whenever an attribute is
 available, even when recommendations may already be sufficiently concentrated.
@@ -137,42 +206,99 @@ Hypothesis: an over-generality gate based on Candidate Pool size, score margin,
 constraint coverage, candidate stability, and turn number will reduce wasted
 questions and MTTC.
 
-The Agent should continue to return valid recommendations when asking.
+The Agent should continue to return valid recommendations when asking. Do not
+start this rule until AB0 proves every retained input exists at the decision
+point and has deterministic missing-data behavior.
 
-### A10 - Candidate question value and query components
+### A10a - Candidate question value
 
-Problem: `feature` is normally selected before candidate partition evidence,
-and the distilled query is one string that can retain noisy phrases.
+**Status: rejected and reverted.** The candidate at `304a3d6` preserved
+feature-first behavior and changed only later attribute selection, yet HitRate,
+MRR, MTTC, Efficiency, and technical score all regressed. Current partition
+evidence covers only category/material/color/style/use_case and is not
+comparable with feature/size/brand/budget/other; after feature, missing evidence
+was implicitly treated as low value. See
+`docs/a10a_question_value_evidence.md`. Bounded A11 did not supply comparable
+partition evidence for the uncovered attributes. Revisit only if AB1
+coordinates missing B semantics, with an explicit legacy-priority fallback.
 
-Hypothesis: ranking questions by expected candidate reduction and separating
-exact/category/semantic/negative query evidence will improve private paraphrase
-robustness and MTTC.
+Problem: `feature` is normally selected before candidate partition evidence.
+
+Hypothesis: ranking questions by expected candidate reduction will improve MTTC
+without losing useful preference evidence.
+
+### A10b - Internal QueryPlan
+
+**Status: retained at `9560344`.** The A-owned plan separates category, hard,
+soft, semantic, residual, and excluded evidence while rendering the existing
+single request query. Development overall/scenario metrics and all 160 session
+outcomes exactly match the baseline. Residual text remains conservative;
+broader cleanup was not retained, and its isolated effect remains unproven. See
+`docs/a10b_query_plan_evidence.md` and `docs/a11_extraction_scope_evidence.md`.
+
+Problem: the distilled query is one string that can retain noisy phrases.
+
+Hypothesis: an A-internal, auditable `QueryPlan` separating
+exact/category/semantic/negative evidence will improve private paraphrase
+robustness while still building the existing `RetrievalRequest.query` string.
+
+Create A10c only if a measured B experiment requires typed components. A10c is
+then an AB1-coordinated contract change with compatibility tests.
 
 ### A11 - Extraction and scope hardening
 
-Prioritize catalog-derived category/brand vocabulary, multi-word values,
-negation scope, numeric ambiguity, override scope, and bounded low-confidence
-feature phrases. A lightweight model parser is optional and must be behind a
-timeout plus deterministic fallback.
+**Status: retained as a bounded deterministic slice at `350cce2`.** Catalog-
+derived multi-word categories, clause/list-scoped positive/negative/
+no-preference extraction, numeric/hyphen disambiguation, and injected catalog
+path consistency improved Development technical score from `0.653194` to
+`0.721420`; all four fixed folds improved. The combined broad candidate was
+rejected, but its feature, expiry, brand, and residual-cleanup components remain
+individually unproven. Boundary technical score regressed by `0.057083` and
+remains a disclosed risk. See
+`docs/a11_extraction_scope_evidence.md`.
+
+Do not add a lightweight model parser now: the deterministic slice passed the
+gate, and the remaining feature-phrase misses do not justify another parser.
+AB1 and B9 are complete. B10a is rejected, and B10b is not justified without
+new R0 evidence; subsequent B modules remain evidence-gated.
 
 ### A12 - Profile ablation
 
-Only after A8-A11 stabilize: test a very small profile prior in vague Browsing
-states. Explicit current intent always wins. Keep `profile_weight=0.0` when the
-ablation is not stable.
+**Status: deferred for time.** The user paused further A-side optimization
+before this ablation. `profile_weight` remains `0.0`, no profile behavior was
+selected, and the Track 4 long-term-profile gap remains explicitly open. This
+records the required disposition before R4 without claiming evidence that was
+not produced.
 
-## R2 - Shared Diagnostics Loop
+Only after A8-A11 and AB1 stabilize: test a very small profile prior in vague
+Browsing states. Explicit current intent always wins. Keep
+`profile_weight=0.0` when the ablation is not stable.
 
-### AB1 - Retrieval evidence for A-side decisions
+A12 is a required disposition before R4: either run the time-boxed ablation or
+record that profile value remains unproven and deferred. A skipped or rejected
+ablation leaves the Track 4 long-term-profile gap open.
+
+## R2 - Shared Evidence and Contract Loop
+
+### AB1 - Shared contract and active-route semantics freeze
+
+**Status: retained at `a676855`.** AB1 appends requested Route weights,
+actually executed Routes, and the actual fallback Route to shared diagnostics.
+It preserves the original request/query contract and positional diagnostics
+compatibility. Development metrics, scenarios, sessions, and four folds are
+exactly unchanged. The retained default now truthfully records 475 dense
+requests and zero dense executions across 726 Development retrievals. See
+`docs/ab1_route_semantics_evidence.md`.
 
 Preserve the stable interface:
 
 ```text
-HybridRetriever.retrieve(request: RetrievalRequest) -> RetrievalResult
+Retriever.retrieve(request: RetrievalRequest) -> RetrievalResult
 ```
 
 Do not pass SessionState implementation objects into B. Extend the contract
-only when a real experiment requires it.
+only when AB0/A10c proves a real consumer need. AB1 freezes names, types,
+ranges, missing-data behavior, backward compatibility, and leakage tests.
 
 B may compute non-label diagnostics such as:
 
@@ -188,6 +314,16 @@ A owns whether to ask, which attribute to ask, and when Strategy changes. B
 owns how the requested Strategy executes. Diagnostics must not decide dialogue
 policy inside the retrieval plane.
 
+AB1 distinguishes requested Strategy from executed Route. A non-zero weight is
+not presented as active when the selected retriever ignores it; diagnostics
+make execution and fallback observable. Requested weights use the exact shared
+three-Route vocabulary and `[0, 1]` range; execution stages use a closed
+inventory. A reported fallback must be marked used, included in executed
+Routes, and survive successful downstream reranking.
+Downstream wrappers preserve legacy `{}` plus `[]` as unreported rather than
+inventing execution semantics from the old free-form `route` field.
+Requested and executed fields are atomic: partial reports are rejected.
+
 ## R3 - B-Side Targeted Retrieval and Ranking
 
 Detailed ownership, files, tests, and handoff requirements are in
@@ -195,26 +331,46 @@ Detailed ownership, files, tests, and handoff requirements are in
 
 ### B8 - Rejected-constraint ranking
 
-Problem: rejected constraints cross the seam but are not a calibrated negative
-signal in the retained path.
+**Status: tested at `f53a7ee`; not retained; reverted at `3952788`.** The
+candidate used exact product evidence, rejection confidence at least `0.80`,
+and a capped `0.18` soft penalty. Missing metadata, lower confidence,
+no-preference, and a current positive value remained neutral. Targeted tests
+passed, but the fixed Development-160 run observed zero rejected constraints in
+all 726 retrieval turns. Exact metric/session/fold parity therefore could not
+satisfy the intended-bucket keep gate. Evidence:
+`docs/b8_rejected_constraint_evidence.md`.
 
-Test exact, confidence-aware negative scoring without broad exclusion. Missing
-metadata remains neutral. Focus on rejection and Intent Override cases.
+Revisit only with a separately approved evaluation set containing real
+rejection turns. Do not tune on Full-200 or the exposed holdout.
 
-### B9 - Conditional semantic route
+### B9 - Browsing-first conditional dense route
 
-Do not enable semantic work globally. Existing evidence shows modest Buying and
-Browsing potential but severe Intent Override and MRR regression.
+**Status: retained at `7f520ba`.** B9 uses only the existing typed A/B seam:
+Browsing intent, positive Strategy dense weight, at most one active constraint,
+and at least 30 structured candidates. It does not parse `Strategy.reason`, use
+score margin, or invent an intent-confidence field. Gate skips, unavailable or
+incompatible local model/cache, dense errors, and over-budget results preserve
+the exact structured order.
 
-Candidates:
+Development-160 retained HitRate@10 `0.8625`, improved MRR from `0.545568` to
+`0.547329`, MTTC from `4.675` to `4.66875`, and TechnicalScore from `0.721420`
+to `0.722074`. Only Browsing changed; three sessions improved, one regressed,
+and no hit was gained or lost. All four fixed folds were non-regressing. Dense
+and fusion actually executed on 102 of 725 retrieval turns, with zero reported
+fallbacks or route failures.
 
-- stable Buying only,
-- low-confidence Browsing only,
-- disable immediately after Intent Override,
-- enable only when lexical/structured evidence is ambiguous,
-- preserve the deterministic structured fallback.
+The keep decision includes material cost: initialization rose by about `1.5 s`
+and observed peak RSS by about `546 MB`; dense p95 after startup warmup was
+about `5.03 ms`. Do not widen the gate without a separate Development-only
+experiment. See `docs/b9_conditional_dense_evidence.md`.
 
-### B10 - Constraint-preserving semantic rerank
+### B10a - Constraint-preserving CrossEncoder rerank
+
+**Status: rejected as default; optional experiment retained at `93b5b19`.** The
+Top-3 candidate lowered MRR by `0.031377` and TechnicalScore by `0.000663`, and
+split folds 2/2. A single-variable Top-5 follow-up still lowered MRR by
+`0.023304` and TechnicalScore by `0.001366`. B9 default outputs remain exact.
+See `docs/b10a_constraint_rerank_evidence.md`.
 
 Candidates:
 
@@ -224,14 +380,46 @@ Candidates:
 - prevent a semantic score from promoting a hard-constraint violation,
 - fall back to the exact pre-rerank order.
 
+Retaining a CrossEncoder does not satisfy or close the official LLM Semantic
+Ranking pillar. It remains a measured learned reranker with its exact model,
+cost, latency, and fallback disclosed.
+
+### B10b - LLM semantic ranking
+
+**Status: not justified by current evidence.** Treat an actual LLM ranker as a separate experiment with one primary behavior,
+a bounded Candidate Pool, token/cost accounting, timeout, deterministic
+pre-rank fallback, and the same constraint-preservation rules. Run it only when
+time and the competition environment permit a reproducible path. Only a
+retained actual LLM route may close the LLM-ranking gap. Do not run B10b merely
+to fill the pillar: the cheaper B10a route failed its quality gate and added
+material latency, so new R0 evidence is required first.
+
+If no dense or semantic route survives the gate, record the measured negative
+result and the remaining literal Track 4 gap. Do not describe implementation or
+reproducibility as retained runtime coverage.
+
 ### B11 - Lexical recall refinement
 
-Run only if R0 shows recall is a dominant cause. Test one variable at a time:
+**Status: not started; prerequisite failed at `6cf3948`.** The refreshed
+Development-160 taxonomy assigns all 22 misses to upstream control-plane causes
+and zero to retrieval/ranking primary causes. Retained-depth lexical recall is
+157/160 (`0.98125`): non-perfect, but not the dominant failure bucket required
+to open B11. See `docs/b11_prerequisite_evidence.md`.
+
+If new R0 evidence later makes recall dominant, test one variable at a time:
 exact phrase plus broad OR, field-specific query weights, catalog-derived
 synonyms, category normalization, details key/value representation, or removal
 of conversational filler.
 
 ### B12 - Adaptive depth
+
+**Status: exploratory, disabled by default at `82891c8`.** A owns one bounded
+mapping from its existing ordinal confidence band into the existing
+`Strategy.retrieval_depth`; B receives no raw confidence. The Development-160
+aggregate result is favorable, but no contemporaneous keep/revert gate was
+recorded and the gain is concentrated in fold 4. The candidate is therefore
+available only through `--adaptive-depth`; the B9 default remains exact. See
+`docs/b12_adaptive_depth_evidence.md`.
 
 Run only after the diagnostics loop exists. Clear Buying can be shallower and
 more precise; ambiguous Browsing may go deeper; over-general pools should stop
@@ -276,7 +464,8 @@ Required outcomes:
 
 ### If at least two development days remain
 
-Execute R0, A8, A9, AB1, then the single best R0-supported B experiment. Stop
+Execute R0, A8, AB0, A9, A10a, A10b/A11 as supported, AB1, make the A12
+profile disposition, then run the single best R0-supported B experiment. Stop
 behavior work early enough to complete R4 and R5.
 
 ### If submission is imminent

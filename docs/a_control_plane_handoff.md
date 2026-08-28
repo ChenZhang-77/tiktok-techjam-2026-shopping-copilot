@@ -12,7 +12,15 @@ For a new A-side Codex conversation, read:
 5. `ablation_summary.md`
 
 Current reality: A and B are integrated; the stable seam is
-`HybridRetriever.retrieve(request: RetrievalRequest) -> RetrievalResult`; the
-verified checkpoint recorded in `current_status.md` passed 148 tests. Do not
-repeat the obsolete “B not integrated” or “40 tests” status from the historical
-handoff.
+`Retriever.retrieve(request: RetrievalRequest) -> RetrievalResult`; the
+bounded A11 runtime reached Development score `0.721420` with all four folds
+positive. Do not repeat the obsolete “B not integrated”, “40 tests”, or
+pre-A11 status from the historical handoff.
+
+AB1 is complete. B8 was reverted because Development-160 had zero rejection-
+turn coverage. B9 is retained without changing `RetrievalRequest`: it uses
+typed intent, existing Strategy weights, constraint count, and Candidate Pool
+size, and never consumes A's internal intent confidence. B10a's Top-3 and Top-5
+learned-reranking candidates were rejected, and B10b is not justified by the
+current evidence. Do not change query components without shared A/B evidence
+and compatibility tests. A12 remains separately deferred.

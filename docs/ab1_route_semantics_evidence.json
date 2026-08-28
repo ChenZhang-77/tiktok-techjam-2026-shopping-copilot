@@ -1,0 +1,108 @@
+{
+  "version": "ab1-v1",
+  "experiment": {
+    "id": "AB1",
+    "owners": ["developer_a_control_plane", "developer_b_retrieval_ranking"],
+    "hypothesis": "Freezing requested, executed, and fallback Route diagnostics makes the shared A/B seam truthful without changing retrieval order or dialogue policy.",
+    "decision": "retain_route_execution_semantics",
+    "runtime_code_commit": "a676855",
+    "reporting_code_commit": "2ebb954"
+  },
+  "shared_contract": {
+    "request_schema_changed": false,
+    "query_schema_changed": false,
+    "session_state_crosses_seam": false,
+    "question_policy_changed": false,
+    "strategy_weight_semantics_changed": false,
+    "diagnostic_fields_appended": {
+      "requested_route_weights": "legacy empty object or exact mapping of lexical, structured, and dense to finite requested weights in [0, 1]; Strategy.semantic_weight maps to dense",
+      "executed_routes": "ordered unique list of stages that actually executed from lexical, structured, dense, fusion, semantic_rerank, and catalog_fallback",
+      "fallback_route": "null for reported non-degraded execution; otherwise a frozen executed Route with fallback_used true"
+    },
+    "missing_data_semantics": "Empty requested_route_weights plus empty executed_routes means a legacy producer did not report AB1 semantics; fallback_route null is conclusive only when executed_routes is non-empty; requested-only and executed-only partial states are invalid.",
+    "backward_compatibility": "Fields are appended with {}, [], and null defaults, preserving the original RetrievalDiagnostics positional signature."
+  },
+  "evaluation_boundary": {
+    "selection_split": "Development-160",
+    "fixed_folds": "development-folds-v1",
+    "full_or_holdout_used": false,
+    "target_information_in_runtime": false
+  },
+  "baseline": {
+    "report": "docs/a11_reports/development_scoped_extraction.json",
+    "sha256": "520b2b7a5b49cb668a8d6e05c8ee910b440a6f9415090e39688c8cd7ed0eafcf"
+  },
+  "candidate": {
+    "report": "docs/ab1_reports/development_route_semantics.json",
+    "sha256": "8220ad97e1ebbdd8d5bd5ae834d7d064079afc49e1c6820d5e9dfae39ff0a8a2",
+    "clean_code_commit": "a676855",
+    "session_outcome_sha256": "41f7a9dede01e03439a76615adca62cbac1181619970d9ff345dca00608a5621",
+    "metrics": {
+      "hit_rate_at_10": 0.8625,
+      "mrr": 0.545568,
+      "mttc": 4.675,
+      "efficiency": 0.6325,
+      "recommended_technical_score": 0.72142
+    },
+    "observed_route_semantics": {
+      "response_count": 726,
+      "requested_route_counts": {
+        "lexical": 726,
+        "structured": 726,
+        "dense": 475
+      },
+      "executed_route_counts": {
+        "lexical": 726,
+        "structured": 726
+      },
+      "requested_not_executed_route_counts": {
+        "dense": 475
+      },
+      "fallback_route_counts": {},
+      "route_semantics_unreported_responses": 0
+    },
+    "reported_fallbacks": 0
+  },
+  "fold_reports": {
+    "fold_1": {
+      "path": "docs/ab1_reports/fold_1_route_semantics.json",
+      "sha256": "d0bfc01b8fd92dfba9520be2d57a7d7892233426094b17a20bf5f0ef8ed767f2"
+    },
+    "fold_2": {
+      "path": "docs/ab1_reports/fold_2_route_semantics.json",
+      "sha256": "55881cca456c7e1cd03d72d28ca754f98198c85cfcc31b5a363c4e24b9b34057"
+    },
+    "fold_3": {
+      "path": "docs/ab1_reports/fold_3_route_semantics.json",
+      "sha256": "696261ffc1dee56c6e4a8d26a470a780dfebc814ba69024fcad0688aafe0f45f"
+    },
+    "fold_4": {
+      "path": "docs/ab1_reports/fold_4_route_semantics.json",
+      "sha256": "c81a5b474dd25216ced412387d365c168017925953c27f109a87f398d88db855"
+    }
+  },
+  "compatibility_examples": {
+    "default_browsing_hybrid": {
+      "requested_route_weights": {
+        "lexical": 0.62,
+        "structured": 0.2,
+        "dense": 0.18
+      },
+      "executed_routes": ["lexical", "structured"],
+      "fallback_route": null
+    },
+    "dense_cache_failure": {
+      "executed_routes": ["lexical", "structured"],
+      "fallback_route": "structured",
+      "route_failure_example": {
+        "dense": "dense_cache_missing"
+      }
+    }
+  },
+  "known_risks": [
+    "AB1 improves truthfulness and observability, not ranking quality; metric parity is the keep gate.",
+    "The retained default still does not execute dense retrieval even when Browsing Strategy requests a non-zero semantic weight.",
+    "Legacy injected retrievers may leave the appended diagnostics empty; downstream wrappers preserve that unreported state rather than guessing execution or failure from the free-form route field."
+  ],
+  "next_module": "B8 Rejected-Constraint Ranking"
+}

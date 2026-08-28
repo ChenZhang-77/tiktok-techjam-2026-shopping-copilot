@@ -14,9 +14,15 @@ for B-stage selection. Use the four deterministic folds in
 `docs/development_folds_v1.json` for cross-validation within the 160-session
 Development Set.
 
-Use `--split full` exactly once after the complete B configuration is frozen.
-That Final Public Run is for non-confirmatory reporting and must not trigger
-further tuning. See `docs/adr/0001-treat-public-holdout-as-exposed.md`.
+The one Full-200 Final Public Run has already occurred. Do not run
+`--split full` again during optimization and do not use it to select behavior. See
+`docs/adr/0001-treat-public-holdout-as-exposed.md`.
+
+Offline Development-160 analysis may use target ASIN, hit/miss, and target rank
+to distinguish Retrieval Recall from Ranking / Filtering. Those fields must
+never enter Agent state, requests, Strategy, runtime diagnostics, prompts,
+rules, or models. Do not use Full-200 or the exposed holdout for diagnosis-led
+tuning.
 
 Rebuild and validate the fold manifest with:
 
@@ -45,7 +51,7 @@ Recommended note format:
 
 ## Command
 
-## Public Score
+## Development Result
 
 - HitRate@10:
 - MRR:
@@ -63,20 +69,16 @@ Recommended note format:
 ```
 
 The original B1-B7 build sequence is complete. Do not restart it or assume that
-implemented experimental routes should be enabled. The current optimization
-sequence is:
-
-1. `r0-failure-taxonomy`: classify misses as state, question, query, recall,
-   ranking, or timing failures without changing behavior.
-2. `a8-state-confidence`: repair state/scope errors and expose stable confidence.
-3. `a9-question-value`: improve the ask-or-retrieve decision.
-4. `a10-query-builder`: make query construction state-aware and auditable.
-5. `ab1-contract-freeze`: freeze shared diagnostics and route semantics.
-6. `b8-rejected-constraints`: test confidence-gated negative evidence.
-7. `b9-conditional-semantic`: route semantic help only to justified buckets.
-8. `b10-protected-rerank`: protect strong structured matches while reranking a
-   bounded tail.
-
-Run lexical recall or adaptive-depth work only if the R0 taxonomy supports it.
-See `../docs/optimization_roadmap.md` and the A/B workstream documents for
-hypotheses, dependencies, and keep/revert gates.
+implemented experimental routes should be enabled. Use the canonical R0
+taxonomy from `../AGENTS.md`, with the earliest causal stage as primary. Record
+evaluator/timing anomalies separately as `evaluation_validity` flags.
+R0 is complete. Its clean Development-160 artifacts are
+`../docs/r0_development_failure_taxonomy.md` and
+`../docs/r0_development_failure_taxonomy.json`; it changed no runtime behavior.
+The corrected causal-evidence audit classified 25 of 38 misses as Intent / Strategy
+Routing, seven as State / Override, and six as Extraction. The evidence-ranked
+and dependency-ordered next module is A8.
+The authoritative dependency order is maintained only in
+`../docs/optimization_roadmap.md`. Use the selected A/B workstream for its
+hypothesis, inputs, tests, and keep/revert gate. Do not copy the full sequence
+into an experiment note.

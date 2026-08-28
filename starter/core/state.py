@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from starter.core.context_engine import IntentAssessment
 
 
 @dataclass
@@ -19,6 +23,7 @@ class SessionState:
     current_turn: int = 0
     raw_history: list[TurnRecord] = field(default_factory=list)
     intent: str | None = None
+    intent_assessment: IntentAssessment | None = None
     active_constraints: list[dict] = field(default_factory=list)
     overridden_constraints: list[dict] = field(default_factory=list)
     rejected_constraints: list[dict] = field(default_factory=list)
@@ -30,6 +35,10 @@ class SessionState:
     previous_diagnostics: dict | None = None
     override_seen: bool = False
     override_events: list[dict] = field(default_factory=list)
+
+    def set_intent_assessment(self, assessment: IntentAssessment) -> None:
+        self.intent_assessment = assessment
+        self.intent = assessment.intent
 
     def record_user_turn(self, turn: int, user_message: str) -> TurnRecord:
         self.current_turn = turn
@@ -95,6 +104,17 @@ class SessionState:
                 ],
                 "reason": "category reset" if "category" in override_attributes else "attribute replacement",
             })
+        # "No preference" suppresses future questions, but it must not hide a
+        # later explicit preference supplied by the user.
+        for constraint in constraints:
+            attribute = str(constraint.get("attribute") or "")
+            confidence = constraint.get("confidence")
+            is_explicit = (
+                confidence is None
+                or (isinstance(confidence, (int, float)) and confidence >= 0.50)
+            )
+            if attribute and is_explicit:
+                self.no_preference_attributes.discard(attribute)
         filtered = [
             constraint
             for constraint in constraints

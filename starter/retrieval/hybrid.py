@@ -12,6 +12,7 @@ from starter.contracts import (
     RetrievalDiagnostics,
     RetrievalRequest,
     RetrievalResult,
+    requested_route_weights,
     validate_retrieval_request_object,
 )
 from starter.core.ranking import RankingScore, rank_candidates
@@ -298,6 +299,10 @@ class HybridRetriever:
                         self._structured_evidence[parent_asin],
                         request.active_constraints,
                     ),
+                    "rejected_constraint_matches": structured_matches(
+                        self._structured_evidence[parent_asin],
+                        request.rejected_constraints,
+                    ),
                 },
             )
             for rank, parent_asin in enumerate(ranked_ids, start=1)
@@ -332,5 +337,11 @@ class HybridRetriever:
                     "post_constraint_rerank": len(lexical_ids),
                     "post_structured_filter": filtered_pool_size,
                 },
+                requested_route_weights=requested_route_weights(request.strategy),
+                executed_routes=(
+                    ["lexical", "structured"]
+                    if route == "structured"
+                    else ["lexical"]
+                ),
             ),
         )

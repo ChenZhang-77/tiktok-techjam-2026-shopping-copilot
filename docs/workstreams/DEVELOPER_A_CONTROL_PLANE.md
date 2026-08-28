@@ -70,6 +70,21 @@ The current Control Plane already provides:
 The next phase does not rebuild these capabilities. It targets decision quality
 and private-set robustness.
 
+A8 Stateful Intent Persistence is retained at `83a6bcd`. AB0 DecisionEvidence
+Availability is retained at `3988b8b`; it defines every proposed signal and
+fallback without changing ask behavior or the shared contract. A9 Should-Ask
+Over-Generality Gate was tested, rejected, and reverted because it worsened
+HitRate/MTTC. A10a Candidate Question Value was subsequently tested, rejected,
+and reverted because its partial-evidence post-feature ranking regressed every
+main metric. A10b was then retained at `9560344` with exact Development session
+parity and no shared schema change. A11 was retained as a bounded deterministic
+slice at `350cce2`: Development score rose to `0.721420` and all four folds
+improved, without a shared schema or question-policy change. The next executable
+module is the shared AB1 contract and active-route semantics freeze.
+The retained A8 confidence is an A-owned ordinal stability signal with
+`low`/`medium`/`high` diagnostic bands, not a calibrated probability or B-side
+gate.
+
 ## Ownership
 
 Developer A owns:
@@ -102,7 +117,7 @@ inside Control Plane files.
 Current public seam:
 
 ```text
-HybridRetriever.retrieve(request: RetrievalRequest) -> RetrievalResult
+Retriever.retrieve(request: RetrievalRequest) -> RetrievalResult
 ```
 
 Developer A constructs `RetrievalRequest` with:
@@ -163,18 +178,29 @@ not represented as separate conceptual components.
 Candidate stability, filter relaxation, route failure, and repeated uncertainty
 do not yet drive a complete next-turn policy.
 
+The full `RetrievalResult` exists immediately after retrieval, but
+`starter/agent.py` currently reduces it to public recommendations and Top-K
+text evidence before clarification. Therefore A9 does not yet have the complete
+decision input named below.
+
 ## Blocking Order
 
+The authoritative whole-project order is `../optimization_roadmap.md`. Within
+the A workstream, the current local blockers are:
+
 ```text
-R0 failure taxonomy
-  -> A8 stateful intent
+A8 persistent IntentAssessment
+  -> AB0 DecisionEvidence availability
       -> A9 should-ask gate
-          -> A10 question value and query components
-              -> A11 extraction/scope hardening
-                  -> A12 profile ablation
+          -> A10a candidate question value
+              -> A10b internal QueryPlan
+                  -> A11 extraction/scope hardening when R0 supports it
+                      -> AB1 shared contract and route-semantics freeze
 ```
 
-Do not start A12 before the explicit-intent path is stable.
+AB1 passed at `a676855`; its shared diagnostics preserve the A-owned Strategy
+request while exposing B-owned execution and fallback. A12 is now explicitly
+deferred for time with `profile_weight=0.0` and the Track 4 profile gap open.
 
 ## A8 - Stateful Intent Persistence
 
@@ -192,13 +218,25 @@ Override without damaging Browsing.
 - Override triggers re-evaluation and an explainable reason.
 - `Strategy.reason` records why intent was kept or changed.
 
-An implementation may add intent confidence/evidence, but do not enlarge State
-until tests require a real field.
+Freeze an `IntentAssessment` before changing inference:
+
+```text
+intent: buying | browsing
+confidence: calibrated bounded value or declared ordinal band
+evidence: conversation-derived reasons only
+source_turn: last turn that materially changed the assessment
+transition_reason: retained | accumulated | relaxed | explicit override
+```
+
+Because the result affects later turns, persist the assessment or the complete
+evidence needed to derive it deterministically. A current-turn-only confidence
+value is not acceptable. Keep raw confidence A-owned; expose only a coordinated
+Strategy/gate to B unless a measured consumer requires a shared field.
 
 ### Expected files
 
 - `starter/core/context_engine.py`
-- `starter/core/state.py` only if persistent evidence is required
+- `starter/core/state.py`
 - `starter/core/planner.py` only if Strategy consumes confidence
 - `starter/agent.py` orchestration wiring
 - `tests/test_context_engine.py`
@@ -229,7 +267,46 @@ until tests require a real field.
 - Browsing recall/efficiency materially regresses.
 - The solution requires sample-specific exceptions.
 
+## AB0 - DecisionEvidence Availability
+
+### Goal
+
+Make A9 executable without inventing inputs or prematurely changing the shared
+contract. AB0 changes evidence plumbing only; it does not change whether the
+Agent asks.
+
+### Source audit
+
+| Candidate signal | First source to test | Ownership |
+| --- | --- | --- |
+| pool size | full `RetrievalResult.candidates` / existing `candidate_count` | B meaning, A adapter |
+| top-score margin | Candidate scores only after range and missing-score behavior are verified | shared definition if retained |
+| constraint coverage | existing Candidate evidence/diagnostics when comparable across products | B-produced, A-consumed |
+| Candidate stability | current versus `SessionState.previous_candidate_ids` Top-K overlap | A |
+| attribute partitions | full Candidate evidence, not only recommendation text | B evidence, A question policy |
+| relaxation/degraded mode | existing `RetrievalDiagnostics` | B |
+| turn and exhausted attributes | `SessionState` | A |
+
+Prefer an A-side `DecisionEvidence` adapter built from the existing
+`RetrievalResult` and state. Extend `RetrievalDiagnostics` only when B must
+compute a missing value or own its semantics. Never add target rank, hit/miss,
+scenario label, or evaluator timing.
+
+### Completion gate
+
+- every proposed A9 field has a producer, type, range, lifecycle, and fallback;
+- the full Candidate evidence reaches the decision point without leaking into
+  the public response unnecessarily;
+- current versus previous Candidate IDs have an explicit Top-K/depth meaning;
+- contract and leakage tests pass when any shared field changes;
+- ask/no-ask behavior is unchanged.
+
 ## A9 - Should-Ask Over-Generality Gate
+
+**Disposition: rejected and reverted.** Candidate `30765cd` failed the overall
+Development gate. The current runtime retains the pre-A9 question policy. Any
+future variant must retain a hash-bound turn audit before making question-count
+claims. Full evidence: `docs/a9_should_ask_evidence.md`.
 
 ### Hypothesis
 
@@ -249,6 +326,9 @@ Use only non-label information such as:
 - no-preference/exhausted attributes,
 - filter relaxation or degraded mode.
 
+Use only the AB0 fields that pass their availability and calibration checks.
+Do not turn every possible signal into a required input.
+
 ### Desired behavior
 
 - Return recommendations even when asking.
@@ -263,7 +343,8 @@ Use only non-label information such as:
 - `starter/core/clarification.py`
 - `starter/agent.py`
 - `starter/core/diagnostics.py`
-- possibly `starter/contracts.py` only after A/B coordination
+- an A-owned decision-evidence module or adapter
+- `starter/contracts.py` only if AB0 proves B must add a shared field
 - `tests/test_clarification.py`
 - `tests/test_agent_smoke.py`
 
@@ -283,7 +364,16 @@ Use only non-label information such as:
 - question count and repeated/no-value questions fall,
 - behavior is based on Candidate evidence, not public sample availability.
 
-## A10 - Question Value and Query Components
+## A10a - Candidate Question Value
+
+**Disposition: rejected and reverted.** Candidate `304a3d6` preserved
+feature-first behavior and only replaced the later Top-K partition ranking with
+full-pool scores. Uncovered size/brand/budget/other attributes could not compete
+with any positively scored supported attribute, so the candidate retained a
+missing-as-low confound and regressed HitRate, MRR, MTTC, Efficiency, and score.
+Bounded A11 did not supply comparable partition evidence. Revisit only if AB1
+supplies it and defines how an uncovered attribute preserves legacy priority. Full record:
+`docs/a10a_question_value_evidence.md`.
 
 ### Hypothesis
 
@@ -303,6 +393,27 @@ QuestionValue(attribute)
 
 The answer-usefulness prior must not be a hardcoded public-sample table.
 
+### Keep gate
+
+- Candidate questions are explainable from current evidence.
+- MTTC improves without recall loss.
+- Question selection changes without also changing query construction.
+
+## A10b - Internal QueryPlan
+
+**Disposition: retained at `9560344`.** Category, hard, soft, semantic,
+residual, and excluded evidence are explicit A-side roles. The plan still
+renders one `RetrievalRequest.query`; all 160 Development outcomes match the
+baseline. Residual text stays intact unless exact active/excluded phrases can be
+removed, because broader cleanup belongs to A11. Full record:
+`docs/a10b_query_plan_evidence.md`.
+
+### Hypothesis
+
+Separating query evidence by role will make query construction auditable and
+reduce stale, duplicated, or incorrectly positive terms without changing the
+shared request schema.
+
 For query distillation, preserve conceptual components:
 
 ```text
@@ -313,17 +424,41 @@ semantic feature/use-case phrase
 rejected/overridden terms
 ```
 
-Do not blindly append the full current utterance after its evidence has been
-captured in state. Negative terms must not become positive FTS terms.
+In A10b these components are an A-owned, auditable `QueryPlan` that produces the
+existing single `RetrievalRequest.query` string. No shared schema change is
+expected.
+
+Create A10c only if a measured B experiment must consume components separately.
+A10c still requires a separate A/B agreement even though AB1 now freezes Route
+diagnostics and fallback semantics. Developer A must not add typed components to
+`RetrievalRequest` unilaterally.
+
+Broader residual cleanup was not retained, and its isolated effect remains
+unproven because no independent hash-bound report exists. Preserve the A10b
+conservative residual renderer; exact rejected/overridden values must still
+never become positive FTS terms.
 
 ### Keep gate
 
-- Candidate questions are explainable from current evidence.
-- MTTC improves without recall loss.
 - Query traces exclude stale, rejected, duplicated, and excessive low-confidence
   phrases.
+- Retrieval quality improves or remains stable without changing question policy.
 
 ## A11 - Extraction and Scope Hardening
+
+**Status: retained as a bounded slice at `350cce2`.** The retained behavior is
+catalog-derived multi-word category extraction, clause/list-scoped positive/
+negative/no-preference evidence, numeric/hyphen disambiguation, and injected
+catalog-path consistency. It gained 19 Development sessions, lost three,
+improved all four fixed-fold technical scores, and raised overall score from
+`0.653194` to `0.721420`.
+
+The combined broad candidate was rejected during ablation. Catalog feature,
+feature-expiry, brand, and QueryPlan residual-cleanup components lack
+independent hash-bound reports, so their individual effects remain unproven.
+Do not resurrect those behaviors without a new isolated experiment. Boundary
+technical score fell by `0.057083`; preserve this risk in handoffs. Full
+evidence: `docs/a11_extraction_scope_evidence.md`.
 
 Prioritize R0-supported failures:
 
@@ -341,16 +476,24 @@ existing deterministic fallback. It must win development cross-validation.
 
 ## A12 - Profile Ablation
 
+**Status: deferred for time.** Further A-side optimization was paused before an
+ablation was run. Keep `profile_weight=0.0`; profile value remains unproven and
+the Track 4 long-term-profile gap remains open. This is a disposition, not a
+positive or negative experiment result.
+
 The profile is a weak anonymized prior, not a user identity or hard constraint.
 
 Rules:
 
-- run only after A8-A11,
+- run only after A8-AB1,
 - use a small soft signal only in vague/low-constraint Browsing,
 - explicit current intent always wins,
 - override never resurrects a profile preference as active intent,
 - report a direct `profile_weight=0.0` comparison,
 - retain zero when fold evidence is weak.
+
+Before R4, record one explicit A12 disposition: retained, rejected with evidence,
+or deferred for time with the profile gap still open.
 
 Do not claim cross-session long-term memory; the evaluator supplies isolated
 sessions without stable identity.
@@ -403,7 +546,8 @@ For a retained A change, provide:
 
 - exact `RetrievalRequest` examples for stable Buying, Browsing, and Override,
 - Strategy and reason examples,
-- query component examples,
+- final query examples and the A-internal QueryPlan trace,
+- typed query component examples only if coordinated A10c was retained,
 - active/rejected/no-preference fixtures,
 - required new diagnostics, if any,
 - contract test results,

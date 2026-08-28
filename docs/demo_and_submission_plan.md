@@ -7,31 +7,48 @@ exists. Confirm actual files before making submission claims.
 ## Message to judges
 
 Shopping Copilot is a stateful catalog-grounded agent. It carries forward valid
-preferences, handles corrections and no-preference language, decides whether a
-clarifying question is worth the turn, and returns deterministic Top 10 catalog
-recommendations through a local retrieval/ranking pipeline.
+preferences, handles corrections and no-preference language, and returns
+deterministic Top 10 catalog recommendations with non-repeating, currently
+priority-biased clarification through a local retrieval/ranking pipeline. A
+complete candidate-evidence should-ask gate is planned work, not a retained
+capability.
 
 The defensible technical story is:
 
 ```text
 conversation
   -> active intent and constraint state
-  -> ask-or-retrieve decision
   -> distilled retrieval request
-  -> lexical candidates plus structured scoring
+  -> structured candidates
+  -> gated local dense/RRF for broad Browsing, exact structured fallback
+  -> priority-biased clarification selection
   -> response guard and catalog-valid Top 10
 ```
 
-Do not claim that dense retrieval, RRF, or semantic reranking powers the default
-system. They were evaluated and rejected globally; that negative evidence is a
-strength when presented honestly.
+Do not claim that every turn uses dense retrieval, RRF, or semantic reranking.
+B9 runs pinned local dense plus weighted RRF only behind its broad-Browsing
+gate; global variants were rejected.
+
+The retained runtime now has literal Browsing-dense execution only for B9's
+narrow gate. Do not expand that into a global hybrid claim or an LLM semantic-
+ranking claim. CrossEncoder reranking is measured and globally rejected; an
+actual LLM ranker has not been implemented or measured. Profile ranking is
+likewise disabled at weight 0.0.
 
 ## Evidence available now
 
-- Integrated checkpoint: `bddf7d7`.
-- Test suite at that checkpoint: `148/148` passing.
-- Development-160: HitRate@10 `0.7625`, MRR `0.526989`, MTTC `5.30625`,
-  TechnicalScore `0.653222`.
+- Retained B9 route commit: `7f520ba`; optional B12 code commit: `82891c8`.
+- Current full test suite: `287/287` passing.
+- Default Development-160: HitRate@10 `0.8625`, MRR `0.547329`, MTTC
+  `4.66875`, TechnicalScore `0.722074`.
+- B9 route: dense/fusion executed 102 times; all four folds non-regressing;
+  startup about `3.58 s`, peak RSS about `1.109 GB`.
+- B10a: Top-3 and Top-5 anchored CrossEncoder candidates rejected; the default
+  remains B9 and no LLM-ranking claim is allowed.
+- B11: not started because the current R0 refresh finds zero retrieval/ranking
+  primary misses; do not claim a lexical-recall refinement.
+- B12: exploratory and disabled by default; favorable aggregate result, but no
+  contemporaneous gate and a gain concentrated in fold 4.
 - Historical full-200 run: HitRate@10 `0.765`, MRR `0.517355`, MTTC `5.375`,
   TechnicalScore `0.650207`.
 
@@ -44,10 +61,11 @@ Use fixed, preselected public sessions and rehearse within the official time
 limit. Choose exact session IDs only after verifying that each visibly
 demonstrates its intended behavior.
 
-1. **Straight buying intent** — show a narrow request, stable state, no wasted
-   question, and relevant Top 10 results.
-2. **Broad browsing intent** — show why one high-value clarification is useful
-   and how it changes the candidate set.
+1. **Straight buying intent** — show a narrow request, current state, the actual
+   clarification behavior, and relevant Top 10 results. Claim “no wasted
+   question” only after A9 is retained and the chosen case verifies it.
+2. **Broad browsing intent** — show how the current clarification changes the
+   candidate set. Describe it as “high-value” only after AB0/A9 evidence exists.
 3. **Intent override** — show an earlier preference being replaced without
    contaminating the new query.
 4. **No-preference / boundary case** — show the system dropping the correct
@@ -72,6 +90,10 @@ Evaluator-only fields may help analysis but must be visually labeled and must
 never feed agent state, prompts, retrieval, ranking, or route selection. A demo
 recording should keep the separation visible so judges cannot mistake analysis
 data for online inputs.
+
+Development targets may be used here to select and explain an offline demo
+case, but the recording must not imply that target rank or hit/miss was available
+to the running Agent.
 
 ## README and written submission structure
 
@@ -134,7 +156,7 @@ from individual implementation. Do not infer ownership from filenames alone.
 
 ## Questions to rehearse
 
-- Why did the simpler structured route beat dense/RRF/semantic variants?
+- Why is dense/RRF restricted to broad Browsing rather than enabled globally?
 - How do you prevent stale preferences after an intent change?
 - When is a clarifying question worth its MTTC cost?
 - How do you handle sparse product metadata?

@@ -99,6 +99,8 @@ class FusionRetrieverTest(unittest.TestCase):
         self.assertTrue(all(candidate.source == "catalog_fallback" for candidate in result.candidates))
         self.assertTrue(result.diagnostics.fallback_used)
         self.assertIn("all_routes_failed_catalog_fallback", result.diagnostics.notes)
+        self.assertEqual(result.diagnostics.executed_routes, ["catalog_fallback"])
+        self.assertEqual(result.diagnostics.fallback_route, "catalog_fallback")
 
     def test_invalid_request_is_rejected_before_route_failures_can_degrade_it(self) -> None:
         retriever = FusionRetriever(_RouteProvider())
@@ -167,6 +169,15 @@ class FusionRetrieverTest(unittest.TestCase):
             result.diagnostics.latency_ms,
         )
         self.assertEqual(result.diagnostics.route_failures, {})
+        self.assertEqual(
+            result.diagnostics.requested_route_weights,
+            {"lexical": 1.0, "structured": 1.0, "dense": 0.0},
+        )
+        self.assertEqual(
+            result.diagnostics.executed_routes,
+            ["lexical", "structured", "fusion"],
+        )
+        self.assertIsNone(result.diagnostics.fallback_route)
 
     def test_missing_requested_route_returns_valid_degraded_result_with_reason(self) -> None:
         retriever = FusionRetriever(_RouteProvider())
@@ -179,6 +190,12 @@ class FusionRetrieverTest(unittest.TestCase):
         self.assertTrue(result.diagnostics.fallback_used)
         self.assertIn("route_failed:dense:route_unavailable", result.diagnostics.notes)
         self.assertEqual(result.diagnostics.route_failures, {"dense": "route_unavailable"})
+        self.assertEqual(
+            result.diagnostics.requested_route_weights,
+            {"lexical": 1.0, "structured": 0.0, "dense": 1.0},
+        )
+        self.assertEqual(result.diagnostics.executed_routes, ["lexical", "fusion"])
+        self.assertEqual(result.diagnostics.fallback_route, "fusion")
         self.assertTrue(
             all("dense" not in candidate.diagnostics["route_ranks"] for candidate in result.candidates)
         )
