@@ -95,6 +95,19 @@ An optional retrieval or reranking route activated only for a declared,
 observable subset of agent-side states and backed by a deterministic fallback.
 _Avoid_: globally enabled experiment
 
+**Semantic Interpreter**:
+An optional A-owned Module proposed by A13. It may interpret a difficult current
+user message behind a local ambiguity gate and return a validated
+Understanding Delta. It is not a second Agent, a retrieval Route, or retained
+runtime behavior until the A13 gates pass.
+_Avoid_: LLM Agent, global intent parser, semantic ranking
+
+**Understanding Delta**:
+A bounded proposal containing current-message evidence for positive, rejected,
+no-preference, override, intent-hint, or semantic-term changes. It cannot mutate
+SessionState directly and is discarded as a whole when local validation fails.
+_Avoid_: model-owned state, free-form reasoning, partial fallback
+
 **Retained Runtime**:
 The configuration enabled by default after passing the declared development
 gate. For the current checkpoint, this is lexical retrieval plus structured

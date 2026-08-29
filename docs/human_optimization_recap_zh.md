@@ -16,22 +16,23 @@
 
 ## 先看结论
 
-当前默认版本是：**A11 的受限抽取增强 + AB1 的真实路由诊断 + B9 的
-Browsing 条件式 dense/RRF**。B12 虽然有更好的 Development-160 汇总分，
-但它没有在看结果前写好保留门槛，而且收益集中在一个 fold，所以默认关闭。
+当前 Chen/A13 基线是在 **A11 的受限抽取增强 + AB1 的真实路由诊断 + B9 的
+Browsing 条件式 dense/RRF** 之上，又加入三项 A 侧状态正确性修复。B12 虽然有
+更好的旧 Development-160 汇总分，但它没有在看结果前写好保留门槛，而且收益
+集中在一个 fold，所以默认关闭。
 
-当前默认在 Development-160 上的结果：
+当前 A13 起点在 Development-160 上的结果：
 
 | 指标 | 当前默认 | 通俗解释 |
 | --- | ---: | --- |
-| HitRate@10 | 0.862500 | 160 个会话中有 138 个最终在 Top 10 找到目标商品 |
-| MRR | 0.547329 | 所有会话的目标商品总体排位；越接近第一名越好，未命中计 0 |
-| MTTC | 4.668750 | 平均约 4.67 轮找到目标；越低越好，没找到按第 11 轮计 |
-| Efficiency | 0.633125 | 由 MTTC 换算的效率分；越高越好 |
-| TechnicalScore | 0.722074 | 50% 命中率 + 30% 排名 + 20% 效率的总分 |
+| HitRate@10 | 0.925000 | 160 个会话中有 148 个最终在 Top 10 找到目标商品 |
+| MRR | 0.552760 | 所有会话的目标商品总体排位；越接近第一名越好，未命中计 0 |
+| MTTC | 4.131250 | 平均约 4.13 轮找到目标；越低越好，没找到按第 11 轮计 |
+| Efficiency | 0.686875 | 由 MTTC 换算的效率分；越高越好 |
+| TechnicalScore | 0.765703 | 50% 命中率 + 30% 排名 + 20% 效率的总分 |
 
-这份结果来自 **Development-160**，不是未见过的最终测试集。当前完整测试为
-**287 passed**。本轮优化没有运行 Holdout-40 或 Full-200。
+这份结果来自 **Development-160**，不是未见过的最终测试集。A13 规划分支当前
+完整测试为 **297/297 passed**。本轮没有运行 Holdout-40 或 Full-200。
 
 ## 编号为什么不是连续的
 
@@ -403,10 +404,22 @@ Top 3 四折 2 胜 2 负；每次实际重排平均约增加 68.82 ms，冷启�
 
 ### B10b — 真正的 LLM ranker
 
-**计划：** 在更便宜的 learned reranker 有稳定收益时，再判断是否值得使用真正 LLM。
+**实际结果：** 已实现并测量 DeepSeek DS1：仅在 opt-in 的 Browsing Top-10 路径中
+受控重排。相对 Chen `0bd3375` 基线，它保持 HitRate@10 `0.925` 和 MTTC
+`4.13125` 不变，并提高 MRR/TechnicalScore；三次重复运行的 TechnicalScore 中位数
+为 `0.780991`。它仍然不是默认路径。
 
-**当前状态：** B10a 已经失败，最新 R0 也没有把 retrieval/ranking 识别为主要失败，
-所以 **没有启动**。项目不能声称已有 LLM ranker。
+DS2 把候选扩大到 Top-20，但 fallback 为 `9/371 = 2.43%`，超过预先声明的
+`2%` 可靠性门槛，因此拒绝。由此可以诚实地说“已有受控 LLM 排序实验”，不能说
+“默认 Agent 每轮都调用 LLM”。
+
+### A13 — A 侧受控语义理解
+
+下一项被选中的 LLM 工作不是扩大 B 侧重排，而是让 DeepSeek 在确定性解析之后生成
+可验证的 `UnderstandingDelta`，帮助理解少量歧义、修正和否定表达。第一阶段只做
+Shadow 记录，不得改变状态、策略、问题或推荐；通过触发覆盖、准确性、延迟、费用、
+fallback 和固定折门槛后，才允许对单一触发类做候选激活。完整规范见仓库根目录
+`DeepSeek_LLM接入实验方案.md`，当前尚未实现，不能提前声明效果。
 
 ### B11 — Lexical recall refinement
 
@@ -518,21 +531,22 @@ TechnicalScore 增加 0.070391。其中证据最强、贡献最大的单步是�
 - 结构化 lexical retrieval、约束排序、guarded filter 和确定性回退；
 - 在窄 Browsing 桶中实际运行的 dense + RRF；
 - Development-160、四折、场景、会话级差异、延迟/内存和故障证据；
-- 287 个测试通过。
+- A13 规划分支已复跑完整套件，`297/297` 通过。
 
 **仍然薄弱的：**
 
-- 22 个当前 miss 中多数仍是 intent/strategy，另有 4 个 extraction；
+- 当前 `0.925` 规划审计中的 12 个 miss 为 Question Policy 10、State / Override 2；
+  该审计仍需绑定到干净 commit 和 catalog hash，才替代旧的 tracked R0；
 - 完整 should-ask gate 尚未有可保留版本；
 - 长期 profile 仍为 0 权重；
-- 没有实际 LLM ranker；
+- B10b-DS1 仅是 opt-in LLM ranker，默认仍关闭；A13 语义理解仅完成方案审查；
 - B9 的增益很小，内存成本明显；
 - 当前好结果仍是 Development 数据，私有 800 条才是真正的外部泛化检验。
 
-**建议下一步：** 不再连续堆新模型，先进入 R4 集成选择和冻结：确认默认只保留
-A11 + AB1 + B9，B12 保持关闭，补齐 demo/提交叙事、复现实验命令和风险披露。
-如果离提交还有充足时间，再基于最新 22 个 miss 单变量处理 A 侧 routing/extraction，
-而不是启动 B11 或 LLM reranker。
+**建议下一步：** 先完成 A13-0 基线/哈希绑定和 A13-1 两个 State / Override miss
+的确定性诊断；随后只运行 A13-S0 Shadow，先证明模型输出可验证、可回退且调用成本
+受控。通过 review gate 后才做 A13-C1 单一触发类候选激活。10 个 Question Policy
+miss 属于独立的 A14，不与 A13 同时调参；B11、B12 和新的 reranker 同期冻结。
 
 ## 证据入口
 
@@ -548,9 +562,12 @@ A11 + AB1 + B9，B12 保持关闭，补齐 demo/提交叙事、复现实验命�
 - AB1：`docs/ab1_route_semantics_evidence.md`
 - B8：`docs/b8_rejected_constraint_evidence.md`
 - B9：`docs/b9_conditional_dense_evidence.md`
-- B10a/B10b：`docs/b10a_constraint_rerank_evidence.md`
+- B10b：`experiments/deepseek_ds1.py`、`experiments/deepseek_ds2.py` 和 README
+  的复现命令；完整远程运行报告目前只在 `/private/tmp`，尚未形成 tracked evidence
+- A13：`DeepSeek_LLM接入实验方案.md`
+- B10a：`docs/b10a_constraint_rerank_evidence.md`
 - B11：`docs/b11_prerequisite_evidence.md`
 - B12：`docs/b12_adaptive_depth_evidence.md`
 
-最后更新：2026-08-28。任何运行时代码变化后，都应重新跑 Development-160 和
+最后更新：2026-08-29。任何运行时代码变化后，都应重新跑 Development-160 和
 四个固定 fold，再更新本文；文档提交本身不会改变指标。

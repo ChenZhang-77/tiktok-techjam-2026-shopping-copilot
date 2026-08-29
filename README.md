@@ -22,6 +22,8 @@ in [`docs/current_status.md`](docs/current_status.md). The project-wide route is
 [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md). For a plain-
 language Chinese walkthrough from A1/B1 through the current result, read
 [`docs/human_optimization_recap_zh.md`](docs/human_optimization_recap_zh.md).
+The reviewed A-side DeepSeek plan, gates, and branch boundary are in
+[`DeepSeek_LLM接入实验方案.md`](DeepSeek_LLM接入实验方案.md).
 
 Verified Development-160 result for the retained bounded A11 plus B9
 conditional-dense default:
@@ -137,7 +139,9 @@ zero rejection turns. B9 is retained at `7f520ba`: dense and fusion actually
 executed on 102 of 725 retrieval turns, only Browsing outcomes changed, and all
 four fixed folds were non-regressing. B10a then tested Top-3 and Top-5 anchored
 CrossEncoder tails; both reduced MRR and TechnicalScore, so the B9 default is
-unchanged and an actual LLM reranker is not justified by this evidence. B12's
+unchanged. B10b-DS1 subsequently measured an opt-in DeepSeek Top-10 reranker;
+it improved MRR/TechnicalScore without changing HitRate@10 or MTTC, while DS2
+Top-20 failed its reliability gate. Neither is enabled by default. B12's
 optional bounded depth candidate has favorable aggregate metrics but remains
 disabled because it lacks a contemporaneous keep/revert gate and gains are
 concentrated in fold 4.
@@ -261,8 +265,10 @@ cp .env.example .env.local
 # edit .env.local and set DEEPSEEK_API_KEY=...
 ```
 
-Run a small DeepSeek Shadow pass. It records the model ranking but never changes
-the recommendations returned by the Agent:
+The commands below are the existing **B-side ranking experiments**. They do not
+enable the planned A13 semantic interpreter. Run a small B-side Shadow pass; it
+records the model ranking but never changes the recommendations returned by the
+Agent:
 
 ```bash
 .venv/bin/python -m experiments.deepseek_shadow --limit 5
@@ -304,6 +310,12 @@ MRR `0.428562 -> 0.491448` and TechnicalScore `0.743069 -> 0.761934`.
 DS2 Top-20 was tested but rejected: it showed metric gains, yet had 9 fallbacks
 out of 371 calls (`2.43%`), above the predeclared `2%` reliability gate. Do not
 enable DS2 in the default runtime.
+
+The planned A13 experiment is different: it will use DeepSeek as an A-owned,
+evidence-gated semantic interpreter before state mutation. A13 is currently a
+reviewed plan only. It must pass disabled parity and Shadow review before it may
+change state or metrics. Do not infer an A-side runtime feature from the
+presence of the plan.
 
 ## Named Experiments and Visualizer
 
@@ -413,12 +425,14 @@ B9 now retains the Browsing-first conditional dense Route at `7f520ba`; see
 B10a is rejected as a runtime default while its reproducible experiment remains
 available; see
 [`docs/b10a_constraint_rerank_evidence.md`](docs/b10a_constraint_rerank_evidence.md).
-B10b is not justified without new R0 evidence. The refreshed B11 audit found
+B10b-DS1 was subsequently implemented and measured as an opt-in Browsing
+Top-10 experiment. It improved MRR and median TechnicalScore while preserving
+HitRate@10, MTTC, and Efficiency; it is not part of the default runtime.
+DS2 Top-20 was rejected by its reliability gate. The refreshed B11 audit found
 zero retrieval/ranking primary misses and 157/160 retained-depth lexical
 recall, so B11 was not started. B12 remains an explicit exploratory option at
 `82891c8`; it is disabled by default because no contemporaneous selection gate
-was recorded and its fold gain is concentrated. Its favorable candidate
-metrics are reported as an experiment, not the default; see
+was recorded and its fold gain is concentrated. See
 [`docs/b11_prerequisite_evidence.md`](docs/b11_prerequisite_evidence.md) and
 [`docs/b12_adaptive_depth_evidence.md`](docs/b12_adaptive_depth_evidence.md).
 `AGENTS.md` owns the taxonomy and
@@ -452,8 +466,10 @@ hard filters, duplicate/invalid ASINs, and Candidate Pool shortages.
   disabled by default; two primary State / Override misses remain.
 - Clarification remains priority-biased and does not yet have a complete
   should-ask uncertainty gate.
-- Four primary Development Extraction misses remain. Broader extraction
-  alternatives remain unproven without independent hash-bound evidence.
+- A current planning-only audit of the `0.925` checkpoint assigns the 12 misses
+  to Question Policy (10) and State / Override (2), with no primary Extraction
+  miss. This refreshed audit still needs clean-commit hash binding before it
+  replaces the older tracked R0 evidence.
 - Profile ranking is disabled at weight 0.0.
 - B9 closes the literal Browsing-dense route only for its narrow gate; global
   dense remains rejected. DeepSeek DS1 is validated only as an opt-in isolated

@@ -34,6 +34,7 @@ Root Markdown files have distinct roles:
 | `AGENTS.md` | Stable operating, safety, ownership, and evaluation rules |
 | `CONTEXT.md` | Shared domain vocabulary |
 | `DATA_ATTRIBUTION.md` | Dataset source and use boundary |
+| `DeepSeek_LLM接入实验方案.md` | Authoritative A13 semantic-understanding spec and review gates |
 
 ## Documentation Layers
 

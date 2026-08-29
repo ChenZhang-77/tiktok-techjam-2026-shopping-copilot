@@ -22,13 +22,14 @@ user explicitly requests it.
 ## Current integrated state
 
 - Retained B9 route commit: `7f520ba`; optional B12 code commit: `82891c8`.
-- Current full test suite: `287/287` passing.
+- Current full test suite: `297/297` passing on the A13 planning branch.
 - Retained default route: structured scoring, plus pinned local dense/RRF only
   behind the broad-Browsing gate.
-- Global dense/RRF and CrossEncoder remain rejected experiments; an LLM ranker
-  has not been implemented.
-- Default Development-160 result: HitRate@10 `0.8625`, MRR `0.547329`, MTTC
-  `4.66875`, TechnicalScore `0.722074`.
+- Global dense/RRF and CrossEncoder remain rejected experiments. B10b-DS1 is
+  an implemented and measured opt-in DeepSeek Top-10 reranker; it is not the
+  retained default. DS2 Top-20 is rejected.
+- Latest A-side state-correction checkpoint: HitRate@10 `0.925`, MRR
+  `0.552760`, MTTC `4.13125`, TechnicalScore `0.765703`.
 
 The authoritative status and caveats live in `docs/current_status.md`.
 
@@ -67,8 +68,9 @@ behavior only for a diagnosed B-owned class.
    reverted pending a separately approved dataset with relevant coverage.
 2. B9's rank/turn gain is small, adds no hits, and raises observed peak RSS by
    about 546 MB.
-3. B10a's bounded Top-3 and Top-5 variants also regressed MRR and aggregate
-   TechnicalScore; B10b needs new R0 evidence before it is justified.
+3. B10a's bounded Top-3 and Top-5 variants regressed MRR and aggregate
+   TechnicalScore. B10b-DS1 improved MRR as an opt-in Top-10 experiment, while
+   DS2 failed its reliability gate; neither is the retained default.
 4. Lexical recall should only be changed if R0 shows genuine candidate-pool
    misses rather than ordering failures.
 5. Retrieval depth is mostly fixed; deeper pools add cost and noise when the
@@ -193,12 +195,16 @@ TechnicalScore by `0.001366`. See `docs/b10a_constraint_rerank_evidence.md`.
 
 ## B10b — LLM semantic ranking
 
-**Status: not justified by current R0/B10a evidence.** Run an actual LLM ranker
-only as a separate, reproducible experiment after new evidence justifies it.
-Bound the Candidate Pool, record token/cost
-and latency, enforce timeout and deterministic pre-rank fallback, and preserve
-hard constraints. Only a retained actual LLM route may be described as closing
-the LLM-ranking gap.
+**Status: DS1 measured opt-in; DS2 rejected; default remains off.** DS1 reranks
+only the existing Browsing Top-10. It improved MRR and median TechnicalScore
+while HitRate@10, MTTC, and Efficiency stayed unchanged. DS2 expanded to
+Top-20 but produced 9 fallbacks in 371 calls (`2.43%`), above its predeclared
+`2%` reliability gate.
+
+The selected A13 work is not B-side ranking. It is an A-owned, pre-retrieval
+semantic-understanding experiment. B must not consume A13 model confidence,
+state internals, or prompt output. During metric attribution, the same turn
+must not activate both A13 and DS1.
 
 ## B11 — Lexical recall refinement
 

@@ -63,7 +63,7 @@ gain with unstable folds or severe Intent Override regression is not enough.
 ## Dependency Map
 
 ```text
-R0 failure taxonomy
+Historical R0 failure taxonomy
   -> A8 persistent IntentAssessment
       -> AB0 DecisionEvidence availability
           -> A9 should-ask gate
@@ -75,15 +75,26 @@ R0 failure taxonomy
                                   -> B8 rejected-constraint ranking
                                   -> B9 Browsing-first conditional dense retrieval
                                   -> B10a constraint-preserving CrossEncoder rerank
-                                  -> B10b LLM semantic ranking only as a distinct experiment
+                                  -> B10b-DS1 LLM semantic ranking experiment
                                       -> B11/B12 only when diagnosed
-                                          -> R4 integrated freeze
-                                              -> R5 delivery and rehearsal
+
+Current Chen baseline @ 0bd3375
+  -> A13-0 bind 0.925 baseline and refreshed 12-miss taxonomy
+      -> A13-1 deterministic State / Override slice
+          -> A13-S0 Shadow semantic understanding
+              -> A13 review gate
+                  -> A13-C1 guarded activation or No-Go
+                      -> A14 Question Policy as a separate experiment
+                          -> R4 integrated freeze
+                              -> R5 delivery and rehearsal
 ```
 
 B9's A8 and AB1 blockers are complete, and B9 is retained. B10a has been
-measured and rejected; B10b is not justified by the current R0/B10a evidence.
-B11 and B12 must not start unless their explicit prerequisites are satisfied.
+measured and rejected. B10b-DS1 was implemented and measured as an opt-in
+Browsing Top-10 experiment; DS2 was rejected by its reliability gate. The
+selected next route is A13, whose authoritative plan is
+[`DeepSeek_LLM接入实验方案.md`](../DeepSeek_LLM接入实验方案.md). B11 and B12
+remain prerequisite-gated.
 
 ## R0 - Development Failure Taxonomy
 
@@ -257,10 +268,10 @@ individually unproven. Boundary technical score regressed by `0.057083` and
 remains a disclosed risk. See
 `docs/a11_extraction_scope_evidence.md`.
 
-Do not add a lightweight model parser now: the deterministic slice passed the
-gate, and the remaining feature-phrase misses do not justify another parser.
-AB1 and B9 are complete. B10a is rejected, and B10b is not justified without
-new R0 evidence; subsequent B modules remain evidence-gated.
+Do not replace the deterministic parser globally. The current `0.925`
+planning audit reports no primary Extraction or Intent / Routing miss, so A13
+starts in Shadow mode and may activate only a locally diagnosed ambiguity
+class. AB1 and B9 are complete; later B modules remain evidence-gated.
 
 ### A12 - Profile ablation
 
@@ -386,13 +397,16 @@ cost, latency, and fallback disclosed.
 
 ### B10b - LLM semantic ranking
 
-**Status: not justified by current evidence.** Treat an actual LLM ranker as a separate experiment with one primary behavior,
-a bounded Candidate Pool, token/cost accounting, timeout, deterministic
-pre-rank fallback, and the same constraint-preservation rules. Run it only when
-time and the competition environment permit a reproducible path. Only a
-retained actual LLM route may close the LLM-ranking gap. Do not run B10b merely
-to fill the pillar: the cheaper B10a route failed its quality gate and added
-material latency, so new R0 evidence is required first.
+**Status: DS1 measured opt-in; DS2 rejected; default remains off.** DS1 reranks
+only the existing Browsing Top-10 and therefore changes MRR but not HitRate@10,
+MTTC, or Efficiency. Three Development-160 runs and four fixed folds were
+checked; median TechnicalScore improved from `0.765703` to `0.780991`.
+DS2 expanded to Top-20 but was rejected because 9 of 371 calls fell back
+(`2.43%`), above the predeclared `2%` reliability gate.
+
+Do not broaden DS1 while A13 is being evaluated. A13 is an A-side pre-retrieval
+semantic-understanding experiment, not a replacement for B10b. The same turn
+must not activate both experiments during metric attribution.
 
 If no dense or semantic route survives the gate, record the measured negative
 result and the remaining literal Track 4 gap. Do not describe implementation or
@@ -464,9 +478,10 @@ Required outcomes:
 
 ### If at least two development days remain
 
-Execute R0, A8, AB0, A9, A10a, A10b/A11 as supported, AB1, make the A12
-profile disposition, then run the single best R0-supported B experiment. Stop
-behavior work early enough to complete R4 and R5.
+Execute A13-0, A13-1, and A13-S0 in order. Apply the reviewed gate and either
+run A13-C1 or record No-Go. Only then open A14 Question Policy as a separate
+experiment. Stop behavior work early enough to complete R4 and regenerate the
+P0 package in R5.
 
 ### If submission is imminent
 

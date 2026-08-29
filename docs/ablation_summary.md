@@ -157,9 +157,12 @@ Evidence: `docs/b5_semantic_rerank_cv.json` and
 `docs/b10a_constraint_rerank_evidence.json`.
 
 B9 now covers dense retrieval for its narrow broad-Browsing bucket. A
-CrossEncoder remains a learned reranker rather than an LLM, and an actual LLM
-ranker remains an explicit Track 4 gap. The same rule applies to profile
-ranking, which remains disabled at weight 0.0.
+CrossEncoder remains a learned reranker rather than an LLM. B10b-DS1 later
+implemented a DeepSeek Top-10 reranker as an opt-in experiment: it improved
+MRR/TechnicalScore while keeping HitRate@10 and MTTC unchanged, but it is not
+the retained default. DS2 Top-20 was rejected because its `9/371 = 2.43%`
+fallback rate exceeded the declared `2%` gate. Profile ranking remains disabled
+at weight 0.0, and A13 A-side semantic understanding remains plan-only.
 
 ## Runtime Cost and Reliability
 

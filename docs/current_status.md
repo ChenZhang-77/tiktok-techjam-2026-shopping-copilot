@@ -43,7 +43,7 @@ Verified on 2026-08-28:
 | Retained default behavior commit | `7f520ba` |
 | Optional B12 code/default-parity commit | `82891c8` |
 | B10a experiment branch | `b/b10a-constraint-preserving-crossencoder` |
-| Latest local full test suite | 287 passed |
+| Latest local full test suite | 297 passed on the A13 planning branch |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |
 
@@ -176,26 +176,57 @@ does not use an unavailable intent-confidence field.
 | Global weighted RRF fusion | Reject as default; cross-validation regression |
 | Top-30 CrossEncoder semantic rerank | Reject globally; small aggregate gain but MRR and Intent Override regression, high cost |
 | B10a anchored CrossEncoder | Reject as default; Top 3 and Top 5 both reduce MRR and TechnicalScore |
+| B10b-DS1 DeepSeek Browsing Top-10 | Measured opt-in experiment; improves MRR, default remains off |
+| B10b-DS2 DeepSeek Browsing Top-20 | Rejected; fallback rate exceeded the predeclared reliability gate |
 | Profile ranking | Disabled at weight 0.0; no evidence-backed gain |
 
 Do not claim that every request combines lexical, dense, and semantic routes.
 The default Agent conditionally combines structured and dense evidence for a
-narrow Browsing bucket; Buying remains unchanged and no LLM ranker exists.
+narrow Browsing bucket; Buying remains unchanged. The DeepSeek B10b-DS1 ranker
+exists only as an opt-in experiment and is not part of the retained default.
 
 ## Current Bottlenecks
 
-The next optimization phase starts from diagnosis, not from another model:
+The current `0.925` planning audit assigns the 12 Development misses to:
 
-1. `rejected_constraints` crosses the A/B seam, but Development-160 supplied
-   no activation evidence for B8; it remains reverted.
-2. Clarification normally asks `feature` before using candidate partition
-   evidence and does not first decide whether a question is needed.
-3. Four primary Extraction misses remain. The combined broad extraction
-   candidate failed the keep gate, but its individual components do not have
-   independent hash-bound evidence and remain unproven.
-4. B9's dense gain is small and memory-heavy; B10a failed to add stable ranking
-   value, so an actual LLM reranker is not justified without new failure data.
-5. The final package and demo narrative lag the runtime.
+1. Question Policy: 10;
+2. State / Override: 2;
+3. Extraction, Intent / Routing, and Retrieval / Ranking: 0 primary misses.
+
+This audit was generated read-only into `/private/tmp` and still needs
+clean-commit/hash binding before it supersedes the older tracked R0 artifact.
+The old taxonomy's automatic `next_experiment=A9` recommendation is stale
+because A9 was already measured, rejected, and reverted.
+
+The next work is therefore A-owned and ordered:
+
+1. bind the current baseline and refreshed taxonomy;
+2. diagnose the two State / Override misses as a deterministic slice;
+3. run A13 DeepSeek semantic understanding in Shadow mode only;
+4. activate only a trigger class that passes the reviewed Shadow gate;
+5. address Question Policy later as a separate A14 experiment.
+
+The authoritative A13 plan is
+[`DeepSeek_LLM接入实验方案.md`](../DeepSeek_LLM接入实验方案.md). It does not claim
+that A13 is implemented.
+
+## Current A13 Decision
+
+`a/a13-llm-semantic-understanding` starts from Chen baseline `0bd3375`.
+DeepSeek is planned as an A-owned, evidence-gated semantic interpreter before
+state mutation, not as a second Agent and not as a replacement for the existing
+deterministic parser.
+
+The first runtime-capable stage is Shadow: it may call the provider and record a
+validated `UnderstandingDelta`, but it must not change SessionState, Strategy,
+QueryPlan, clarification, recommendations, or public output. Candidate
+activation requires exact fallback, bounded call rate/latency/cost, focused and
+full tests, and fixed Development-fold evidence.
+
+A13 does not replace B10b-DS1. A13 interprets difficult user language before
+retrieval; B10b-DS1 reranks an existing Browsing Top-10 after retrieval. They
+must not be activated together in one metric experiment, and the default
+runtime remains no-LLM.
 
 ## R0 Result
 
@@ -294,7 +325,7 @@ brand, and residual-cleanup components remain individually unproven because no
 independent hash-bound reports were retained. See
 `docs/a11_extraction_scope_evidence.md`.
 
-## Next Decision
+## Historical AB1 through B12 Decisions
 
 AB1 Shared Contract and Active-Route Semantics Freeze is retained at clean code
 commit `a676855`. It appends truthful requested, executed, and fallback Route
@@ -343,14 +374,22 @@ process-tree peak memory remain unavailable.
 At `93b5b19`, the B9 default exactly reproduced all aggregate, scenario, and
 session outcomes. See `docs/b10a_constraint_rerank_evidence.md`.
 
-B10b is recorded as not justified without new R0 evidence. A refreshed R0
-audit then rejected B11's entry condition: all 22 misses have upstream primary
-causes, retrieval/ranking has zero, and retained lexical depth covers 157/160
-targets. See `docs/b11_prerequisite_evidence.md`. A12 is explicitly deferred
-for time: `profile_weight=0.0`, profile value remains unproven, and the Track 4
-long-term-profile gap stays open. B12 is an explicit exploratory
-option at `82891c8`, not a retained default: its aggregate is favorable but no
-contemporaneous keep/revert gate exists and the gain is concentrated in fold 4.
+B10b-DS1 was later implemented as an opt-in DeepSeek Browsing Top-10 experiment.
+It improved MRR and median TechnicalScore while HitRate@10, MTTC, and
+Efficiency remained unchanged. It is not the retained default. B10b-DS2
+Top-20 was rejected because 9 of 371 calls fell back (`2.43%`), above its
+predeclared `2%` reliability gate. The commands and implementations are tracked;
+the complete remote-run reports currently remain outside Git under
+`/private/tmp`, so these measurements are not yet hash-bound tracked evidence.
+
+The earlier refreshed R0 audit rejected B11's entry condition: all 22 misses
+had upstream primary causes, retrieval/ranking had zero, and retained lexical
+depth covered 157/160 targets. See `docs/b11_prerequisite_evidence.md`. A12
+is explicitly deferred for time: `profile_weight=0.0`, profile value remains
+unproven, and the Track 4 long-term-profile gap stays open. B12 is an explicit
+exploratory option at `82891c8`, not a retained default: its aggregate is
+favorable but no contemporaneous keep/revert gate exists and the gain is
+concentrated in fold 4.
 See `docs/b12_adaptive_depth_evidence.md`. Score margin remains forbidden as a
 gate. The complete dependency order lives only in
 `docs/optimization_roadmap.md`.
@@ -376,6 +415,7 @@ track in `docs/demo_and_submission_plan.md`.
 | `docs/current_status.md` | Current verified state and next decision |
 | `docs/project_structure.md` | Directory responsibilities, evidence layout, and archive policy |
 | `docs/optimization_roadmap.md` | Project-wide optimization sequence and gates |
+| `DeepSeek_LLM接入实验方案.md` | Reviewed A13 semantic-understanding plan, gates, and branch boundary |
 | `docs/r0_development_failure_taxonomy.md` | Clean Development-160 failure audit and next-experiment evidence |
 | `docs/a8_stateful_intent_evidence.md` | Stateful intent keep/reject evidence and tradeoff boundary |
 | `docs/ab0_decision_evidence.md` | DecisionEvidence sources, fallbacks, parity, and A9 input boundary |
@@ -400,7 +440,9 @@ track in `docs/demo_and_submission_plan.md`.
   broad-Browsing gate; it is not a global route.
 - CrossEncoder reranking is reproducible but rejected both globally and in the
   tested Top-3/Top-5 constraint-preserving variants.
-- An actual LLM semantic ranker has not been implemented or measured.
+- B10b-DS1 is an implemented and measured opt-in LLM semantic ranker, but it is
+  not retained in the default runtime; DS2 was rejected.
+- A13 A-side semantic understanding is planned and reviewed, not implemented.
 - Profile ranking remains disabled at weight `0.0`; long-term profile value has
   not been demonstrated.
 - Candidate-aware clarification exists, but a complete should-ask gate has not

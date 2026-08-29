@@ -30,21 +30,30 @@ B9 runs pinned local dense plus weighted RRF only behind its broad-Browsing
 gate; global variants were rejected.
 
 The retained runtime now has literal Browsing-dense execution only for B9's
-narrow gate. Do not expand that into a global hybrid claim or an LLM semantic-
-ranking claim. CrossEncoder reranking is measured and globally rejected; an
-actual LLM ranker has not been implemented or measured. Profile ranking is
-likewise disabled at weight 0.0.
+narrow gate. Do not expand that into a global hybrid claim. CrossEncoder
+reranking is measured and globally rejected. DeepSeek B10b-DS1 is implemented
+and measured only as an opt-in Browsing Top-10 experiment; it is not the
+retained default. A13 A-side semantic understanding is a reviewed plan, not an
+implemented capability. Profile ranking remains disabled at weight 0.0.
 
 ## Evidence available now
 
 - Retained B9 route commit: `7f520ba`; optional B12 code commit: `82891c8`.
-- Current full test suite: `287/287` passing.
-- Default Development-160: HitRate@10 `0.8625`, MRR `0.547329`, MTTC
-  `4.66875`, TechnicalScore `0.722074`.
+- Current full test suite: `297/297` passing on the A13 planning branch.
+- Latest A-side correction checkpoint: HitRate@10 `0.925`, MRR `0.552760`,
+  MTTC `4.13125`, TechnicalScore `0.765703`; this is Development-only and does
+  not isolate the contribution of each correction.
+- Earlier retained A11+B9 checkpoint: HitRate@10 `0.8625`, MRR `0.547329`,
+  MTTC `4.66875`, TechnicalScore `0.722074`.
 - B9 route: dense/fusion executed 102 times; all four folds non-regressing;
   startup about `3.58 s`, peak RSS about `1.109 GB`.
 - B10a: Top-3 and Top-5 anchored CrossEncoder candidates rejected; the default
-  remains B9 and no LLM-ranking claim is allowed.
+  remains B9.
+- B10b-DS1: opt-in Top-10 experiment improved MRR/TechnicalScore while
+  HitRate@10 and MTTC stayed unchanged; DS2 Top-20 was rejected by its
+  reliability gate.
+- A13: reviewed Shadow-first semantic-understanding plan only; no runtime or
+  score claim is allowed until its gates pass.
 - B11: not started because the current R0 refresh finds zero retrieval/ranking
   primary misses; do not claim a lexical-recall refinement.
 - B12: exploratory and disabled by default; favorable aggregate result, but no

@@ -24,15 +24,17 @@ Read, in order:
 2. `docs/current_status.md`
 3. `docs/optimization_roadmap.md`
 4. this document
-5. `starter/agent.py`
-6. `starter/core/state.py`
-7. `starter/core/context_engine.py`
-8. `starter/core/planner.py`
-9. `starter/core/query_builder.py`
-10. `starter/core/clarification.py`
-11. `starter/core/response_guard.py`
-12. `starter/contracts.py`
-13. the focused tests named by the selected experiment
+5. [`DeepSeek_LLM接入实验方案.md`](../../DeepSeek_LLM接入实验方案.md) when the
+   selected experiment is A13
+6. `starter/agent.py`
+7. `starter/core/state.py`
+8. `starter/core/context_engine.py`
+9. `starter/core/planner.py`
+10. `starter/core/query_builder.py`
+11. `starter/core/clarification.py`
+12. `starter/core/response_guard.py`
+13. `starter/contracts.py`
+14. the focused tests named by the selected experiment
 
 Then report:
 
@@ -79,8 +81,16 @@ and reverted because its partial-evidence post-feature ranking regressed every
 main metric. A10b was then retained at `9560344` with exact Development session
 parity and no shared schema change. A11 was retained as a bounded deterministic
 slice at `350cce2`: Development score rose to `0.721420` and all four folds
-improved, without a shared schema or question-policy change. The next executable
-module is the shared AB1 contract and active-route semantics freeze.
+improved, without a shared schema or question-policy change. AB1 and B9 are now
+complete. Chen's later A-side state corrections produced the current
+Development-only checkpoint HR `0.925`, MRR `0.552760`, MTTC `4.13125`,
+and TechnicalScore `0.765703`.
+
+A planning-only refresh of the current 12 misses reports Question Policy 10 and
+State / Override 2, with zero primary Extraction or Intent / Routing misses.
+That refresh still needs clean-commit hash binding. The selected next feature
+is A13: first bind the current baseline, then diagnose the two deterministic
+override misses, then run DeepSeek semantic understanding in Shadow mode.
 The retained A8 confidence is an A-owned ordinal stability signal with
 `low`/`medium`/`high` diagnostic bands, not a calibrated probability or B-side
 gate.
@@ -106,7 +116,7 @@ Developer A does not own:
 - BM25/FTS internals,
 - structured/dense/fusion mechanics,
 - ranking score implementation,
-- semantic model/cache execution,
+- B-owned retrieval/ranking semantic model or cache execution,
 - retrieval latency/cache optimization.
 
 Developer A may use Retriever fixtures. Do not build a second retrieval stack
@@ -164,9 +174,10 @@ feature availability.
 
 ### 4. Rule and scope limitations
 
-Extraction uses static vocabulary and regexes. Known example: "I do not care
-about color, but I prefer nylon" can incorrectly mark material as no-preference
-because the no-preference expression is not scoped to one clause.
+Extraction still uses bounded vocabulary and regexes, but the current
+`0.925` planning audit reports no primary Extraction miss. Broader parser
+work therefore requires new evidence and must not globally replace the
+deterministic path.
 
 ### 5. Query evidence is flattened into one string
 
@@ -189,18 +200,20 @@ The authoritative whole-project order is `../optimization_roadmap.md`. Within
 the A workstream, the current local blockers are:
 
 ```text
-A8 persistent IntentAssessment
-  -> AB0 DecisionEvidence availability
-      -> A9 should-ask gate
-          -> A10a candidate question value
-              -> A10b internal QueryPlan
-                  -> A11 extraction/scope hardening when R0 supports it
-                      -> AB1 shared contract and route-semantics freeze
+Historical A8 -> AB0 -> A9 -> A10a -> A10b -> A11 -> AB1
+
+Current 0bd3375 baseline
+  -> A13-0 current baseline and R0 binding
+      -> A13-1 deterministic State / Override slice
+          -> A13-S0 Shadow semantic understanding
+              -> A13-C1 guarded activation or No-Go
+                  -> A14 Question Policy as a separate experiment
 ```
 
 AB1 passed at `a676855`; its shared diagnostics preserve the A-owned Strategy
-request while exposing B-owned execution and fallback. A12 is now explicitly
-deferred for time with `profile_weight=0.0` and the Track 4 profile gap open.
+request while exposing B-owned execution and fallback. A12 remains deferred
+with `profile_weight=0.0`. A13 does not change the shared RetrievalRequest or
+route-weight semantics in its first stages.
 
 ## A8 - Stateful Intent Persistence
 
@@ -539,6 +552,34 @@ Evaluate only Development-160 and its fixed folds. Report:
 - latency/fallback impact.
 
 Do not run Full/Holdout.
+
+## A13 - Guarded LLM Semantic Understanding
+
+**Status: reviewed plan; implementation not started.** The authoritative spec,
+phase order, interface, trigger conditions, safety invariants, latency/cost
+targets, and keep/revert gates are in
+[`DeepSeek_LLM接入实验方案.md`](../../DeepSeek_LLM接入实验方案.md).
+
+A13 is not permission to replace the deterministic parser. The required order
+is:
+
+```text
+A13-0 bind current baseline and refreshed taxonomy
+  -> A13-1 deterministic State / Override slice
+      -> A13-S0 Shadow only
+          -> review gate
+              -> A13-C1 guarded activation or No-Go
+```
+
+The LLM proposes a validated `UnderstandingDelta`; it never mutates
+`SessionState` directly. Disabled, no-key, timeout, invalid-output, and
+validator-failure paths must preserve exact no-LLM behavior. A13 does not
+change the shared retrieval contract, and the same turn must not activate both
+A13 and the optional B10b-DS1 reranker during metric attribution.
+
+Question Policy remains a separate A14 experiment because the current
+planning-only audit assigns 10 of 12 misses to that class. Do not combine A13
+semantic understanding with an ask/stop policy change.
 
 ## Handoff to Developer B
 
