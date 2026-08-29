@@ -348,7 +348,13 @@ class Agent:
                 state.rejected_constraints,
                 source="rejected_state",
             ),
-            no_preference_attributes=tuple(sorted(state.no_preference_attributes)),
+            no_preference_attributes=tuple(
+                sorted(
+                    attribute
+                    for attribute in state.no_preference_attributes
+                    if attribute in ALLOWED_ATTRIBUTES
+                )
+            ),
             overridden_constraints=self._state_constraint_evidence(
                 state.overridden_constraints,
                 source="overridden_state",
