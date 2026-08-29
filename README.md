@@ -8,11 +8,12 @@ distinguishes targeted Buying from open-ended Browsing, retrieves products from
 a frozen 50,000-item Amazon catalog, ranks candidates with explicit constraint
 evidence, and returns safe recommendations with an optional clarification.
 
-The retained runtime requires no external API, hosted model, vector database,
-or token budget. B9 conditionally executes a pinned local MiniLM dense route for
-broad Browsing and otherwise preserves the structured order. B12's bounded
-adaptive depth is reproducible but disabled by default. Global dense,
-CrossEncoder, and LLM reranking are not enabled.
+The retained default runtime requires no external API, hosted model, vector
+database, or token budget. B9 conditionally executes a pinned local MiniLM dense
+route for broad Browsing and otherwise preserves the structured order. B12's
+bounded adaptive depth is reproducible but disabled by default. Global dense,
+CrossEncoder, and LLM reranking are not enabled by default. DeepSeek DS1 is
+available as an explicit, isolated performance experiment.
 
 ## Current Status
 
@@ -239,6 +240,71 @@ Run an ordinary Development-160 evaluation:
 
 Do not use `--split full` or `--split holdout` for optimization.
 
+### Optional DeepSeek API setup
+
+The default deterministic experiment does not require an API key. For the
+optional LLM shadow/reranking experiments, create a local credentials file:
+
+```bash
+cp .env.example .env.local
+```
+
+Open `.env.local` and set `DEEPSEEK_API_KEY` to your own key. The named
+experiment launcher loads this file automatically. `.env.local` is ignored by
+Git and must never be committed.
+
+Friends should create their own local file and use their own key. Never copy
+someone else's `.env.local`:
+
+```bash
+cp .env.example .env.local
+# edit .env.local and set DEEPSEEK_API_KEY=...
+```
+
+Run a small DeepSeek Shadow pass. It records the model ranking but never changes
+the recommendations returned by the Agent:
+
+```bash
+.venv/bin/python -m experiments.deepseek_shadow --limit 5
+```
+
+The report is written to `/private/tmp/` by default. Use `--limit 160` only
+after the small run passes its fallback, latency, token, and cost checks.
+
+Run DS1 as an isolated performance experiment. It reranks only Browsing
+Top-10; the normal Agent path remains unchanged:
+
+```bash
+.venv/bin/python -m experiments.deepseek_ds1 --limit 5
+```
+
+For the full Development-160 DS1 experiment:
+
+```bash
+.venv/bin/python -m experiments.deepseek_ds1 \
+  --split development --limit 160 \
+  --output /private/tmp/tiktok-techjam-deepseek-ds1-development.json
+```
+
+The 40-session holdout is for one final generalization check only and must not
+be used for tuning:
+
+```bash
+.venv/bin/python -m experiments.deepseek_ds1 \
+  --split holdout --limit 40 \
+  --output /private/tmp/tiktok-techjam-deepseek-ds1-holdout.json
+```
+
+DS1 only reranks the existing Browsing Top-10. It improved the current
+Development-160 median TechnicalScore from `0.765703` to `0.780991`, with
+HitRate@10, MTTC, and Efficiency unchanged. Three full runs and all four
+Development folds were checked. The 40-session holdout comparison also showed
+MRR `0.428562 -> 0.491448` and TechnicalScore `0.743069 -> 0.761934`.
+
+DS2 Top-20 was tested but rejected: it showed metric gains, yet had 9 fallbacks
+out of 371 calls (`2.43%`), above the predeclared `2%` reliability gate. Do not
+enable DS2 in the default runtime.
+
 ## Named Experiments and Visualizer
 
 For an isolated named development run:
@@ -390,7 +456,8 @@ hard filters, duplicate/invalid ASINs, and Candidate Pool shortages.
   alternatives remain unproven without independent hash-bound evidence.
 - Profile ranking is disabled at weight 0.0.
 - B9 closes the literal Browsing-dense route only for its narrow gate; global
-  dense remains rejected and an actual LLM ranker is still absent.
+  dense remains rejected. DeepSeek DS1 is validated only as an opt-in isolated
+  experiment and is not part of the default runtime yet.
 - B9 adds about 1.5 seconds of initialization and about 546 MB of observed peak
   RSS for a small rank/turn gain with no additional hits.
 - Long-term profile value has not been demonstrated; profile ranking remains
