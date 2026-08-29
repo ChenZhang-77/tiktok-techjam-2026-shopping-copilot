@@ -58,6 +58,7 @@ SAFE_FALLBACK_REASONS = {
     "missing_no_preference_evidence",
     "positive_no_preference_conflict",
     "positive_rejected_conflict",
+    "rejected_no_preference_conflict",
     "provider_error",
     "state_conflict",
     "timeout",
@@ -545,6 +546,8 @@ def validate_understanding_delta(
         raise SemanticUnderstandingError("positive_rejected_conflict")
     if {item.attribute for item in positive} & set(no_preference):
         raise SemanticUnderstandingError("positive_no_preference_conflict")
+    if {item.attribute for item in rejected} & set(no_preference):
+        raise SemanticUnderstandingError("rejected_no_preference_conflict")
 
     prior_rejected = {
         (item.attribute, _normalize(item.value)) for item in request.rejected_constraints
