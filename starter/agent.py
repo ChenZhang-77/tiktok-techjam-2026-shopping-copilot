@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import time
 from pathlib import Path
 from typing import Protocol
 
@@ -27,6 +28,7 @@ from starter.core.query_builder import QueryPlan, build_query_plan
 from starter.core.response_guard import guard_response
 from starter.core.semantic_understanding import (
     ALLOWED_ATTRIBUTES,
+    DEFAULT_CONFIG_VERSION,
     ConstraintEvidence,
     SemanticInterpreter,
     UnderstandingRequest,
@@ -81,6 +83,7 @@ class Agent:
         self._sessions: dict[str, SessionState] = {}
         self.semantic_interpreter = semantic_interpreter
         self._semantic_diagnostics: dict[tuple[str, int], dict[str, object]] = {}
+        self._semantic_attempted_turns: set[tuple[str, int]] = set()
         self._semantic_static_allowed_values = {
             "material": tuple(sorted(MATERIALS)),
             "color": tuple(sorted(COLORS)),
@@ -101,6 +104,9 @@ class Agent:
             key: value
             for key, value in self._semantic_diagnostics.items()
             if key[0] != session_id
+        }
+        self._semantic_attempted_turns = {
+            key for key in self._semantic_attempted_turns if key[0] != session_id
         }
 
     def semantic_diagnostics(self, session_id: str, turn: int) -> dict[str, object] | None:
@@ -320,6 +326,10 @@ class Agent:
     ) -> None:
         if self.semantic_interpreter is None:
             return
+        attempt_key = (state.session_id, turn)
+        if attempt_key in self._semantic_attempted_turns:
+            return
+        self._semantic_attempted_turns.add(attempt_key)
         deterministic_intent = assess_intent(
             user_message,
             constraints,
@@ -382,6 +392,8 @@ class Agent:
                 constraints=constraints,
                 rejected_constraints=rejected_constraints,
             ),
+            config_version=DEFAULT_CONFIG_VERSION,
+            deadline_monotonic_ms=time.monotonic() * 1000 + 2500,
         )
         try:
             outcome = self.semantic_interpreter.interpret(request)

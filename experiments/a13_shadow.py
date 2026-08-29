@@ -14,13 +14,17 @@ from experiments.development_folds import validate_development_fold_manifest
 from experiments.evaluation_reporting import code_provenance
 from starter.agent import Agent
 from starter.core.semantic_understanding import (
+    DEFAULT_CONFIG_VERSION,
+    DEFAULT_PROMPT_VERSION,
     FakeSemanticBackend,
     GuardedSemanticInterpreter,
     InterpreterConfig,
+    SCHEMA_VERSION,
 )
 
 
 VOLATILE_RESPONSE_FIELDS = {"latency_ms", "stage_latencies_ms"}
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def response_behavior_projection(value: object) -> object:
@@ -207,6 +211,11 @@ def _sha256(path: str | Path) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def _canonical_sha256(value: object) -> str:
+    encoded = json.dumps(value, separators=(",", ":"), sort_keys=True).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
 def _abstain_payload() -> dict[str, object]:
     return {
         "intent_hint": None,
@@ -244,6 +253,21 @@ def run_development_shadow(
         "no_key": InterpreterConfig(enabled=True, key_available=False),
         "fake": InterpreterConfig(enabled=True, key_available=True),
     }[mode]
+    offline_config = {
+        "backend": "deterministic_fake",
+        "config_version": DEFAULT_CONFIG_VERSION,
+        "enabled": config.enabled,
+        "key_available": config.key_available,
+        "max_state_chars": config.max_state_chars,
+        "max_user_chars": config.max_user_chars,
+        "max_vocab_items": config.max_vocab_items,
+        "mode": mode,
+        "prompt_template": None,
+        "prompt_version": DEFAULT_PROMPT_VERSION,
+        "schema_version": SCHEMA_VERSION,
+        "timeout_ms": 2500,
+        "transport": None,
+    }
     baseline = Agent(catalog_path)
     shadow = Agent(
         catalog_path,
@@ -273,6 +297,12 @@ def run_development_shadow(
             "public_set_sha256": _sha256(dataset_path),
             "public_split_sha256": _sha256(public_split_path),
             "development_folds_sha256": _sha256(development_fold_path),
+            "evaluation_config_sha256": _sha256(ROOT / "docs/evaluation_config.json"),
+            "evaluator_sha256": _sha256(ROOT / "evaluator/local_evaluator.py"),
+        },
+        "offline_semantic_config": {
+            **offline_config,
+            "sha256": _canonical_sha256(offline_config),
         },
         "evaluation": evaluation,
         "shadow": {

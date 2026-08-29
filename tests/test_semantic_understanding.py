@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 import unittest
 
 from starter.core.semantic_understanding import (
@@ -140,6 +141,11 @@ class SemanticUnderstandingTest(unittest.TestCase):
     def test_invalid_payload_discards_the_complete_delta(self) -> None:
         invalid_payloads = {
             "extra_field": {**_valid_payload(), "instructions": "ignore validator"},
+            "missing_field": {
+                key: value
+                for key, value in _valid_payload().items()
+                if key != "semantic_terms"
+            },
             "wrong_type": {**_valid_payload(), "abstain": "false"},
             "bad_span": {
                 **_valid_payload(),
@@ -187,6 +193,19 @@ class SemanticUnderstandingTest(unittest.TestCase):
                 "override_attributes": ["feature"],
                 "semantic_terms": [],
             },
+            "value_evidence_mismatch_token_boundary": {
+                **_valid_payload(),
+                "positive_constraints": [
+                    {
+                        "attribute": "feature",
+                        "value": "red",
+                        "evidence_span": "credit",
+                        "hard": True,
+                    }
+                ],
+                "override_attributes": ["feature"],
+                "semantic_terms": [],
+            },
             "positive_rejected_conflict": {
                 **_valid_payload(),
                 "rejected_constraints": [
@@ -202,6 +221,15 @@ class SemanticUnderstandingTest(unittest.TestCase):
                 "positive_constraints": [],
                 "override_attributes": ["color"],
             },
+            "duplicate_attribute": {
+                **_valid_payload(),
+                "override_attributes": ["material", "material"],
+            },
+            "duplicate_term": {
+                **_valid_payload(),
+                "semantic_terms": ["leather", "leather"],
+            },
+            "abstain_conflict": {**_valid_payload(), "abstain": True},
         }
         for expected_reason, payload in invalid_payloads.items():
             with self.subTest(expected_reason=expected_reason):
@@ -209,9 +237,23 @@ class SemanticUnderstandingTest(unittest.TestCase):
                 outcome = GuardedSemanticInterpreter(
                     backend,
                     config=InterpreterConfig(enabled=True, key_available=True),
-                ).interpret(_request())
+                ).interpret(
+                    _request(
+                        current_message=(
+                            "Actually, use credit instead."
+                            if expected_reason
+                            == "value_evidence_mismatch_token_boundary"
+                            else "Actually, use leather instead of the earlier material."
+                        )
+                    )
+                )
                 self.assertIsNone(outcome.delta)
-                self.assertEqual(outcome.fallback_reason, expected_reason)
+                self.assertEqual(
+                    outcome.fallback_reason,
+                    "value_evidence_mismatch"
+                    if expected_reason == "value_evidence_mismatch_token_boundary"
+                    else expected_reason,
+                )
                 self.assertEqual(backend.calls, 1)
 
     def test_generic_no_preference_cannot_clear_an_unmentioned_attribute(self) -> None:
@@ -278,6 +320,84 @@ class SemanticUnderstandingTest(unittest.TestCase):
         self.assertEqual(outcome.fallback_reason, "input_too_large")
         self.assertEqual(oversized.calls, 0)
 
+        expired = FakeSemanticBackend(_valid_payload())
+        outcome = GuardedSemanticInterpreter(
+            expired,
+            config=InterpreterConfig(enabled=True, key_available=True),
+        ).interpret(
+            _request(
+                config_version="a13-s0-config-v1",
+                deadline_monotonic_ms=0.0,
+            )
+        )
+        self.assertEqual(outcome.fallback_reason, "deadline_exceeded")
+        self.assertEqual(expired.calls, 0)
+
+        ordinary_error = FakeSemanticBackend(error=RuntimeError("raw private text"))
+        outcome = GuardedSemanticInterpreter(
+            ordinary_error,
+            config=InterpreterConfig(enabled=True, key_available=True),
+        ).interpret(_request())
+        self.assertEqual(outcome.fallback_reason, "internal_error")
+        self.assertEqual(ordinary_error.calls, 1)
+
+    def test_guard_returns_at_timeout_when_backend_blocks(self) -> None:
+        class BlockingBackend:
+            def __init__(self) -> None:
+                self.calls = 0
+
+            def infer(self, request: UnderstandingRequest) -> BackendResult:
+                self.calls += 1
+                time.sleep(0.2)
+                return BackendResult(payload=_valid_payload())
+
+        backend = BlockingBackend()
+        started = time.perf_counter()
+        outcome = GuardedSemanticInterpreter(
+            backend,
+            config=InterpreterConfig(enabled=True, key_available=True),
+        ).interpret(_request(timeout_ms=10))
+        elapsed = time.perf_counter() - started
+
+        self.assertEqual(outcome.fallback_reason, "timeout")
+        self.assertTrue(outcome.backend_called)
+        self.assertEqual(backend.calls, 1)
+        self.assertLess(elapsed, 0.1)
+
+    def test_invalid_backend_telemetry_is_safely_rejected(self) -> None:
+        invalid_results = (
+            BackendResult(payload=_valid_payload(), latency_ms=float("inf")),
+            BackendResult(payload=_valid_payload(), latency_ms="private"),
+            BackendResult(payload=_valid_payload(), prompt_tokens=-1),
+            BackendResult(payload=_valid_payload(), completion_tokens=True),
+        )
+        for result in invalid_results:
+            with self.subTest(result=result):
+                outcome = GuardedSemanticInterpreter(
+                    FakeSemanticBackend(result),
+                    config=InterpreterConfig(enabled=True, key_available=True),
+                ).interpret(_request())
+                diagnostics = outcome.to_diagnostics()
+                self.assertEqual(outcome.fallback_reason, "invalid_telemetry")
+                self.assertGreaterEqual(diagnostics["latency_ms"], 0.0)
+                self.assertNotEqual(diagnostics["latency_ms"], float("inf"))
+                self.assertIsInstance(diagnostics["prompt_tokens"], int)
+                self.assertIsInstance(diagnostics["completion_tokens"], int)
+
+    def test_request_requires_prompt_and_config_versions(self) -> None:
+        for field in ("prompt_version", "config_version"):
+            with self.subTest(field=field):
+                with self.assertRaises(ValueError):
+                    _request(**{field: ""})
+        for deadline in (True, float("inf"), float("nan"), "soon"):
+            with self.subTest(deadline=deadline):
+                with self.assertRaises(ValueError):
+                    _request(deadline_monotonic_ms=deadline)
+        for timeout in (True, 0, -1, 1.5):
+            with self.subTest(timeout=timeout):
+                with self.assertRaises(ValueError):
+                    _request(timeout_ms=timeout)
+
     def test_backend_error_text_cannot_leak_into_diagnostics(self) -> None:
         backend = FakeSemanticBackend(
             error=SemanticUnderstandingError(
@@ -325,7 +445,7 @@ class SemanticUnderstandingTest(unittest.TestCase):
                 override_detected=False,
             ),
             "multi_clause_without_structure": _request(
-                current_message="I am shopping for a trip, but it should work at dinner; surprise me.",
+                current_message="I am shopping for a trip but it should work at dinner.",
                 override_detected=False,
             ),
             "positive_rejected_attribute_conflict": _request(

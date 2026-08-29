@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import math
 import re
+import threading
 import time
 from dataclasses import dataclass, field
 from typing import Any, Mapping, Protocol
@@ -17,6 +19,9 @@ ALLOWED_ATTRIBUTES = (
     "feature",
     "use_case",
 )
+SCHEMA_VERSION = "a13-understanding-schema-v1"
+DEFAULT_PROMPT_VERSION = "a13-understanding-v1"
+DEFAULT_CONFIG_VERSION = "a13-s0-config-v1"
 OUTPUT_FIELDS = {
     "intent_hint",
     "positive_constraints",
@@ -42,9 +47,11 @@ SAFE_FALLBACK_REASONS = {
     "bad_value",
     "duplicate_attribute",
     "duplicate_term",
+    "deadline_exceeded",
     "empty_response",
     "extra_field",
     "internal_error",
+    "invalid_telemetry",
     "invalid_provider_json",
     "malformed_json",
     "missing_field",
@@ -86,6 +93,23 @@ def _safe_provider_model(value: object) -> str | None:
     if model and len(model) <= 100 and re.fullmatch(r"[A-Za-z0-9._:/-]+", model):
         return model
     return None
+
+
+def _safe_nonnegative_float(value: object) -> float:
+    if (
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and math.isfinite(value)
+        and value >= 0
+    ):
+        return float(value)
+    return 0.0
+
+
+def _safe_nonnegative_int(value: object) -> int:
+    if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+        return value
+    return 0
 
 
 @dataclass(frozen=True)
@@ -141,7 +165,9 @@ class UnderstandingRequest:
     deterministic_intent: str | None = None
     intent_evidence: tuple[str, ...] = ()
     allowed_values: Mapping[str, tuple[str, ...]] = field(default_factory=dict)
-    prompt_version: str = "a13-understanding-v1"
+    prompt_version: str = DEFAULT_PROMPT_VERSION
+    config_version: str = DEFAULT_CONFIG_VERSION
+    deadline_monotonic_ms: float | None = None
     timeout_ms: int = 2500
 
     def __post_init__(self) -> None:
@@ -149,8 +175,25 @@ class UnderstandingRequest:
             raise ValueError("current_message must not be empty")
         if self.turn < 1:
             raise ValueError("turn must be positive")
-        if self.timeout_ms <= 0:
+        if (
+            not isinstance(self.timeout_ms, int)
+            or isinstance(self.timeout_ms, bool)
+            or self.timeout_ms <= 0
+        ):
             raise ValueError("timeout_ms must be positive")
+        if (
+            not isinstance(self.prompt_version, str)
+            or not isinstance(self.config_version, str)
+            or not self.prompt_version.strip()
+            or not self.config_version.strip()
+        ):
+            raise ValueError("prompt_version and config_version must not be empty")
+        if self.deadline_monotonic_ms is not None and (
+            not isinstance(self.deadline_monotonic_ms, (int, float))
+            or isinstance(self.deadline_monotonic_ms, bool)
+            or not math.isfinite(self.deadline_monotonic_ms)
+        ):
+            raise ValueError("deadline_monotonic_ms must be finite numeric or None")
         for intent in (self.prior_intent, self.deterministic_intent):
             if intent not in {None, "buying", "browsing"}:
                 raise ValueError("intent must be buying, browsing, or None")
@@ -205,9 +248,9 @@ class UnderstandingOutcome:
             "trigger_signals": list(self.trigger_signals),
             "backend_called": self.backend_called,
             "fallback_reason": self.fallback_reason,
-            "latency_ms": round(max(0.0, self.latency_ms), 6),
-            "prompt_tokens": max(0, self.prompt_tokens),
-            "completion_tokens": max(0, self.completion_tokens),
+            "latency_ms": round(_safe_nonnegative_float(self.latency_ms), 6),
+            "prompt_tokens": _safe_nonnegative_int(self.prompt_tokens),
+            "completion_tokens": _safe_nonnegative_int(self.completion_tokens),
             "provider_model": _safe_provider_model(self.provider_model),
             "proposed_counts": {
                 "positive": len(delta.positive_constraints) if delta else 0,
@@ -281,7 +324,7 @@ def detect_trigger_signals(request: UnderstandingRequest) -> tuple[str, ...]:
     if (
         not request.deterministic_constraints
         and SHOPPING_RE.search(request.current_message)
-        and len(CLAUSE_RE.findall(request.current_message)) >= 2
+        and len(CLAUSE_RE.findall(request.current_message)) >= 1
     ):
         found.add("multi_clause_without_structure")
     if positive_attributes & rejected_attributes:
@@ -316,26 +359,47 @@ class GuardedSemanticInterpreter:
             return self._fallback(signals, "ineligible", False)
         if not self.config.key_available:
             return self._fallback(signals, "no_key", False)
+        if (
+            request.deadline_monotonic_ms is not None
+            and time.monotonic() * 1000 >= request.deadline_monotonic_ms
+        ):
+            return self._fallback(signals, "deadline_exceeded", False)
         if self._input_too_large(request):
             return self._fallback(signals, "input_too_large", False)
 
         started = time.perf_counter()
-        try:
-            result = self.backend.infer(request)
-        except SemanticUnderstandingError as error:
+        result, error, timed_out = self._infer_with_timeout(request)
+        elapsed_ms = (time.perf_counter() - started) * 1000
+        if timed_out:
+            return self._fallback(signals, "timeout", True, latency_ms=elapsed_ms)
+        if isinstance(error, SemanticUnderstandingError):
             reason = _safe_fallback_reason(error)
             return self._fallback(
                 signals,
                 reason,
                 True,
-                latency_ms=(time.perf_counter() - started) * 1000,
+                latency_ms=elapsed_ms,
             )
-        except Exception:
+        if error is not None:
             return self._fallback(
                 signals,
                 "internal_error",
                 True,
-                latency_ms=(time.perf_counter() - started) * 1000,
+                latency_ms=elapsed_ms,
+            )
+        if not isinstance(result, BackendResult):
+            return self._fallback(
+                signals,
+                "internal_error",
+                True,
+                latency_ms=elapsed_ms,
+            )
+        if not self._valid_telemetry(result):
+            return self._fallback(
+                signals,
+                "invalid_telemetry",
+                True,
+                latency_ms=elapsed_ms,
             )
 
         try:
@@ -356,6 +420,60 @@ class GuardedSemanticInterpreter:
             prompt_tokens=result.prompt_tokens,
             completion_tokens=result.completion_tokens,
             provider_model=result.provider_model,
+        )
+
+    def _infer_with_timeout(
+        self,
+        request: UnderstandingRequest,
+    ) -> tuple[BackendResult | None, Exception | None, bool]:
+        """Return by the request deadline even if a backend implementation blocks.
+
+        Provider adapters must still set their own transport timeout so the daemon
+        worker does not retain network resources after this guard has fallen back.
+        """
+
+        remaining_ms = float(request.timeout_ms)
+        if request.deadline_monotonic_ms is not None:
+            remaining_ms = min(
+                remaining_ms,
+                request.deadline_monotonic_ms - time.monotonic() * 1000,
+            )
+        if remaining_ms <= 0:
+            return None, None, True
+
+        completed = threading.Event()
+        result_box: list[BackendResult] = []
+        error_box: list[Exception] = []
+
+        def invoke() -> None:
+            try:
+                result_box.append(self.backend.infer(request))
+            except Exception as error:  # isolated and never rendered verbatim
+                error_box.append(error)
+            finally:
+                completed.set()
+
+        worker = threading.Thread(target=invoke, daemon=True, name="a13-shadow-backend")
+        worker.start()
+        if not completed.wait(remaining_ms / 1000):
+            return None, None, True
+        if error_box:
+            return None, error_box[0], False
+        return (result_box[0] if result_box else None), None, False
+
+    @staticmethod
+    def _valid_telemetry(result: BackendResult) -> bool:
+        return (
+            isinstance(result.latency_ms, (int, float))
+            and not isinstance(result.latency_ms, bool)
+            and math.isfinite(result.latency_ms)
+            and result.latency_ms >= 0
+            and isinstance(result.prompt_tokens, int)
+            and not isinstance(result.prompt_tokens, bool)
+            and result.prompt_tokens >= 0
+            and isinstance(result.completion_tokens, int)
+            and not isinstance(result.completion_tokens, bool)
+            and result.completion_tokens >= 0
         )
 
     def _input_too_large(self, request: UnderstandingRequest) -> bool:
@@ -517,7 +635,8 @@ def _parse_constraints(
         if not evidence_span or evidence_span.casefold() not in request.current_message.casefold():
             raise SemanticUnderstandingError("bad_span")
         normalized = _validated_value(attribute, raw_value, request)
-        if normalized not in _normalize(evidence_span):
+        normalized_evidence = _normalize(evidence_span)
+        if f" {normalized} " not in f" {normalized_evidence} ":
             raise SemanticUnderstandingError("value_evidence_mismatch")
         proposals.append(
             ConstraintProposal(

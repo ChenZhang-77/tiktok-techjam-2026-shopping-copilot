@@ -219,6 +219,26 @@ class AgentSmokeTest(unittest.TestCase):
         )
         self.assertIsNone(shadow.semantic_diagnostics("second", 1))
 
+    def test_shadow_backend_is_called_at_most_once_for_duplicate_session_turn(self) -> None:
+        backend = FakeSemanticBackend(_shadow_payload())
+        shadow = Agent(
+            retriever=_RecordingRetriever(),
+            semantic_interpreter=GuardedSemanticInterpreter(
+                backend,
+                config=InterpreterConfig(enabled=True, key_available=True),
+            ),
+        )
+        shadow.reset("duplicate", {})
+
+        shadow.respond("duplicate", "Something unusually packable", 1, 2)
+        shadow.respond("duplicate", "Something unusually packable", 1, 2)
+
+        self.assertEqual(backend.calls, 1)
+        self.assertEqual(
+            shadow.semantic_diagnostics("duplicate", 1)["status"],
+            "valid_shadow_delta",
+        )
+
     def test_shadow_filters_local_other_attribute_without_changing_agent_behavior(self) -> None:
         backend = FakeSemanticBackend(_shadow_payload())
         baseline = Agent(retriever=_RecordingRetriever())
