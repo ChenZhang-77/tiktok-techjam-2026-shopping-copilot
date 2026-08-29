@@ -45,7 +45,9 @@ deterministic State / Override candidate, leaving that runtime unchanged:
 | Retained default behavior commit | `7f520ba` |
 | Optional B12 code/default-parity commit | `82891c8` |
 | B10a experiment branch | `b/b10a-constraint-preserving-crossencoder` |
+| Current A13 publication branch | `llm`, cut from reviewed A13 HEAD `bbb0075` |
 | Latest local full test suite (2026-08-30) | 349 passed after the double-click A13 annotation UI and clearer example guide; default runtime remains no-LLM |
+| Committed annotation bundle | `A13_annotation_pack_v1.zip`, SHA256 `bb2211f61bb8e09fd31570965cc0ddd534a13d29a94be76562a90a05e953388f` |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |
 
@@ -211,7 +213,7 @@ The remaining work is A-owned and ordered:
 
 The authoritative A13 plan is
 [`DeepSeek_LLM接入实验方案.md`](../DeepSeek_LLM接入实验方案.md). It does not claim
-that A13 is implemented.
+provider activation, real-model evidence, or retained LLM runtime behavior.
 
 ## Current A13 Decision
 
@@ -249,6 +251,9 @@ not reconciled or gold-frozen, so it grants no provider authorization. All five
 runtime-reachable semantic strata are replayed against the bound catalog during
 the build; the defensive but Agent-unreachable intent-transition invariant stays
 unit-test-only rather than being represented by fabricated empty evidence.
+The exact teammate-facing build is committed at repository root as
+[`A13_annotation_pack_v1.zip`](../A13_annotation_pack_v1.zip), with the bound
+SHA256 recorded in the checkpoint table above.
 
 A13 does not replace B10b-DS1. A13 interprets difficult user language before
 retrieval; B10b-DS1 reranks an existing Browsing Top-10 after retrieval. They

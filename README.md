@@ -25,6 +25,12 @@ language Chinese walkthrough from A1/B1 through the current result, read
 The reviewed A-side DeepSeek plan, gates, and branch boundary are in
 [`DeepSeek_LLM接入实验方案.md`](DeepSeek_LLM接入实验方案.md).
 
+The teammate-ready offline annotation bundle is committed at
+[`A13_annotation_pack_v1.zip`](A13_annotation_pack_v1.zip). Unzip it and
+double-click `开始标注.html`; the annotator does not need to edit JSONL or use a
+terminal. The bundle contains unlabeled fixtures only and does not authorize a
+DeepSeek/provider run.
+
 Verified Development-160 result for the retained bounded A11 plus B9
 conditional-dense default:
 
@@ -184,6 +190,7 @@ tests/                      behavior, contract, fallback, and evidence tests
 scripts/                    catalog, cache, experiment, and visualizer helpers
 visualizer/                 local dialogue and metric inspection UI
 submission/                 final minimal package staging area
+A13_annotation_pack_v1.zip  teammate-ready offline A13 annotation bundle
 data/                       public sessions and ignored frozen catalog download
 docs/README.md              documentation navigation index
 docs/project_structure.md   detailed ownership and file-placement rules
@@ -301,8 +308,9 @@ reports remain outside Git and are not hash-bound tracked evidence. Neither is
 enabled by default; see `docs/current_status.md` for the exact provisional
 disposition and caveats.
 
-The planned A13 semantic interpreter is different: it will use DeepSeek as an
-A-owned, evidence-gated semantic interpreter before state mutation. A13-0 has
+The A13 semantic-interpreter track is different: a future provider stage would
+use DeepSeek as an A-owned, evidence-gated semantic interpreter before state
+mutation. A13-0 has
 bound the current no-LLM comparator, folds, hashes, and refreshed taxonomy in
 [`docs/a13_0_baseline_evidence.md`](docs/a13_0_baseline_evidence.md). A13-1 is
 rejected and reverted after it lost three Development hits and regressed all
@@ -315,6 +323,11 @@ still no DeepSeek transport, key read, or API call. A frozen two-member human
 ambiguity fixture and Shadow review are required before provider testing, and
 Candidate review is required before any state or metric change. Do not infer an
 A-side provider feature from the presence of the offline plumbing.
+
+For independent human annotation, use the committed
+[`A13_annotation_pack_v1.zip`](A13_annotation_pack_v1.zip). It embeds the same
+60 runtime-gate-bound unlabeled items as the source fixture and is not gold or
+model output.
 
 ## Named Experiments and Visualizer
 

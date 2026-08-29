@@ -91,7 +91,7 @@ the standalone zip with:
 
 ```bash
 python3 -m experiments.build_a13_annotation_bundle \
-  --output /private/tmp/a13_annotation_pack_v1.zip
+  --output A13_annotation_pack_v1.zip
 ```
 
 The builder fails closed unless every declared stratum is reproduced by the
@@ -99,3 +99,5 @@ current runtime trigger gate against the bound catalog. This pack is
 annotation-ready but is not reconciled gold. Do not run a provider
 or create `a13_ambiguity_v1.jsonl` until two distinct annotation files pass
 validation, disagreements are adjudicated, and the final artifact is frozen.
+The `llm` publication branch commits this deterministic root-level ZIP so a
+teammate can download one file and double-click `开始标注.html` after extraction.

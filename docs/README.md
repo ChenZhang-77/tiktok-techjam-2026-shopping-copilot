@@ -33,6 +33,8 @@ definitions instead of creating local variants.
 ## Delivery
 
 - `demo_and_submission_plan.md` — demo, report, video, packaging, and claim rules
+- `../A13_annotation_pack_v1.zip` — deterministic teammate-facing offline A13
+  annotation bundle committed on the `llm` publication branch
 - `../submission/README.md` — final-package staging checklist
 - `../visualizer/README.md` — visual debugging and Agent/Evaluator view boundary
 

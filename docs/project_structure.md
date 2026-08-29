@@ -35,6 +35,7 @@ Root Markdown files have distinct roles:
 | `CONTEXT.md` | Shared domain vocabulary |
 | `DATA_ATTRIBUTION.md` | Dataset source and use boundary |
 | `DeepSeek_LLM接入实验方案.md` | Authoritative A13 semantic-understanding spec and review gates |
+| `A13_annotation_pack_v1.zip` | Deterministic teammate-facing unlabeled annotation bundle committed only on the `llm` publication branch |
 
 ## Documentation Layers
 
@@ -99,6 +100,12 @@ The following are intentionally ignored and must not be committed:
 
 Some ignored local caches are required to reproduce optional dense experiments.
 Do not delete them during cosmetic cleanup.
+
+`A13_annotation_pack_v1.zip` is a deliberate publication artifact rather than
+an ordinary experiment run. Its source remains under
+`experiments/fixtures/a13_annotation_pack_v1/`, and it must be regenerated with
+`python3 -m experiments.build_a13_annotation_bundle` before its recorded hash
+or contents change.
 
 ## Where New Work Goes
 

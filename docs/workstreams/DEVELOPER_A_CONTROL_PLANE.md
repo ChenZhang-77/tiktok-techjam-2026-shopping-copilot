@@ -585,6 +585,8 @@ The A13-S0 offline foundation record is
 [`docs/a13_s0_offline_evidence.md`](../a13_s0_offline_evidence.md).
 The teammate-facing unlabeled annotation package is
 [`experiments/fixtures/a13_annotation_pack_v1/README.md`](../../experiments/fixtures/a13_annotation_pack_v1/README.md).
+The reproducible teammate-facing ZIP committed on the `llm` publication branch
+is [`A13_annotation_pack_v1.zip`](../../A13_annotation_pack_v1.zip).
 It is ready for independent annotation but is not reconciled gold and does not
 authorize provider work.
 Do not combine A13 semantic understanding with an ask/stop policy change.

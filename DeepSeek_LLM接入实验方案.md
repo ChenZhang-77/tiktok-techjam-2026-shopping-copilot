@@ -2,7 +2,7 @@
 
 > 状态：A13-0 已完成；A13-1 已拒绝并回滚；A13-S0 离线基础通过 parity；真实 provider 阶段仍受人工 fixture gate 阻塞。
 >
-> 当前分支：a/a13-llm-semantic-understanding
+> 当前发布分支：llm（源实验分支：a/a13-llm-semantic-understanding）
 >
 > 运行时来源基线：0bd33755dcef6db066cf11b5a0a87e0ade554a5e
 >
@@ -428,7 +428,7 @@ chen/chenzhang-77-baseline-setup @ 0bd3375
       -> A13-S0
       -> review gate
       -> A13-C1 or No-Go
-      -> clean integration branch
+      -> llm publication branch for the reviewed offline checkpoint
       -> regenerate P0 submission package last
 ~~~
 
