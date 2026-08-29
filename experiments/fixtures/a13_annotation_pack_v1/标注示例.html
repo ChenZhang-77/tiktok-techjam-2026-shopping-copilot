@@ -82,11 +82,12 @@
   <section class="example">
     <h2>示例 3｜一句话中同时有想要和排除</h2>
     <div class="context"><div class="box"><strong>Prior state</strong><br>无</div><div class="box"><strong>Current message</strong><br>I want a leather bag, but not black.</div></div>
-    <p class="why"><strong>为什么这样标：</strong><code>I want</code> 支持 buying；leather 是明确材质要求，black 是明确排除颜色，二者不冲突。</p>
+    <p class="why"><strong>为什么这样标：</strong><code>I want</code> 支持 buying；bag 和 leather 是明确类别/材质要求，black 是明确排除颜色，三者不冲突。</p>
     <p class="dont"><strong>不要这样标：</strong>不要因为句中有 but 就 abstain；只有同一个 attribute/value 自相矛盾时才必须 abstain。</p>
     <pre>{
   "intent_hint": "buying",
   "positive_constraints": [
+    {"attribute":"category","value":"bag","evidence_span":"bag","hard":true},
     {"attribute":"material","value":"leather","evidence_span":"leather","hard":true}
   ],
   "rejected_constraints": [
