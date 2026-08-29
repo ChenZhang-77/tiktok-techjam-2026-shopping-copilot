@@ -3,9 +3,10 @@
 ## Decision
 
 **Reject and revert.** The bounded deterministic candidate removed the two
-diagnosed stale preferences from active state and QueryPlan positive roles, but
-it reduced Development-160 quality and regressed TechnicalScore on every fixed
-fold. The Shadow comparator therefore remains the no-candidate `0.925` runtime.
+diagnosed stale preferences from active state, but `public_0002` reintroduced
+its old value through QueryPlan `residual_terms`. It also reduced
+Development-160 quality and regressed TechnicalScore on every fixed fold. The
+Shadow comparator therefore remains the no-candidate `0.925` runtime.
 
 This was an A-side state experiment only. It did not change Question Policy,
 B-side retrieval/ranking, route-weight semantics, the shared contract, catalog,
@@ -20,13 +21,16 @@ can be represented under different runtime attributes. Existing same-attribute
 replacement therefore left the earlier value active.
 
 The candidate added a narrow explicit-prior-preference reset. It preserved the
-category and unrelated later evidence, removed the initial stale preference,
-and prevented that value from silently reactivating without a new explicit
-override. Focused endpoint tests exercised the public `Agent.respond` seam.
+category and unrelated later evidence and removed the initial stale preference
+from active state. Focused endpoint tests exercised the public `Agent.respond`
+seam.
 
 The candidate reached zero eligible-turn State / Override flags for both
-diagnosed sessions. That proves the local mechanism, but not a keep decision:
-the removed values also contributed useful retrieval evidence elsewhere.
+diagnosed sessions. A direct candidate-commit replay exposed the missing half:
+on `public_0002` turn 7, the current message restated `Buckle closure`, which
+remained in QueryPlan `residual_terms` and the rendered query even though it was
+not active state. The candidate therefore failed the required active-state plus
+positive-role invariant before metric quality is considered.
 
 ## Development-160 result
 
@@ -79,15 +83,16 @@ Raw reports are in [`a13_1_reports/`](a13_1_reports/).
 
 ## Taxonomy caveat
 
-The offline taxonomy can still report `inactive_value_present_in_query` when an
-old overridden instance and a newly reasserted active instance normalize to the
-same text. This audit ambiguity did not determine the decision: evaluator
-metrics, fold consistency, and gained/lost sessions already require rejection.
-It is isolated as an evidence limitation rather than another runtime change.
+The aggregate taxonomy cleared both sessions' `state_override_flags`, but that
+did not prove QueryPlan correctness. The added candidate-commit replay checks
+the evaluator-defined old value against active state and all five positive
+QueryPlan roles for every eligible turn. It records the exact `public_0002`
+turn-7 residual failure in
+[`candidate_invariant_replay.json`](a13_1_reports/candidate_invariant_replay.json).
 
 ## Keep / revert recommendation and next gate
 
-- Keep the candidate and revert commits plus this evidence, so the failed
+- Keep the candidate and revert commits plus this evidence, so the incomplete
   mechanism is reproducible and is not retried blindly.
 - Keep the reverted `0.925` runtime as the A13 Shadow comparator.
 - Do not activate this state-reset candidate in A13-S0 or A13-C1.

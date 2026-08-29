@@ -219,8 +219,9 @@ DeepSeek。证据见
 
 ### A13-1：先处理 State / Override
 
-**状态：已完成，拒绝并回滚。** 候选修复了两个诊断会话的旧值残留，
-但 Development-160 丢失 3 个 hit、四 folds TechnicalScore 全部退化，故恢复
+**状态：已完成，拒绝并回滚。** 候选清除了两个诊断会话 active state 中的旧值，
+但 `public_0002` 的旧值仍从当前 utterance 进入 QueryPlan positive residual；
+同时 Development-160 丢失 3 个 hit、四 folds TechnicalScore 全部退化，故恢复
 `0.925` comparator。证据见
 [`docs/a13_1_state_override_evidence.md`](docs/a13_1_state_override_evidence.md)。
 这是独立确定性实验，未调用 LLM：

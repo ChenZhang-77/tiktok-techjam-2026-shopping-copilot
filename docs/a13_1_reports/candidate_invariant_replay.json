@@ -1,0 +1,57 @@
+{
+  "version": "a13-1-invariant-replay-v1",
+  "candidate_commit": "1cd1f05af52e93db24b11791d16f5b192564cf34",
+  "scope": "Development-only selected sessions; no Full or Holdout run",
+  "catalog_sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
+  "dataset_sha256": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579",
+  "method": "Replay the evaluator turn loop at the candidate commit and test the evaluator-defined old_value against active state and the five QueryPlan positive roles after the override becomes eligible.",
+  "positive_query_plan_roles": [
+    "category_terms",
+    "hard_terms",
+    "soft_terms",
+    "semantic_terms",
+    "residual_terms"
+  ],
+  "sessions": [
+    {
+      "sample_id": "public_0002",
+      "old_value": "Buckle closure",
+      "new_value": "leather",
+      "override_turn": 3,
+      "turns": [
+        {"turn": 3, "active_old_value_present": false, "positive_role_old_value_present": false},
+        {"turn": 4, "active_old_value_present": false, "positive_role_old_value_present": false},
+        {"turn": 5, "active_old_value_present": false, "positive_role_old_value_present": false},
+        {"turn": 6, "active_old_value_present": false, "positive_role_old_value_present": false},
+        {
+          "turn": 7,
+          "active_old_value_present": false,
+          "positive_role_old_value_present": true,
+          "user_message": "For that, what matters is: Imported; Buckle closure.",
+          "active_values": ["100% leather", "leather", "imported"],
+          "residual_terms": ["For that, what matters is: ; Buckle closure."],
+          "rendered_query": "leather 100% leather imported For that, what matters is: ; Buckle closure."
+        },
+        {"turn": 8, "active_old_value_present": false, "positive_role_old_value_present": false},
+        {"turn": 9, "active_old_value_present": false, "positive_role_old_value_present": false},
+        {"turn": 10, "active_old_value_present": false, "positive_role_old_value_present": false}
+      ]
+    },
+    {
+      "sample_id": "public_0096",
+      "old_value": "Pull On closure",
+      "new_value": "polyester",
+      "override_turn": 3,
+      "turns": [
+        {"turn": 3, "active_old_value_present": false, "positive_role_old_value_present": false},
+        {"turn": 4, "active_old_value_present": false, "positive_role_old_value_present": false},
+        {"turn": 5, "active_old_value_present": false, "positive_role_old_value_present": false},
+        {"turn": 6, "active_old_value_present": false, "positive_role_old_value_present": false},
+        {"turn": 7, "active_old_value_present": false, "positive_role_old_value_present": false},
+        {"turn": 8, "active_old_value_present": false, "positive_role_old_value_present": false},
+        {"turn": 9, "active_old_value_present": false, "positive_role_old_value_present": false},
+        {"turn": 10, "active_old_value_present": false, "positive_role_old_value_present": false}
+      ]
+    }
+  ]
+}

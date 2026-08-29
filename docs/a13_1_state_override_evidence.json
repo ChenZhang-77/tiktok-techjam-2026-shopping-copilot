@@ -46,6 +46,10 @@
         "path": "docs/a13_1_reports/candidate_development.json",
         "sha256": "8b336c0a1c94b2b1533fa027a28e6d81b9d26f7c95f9af089687fcbff1da9517"
       },
+      "candidate_invariant_replay": {
+        "path": "docs/a13_1_reports/candidate_invariant_replay.json",
+        "sha256": "b3c29c20c2d0186871a0361b49b2a00bc7a4a11751aa30afe55d678ef2cb7ac0"
+      },
       "candidate_fold_1": {
         "path": "docs/a13_1_reports/candidate_fold_1.json",
         "sha256": "69432e74db02fb68420fb1a26e9fdffb7517e52ea1d7a1b1355a24ca13794ee3"
@@ -151,9 +155,16 @@
   "state_diagnosis": {
     "original_sessions": ["public_0002", "public_0096"],
     "candidate_state_override_flags_after_eligible_turn": 0,
+    "candidate_query_plan_invariant_passed": false,
     "mechanism": "The evaluator's explicit earlier-preference reset refers to a value whose runtime attribute can differ from the new value's attribute. Same-attribute replacement cannot remove that old cross-attribute value.",
-    "candidate_result": "The bounded reset removed the old value from active state and QueryPlan and prevented silent reactivation, but removing user-stated old preferences degraded ranking and turn outcomes.",
-    "taxonomy_limit": "When an old instance and a newly reasserted instance normalize to the same value, the current offline audit can still emit inactive_value_present_in_query even though the new value is active. This did not affect the reject decision, which is determined from evaluator metrics and session outcomes."
+    "candidate_result": "The bounded reset removed both diagnosed old values from active state, but public_0002 reintroduced Buckle closure through the current utterance into QueryPlan residual_terms at turn 7. The candidate therefore failed the required full invariant as well as the quality gate.",
+    "query_plan_failure": {
+      "sample_id": "public_0002",
+      "turn": 7,
+      "old_value": "Buckle closure",
+      "positive_role": "residual_terms"
+    },
+    "taxonomy_limit": "The aggregate taxonomy cleared state_override_flags but did not expose this exact old-value residual. A candidate-commit replay now checks active state and all five QueryPlan positive roles directly."
   },
   "operational_impact": {
     "candidate_response_count": 694,
@@ -181,7 +192,7 @@
   "keep_revert": {
     "keep_gate_passed": false,
     "revert_gate_triggered": true,
-    "reason": "The candidate achieved the narrow state invariant but lost three Development hits, regressed every fold's TechnicalScore, and materially damaged Intent Override.",
+    "reason": "The candidate cleared the active-state half but failed the QueryPlan half for public_0002; it also lost three Development hits, regressed every fold's TechnicalScore, and materially damaged Intent Override.",
     "runtime_after_revert": "exact Development aggregate parity with the A13-0 comparator",
     "next_stage": "A13-S0 Shadow only; no candidate state activation"
   }

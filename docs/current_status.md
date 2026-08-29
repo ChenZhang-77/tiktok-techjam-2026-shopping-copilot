@@ -223,9 +223,10 @@ deterministic parser.
 A13-0 is complete at clean comparator `b86a9e7`; it reproduced Development-160
 and all four folds, bound the input/evaluator hashes, refreshed the 12-miss
 taxonomy, and changed no Agent behavior. See
-`docs/a13_0_baseline_evidence.md`. A13-1 fixed the narrow stale-value invariant
-but lost three Development hits and regressed TechnicalScore on all four folds,
-so it was rejected and explicitly reverted. See
+`docs/a13_0_baseline_evidence.md`. A13-1 cleared the active-state half of the
+stale-value issue but failed the QueryPlan-positive-role half on `public_0002`;
+it also lost three Development hits and regressed TechnicalScore on all four
+folds, so it was rejected and explicitly reverted. See
 `docs/a13_1_state_override_evidence.md`. A13-S0 is now the next stage. No
 DeepSeek API call has been made for A13.
 

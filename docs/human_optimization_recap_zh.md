@@ -536,8 +536,8 @@ TechnicalScore 增加 0.070391。其中证据最强、贡献最大的单步是�
 **仍然薄弱的：**
 
 - 当前 hash-bound `0.925` 审计中的 12 个 miss 为 Question Policy 10、
-  State / Override 2；A13-1 修复局部 stale-value 不变量后四 folds 全部退化，
-  因此未保留该候选；
+  State / Override 2；A13-1 只清除了 active-state 半轴，`public_0002` 的旧值仍
+  进入 QueryPlan positive residual，且四 folds 全部退化，因此未保留该候选；
 - 完整 should-ask gate 尚未有可保留版本；
 - 长期 profile 仍为 0 权重；
 - B10b-DS1 仅是 opt-in LLM ranker，默认仍关闭；A13 语义理解尚未实现；

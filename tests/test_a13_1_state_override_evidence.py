@@ -162,7 +162,7 @@ class A131StateOverrideEvidenceTest(unittest.TestCase):
             impact["candidate_peak_rss_bytes"], candidate["resources"]["peak_rss_bytes"]
         )
 
-    def test_state_goal_was_met_but_keep_gate_failed_without_llm_or_scope_drift(self) -> None:
+    def test_active_state_half_passed_but_query_plan_invariant_failed(self) -> None:
         taxonomy = self._report("candidate_taxonomy")
         selected = {
             session["sample_id"]: session
@@ -177,6 +177,45 @@ class A131StateOverrideEvidenceTest(unittest.TestCase):
                 for turn in session["turns"]
                 if turn["eligible"]
             )
+        )
+        replay = self._report("candidate_invariant_replay")
+        self.assertEqual(replay["candidate_commit"], self.record["commits"]["candidate"])
+        self.assertEqual(
+            replay["positive_query_plan_roles"],
+            [
+                "category_terms",
+                "hard_terms",
+                "soft_terms",
+                "semantic_terms",
+                "residual_terms",
+            ],
+        )
+        replay_sessions = {
+            session["sample_id"]: session for session in replay["sessions"]
+        }
+        self.assertEqual(set(replay_sessions), {"public_0002", "public_0096"})
+        self.assertTrue(
+            all(
+                not turn["active_old_value_present"]
+                for session in replay_sessions.values()
+                for turn in session["turns"]
+            )
+        )
+        failing_turns = [
+            turn
+            for turn in replay_sessions["public_0002"]["turns"]
+            if turn["positive_role_old_value_present"]
+        ]
+        self.assertEqual([turn["turn"] for turn in failing_turns], [7])
+        self.assertIn("Buckle closure", failing_turns[0]["residual_terms"][0])
+        self.assertFalse(
+            any(
+                turn["positive_role_old_value_present"]
+                for turn in replay_sessions["public_0096"]["turns"]
+            )
+        )
+        self.assertFalse(
+            self.record["state_diagnosis"]["candidate_query_plan_invariant_passed"]
         )
         self.assertEqual(self.record["decision"], "rejected_and_reverted")
         self.assertFalse(self.record["boundaries"]["shared_contract_changed"])
