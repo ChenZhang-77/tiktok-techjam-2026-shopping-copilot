@@ -9,13 +9,26 @@ import unittest
 import zipfile
 
 from experiments.build_a13_annotation_bundle import build_annotation_bundle
+from experiments.a13_annotation_trigger_audit import (
+    validate_runtime_trigger_assignments,
+)
 from experiments.a13_annotation_pack import (
+    ALLOWED_ATTRIBUTES as PACK_ALLOWED_ATTRIBUTES,
+    CLOSED_ALLOWED_VALUES,
     AnnotationPackError,
     compare_annotation_sets,
     load_jsonl,
     validate_annotation_pack,
     validate_items,
 )
+from starter.core.context_engine import (
+    CATEGORY_TERMS,
+    COLORS,
+    MATERIALS,
+    STYLE_TERMS,
+    USE_CASES,
+)
+from starter.core.semantic_understanding import ALLOWED_ATTRIBUTES
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -31,7 +44,7 @@ class A13AnnotationPackTest(unittest.TestCase):
     def test_shared_items_cover_the_frozen_trigger_distribution_without_labels(self) -> None:
         summary = validate_items(self.items)
 
-        self.assertEqual(summary["item_count"], 70)
+        self.assertEqual(summary["item_count"], 60)
         self.assertEqual(
             summary["trigger_counts"],
             {
@@ -40,7 +53,6 @@ class A13AnnotationPackTest(unittest.TestCase):
                 "multi_clause_without_structure": 10,
                 "override_without_value": 10,
                 "positive_rejected_attribute_conflict": 10,
-                "unexplained_intent_transition": 10,
             },
         )
         rendered = json.dumps(self.items, sort_keys=True).lower()
@@ -88,8 +100,39 @@ class A13AnnotationPackTest(unittest.TestCase):
         summary = validate_annotation_pack(self.items, annotations)
 
         self.assertEqual(summary["annotator_id"], "member_b")
-        self.assertEqual(summary["annotation_count"], 70)
-        self.assertEqual(summary["abstain_count"], 70)
+        self.assertEqual(summary["annotation_count"], 60)
+        self.assertEqual(summary["abstain_count"], 60)
+
+    def test_every_declared_stratum_is_reproduced_by_the_runtime_gate(self) -> None:
+        summary = validate_runtime_trigger_assignments(
+            self.items,
+            ROOT / "data/catalog.jsonl",
+        )
+
+        self.assertEqual(summary["item_count"], 60)
+        self.assertEqual(summary["assigned_trigger_matches"], 60)
+        self.assertEqual(summary["mismatches"], [])
+        self.assertEqual(
+            summary["catalog_sha256"],
+            "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
+        )
+
+    def test_standalone_closed_vocabulary_matches_the_runtime_contract(self) -> None:
+        self.assertEqual(PACK_ALLOWED_ATTRIBUTES, ALLOWED_ATTRIBUTES)
+        self.assertEqual(CLOSED_ALLOWED_VALUES["category"], frozenset(CATEGORY_TERMS))
+        self.assertEqual(CLOSED_ALLOWED_VALUES["material"], frozenset(MATERIALS))
+        self.assertEqual(CLOSED_ALLOWED_VALUES["color"], frozenset(COLORS))
+        self.assertEqual(CLOSED_ALLOWED_VALUES["style"], frozenset(STYLE_TERMS))
+        self.assertEqual(CLOSED_ALLOWED_VALUES["use_case"], frozenset(USE_CASES))
+        self.assertEqual(
+            CLOSED_ALLOWED_VALUES["size"],
+            frozenset(
+                {
+                    "xxs", "xs", "s", "m", "l", "xl", "xxl", "xxxl",
+                    "small", "medium", "large", "wide", "narrow",
+                }
+            ),
+        )
 
     def test_validator_rejects_non_evidenced_span_and_incomplete_coverage(self) -> None:
         annotations = [
@@ -185,6 +228,36 @@ class A13AnnotationPackTest(unittest.TestCase):
         with self.assertRaisesRegex(AnnotationPackError, "no-preference evidence"):
             validate_annotation_pack(self.items, unsupported_no_preference)
 
+        empty_non_abstain = abstain_rows()
+        empty_non_abstain[0]["label"]["abstain"] = False
+        with self.assertRaisesRegex(AnnotationPackError, "empty non-abstain"):
+            validate_annotation_pack(self.items, empty_non_abstain)
+
+        disallowed_closed_value = abstain_rows()
+        lrf_index = next(
+            index
+            for index, item in enumerate(self.items)
+            if item["item_id"] == "LRF-001"
+        )
+        disallowed_closed_value[lrf_index]["label"] = {
+            "intent_hint": None,
+            "positive_constraints": [
+                {
+                    "attribute": "material",
+                    "value": "packable",
+                    "evidence_span": "packable",
+                    "hard": False,
+                }
+            ],
+            "rejected_constraints": [],
+            "no_preference_attributes": [],
+            "override_attributes": [],
+            "semantic_terms": [],
+            "abstain": False,
+        }
+        with self.assertRaisesRegex(AnnotationPackError, "allowed_values"):
+            validate_annotation_pack(self.items, disallowed_closed_value)
+
     def test_comparison_reports_only_label_disagreements_without_mutating_inputs(self) -> None:
         base_label = {
             "intent_hint": None,
@@ -209,11 +282,12 @@ class A13AnnotationPackTest(unittest.TestCase):
             {**row, "annotator_id": "member_b", "label": dict(row["label"])}
             for row in left
         ]
+        right[0]["label"]["intent_hint"] = "buying"
         right[0]["label"]["abstain"] = False
 
         comparison = compare_annotation_sets(self.items, left, right)
 
-        self.assertEqual(comparison["agreement_count"], 69)
+        self.assertEqual(comparison["agreement_count"], 59)
         self.assertEqual(comparison["disagreement_count"], 1)
         self.assertEqual(comparison["disagreements"][0]["item_id"], "OWV-001")
 
@@ -221,7 +295,7 @@ class A13AnnotationPackTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "a13_annotation_pack_v1.zip"
             summary = build_annotation_bundle(ROOT, output)
-            self.assertEqual(summary["item_count"], 70)
+            self.assertEqual(summary["item_count"], 60)
             self.assertTrue(output.is_file())
 
             with zipfile.ZipFile(output) as archive:
@@ -253,7 +327,7 @@ class A13AnnotationPackTest(unittest.TestCase):
                 text=True,
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
-            self.assertIn('"item_count": 70', completed.stdout)
+            self.assertIn('"item_count": 60', completed.stdout)
 
 
 if __name__ == "__main__":

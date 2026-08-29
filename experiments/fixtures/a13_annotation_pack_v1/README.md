@@ -1,6 +1,6 @@
 # A13 歧义语义独立标注包 v1
 
-你将标注 70 条购物对话边界表达。目标是为每条当前消息给出一个结构化
+你将标注 60 条购物对话边界表达。目标是为每条当前消息给出一个结构化
 `UnderstandingDelta`，作为后续比较确定性解析器和 DeepSeek Shadow 的人工标准。
 
 这不是推荐质量标注。你不需要挑商品，也不会看到商品 ID、命中结果或模型输出。
@@ -20,7 +20,9 @@ python3 validate_annotations.py validate \
   --annotations annotations.<你的代号>.jsonl
 ```
 
-看到 `annotation_count: 70` 才算交付完成。把填写后的单个 JSONL 文件发回即可。
+看到 `annotation_count: 60` 才算交付完成。把填写后的单个 JSONL 文件发回即可。
+`annotation_schema.json` 只描述 JSON 形状；交叉字段不变量、evidence 和 runtime
+vocabulary 以 `validate_annotations.py` 的结果为准。
 
 ## 独立性规则
 
@@ -36,7 +38,8 @@ python3 validate_annotations.py validate \
 
 - `prior_state`：本轮之前已经确认的意图与约束；
 - `current_message`：本轮唯一可以提供新 evidence span 的文本；
-- `trigger_type`：为什么规则系统认为这条值得进入 Shadow 检查；它不是答案；
+- `trigger_type`：为什么规则系统认为这条值得进入 Shadow 检查；它不是答案。
+  每条已用固定 catalog 和当前 runtime gate 复算，构建器在任何分层不匹配时会直接失败；
 - `source`：这些条目都是独立编写的边界表达。
 
 你标的是“本轮可以安全提出的变化”，不是把 prior state 完整复制到 label。
@@ -78,6 +81,9 @@ python3 validate_annotations.py validate \
 - `attribute` 只能是：`category`、`material`、`color`、`size`、`style`、
   `brand`、`budget`、`feature`、`use_case`。
 - `value` 使用小写、去标点后的规范化短语。
+- `category/material/color/size/style/use_case` 还必须属于包内 validator
+  与 runtime parity test 绑定的 closed vocabulary；`brand/budget/feature` 依赖
+  当前消息的逐字 evidence。
 - `evidence_span` 必须逐字出现在 `current_message` 中，并包含完整 value token。
 - 明确要求、明确选择或替代值用 `hard=true`；偏好、愿望或弱推断用
   `hard=false`。

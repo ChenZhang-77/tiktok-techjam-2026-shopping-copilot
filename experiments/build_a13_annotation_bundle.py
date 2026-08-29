@@ -9,6 +9,9 @@ import tempfile
 import zipfile
 
 from experiments.a13_annotation_pack import load_jsonl, validate_items
+from experiments.a13_annotation_trigger_audit import (
+    validate_runtime_trigger_assignments,
+)
 
 
 BUNDLE_NAME = "a13_annotation_pack_v1"
@@ -29,7 +32,14 @@ def build_annotation_bundle(
     root = Path(repository_root).resolve()
     source = root / "experiments/fixtures" / BUNDLE_NAME
     output = Path(output_path).resolve()
-    item_summary = validate_items(load_jsonl(source / "items.jsonl"))
+    items = load_jsonl(source / "items.jsonl")
+    item_summary = validate_items(items)
+    trigger_audit = validate_runtime_trigger_assignments(
+        items,
+        root / "data/catalog.jsonl",
+    )
+    if trigger_audit["mismatches"]:
+        raise ValueError("A13 annotation items do not reproduce their runtime triggers")
 
     with tempfile.TemporaryDirectory() as directory:
         bundle = Path(directory) / BUNDLE_NAME
@@ -48,6 +58,7 @@ def build_annotation_bundle(
             "version": "a13-annotation-pack-v1",
             "status": "annotation_ready_not_gold_frozen",
             **item_summary,
+            "runtime_trigger_audit": trigger_audit,
             "files_sha256": file_hashes,
             "boundaries": {
                 "contains_gold_labels": False,

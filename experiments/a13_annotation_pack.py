@@ -18,14 +18,55 @@ ALLOWED_ATTRIBUTES = (
     "feature",
     "use_case",
 )
-TRIGGER_ORDER = (
-    "override_without_value",
-    "mixed_polarity_clause",
-    "low_confidence_residual_feature",
-    "multi_clause_without_structure",
-    "positive_rejected_attribute_conflict",
-    "unexplained_intent_transition",
-)
+CLOSED_ALLOWED_VALUES = {
+    "category": frozenset(
+        {
+            "backpack", "bag", "belt", "boot", "boots", "bracelet", "bra",
+            "cap", "coat", "dress", "earrings", "gloves", "hat", "hoodie",
+            "jacket", "jeans", "leggings", "necklace", "pants", "ring",
+            "sandals", "shirt", "shoe", "shoes", "shorts", "skirt",
+            "sneakers", "socks", "sweater", "swimsuit", "top", "wallet",
+            "watch",
+        }
+    ),
+    "material": frozenset(
+        {
+            "alloy", "canvas", "cotton", "denim", "fabric", "fleece", "gold",
+            "lace", "leather", "linen", "metal", "nylon", "polyester",
+            "rayon", "rubber", "silicone", "silk", "silver", "spandex",
+            "stainless steel", "suede", "wool",
+        }
+    ),
+    "color": frozenset(
+        {
+            "beige", "black", "blue", "brown", "clear", "gold", "gray",
+            "green", "grey", "orange", "pink", "purple", "red", "silver",
+            "white", "yellow",
+        }
+    ),
+    "size": frozenset(
+        {
+            "xxs", "xs", "s", "m", "l", "xl", "xxl", "xxxl", "small",
+            "medium", "large", "wide", "narrow",
+        }
+    ),
+    "style": frozenset(
+        {
+            "athletic", "boho", "classic", "comfortable", "cute", "dressy",
+            "elegant", "gothic", "lightweight", "loose", "minimalist",
+            "modern", "padded", "retro", "slim", "stretchy", "vintage",
+            "warm", "waterproof",
+        }
+    ),
+    "use_case": frozenset(
+        {
+            "beach", "casual", "cycling", "dance", "everyday", "formal",
+            "gym", "hiking", "outdoor", "party", "rain", "running", "school",
+            "skiing", "sleep", "travel", "walking", "wedding", "winter",
+            "work", "workout", "yoga",
+        }
+    ),
+}
 ITEM_FIELDS = {
     "item_id",
     "trigger_type",
@@ -73,7 +114,6 @@ EXPECTED_TRIGGER_COUNTS = {
     "low_confidence_residual_feature": 20,
     "multi_clause_without_structure": 10,
     "positive_rejected_attribute_conflict": 10,
-    "unexplained_intent_transition": 10,
 }
 ID_PREFIX = {
     "override_without_value": "OWV",
@@ -81,7 +121,6 @@ ID_PREFIX = {
     "low_confidence_residual_feature": "LRF",
     "multi_clause_without_structure": "MCS",
     "positive_rejected_attribute_conflict": "PRC",
-    "unexplained_intent_transition": "UIT",
 }
 TOKEN_RE = re.compile(r"[a-z0-9]+", re.I)
 NO_PREFERENCE_RE = re.compile(
@@ -119,8 +158,8 @@ def load_jsonl(path: str | Path) -> list[dict[str, Any]]:
 
 
 def validate_items(items: list[dict[str, Any]]) -> dict[str, object]:
-    if len(items) != 70:
-        raise AnnotationPackError("items must contain exactly 70 rows")
+    if len(items) != 60:
+        raise AnnotationPackError("items must contain exactly 60 rows")
     identifiers: set[str] = set()
     trigger_counts: Counter[str] = Counter()
     for index, item in enumerate(items, start=1):
@@ -134,7 +173,7 @@ def validate_items(items: list[dict[str, Any]]) -> dict[str, object]:
         if item_id in identifiers:
             raise AnnotationPackError(f"item row {index}: duplicate item_id")
         identifiers.add(item_id)
-        if trigger not in TRIGGER_ORDER:
+        if trigger not in EXPECTED_TRIGGER_COUNTS:
             raise AnnotationPackError(f"item {item_id}: invalid trigger_type")
         if not item_id.startswith(f"{ID_PREFIX[trigger]}-"):
             raise AnnotationPackError(f"item {item_id}: trigger/id prefix mismatch")
@@ -346,6 +385,15 @@ def _validate_label(value: object, item: dict[str, Any]) -> None:
         or semantic_terms
     ):
         raise AnnotationPackError(f"annotation {item_id}: abstain conflict")
+    if not value["abstain"] and not (
+        value["intent_hint"] is not None
+        or positive
+        or rejected
+        or no_preference
+        or overrides
+        or semantic_terms
+    ):
+        raise AnnotationPackError(f"annotation {item_id}: empty non-abstain label")
 
 
 def _validate_proposals(
@@ -376,6 +424,11 @@ def _validate_proposals(
         if proposal_value != _normalize(proposal_value):
             raise AnnotationPackError(
                 f"annotation {item_id}: proposal value must be normalized"
+            )
+        allowed_values = CLOSED_ALLOWED_VALUES.get(attribute)
+        if allowed_values is not None and proposal_value not in allowed_values:
+            raise AnnotationPackError(
+                f"annotation {item_id}: proposal value is outside allowed_values"
             )
         if not isinstance(span, str):
             raise AnnotationPackError(f"annotation {item_id}: invalid evidence_span")

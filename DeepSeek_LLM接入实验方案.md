@@ -189,6 +189,11 @@ Shadow 只在至少一个本地信号存在时请求模型：
 - 同一属性同时成为 positive 和 rejected；
 - 存在不能由当前 IntentAssessment 证据解释的转移候选。
 
+前五类是当前 Agent 路径上可复现的语义 Shadow 分层。
+`unexplained_intent_transition` 是防御性 invariant signal：当前 `assess_intent`
+在任何真实转移上都会携带 evidence，因此它不可从 Agent 运行路径上生成人工
+语义样本。它保留在单元级 invariant 测试中，不得伪造空 evidence 来凑人工分层。
+
 Candidate 只开放 Shadow 已证明有效的触发类型。不使用“模型自评低置信”
 作为 gate。
 
@@ -239,8 +244,8 @@ fake-abstain 三条 Development-160 均保持 `0.925`，公共行为差异为 0�
 DeepSeek transport、key 读取或 API 调用。证据见
 [`docs/a13_s0_offline_evidence.md`](docs/a13_s0_offline_evidence.md)。下一步必须先完成
 不少于 60 条 fixture 的双人独立标注、共同复核和 hash freeze。
-已准备可直接分发的 `experiments/fixtures/a13_annotation_pack_v1/`：70 条
-无 gold items（六类各 10 条，`low_confidence_residual_feature` 额外 10 条）、
+已准备可直接分发的 `experiments/fixtures/a13_annotation_pack_v1/`：60 条
+无 gold items（五类可达语义 trigger 各 10 条，`low_confidence_residual_feature` 额外 10 条）、
 独立标注模板、schema、示例、validator 和 disagreement compare CLI。该包仅是
 `annotation_ready_not_gold_frozen`，不代表双人标注或 fixture freeze 已完成。
 
@@ -254,7 +259,8 @@ DeepSeek transport、key 读取或 API 调用。证据见
 
 人工歧义集及判分协议必须在第一次真实 API 运行前固定：
 
-- 至少 60 条，不少于 10 条/预定义触发类型；准备进入 Candidate 的单一触发类
+- 至少 60 条，不少于 10 条/当前 Agent 可达的预定义语义触发类型；
+  防御性不可达 invariant signal 只做单元测试。准备进入 Candidate 的单一触发类
   至少 20 条；
 - 样本来源可以是去标识化的规则失败表达和独立编写的边界表达，但不含 target
   ASIN、hit/miss、scenario label、未来 turn 或推荐结果；
