@@ -7,6 +7,12 @@ from pathlib import Path
 
 from starter.agent import Agent
 from starter.contracts import Candidate, RetrievalDiagnostics, RetrievalRequest, RetrievalResult
+from starter.core.semantic_understanding import (
+    FakeSemanticBackend,
+    GuardedSemanticInterpreter,
+    InterpreterConfig,
+    SemanticUnderstandingError,
+)
 from starter.retrieval import ConditionalDenseRetriever, HybridRetriever
 
 
@@ -90,7 +96,156 @@ def _write_catalog(path: Path) -> None:
     path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
 
 
+def _shadow_payload() -> dict:
+    return {
+        "intent_hint": None,
+        "positive_constraints": [
+            {
+                "attribute": "feature",
+                "value": "packable",
+                "evidence_span": "packable",
+                "hard": False,
+            }
+        ],
+        "rejected_constraints": [],
+        "no_preference_attributes": [],
+        "override_attributes": [],
+        "semantic_terms": ["packable"],
+        "abstain": False,
+    }
+
+
 class AgentSmokeTest(unittest.TestCase):
+    def test_disabled_and_no_key_semantic_interpreters_preserve_exact_turn_parity(self) -> None:
+        for config, reason in (
+            (InterpreterConfig(enabled=False, key_available=True), "disabled"),
+            (InterpreterConfig(enabled=True, key_available=False), "no_key"),
+        ):
+            with self.subTest(reason=reason):
+                baseline_retriever = _RecordingRetriever()
+                shadow_retriever = _RecordingRetriever()
+                backend = FakeSemanticBackend(_shadow_payload())
+                baseline = Agent(retriever=baseline_retriever)
+                shadow = Agent(
+                    retriever=shadow_retriever,
+                    semantic_interpreter=GuardedSemanticInterpreter(
+                        backend,
+                        config=config,
+                    ),
+                )
+                baseline.reset("parity", {})
+                shadow.reset("parity", {})
+
+                baseline_responses = [
+                    baseline.respond("parity", message, turn, 2)
+                    for turn, message in enumerate(
+                        ("Something unusually packable", "Black would work"),
+                        start=1,
+                    )
+                ]
+                shadow_responses = [
+                    shadow.respond("parity", message, turn, 2)
+                    for turn, message in enumerate(
+                        ("Something unusually packable", "Black would work"),
+                        start=1,
+                    )
+                ]
+
+                self.assertEqual(shadow_responses, baseline_responses)
+                self.assertEqual(shadow._sessions["parity"], baseline._sessions["parity"])
+                self.assertEqual(shadow_retriever.requests, baseline_retriever.requests)
+                self.assertEqual(backend.calls, 0)
+                self.assertEqual(
+                    shadow.semantic_diagnostics("parity", 1)["fallback_reason"],
+                    reason,
+                )
+
+    def test_valid_shadow_delta_never_changes_response_or_state(self) -> None:
+        baseline_retriever = _RecordingRetriever()
+        shadow_retriever = _RecordingRetriever()
+        backend = FakeSemanticBackend(_shadow_payload())
+        baseline = Agent(retriever=baseline_retriever)
+        shadow = Agent(
+            retriever=shadow_retriever,
+            semantic_interpreter=GuardedSemanticInterpreter(
+                backend,
+                config=InterpreterConfig(enabled=True, key_available=True),
+            ),
+        )
+        baseline.reset("shadow", {})
+        shadow.reset("shadow", {})
+
+        baseline_response = baseline.respond(
+            "shadow", "Something unusually packable", 1, 2
+        )
+        shadow_response = shadow.respond(
+            "shadow", "Something unusually packable", 1, 2
+        )
+
+        self.assertEqual(shadow_response, baseline_response)
+        self.assertEqual(shadow._sessions["shadow"], baseline._sessions["shadow"])
+        self.assertEqual(shadow_retriever.requests, baseline_retriever.requests)
+        self.assertEqual(backend.calls, 1)
+        diagnostics = shadow.semantic_diagnostics("shadow", 1)
+        self.assertEqual(diagnostics["status"], "valid_shadow_delta")
+        self.assertNotIn("semantic_understanding", shadow_response["diagnostics"])
+        self.assertNotIn("packable", repr(diagnostics).lower())
+
+    def test_shadow_backend_failure_is_isolated_by_session_and_does_not_retry(self) -> None:
+        backend = FakeSemanticBackend(error=SemanticUnderstandingError("timeout"))
+        baseline = Agent(retriever=_RecordingRetriever())
+        shadow = Agent(
+            retriever=_RecordingRetriever(),
+            semantic_interpreter=GuardedSemanticInterpreter(
+                backend,
+                config=InterpreterConfig(enabled=True, key_available=True),
+            ),
+        )
+        for agent in (baseline, shadow):
+            agent.reset("first", {})
+            agent.reset("second", {})
+
+        baseline_response = baseline.respond(
+            "first", "Something unusually packable", 1, 2
+        )
+        shadow_response = shadow.respond(
+            "first", "Something unusually packable", 1, 2
+        )
+
+        self.assertEqual(shadow_response, baseline_response)
+        self.assertEqual(backend.calls, 1)
+        self.assertEqual(
+            shadow.semantic_diagnostics("first", 1)["fallback_reason"], "timeout"
+        )
+        self.assertIsNone(shadow.semantic_diagnostics("second", 1))
+
+    def test_shadow_request_construction_failure_cannot_escape_into_agent_behavior(self) -> None:
+        baseline = Agent(retriever=_RecordingRetriever())
+        shadow = Agent(
+            retriever=_RecordingRetriever(),
+            semantic_interpreter=GuardedSemanticInterpreter(
+                FakeSemanticBackend(_shadow_payload()),
+                config=InterpreterConfig(enabled=True, key_available=True),
+            ),
+        )
+        for agent in (baseline, shadow):
+            agent.reset("unsupported-local-attribute", {})
+
+        baseline_response = baseline.respond(
+            "unsupported-local-attribute", "Any other is fine.", 1, 2
+        )
+        shadow_response = shadow.respond(
+            "unsupported-local-attribute", "Any other is fine.", 1, 2
+        )
+
+        self.assertEqual(shadow_response, baseline_response)
+        self.assertEqual(
+            shadow.semantic_diagnostics("unsupported-local-attribute", 1)[
+                "fallback_reason"
+            ],
+            "interpreter_error",
+        )
+
     def test_full_candidate_pool_reaches_decision_evidence_without_public_raw_evidence(self) -> None:
         retriever = _RecordingRetriever()
 

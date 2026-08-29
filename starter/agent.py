@@ -1,11 +1,17 @@
 from __future__ import annotations
 
+import copy
 from pathlib import Path
 from typing import Protocol
 
 from starter.contracts import RetrievalRequest, RetrievalResult
 from starter.core.clarification import choose_clarification
 from starter.core.context_engine import (
+    CATEGORY_TERMS,
+    COLORS,
+    MATERIALS,
+    STYLE_TERMS,
+    USE_CASES,
     CatalogVocabulary,
     detect_no_preference_attributes,
     detect_override,
@@ -18,6 +24,11 @@ from starter.core.decision_evidence import build_decision_evidence
 from starter.core.planner import Strategy, StrategyConfig, plan_strategy
 from starter.core.query_builder import QueryPlan, build_query_plan
 from starter.core.response_guard import guard_response
+from starter.core.semantic_understanding import (
+    ConstraintEvidence,
+    SemanticInterpreter,
+    UnderstandingRequest,
+)
 from starter.core.state import SessionState
 from starter.retrieval import ConditionalDenseRetriever
 
@@ -38,6 +49,7 @@ class Agent:
         catalog_path: str | Path | None = None,
         strategy_config: StrategyConfig | None = None,
         retriever: Retriever | None = None,
+        semantic_interpreter: SemanticInterpreter | None = None,
     ) -> None:
         requested_catalog_path = Path(catalog_path) if catalog_path is not None else None
         retriever_catalog_path = getattr(retriever, "catalog_path", None)
@@ -65,12 +77,38 @@ class Agent:
         else:
             self.retriever = retriever
         self._sessions: dict[str, SessionState] = {}
+        self.semantic_interpreter = semantic_interpreter
+        self._semantic_diagnostics: dict[tuple[str, int], dict[str, object]] = {}
+        self._semantic_allowed_values = {
+            "category": tuple(
+                sorted(self.context_vocabulary.category_terms | frozenset(CATEGORY_TERMS))
+            ),
+            "material": tuple(sorted(MATERIALS)),
+            "color": tuple(sorted(COLORS)),
+            "size": (
+                "xxs", "xs", "s", "m", "l", "xl", "xxl", "xxxl",
+                "small", "medium", "large", "wide", "narrow",
+            ),
+            "style": tuple(sorted(STYLE_TERMS)),
+            "use_case": tuple(sorted(USE_CASES)),
+        }
         self._catalog_ids = set(self.retriever.catalog_ids)
         self._fallback_ids = list(self.retriever.fallback_ids)
 
     def reset(self, session_id: str, user_profile: dict) -> None:
         # The profile is anonymized and may be used for personalization.
         self._sessions[session_id] = SessionState(session_id=session_id, user_profile=dict(user_profile or {}))
+        self._semantic_diagnostics = {
+            key: value
+            for key, value in self._semantic_diagnostics.items()
+            if key[0] != session_id
+        }
+
+    def semantic_diagnostics(self, session_id: str, turn: int) -> dict[str, object] | None:
+        """Return safe Shadow-only diagnostics without changing the response schema."""
+
+        diagnostics = self._semantic_diagnostics.get((session_id, turn))
+        return copy.deepcopy(diagnostics) if diagnostics is not None else None
 
     def _respond_impl(
         self,
@@ -138,6 +176,20 @@ class Agent:
                 turn,
                 vocabulary=self.context_vocabulary,
             )
+            try:
+                self._run_semantic_shadow(
+                    state=state,
+                    user_message=user_message,
+                    turn=turn,
+                    constraints=constraints,
+                    override=override,
+                    no_preference_attributes=no_preference_attributes,
+                    rejected_constraints=rejected_constraints,
+                )
+            except Exception:
+                self._semantic_diagnostics[(session_id, turn)] = (
+                    self._semantic_fallback_diagnostics("interpreter_error")
+                )
             state.apply_user_context(
                 constraints=constraints,
                 override=override,
@@ -255,3 +307,113 @@ class Agent:
             state.previous_diagnostics = diagnostics if isinstance(diagnostics, dict) else None
             state.record_agent_response(guarded)
         return guarded
+
+    def _run_semantic_shadow(
+        self,
+        *,
+        state: SessionState,
+        user_message: str,
+        turn: int,
+        constraints: list,
+        override: bool,
+        no_preference_attributes: list[str],
+        rejected_constraints: list[dict],
+    ) -> None:
+        if self.semantic_interpreter is None:
+            return
+        deterministic_intent = assess_intent(
+            user_message,
+            constraints,
+            active_constraints=state.active_constraints,
+            turn=turn,
+            previous=state.intent_assessment,
+            override=override,
+            no_preference_attributes=tuple(sorted(state.no_preference_attributes)),
+        )
+        request = UnderstandingRequest(
+            current_message=user_message,
+            turn=turn,
+            active_constraints=self._state_constraint_evidence(
+                state.active_constraints,
+                source="active_state",
+            ),
+            rejected_constraints=self._state_constraint_evidence(
+                state.rejected_constraints,
+                source="rejected_state",
+            ),
+            no_preference_attributes=tuple(sorted(state.no_preference_attributes)),
+            overridden_constraints=self._state_constraint_evidence(
+                state.overridden_constraints,
+                source="overridden_state",
+            ),
+            deterministic_constraints=self._state_constraint_evidence(
+                constraints,
+                source="parser",
+            ),
+            deterministic_rejected_constraints=self._state_constraint_evidence(
+                rejected_constraints,
+                source="parser_rejected",
+            ),
+            deterministic_no_preference_attributes=tuple(
+                sorted(no_preference_attributes)
+            ),
+            override_detected=override,
+            prior_intent=state.intent,
+            deterministic_intent=deterministic_intent.intent,
+            intent_evidence=deterministic_intent.evidence,
+            allowed_values=self._semantic_allowed_values,
+        )
+        try:
+            outcome = self.semantic_interpreter.interpret(request)
+            diagnostics = outcome.to_diagnostics()
+        except Exception:
+            diagnostics = self._semantic_fallback_diagnostics("interpreter_error")
+        self._semantic_diagnostics[(state.session_id, turn)] = diagnostics
+
+    @staticmethod
+    def _semantic_fallback_diagnostics(reason: str) -> dict[str, object]:
+        return {
+            "status": "fallback",
+            "trigger_signals": [],
+            "backend_called": False,
+            "fallback_reason": reason,
+            "latency_ms": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "provider_model": None,
+            "proposed_counts": {
+                "positive": 0,
+                "rejected": 0,
+                "no_preference": 0,
+                "override": 0,
+                "semantic_terms": 0,
+            },
+            "abstain": None,
+        }
+
+    @staticmethod
+    def _state_constraint_evidence(
+        items: list[dict],
+        *,
+        source: str,
+    ) -> tuple[ConstraintEvidence, ...]:
+        evidence: list[ConstraintEvidence] = []
+        for item in items:
+            attribute = str(item.get("attribute") or "")
+            value = str(item.get("normalized_value") or item.get("raw_value") or "")
+            if not attribute or not value:
+                continue
+            try:
+                evidence.append(
+                    ConstraintEvidence(
+                        attribute=attribute,
+                        value=value,
+                        evidence_span=str(item.get("source_text") or ""),
+                        confidence=float(item.get("confidence", 1.0)),
+                        hard=bool(item.get("hard", False)),
+                        source=source,
+                    )
+                )
+            except (TypeError, ValueError):
+                continue
+        return tuple(evidence)
