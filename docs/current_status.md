@@ -45,7 +45,7 @@ deterministic State / Override candidate, leaving that runtime unchanged:
 | Retained default behavior commit | `7f520ba` |
 | Optional B12 code/default-parity commit | `82891c8` |
 | B10a experiment branch | `b/b10a-constraint-preserving-crossencoder` |
-| Latest local full test suite (2026-08-29) | 336 passed after A13-S0 offline evidence hardening; default runtime remains no-LLM |
+| Latest local full test suite (2026-08-29) | 343 passed after the teammate-ready A13 annotation pack; default runtime remains no-LLM |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |
 
@@ -239,6 +239,12 @@ recommendations, or public output. Before any provider run, the team must freeze
 the 60+ item ambiguity fixture through two-member independent annotation and
 reconciliation. Candidate activation still requires exact fallback, bounded
 call rate/latency/cost, focused/full tests, and fixed Development-fold evidence.
+
+A teammate-ready but unlabeled 70-item package now lives at
+`experiments/fixtures/a13_annotation_pack_v1/`; it includes the shared items,
+blank per-annotator template, schema, examples, standalone validator, and a
+post-submission disagreement comparison command. Its status is annotation-ready,
+not reconciled or gold-frozen, so it grants no provider authorization.
 
 A13 does not replace B10b-DS1. A13 interprets difficult user language before
 retrieval; B10b-DS1 reranks an existing Browsing Top-10 after retrieval. They

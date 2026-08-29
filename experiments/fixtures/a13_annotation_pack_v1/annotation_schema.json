@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "A13 independent annotation row v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["item_id", "annotator_id", "confidence", "label", "notes"],
+  "properties": {
+    "item_id": {"type": "string", "pattern": "^[A-Z]{3}-[0-9]{3}$"},
+    "annotator_id": {"type": "string", "pattern": "^[A-Za-z0-9_.-]{2,40}$"},
+    "confidence": {"enum": ["low", "medium", "high"]},
+    "notes": {"type": "string", "maxLength": 1000},
+    "label": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "intent_hint",
+        "positive_constraints",
+        "rejected_constraints",
+        "no_preference_attributes",
+        "override_attributes",
+        "semantic_terms",
+        "abstain"
+      ],
+      "properties": {
+        "intent_hint": {"enum": [null, "buying", "browsing"]},
+        "positive_constraints": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/positiveConstraint"}
+        },
+        "rejected_constraints": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/rejectedConstraint"}
+        },
+        "no_preference_attributes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/attribute"}
+        },
+        "override_attributes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/attribute"}
+        },
+        "semantic_terms": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "abstain": {"type": "boolean"}
+      }
+    }
+  },
+  "$defs": {
+    "attribute": {
+      "enum": [
+        "category", "material", "color", "size", "style", "brand",
+        "budget", "feature", "use_case"
+      ]
+    },
+    "rejectedConstraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attribute", "value", "evidence_span"],
+      "properties": {
+        "attribute": {"$ref": "#/$defs/attribute"},
+        "value": {"type": "string", "minLength": 1},
+        "evidence_span": {"type": "string", "minLength": 1}
+      }
+    },
+    "positiveConstraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attribute", "value", "evidence_span", "hard"],
+      "properties": {
+        "attribute": {"$ref": "#/$defs/attribute"},
+        "value": {"type": "string", "minLength": 1},
+        "evidence_span": {"type": "string", "minLength": 1},
+        "hard": {"type": "boolean"}
+      }
+    }
+  }
+}

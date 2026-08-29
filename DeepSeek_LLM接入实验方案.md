@@ -239,6 +239,10 @@ fake-abstain 三条 Development-160 均保持 `0.925`，公共行为差异为 0�
 DeepSeek transport、key 读取或 API 调用。证据见
 [`docs/a13_s0_offline_evidence.md`](docs/a13_s0_offline_evidence.md)。下一步必须先完成
 不少于 60 条 fixture 的双人独立标注、共同复核和 hash freeze。
+已准备可直接分发的 `experiments/fixtures/a13_annotation_pack_v1/`：70 条
+无 gold items（六类各 10 条，`low_confidence_residual_feature` 额外 10 条）、
+独立标注模板、schema、示例、validator 和 disagreement compare CLI。该包仅是
+`annotation_ready_not_gold_frozen`，不代表双人标注或 fixture freeze 已完成。
 
 - 先实现 types、fake、validator、gate、fallback 和 diagnostics；
 - disabled/no-key 路径逐 turn parity；

@@ -82,3 +82,17 @@ The authoritative dependency order is maintained only in
 `../docs/optimization_roadmap.md`. Use the selected A/B workstream for its
 hypothesis, inputs, tests, and keep/revert gate. Do not copy the full sequence
 into an experiment note.
+
+The A13 teammate-ready independent annotation source is
+`fixtures/a13_annotation_pack_v1/`. It contains 70 unlabeled items, a blank
+annotation template, examples, schema, and validation instructions. Build the
+standalone zip with:
+
+```bash
+python3 -m experiments.build_a13_annotation_bundle \
+  --output /private/tmp/a13_annotation_pack_v1.zip
+```
+
+This pack is annotation-ready but is not reconciled gold. Do not run a provider
+or create `a13_ambiguity_v1.jsonl` until two distinct annotation files pass
+validation, disagreements are adjudicated, and the final artifact is frozen.
