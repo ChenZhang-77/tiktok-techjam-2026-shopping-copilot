@@ -44,7 +44,7 @@ baseline and refreshed taxonomy on 2026-08-29:
 | Retained default behavior commit | `7f520ba` |
 | Optional B12 code/default-parity commit | `82891c8` |
 | B10a experiment branch | `b/b10a-constraint-preserving-crossencoder` |
-| Latest local full test suite (2026-08-29) | 302 passed after A13-0 evidence binding |
+| Latest local full test suite (2026-08-29) | 304 passed after A13-0 review fixes |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |
 
