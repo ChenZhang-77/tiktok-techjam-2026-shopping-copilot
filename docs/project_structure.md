@@ -104,8 +104,13 @@ Do not delete them during cosmetic cleanup.
 `A13_annotation_pack_v1.zip` is a deliberate publication artifact rather than
 an ordinary experiment run. Its source remains under
 `experiments/fixtures/a13_annotation_pack_v1/`, and it must be regenerated with
-`python3 -m experiments.build_a13_annotation_bundle` before its recorded hash
-or contents change.
+
+```bash
+python3 -m experiments.build_a13_annotation_bundle \
+  --output A13_annotation_pack_v1.zip
+```
+
+before its recorded hash or contents change.
 
 ## Where New Work Goes
 

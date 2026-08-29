@@ -29,9 +29,12 @@ Development-160 split and the A13-0 input hashes:
 
 The local gate marked 67 of 649 turns eligible (`10.32%`), below the `20%`
 candidate call-rate ceiling. On this evaluator dialogue distribution all 67
-were `low_confidence_residual_feature`; the other five predefined trigger
-classes therefore still require independent ambiguity fixtures and cannot be
-judged from Development traffic alone.
+were `low_confidence_residual_feature`; the other four Agent-reachable trigger
+classes therefore cannot be judged from Development traffic alone and require
+independent ambiguity fixtures. The sixth signal,
+`unexplained_intent_transition`, is a defensive invariant that the current
+Agent path cannot produce; it remains unit-test-only rather than being filled
+with fabricated human examples.
 
 Raw paired response dictionaries differ on all 649 turns because the comparator
 and Shadow Agent each measure their own retrieval latency. The parity projection
@@ -91,10 +94,11 @@ provenance is in
 
 Before any real API run, `experiments/fixtures/a13_ambiguity_v1.jsonl` must be
 created under the reviewed protocol: at least 60 examples, at least 10 per
-predefined trigger, at least 20 for any Candidate trigger, two members'
+Agent-reachable trigger, at least 20 for any Candidate trigger, two members'
 independent annotations, reconciliation, frozen schema/instructions, and a
-recorded SHA256. The deterministic comparator must be scored before viewing LLM
-results.
+recorded SHA256. The Agent-unreachable defensive intent-transition signal does
+not enter the human fixture. The deterministic comparator must be scored before
+viewing LLM results.
 
 That two-member annotation/reconciliation requirement is not satisfiable by
 silently generating labels in this coding session. Until the team completes and
