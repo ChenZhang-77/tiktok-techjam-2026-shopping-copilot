@@ -301,11 +301,13 @@ reports remain outside Git and are not hash-bound tracked evidence. Neither is
 enabled by default; see `docs/current_status.md` for the exact provisional
 disposition and caveats.
 
-The planned A13 experiment is different: it will use DeepSeek as an A-owned,
-evidence-gated semantic interpreter before state mutation. A13 is currently a
-reviewed plan only. It must pass disabled parity and Shadow review before it may
-change state or metrics. Do not infer an A-side runtime feature from the
-presence of the plan.
+The planned A13 semantic interpreter is different: it will use DeepSeek as an
+A-owned, evidence-gated semantic interpreter before state mutation. A13-0 has
+bound the current no-LLM comparator, folds, hashes, and refreshed taxonomy in
+[`docs/a13_0_baseline_evidence.md`](docs/a13_0_baseline_evidence.md). A13-1 is
+next; the LLM implementation has not started. It must pass disabled parity and
+Shadow review before it may change state or metrics. Do not infer an A-side
+runtime feature from the presence of the plan.
 
 ## Named Experiments and Visualizer
 
@@ -455,10 +457,9 @@ hard filters, duplicate/invalid ASINs, and Candidate Pool shortages.
   disabled by default; two primary State / Override misses remain.
 - Clarification remains priority-biased and does not yet have a complete
   should-ask uncertainty gate.
-- A current planning-only audit of the `0.925` checkpoint assigns the 12 misses
-  to Question Policy (10) and State / Override (2), with no primary Extraction
-  miss. This refreshed audit still needs clean-commit hash binding before it
-  replaces the older tracked R0 evidence.
+- The hash-bound A13-0 audit of the `0.925` checkpoint assigns the 12 misses to
+  Question Policy (10) and State / Override (2), with no primary Extraction or
+  Retrieval / Ranking miss. It is Development evidence, not sealed validation.
 - Profile ranking is disabled at weight 0.0.
 - B9 closes the literal Browsing-dense route only for its narrow gate; global
   dense remains rejected. DeepSeek DS1 is an opt-in isolated experiment with

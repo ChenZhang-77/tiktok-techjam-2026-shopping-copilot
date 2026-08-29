@@ -552,7 +552,7 @@ Do not run Full/Holdout.
 
 ## A13 - Guarded LLM Semantic Understanding
 
-**Status: reviewed plan; implementation not started.** The authoritative spec,
+**Status: A13-0 complete; A13-1 is next; LLM implementation not started.** The authoritative spec,
 phase order, interface, trigger conditions, safety invariants, latency/cost
 targets, and keep/revert gates are in
 [`DeepSeek_LLM接入实验方案.md`](../../DeepSeek_LLM接入实验方案.md).
@@ -561,7 +561,7 @@ A13 is not permission to replace the deterministic parser. The required order
 is:
 
 ```text
-A13-0 bind current baseline and refreshed taxonomy
+A13-0 complete at clean comparator b86a9e7
   -> A13-1 deterministic State / Override slice
       -> A13-S0 Shadow only
           -> review gate
@@ -575,7 +575,8 @@ change the shared retrieval contract, and the same turn must not activate both
 A13 and the optional B10b-DS1 reranker during metric attribution.
 
 Question Policy remains a separate A14 experiment because it dominates the
-current planning-only audit. Do not combine A13 semantic understanding with an
+current hash-bound audit. The A13-0 record is
+[`docs/a13_0_baseline_evidence.md`](../a13_0_baseline_evidence.md). Do not combine A13 semantic understanding with an
 ask/stop policy change.
 
 ## Handoff to Developer B

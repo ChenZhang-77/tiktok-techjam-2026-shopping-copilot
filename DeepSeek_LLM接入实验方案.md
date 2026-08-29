@@ -1,10 +1,12 @@
 # DeepSeek LLM 接入实验方案
 
-> 状态：方案已审查，A13 实现尚未开始。
+> 状态：A13-0 已完成；A13-1 是下一阶段；LLM 实现尚未开始。
 >
 > 当前分支：a/a13-llm-semantic-understanding
 >
-> 基线：0bd33755dcef6db066cf11b5a0a87e0ade554a5e
+> 运行时来源基线：0bd33755dcef6db066cf11b5a0a87e0ade554a5e
+>
+> A13-0 clean comparator：b86a9e788f0388947351d14cedefa8f047367001
 >
 > 实验代号：A13-S0 影子语义理解；通过审查门后才能进入 A13-C1。
 
@@ -201,6 +203,11 @@ Candidate 只开放 Shadow 已证明有效的触发类型。不使用“模型�
 ## 7. 实施与实验顺序
 
 ### A13-0：基线和当前 R0 绑定
+
+**状态：已完成。** Development-160、四 folds、catalog/split/evaluator/fold
+hash、完整测试和刷新后的 12-miss taxonomy 已绑定；Agent 行为未改变，未调用
+DeepSeek。证据见
+[`docs/a13_0_baseline_evidence.md`](docs/a13_0_baseline_evidence.md)。
 
 - 校验新 worktree、HEAD 和干净状态；
 - 只读提供 catalog 并验证 SHA256；

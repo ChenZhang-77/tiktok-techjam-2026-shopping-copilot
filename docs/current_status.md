@@ -35,8 +35,8 @@ read-only.
 
 ## Verified Behavior Checkpoint
 
-The retained B12 checkpoint was verified on 2026-08-28. The A13 planning
-branch test and baseline reproduction were verified on 2026-08-29:
+The retained B12 checkpoint was verified on 2026-08-28. A13-0 bound the current
+baseline and refreshed taxonomy on 2026-08-29:
 
 | Item | Value |
 | --- | --- |
@@ -44,7 +44,7 @@ branch test and baseline reproduction were verified on 2026-08-29:
 | Retained default behavior commit | `7f520ba` |
 | Optional B12 code/default-parity commit | `82891c8` |
 | B10a experiment branch | `b/b10a-constraint-preserving-crossencoder` |
-| Latest local full test suite (2026-08-29) | 297 passed on the A13 planning branch |
+| Latest local full test suite (2026-08-29) | 302 passed after A13-0 evidence binding |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |
 
@@ -188,24 +188,25 @@ exists only as an opt-in experiment and is not part of the retained default.
 
 ## Current Bottlenecks
 
-The current `0.925` planning audit assigns the 12 Development misses to:
+The current hash-bound `0.925` audit assigns the 12 Development misses to:
 
 1. Question Policy: 10;
 2. State / Override: 2;
 3. Extraction, Intent / Routing, and Retrieval / Ranking: 0 primary misses.
 
-This audit was generated read-only into `/private/tmp` and still needs
-clean-commit/hash binding before it supersedes the older tracked R0 artifact.
-The old taxonomy's automatic `next_experiment=A9` recommendation is stale
-because A9 was already measured, rejected, and reverted.
+The audit is bound to clean comparator `b86a9e7`, the verified catalog/split/
+evaluator/fold hashes, four rerun folds, and a target-free miss summary in
+`docs/a13_0_baseline_evidence.md`. The generator no longer emits a stage ID:
+schema `r0-v3` reports the dominant investigation class and delegates current
+experiment selection to `docs/optimization_roadmap.md`. Historical R0/A9
+artifacts remain unchanged; A9 is already measured, rejected, and reverted.
 
 The next work is therefore A-owned and ordered:
 
-1. bind the current baseline and refreshed taxonomy;
-2. diagnose the two State / Override misses as a deterministic slice;
-3. run A13 DeepSeek semantic understanding in Shadow mode only;
-4. activate only a trigger class that passes the reviewed Shadow gate;
-5. address Question Policy later as a separate A14 experiment.
+1. diagnose the two State / Override misses as A13-1, a deterministic slice;
+2. after a separate keep/revert decision, run A13-S0 Shadow only;
+3. activate only a trigger class that passes the reviewed Shadow gate;
+4. address Question Policy later as a separate A14 experiment.
 
 The authoritative A13 plan is
 [`DeepSeek_LLM接入实验方案.md`](../DeepSeek_LLM接入实验方案.md). It does not claim
@@ -217,6 +218,12 @@ that A13 is implemented.
 DeepSeek is planned as an A-owned, evidence-gated semantic interpreter before
 state mutation, not as a second Agent and not as a replacement for the existing
 deterministic parser.
+
+A13-0 is complete at clean comparator `b86a9e7`; it reproduced Development-160
+and all four folds, bound the input/evaluator hashes, refreshed the 12-miss
+taxonomy, and changed no Agent behavior. See
+`docs/a13_0_baseline_evidence.md`. A13-1 is the next reviewed stage. A13-S0 is
+not authorized and no DeepSeek API call has been made for A13.
 
 The first runtime-capable stage is Shadow: it may call the provider and record a
 validated `UnderstandingDelta`, but it must not change SessionState, Strategy,
@@ -424,6 +431,7 @@ track in `docs/demo_and_submission_plan.md`.
 | `docs/a10a_question_value_evidence.md` | Rejected full-pool question-value candidate and incomplete partition coverage |
 | `docs/a10b_query_plan_evidence.md` | Retained A-internal QueryPlan roles, parity, and A11 boundary |
 | `docs/a11_extraction_scope_evidence.md` | Retained bounded extraction scope, rejected expansions, folds, and remaining risks |
+| `docs/a13_0_baseline_evidence.md` | Current 0.925 comparator, hashes, folds, and refreshed target-free taxonomy |
 | `docs/b9_conditional_dense_evidence.md` | Retained Browsing-only dense gate, quality, route truth, cost, and folds |
 | `docs/b10a_constraint_rerank_evidence.md` | Rejected constraint-preserving CrossEncoder variants |
 | `docs/b11_prerequisite_evidence.md` | B11 prerequisite failure and no-start decision |
@@ -443,7 +451,8 @@ track in `docs/demo_and_submission_plan.md`.
   tested Top-3/Top-5 constraint-preserving variants.
 - B10b-DS1/DS2 are implemented opt-in LLM semantic-ranker experiments with
   provisional remote measurements; neither is retained in the default runtime.
-- A13 A-side semantic understanding is planned and reviewed, not implemented.
+- A13-0 offline binding is complete; A13 A-side semantic understanding remains
+  planned and reviewed but is not implemented.
 - Profile ranking remains disabled at weight `0.0`; long-term profile value has
   not been demonstrated.
 - Candidate-aware clarification exists, but a complete should-ask gate has not

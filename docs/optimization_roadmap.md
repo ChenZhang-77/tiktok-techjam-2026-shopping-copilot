@@ -78,8 +78,8 @@ Historical R0 failure taxonomy
                                   -> B10b-DS1 LLM semantic ranking experiment
                                       -> B11/B12 only when diagnosed
 
-Current Chen baseline @ 0bd3375
-  -> A13-0 bind current baseline and refreshed taxonomy
+Current Chen runtime source @ 0bd3375
+  -> A13-0 complete at clean comparator b86a9e7
       -> A13-1 deterministic State / Override slice
           -> A13-S0 Shadow semantic understanding
               -> A13 review gate
@@ -268,7 +268,7 @@ individually unproven. Boundary technical score regressed by `0.057083` and
 remains a disclosed risk. See
 `docs/a11_extraction_scope_evidence.md`.
 
-Do not replace the deterministic parser globally. The current planning audit
+Do not replace the deterministic parser globally. The current A13-0 hash-bound audit
 reports no primary Extraction or Intent / Routing miss, so A13
 starts in Shadow mode and may activate only a locally diagnosed ambiguity
 class. AB1 and B9 are complete; later B modules remain evidence-gated.

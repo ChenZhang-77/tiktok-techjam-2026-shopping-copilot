@@ -46,6 +46,8 @@ definitions instead of creating local variants.
 ## Current experiment evidence
 
 - `r0_development_failure_taxonomy.md` — canonical Development miss diagnosis
+- `a13_0_baseline_evidence.md` — current 0.925 comparator, hashes, fixed folds,
+  and refreshed target-free taxonomy
 - `a8_stateful_intent_evidence.md` — retained persistent intent assessment
 - `ab0_decision_evidence.md` — complete A-side decision-evidence inventory
 - `a9_should_ask_evidence.md` — rejected should-ask candidate

@@ -1,0 +1,256 @@
+{
+  "version": "a13-0-v1",
+  "experiment_id": "A13-0",
+  "decision": "keep_offline_baseline_and_taxonomy_binding",
+  "starting_point": {
+    "branch": "a/a13-llm-semantic-understanding",
+    "requested_head": "3a5fbea13a2c993f5681bbc47da99fcb5f10c1b1",
+    "runtime_source_commit": "0bd33755dcef6db066cf11b5a0a87e0ade554a5e",
+    "clean_comparator_commit": "b86a9e788f0388947351d14cedefa8f047367001"
+  },
+  "provenance": {
+    "python_version": "3.12.13",
+    "interpreter": "shared project virtual environment outside Git",
+    "catalog_rows": 50000,
+    "catalog_unique_parent_asins": 50000,
+    "public_sample_count": 200,
+    "development_sample_count": 160,
+    "exposed_holdout_sample_count_not_run": 40,
+    "split_exact_rebuild": true,
+    "folds_exact_rebuild": true,
+    "inputs": {
+      "catalog": {
+        "path": "data/catalog.jsonl",
+        "sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67"
+      },
+      "public_set": {
+        "path": "data/public_set.jsonl",
+        "sha256": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579"
+      },
+      "public_split": {
+        "path": "docs/public_split_v1.json",
+        "sha256": "98171487d3416ff97989e98aeca145b87df74337c5edbe7c908dd80afc538c50"
+      },
+      "development_folds": {
+        "path": "docs/development_folds_v1.json",
+        "sha256": "d9219a4be4533c4f99156197d03e19e6512ce57b262944a201f8605244ccd78d"
+      },
+      "evaluation_config": {
+        "path": "docs/evaluation_config.json",
+        "sha256": "8ee0c899ddc68d521754cf9d2f239a8bc09851fb37c5872567160c30d431aa53"
+      },
+      "evaluator": {
+        "path": "evaluator/local_evaluator.py",
+        "sha256": "c21e10a6e772c4824d85f513f0d7d53d23942d20ec9eb3853ff49119317ef96f"
+      },
+      "split_implementation": {
+        "path": "evaluator/splits.py",
+        "sha256": "36858b99678befd8e4740b6c31a9e33f429330be38e74d9ca3eb002916fc47a3"
+      },
+      "taxonomy_implementation": {
+        "path": "experiments/failure_taxonomy.py",
+        "sha256": "2eab725c0a4d58d6f1e50014fab25d7860cfc85f4a1b68b121a04e7408096f60"
+      }
+    },
+    "run_artifacts": {
+      "development": {
+        "path": "/private/tmp/a13-0-development.json",
+        "sha256": "29c3f988cfa78f09052ad93cb097f860cd72dbab7b03f8347988c3a10a45a4db"
+      },
+      "fold_1": {
+        "path": "/private/tmp/a13-0-fold_1.json",
+        "sha256": "635b9c18f52d5fa9d304a9f8ce25d5abe886189df0ba18e00f249d297cab221e"
+      },
+      "fold_2": {
+        "path": "/private/tmp/a13-0-fold_2.json",
+        "sha256": "6928a3ca7769181ba72d526c76e8c7ed5ff73a4cd0a312ffac88804316e5e1a1"
+      },
+      "fold_3": {
+        "path": "/private/tmp/a13-0-fold_3.json",
+        "sha256": "a66f92d93def01388e94af6968c86b1da8f464ecce5ed1a26075df219bc0545e"
+      },
+      "fold_4": {
+        "path": "/private/tmp/a13-0-fold_4.json",
+        "sha256": "78d768f9c8228834925b0c51cd77d3ab1d3c2e7a3c2844e473efc19921b04d2e"
+      },
+      "taxonomy_json": {
+        "path": "/private/tmp/a13-0-taxonomy.json",
+        "sha256": "691ecd05cf0de5ccb67925e47cad509248f92b9a14f32b32d73c3294bb001c46"
+      },
+      "taxonomy_markdown": {
+        "path": "/private/tmp/a13-0-taxonomy.md",
+        "sha256": "025fb2c5bfc687db0984bb1174c54d7fdfa07cc86f8fa212cbca06127c0536f6"
+      }
+    }
+  },
+  "tests": {
+    "protocol_tests": "24 passed",
+    "taxonomy_and_historical_evidence_tests": "21 passed",
+    "full_suite_at_clean_comparator": "298 passed",
+    "commands": [
+      ".venv/bin/python -m unittest tests.test_splits tests.test_development_folds tests.test_evaluator tests.test_development_reporting -v",
+      ".venv/bin/python -m unittest tests.test_failure_taxonomy tests.test_r0_failure_taxonomy_evidence -v",
+      ".venv/bin/python -m unittest discover -s tests -v"
+    ]
+  },
+  "development_160": {
+    "sample_count": 160,
+    "hit_rate_at_10": 0.925,
+    "mrr": 0.55276,
+    "mttc": 4.13125,
+    "efficiency": 0.686875,
+    "technical_score": 0.765703,
+    "response_count": 649,
+    "respond_exceptions": 0,
+    "invalid_response_payloads": 0,
+    "reported_fallbacks": 0,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "initialization_ms": 1550.460458,
+    "response_mean_ms": 25.05758,
+    "response_p95_ms": 47.818083,
+    "peak_rss_bytes": 581320704,
+    "scenario_metrics": {
+      "boundary": {
+        "sample_count": 8,
+        "hit_rate_at_10": 1.0,
+        "mrr": 0.60119,
+        "mttc": 5.75,
+        "technical_score": 0.785357
+      },
+      "browsing": {
+        "sample_count": 64,
+        "hit_rate_at_10": 0.921875,
+        "mrr": 0.51818,
+        "mttc": 4.109375,
+        "technical_score": 0.754204
+      },
+      "buying": {
+        "sample_count": 64,
+        "hit_rate_at_10": 0.921875,
+        "mrr": 0.516828,
+        "mttc": 3.625,
+        "technical_score": 0.763486
+      },
+      "intent_override": {
+        "sample_count": 24,
+        "hit_rate_at_10": 0.916667,
+        "mrr": 0.724653,
+        "mttc": 5.0,
+        "technical_score": 0.795729
+      }
+    }
+  },
+  "folds": {
+    "fold_1": {
+      "sample_count": 40,
+      "hit_rate_at_10": 0.925,
+      "mrr": 0.485724,
+      "mttc": 4.075,
+      "efficiency": 0.6925,
+      "technical_score": 0.746717
+    },
+    "fold_2": {
+      "sample_count": 40,
+      "hit_rate_at_10": 0.9,
+      "mrr": 0.624504,
+      "mttc": 4.575,
+      "efficiency": 0.6425,
+      "technical_score": 0.765851
+    },
+    "fold_3": {
+      "sample_count": 40,
+      "hit_rate_at_10": 0.95,
+      "mrr": 0.595585,
+      "mttc": 3.65,
+      "efficiency": 0.735,
+      "technical_score": 0.800675
+    },
+    "fold_4": {
+      "sample_count": 40,
+      "hit_rate_at_10": 0.925,
+      "mrr": 0.505228,
+      "mttc": 4.225,
+      "efficiency": 0.6775,
+      "technical_score": 0.749568
+    }
+  },
+  "failure_taxonomy": {
+    "schema_version": "r0-v3",
+    "hit_count": 148,
+    "miss_count": 12,
+    "classified_miss_count": 12,
+    "unclassified_invalid_miss_count": 0,
+    "evaluation_validity_counts": {},
+    "primary_cause_counts": {
+      "question_policy": 10,
+      "state_override": 2
+    },
+    "owner_counts": {
+      "control_plane": 12,
+      "retrieval_ranking": 0
+    },
+    "by_scenario": {
+      "browsing": {"question_policy": 5},
+      "buying": {"question_policy": 5},
+      "intent_override": {"state_override": 2}
+    },
+    "fold_miss_counts": {
+      "fold_1": {"question_policy": 3},
+      "fold_2": {"question_policy": 3, "state_override": 1},
+      "fold_3": {"question_policy": 2},
+      "fold_4": {"question_policy": 2, "state_override": 1}
+    },
+    "retained_depth_target_recall": {
+      "hits": 158,
+      "sessions": 160,
+      "recall": 0.9875
+    },
+    "misses": [
+      {"sample_id": "public_0002", "scenario_type": "intent_override", "primary_cause": "state_override", "secondary_causes": ["query_construction", "question_policy", "ranking_filtering"], "mechanism": "override_old_value_still_active"},
+      {"sample_id": "public_0016", "scenario_type": "browsing", "primary_cause": "question_policy", "secondary_causes": ["ranking_filtering"], "mechanism": "unproductive_replies:5"},
+      {"sample_id": "public_0020", "scenario_type": "buying", "primary_cause": "question_policy", "secondary_causes": ["retrieval_recall"], "mechanism": "unproductive_replies:4"},
+      {"sample_id": "public_0054", "scenario_type": "buying", "primary_cause": "question_policy", "secondary_causes": ["ranking_filtering"], "mechanism": "unproductive_replies:4"},
+      {"sample_id": "public_0076", "scenario_type": "browsing", "primary_cause": "question_policy", "secondary_causes": ["ranking_filtering"], "mechanism": "unproductive_replies:4"},
+      {"sample_id": "public_0083", "scenario_type": "buying", "primary_cause": "question_policy", "secondary_causes": ["ranking_filtering"], "mechanism": "unproductive_replies:5"},
+      {"sample_id": "public_0087", "scenario_type": "browsing", "primary_cause": "question_policy", "secondary_causes": ["ranking_filtering"], "mechanism": "unproductive_replies:4"},
+      {"sample_id": "public_0096", "scenario_type": "intent_override", "primary_cause": "state_override", "secondary_causes": ["question_policy", "ranking_filtering"], "mechanism": "override_old_value_still_active"},
+      {"sample_id": "public_0100", "scenario_type": "browsing", "primary_cause": "question_policy", "secondary_causes": ["ranking_filtering"], "mechanism": "unproductive_replies:5"},
+      {"sample_id": "public_0126", "scenario_type": "browsing", "primary_cause": "question_policy", "secondary_causes": ["ranking_filtering"], "mechanism": "unproductive_replies:5"},
+      {"sample_id": "public_0161", "scenario_type": "buying", "primary_cause": "question_policy", "secondary_causes": ["ranking_filtering"], "mechanism": "unproductive_replies:5"},
+      {"sample_id": "public_0174", "scenario_type": "buying", "primary_cause": "question_policy", "secondary_causes": ["retrieval_recall"], "mechanism": "unproductive_replies:4"}
+    ]
+  },
+  "recommendation_disposition": {
+    "stale_generator_removed": true,
+    "next_experiment_key_present": false,
+    "historical_a9_status": "rejected_and_reverted",
+    "next_investigation": {
+      "dominant_failure_class": "question_policy",
+      "owner": "control_plane",
+      "direction": "diagnose the current question-policy mechanism",
+      "selection_authority": "docs/optimization_roadmap.md"
+    },
+    "roadmap_next_stage": "A13-1 deterministic State / Override slice",
+    "reason": "The taxonomy diagnoses the dominant class; the reviewed dependency order selects A13-1 before A13 Shadow, while Question Policy remains the separate A14 stage."
+  },
+  "boundaries": {
+    "runtime_behavior_changed": false,
+    "agent_runtime_files_changed": [],
+    "evaluator_changed": false,
+    "catalog_changed": false,
+    "shared_contract_changed": false,
+    "route_weight_semantics_changed": false,
+    "retrieval_ranking_changed": false,
+    "question_policy_changed": false,
+    "deepseek_api_calls": 0,
+    "full_or_holdout_runs": 0,
+    "api_key_written_or_logged": false
+  },
+  "keep_revert": {
+    "recommendation": "keep",
+    "reason": "The change is offline-only, removes a stale stage-ID claim, preserves historical evidence, and binds the clean Development comparator without changing Agent behavior.",
+    "can_enter_a13_1_after_review": true,
+    "a13_s0_authorized": false
+  }
+}
