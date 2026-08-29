@@ -107,8 +107,8 @@ Development-160 was rerun after the correction:
 The run produced 649 responses with zero response exceptions, invalid payloads,
 and fallbacks. This is a Development-only correctness checkpoint, not a sealed
 holdout validation and not an ablation proving the contribution of each fix.
-The exact output was retained outside the repository and is intentionally not
-part of the shared checkout.
+The A13-0 rerun is retained as hash-bound tracked evidence in
+`docs/a13_0_reports/development.json`.
 
 ## Historical Final Public Result
 

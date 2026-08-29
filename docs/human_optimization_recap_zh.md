@@ -530,22 +530,25 @@ TechnicalScore 增加 0.070391。其中证据最强、贡献最大的单步是�
 - 结构化 lexical retrieval、约束排序、guarded filter 和确定性回退；
 - 在窄 Browsing 桶中实际运行的 dense + RRF；
 - Development-160、四折、场景、会话级差异、延迟/内存和故障证据；
-- A13 规划分支已复跑完整套件并通过；精确计数见 `docs/current_status.md`。
+- A13-0 已绑定 Development-160、四 folds 和输入/evaluator hash；A13-1
+  确定性候选已实测、拒绝并回滚；精确计数见 `docs/current_status.md`。
 
 **仍然薄弱的：**
 
-- 当前 `0.925` 规划审计中的 12 个 miss 为 Question Policy 10、State / Override 2；
-  该审计仍需绑定到干净 commit 和 catalog hash，才替代旧的 tracked R0；
+- 当前 hash-bound `0.925` 审计中的 12 个 miss 为 Question Policy 10、
+  State / Override 2；A13-1 修复局部 stale-value 不变量后四 folds 全部退化，
+  因此未保留该候选；
 - 完整 should-ask gate 尚未有可保留版本；
 - 长期 profile 仍为 0 权重；
-- B10b-DS1 仅是 opt-in LLM ranker，默认仍关闭；A13 语义理解仅完成方案审查；
+- B10b-DS1 仅是 opt-in LLM ranker，默认仍关闭；A13 语义理解尚未实现；
 - B9 的增益很小，内存成本明显；
 - 当前好结果仍是 Development 数据，私有 800 条才是真正的外部泛化检验。
 
-**建议下一步：** 先完成 A13-0 基线/哈希绑定和 A13-1 两个 State / Override miss
-的确定性诊断；随后只运行 A13-S0 Shadow，先证明模型输出可验证、可回退且调用成本
-受控。通过 review gate 后才做 A13-C1 单一触发类候选激活。10 个 Question Policy
-miss 属于独立的 A14，不与 A13 同时调参；B11、B12 和新的 reranker 同期冻结。
+**建议下一步：** 以恢复后的 `0.925` comparator 进入 A13-S0 Shadow，先完成
+types、fake、validator、gate、fallback、diagnostics 和 disabled/no-key parity；
+冻结并复核人工歧义集后，才允许真实 API 只产生 Shadow delta。通过 review gate
+后才做 A13-C1 单一触发类候选激活。10 个 Question Policy miss 属于独立的 A14，
+不与 A13 同时调参；B11、B12 和新的 reranker 同期冻结。
 
 ## 证据入口
 
@@ -558,6 +561,8 @@ miss 属于独立的 A14，不与 A13 同时调参；B11、B12 和新的 reranke
 - A10a：`docs/a10a_question_value_evidence.md`
 - A10b：`docs/a10b_query_plan_evidence.md`
 - A11：`docs/a11_extraction_scope_evidence.md`
+- A13-0：`docs/a13_0_baseline_evidence.md`
+- A13-1：`docs/a13_1_state_override_evidence.md`
 - AB1：`docs/ab1_route_semantics_evidence.md`
 - B8：`docs/b8_rejected_constraint_evidence.md`
 - B9：`docs/b9_conditional_dense_evidence.md`

@@ -200,9 +200,9 @@ the A workstream, the current local blockers are:
 Historical A8 -> AB0 -> A9 -> A10a -> A10b -> A11 -> AB1
 
 Current 0bd3375 baseline
-  -> A13-0 current baseline and R0 binding
-      -> A13-1 deterministic State / Override slice
-          -> A13-S0 Shadow semantic understanding
+  -> A13-0 current baseline and R0 binding complete
+      -> A13-1 deterministic State / Override slice rejected and reverted
+          -> A13-S0 Shadow semantic understanding next
               -> A13-C1 guarded activation or No-Go
                   -> A14 Question Policy as a separate experiment
 ```
