@@ -491,12 +491,14 @@ def audit_session(
     return audit
 
 
-def _next_experiment(summary: dict[str, Any]) -> dict[str, str]:
+def _next_investigation(summary: dict[str, Any]) -> dict[str, str | None]:
     counts = summary["primary_cause_counts"]
     if not any(int(counts.get(cause, 0)) for cause in CAUSE_ORDER):
         return {
-            "id": "R0",
-            "reason": "repair or collect valid failure evidence before changing behavior",
+            "dominant_failure_class": None,
+            "owner": "shared_offline_diagnostics",
+            "direction": "repair or collect valid failure evidence before changing behavior",
+            "selection_authority": "docs/optimization_roadmap.md",
         }
     dominant = max(
         RECOMMENDATION_PRIORITY,
@@ -505,17 +507,27 @@ def _next_experiment(summary: dict[str, Any]) -> dict[str, str]:
             -RECOMMENDATION_PRIORITY.index(cause),
         ),
     )
-    experiment = {
-        "extraction": ("A11", "harden extraction and clause scope"),
-        "state_override": ("A8", "stabilize cross-turn state and override handling"),
-        "intent_strategy_routing": ("A8", "stabilize intent assessment before B routing"),
-        "query_construction": ("A10b", "make the internal QueryPlan auditable"),
-        "question_policy": ("A9", "add the should-ask gate after AB0"),
-        "retrieval_recall": ("B11", "test one lexical recall variable after AB1"),
-        "ranking_filtering": ("B8", "test the earliest diagnosed ranking intervention"),
-        "response_contract": ("R4", "repair response/contract loss before optimization"),
+    direction = {
+        "extraction": "diagnose the current extraction and clause-scope mechanism",
+        "state_override": "diagnose the current cross-turn state and override mechanism",
+        "intent_strategy_routing": "diagnose the current intent and Strategy transition mechanism",
+        "query_construction": "diagnose the current QueryPlan construction mechanism",
+        "question_policy": "diagnose the current question-policy mechanism",
+        "retrieval_recall": "diagnose the current retained-depth recall mechanism",
+        "ranking_filtering": "diagnose the current ranking and filtering mechanism",
+        "response_contract": "repair the current response or contract loss",
     }[dominant]
-    return {"id": experiment[0], "reason": experiment[1]}
+    owner = (
+        "retrieval_ranking"
+        if dominant in {"retrieval_recall", "ranking_filtering"}
+        else "control_plane"
+    )
+    return {
+        "dominant_failure_class": dominant,
+        "owner": owner,
+        "direction": direction,
+        "selection_authority": "docs/optimization_roadmap.md",
+    }
 
 
 def build_report(
@@ -572,7 +584,7 @@ def build_report(
         audit["classification"].get("primary_cause") is None for audit in misses
     )
     return {
-        "version": "r0-v2",
+        "version": "r0-v3",
         "scope": "offline Development-160 failure analysis",
         "protocol": {
             "runtime_behavior_changed": False,
@@ -639,7 +651,7 @@ def build_report(
             ),
             "decision": "retain_offline_audit_and_follow_dependency_order",
         },
-        "next_experiment": _next_experiment(failure_summary),
+        "next_investigation": _next_investigation(failure_summary),
         "sessions": audits,
     }
 
@@ -858,16 +870,19 @@ def render_markdown(report: dict[str, Any]) -> str:
         lines.append(
             f"| {depth} | {values['hits']} | {values['sessions']} | {values['recall']:.6f} |"
         )
-    recommendation = report["next_experiment"]
+    investigation = report["next_investigation"]
     lines.extend(
         [
             "",
-            "## Recommended next experiment",
+            "## Recommended next investigation",
             "",
-            f"**{recommendation['id']}** — {recommendation['reason']}.",
+            f"- **Dominant failure class:** {investigation['dominant_failure_class'] or 'unclassified'}",
+            f"- **Owner:** {investigation['owner']}",
+            f"- **Direction:** {investigation['direction']}",
+            f"- **Experiment-selection authority:** `{investigation['selection_authority']}`",
             "",
-            "This recommendation is evidence-ranked but still subject to the dependency",
-            "order in `docs/optimization_roadmap.md`.",
+            "The taxonomy deliberately does not assign a stage ID. The roadmap owns",
+            "dependency order and the current experiment selection.",
             "",
             "## Example misses",
             "",
@@ -957,7 +972,7 @@ def main() -> None:
                 "primary_cause_counts": report["failure_summary"][
                     "primary_cause_counts"
                 ],
-                "next_experiment": report["next_experiment"],
+                "next_investigation": report["next_investigation"],
             },
             sort_keys=True,
         )

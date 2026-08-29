@@ -474,10 +474,18 @@ class FailureTaxonomyTest(unittest.TestCase):
         self.assertEqual(report["sample_count"], 3)
         self.assertEqual(report["miss_count"], 2)
         self.assertEqual(report["failure_summary"]["owner_counts"]["control_plane"], 2)
-        self.assertEqual(report["next_experiment"]["id"], "A8")
+        self.assertEqual(
+            report["next_investigation"],
+            {
+                "dominant_failure_class": "state_override",
+                "owner": "control_plane",
+                "direction": "diagnose the current cross-turn state and override mechanism",
+                "selection_authority": "docs/optimization_roadmap.md",
+            },
+        )
 
         markdown = render_markdown(report)
-        self.assertEqual(report["version"], "r0-v2")
+        self.assertEqual(report["version"], "r0-v3")
         self.assertEqual(
             report["fold_summary"]["fold_1"],
             {
@@ -501,7 +509,8 @@ class FailureTaxonomyTest(unittest.TestCase):
         self.assertIn("## Experiment record", markdown)
         self.assertIn("Retain offline audit tooling and evidence", markdown)
         self.assertIn("| state_override | 1 |", markdown)
-        self.assertIn("**A8**", markdown)
+        self.assertIn("**Dominant failure class:** state_override", markdown)
+        self.assertNotIn("**A8**", markdown)
         self.assertIn("offline-only", markdown)
         self.assertIn(
             "extract-miss (disclosed_value_not_extracted:leather)",
@@ -539,7 +548,49 @@ class FailureTaxonomyTest(unittest.TestCase):
         self.assertEqual(report["classified_miss_count"], 0)
         self.assertEqual(report["unclassified_invalid_miss_count"], 1)
         self.assertEqual(report["failure_summary"]["primary_cause_counts"], {})
-        self.assertEqual(report["next_experiment"]["id"], "R0")
+        self.assertEqual(
+            report["next_investigation"],
+            {
+                "dominant_failure_class": None,
+                "owner": "shared_offline_diagnostics",
+                "direction": "repair or collect valid failure evidence before changing behavior",
+                "selection_authority": "docs/optimization_roadmap.md",
+            },
+        )
+
+    def test_current_report_defers_experiment_selection_to_the_roadmap(self) -> None:
+        audit = {
+            "sample_id": "question-policy-miss",
+            "scenario_type": "buying",
+            "hit": False,
+            "first_hit_turn": None,
+            "best_rank": None,
+            "turns": [],
+            "classification": {
+                "primary_cause": "question_policy",
+                "secondary_causes": [],
+                "evidence": {
+                    "question_policy": ["unproductive_replies:2"],
+                },
+            },
+        }
+
+        report = build_report(
+            [audit],
+            provenance={"commit": "abc", "worktree_clean": True},
+        )
+
+        self.assertNotIn("next_experiment", report)
+        self.assertEqual(
+            report["next_investigation"],
+            {
+                "dominant_failure_class": "question_policy",
+                "owner": "control_plane",
+                "direction": "diagnose the current question-policy mechanism",
+                "selection_authority": "docs/optimization_roadmap.md",
+            },
+        )
+        self.assertNotIn("A9", json.dumps(report["next_investigation"]))
 
 
 if __name__ == "__main__":
