@@ -552,7 +552,7 @@ Do not run Full/Holdout.
 
 ## A13 - Guarded LLM Semantic Understanding
 
-**Status: A13-0 complete; A13-1 is next; LLM implementation not started.** The authoritative spec,
+**Status: A13-0 complete; A13-1 rejected and reverted; A13-S0 is next; LLM implementation not started.** The authoritative spec,
 phase order, interface, trigger conditions, safety invariants, latency/cost
 targets, and keep/revert gates are in
 [`DeepSeek_LLM接入实验方案.md`](../../DeepSeek_LLM接入实验方案.md).
@@ -562,8 +562,8 @@ is:
 
 ```text
 A13-0 complete at clean comparator b86a9e7
-  -> A13-1 deterministic State / Override slice
-      -> A13-S0 Shadow only
+  -> A13-1 deterministic State / Override slice rejected and reverted
+      -> A13-S0 Shadow only next
           -> review gate
               -> A13-C1 guarded activation or No-Go
 ```
@@ -576,8 +576,10 @@ A13 and the optional B10b-DS1 reranker during metric attribution.
 
 Question Policy remains a separate A14 experiment because it dominates the
 current hash-bound audit. The A13-0 record is
-[`docs/a13_0_baseline_evidence.md`](../a13_0_baseline_evidence.md). Do not combine A13 semantic understanding with an
-ask/stop policy change.
+[`docs/a13_0_baseline_evidence.md`](../a13_0_baseline_evidence.md). The A13-1
+decision record is
+[`docs/a13_1_state_override_evidence.md`](../a13_1_state_override_evidence.md).
+Do not combine A13 semantic understanding with an ask/stop policy change.
 
 ## Handoff to Developer B
 

@@ -36,7 +36,8 @@ read-only.
 ## Verified Behavior Checkpoint
 
 The retained B12 checkpoint was verified on 2026-08-28. A13-0 bound the current
-baseline and refreshed taxonomy on 2026-08-29:
+baseline and refreshed taxonomy on 2026-08-29. A13-1 then tested and rejected a
+deterministic State / Override candidate, leaving that runtime unchanged:
 
 | Item | Value |
 | --- | --- |
@@ -44,7 +45,7 @@ baseline and refreshed taxonomy on 2026-08-29:
 | Retained default behavior commit | `7f520ba` |
 | Optional B12 code/default-parity commit | `82891c8` |
 | B10a experiment branch | `b/b10a-constraint-preserving-crossencoder` |
-| Latest local full test suite (2026-08-29) | 304 passed after A13-0 review fixes |
+| Latest local full test suite (2026-08-29) | 308 passed after A13-1 evidence tests; runtime remains reverted |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |
 
@@ -201,10 +202,10 @@ schema `r0-v3` reports the dominant investigation class and delegates current
 experiment selection to `docs/optimization_roadmap.md`. Historical R0/A9
 artifacts remain unchanged; A9 is already measured, rejected, and reverted.
 
-The next work is therefore A-owned and ordered:
+The remaining work is A-owned and ordered:
 
-1. diagnose the two State / Override misses as A13-1, a deterministic slice;
-2. after a separate keep/revert decision, run A13-S0 Shadow only;
+1. preserve the rejected-and-reverted A13-1 State / Override result;
+2. run A13-S0 Shadow only against the restored `0.925` comparator;
 3. activate only a trigger class that passes the reviewed Shadow gate;
 4. address Question Policy later as a separate A14 experiment.
 
@@ -222,8 +223,11 @@ deterministic parser.
 A13-0 is complete at clean comparator `b86a9e7`; it reproduced Development-160
 and all four folds, bound the input/evaluator hashes, refreshed the 12-miss
 taxonomy, and changed no Agent behavior. See
-`docs/a13_0_baseline_evidence.md`. A13-1 is the next reviewed stage. A13-S0 is
-not authorized and no DeepSeek API call has been made for A13.
+`docs/a13_0_baseline_evidence.md`. A13-1 fixed the narrow stale-value invariant
+but lost three Development hits and regressed TechnicalScore on all four folds,
+so it was rejected and explicitly reverted. See
+`docs/a13_1_state_override_evidence.md`. A13-S0 is now the next stage. No
+DeepSeek API call has been made for A13.
 
 The first runtime-capable stage is Shadow: it may call the provider and record a
 validated `UnderstandingDelta`, but it must not change SessionState, Strategy,
@@ -432,6 +436,7 @@ track in `docs/demo_and_submission_plan.md`.
 | `docs/a10b_query_plan_evidence.md` | Retained A-internal QueryPlan roles, parity, and A11 boundary |
 | `docs/a11_extraction_scope_evidence.md` | Retained bounded extraction scope, rejected expansions, folds, and remaining risks |
 | `docs/a13_0_baseline_evidence.md` | Current 0.925 comparator, hashes, folds, and refreshed target-free taxonomy |
+| `docs/a13_1_state_override_evidence.md` | Rejected-and-reverted deterministic state-reset candidate, folds, and restored comparator |
 | `docs/b9_conditional_dense_evidence.md` | Retained Browsing-only dense gate, quality, route truth, cost, and folds |
 | `docs/b10a_constraint_rerank_evidence.md` | Rejected constraint-preserving CrossEncoder variants |
 | `docs/b11_prerequisite_evidence.md` | B11 prerequisite failure and no-start decision |
@@ -451,8 +456,8 @@ track in `docs/demo_and_submission_plan.md`.
   tested Top-3/Top-5 constraint-preserving variants.
 - B10b-DS1/DS2 are implemented opt-in LLM semantic-ranker experiments with
   provisional remote measurements; neither is retained in the default runtime.
-- A13-0 offline binding is complete; A13 A-side semantic understanding remains
-  planned and reviewed but is not implemented.
+- A13-0 offline binding is complete and A13-1 is rejected/reverted; A13 A-side
+  semantic understanding remains planned and reviewed but is not implemented.
 - Profile ranking remains disabled at weight `0.0`; long-term profile value has
   not been demonstrated.
 - Candidate-aware clarification exists, but a complete should-ask gate has not

@@ -80,8 +80,8 @@ Historical R0 failure taxonomy
 
 Current Chen runtime source @ 0bd3375
   -> A13-0 complete at clean comparator b86a9e7
-      -> A13-1 deterministic State / Override slice
-          -> A13-S0 Shadow semantic understanding
+      -> A13-1 deterministic State / Override slice rejected and reverted
+          -> A13-S0 Shadow semantic understanding next
               -> A13 review gate
                   -> A13-C1 guarded activation or No-Go
                       -> A14 Question Policy as a separate experiment
@@ -477,10 +477,10 @@ Required outcomes:
 
 ### If at least two development days remain
 
-Execute A13-0, A13-1, and A13-S0 in order. Apply the reviewed gate and either
-run A13-C1 or record No-Go. Only then open A14 Question Policy as a separate
-experiment. Stop behavior work early enough to complete R4 and regenerate the
-P0 package in R5.
+A13-0 is complete and A13-1 is rejected/reverted. Execute A13-S0 against the
+restored `0.925` comparator, apply the reviewed gate, and either run A13-C1 or
+record No-Go. Only then open A14 Question Policy as a separate experiment. Stop
+behavior work early enough to complete R4 and regenerate the P0 package in R5.
 
 ### If submission is imminent
 

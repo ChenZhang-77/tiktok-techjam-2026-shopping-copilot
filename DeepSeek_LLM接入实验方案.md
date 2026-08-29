@@ -1,6 +1,6 @@
 # DeepSeek LLM 接入实验方案
 
-> 状态：A13-0 已完成；A13-1 是下一阶段；LLM 实现尚未开始。
+> 状态：A13-0 已完成；A13-1 已拒绝并回滚；A13-S0 是下一阶段；LLM 实现尚未开始。
 >
 > 当前分支：a/a13-llm-semantic-understanding
 >
@@ -219,7 +219,11 @@ DeepSeek。证据见
 
 ### A13-1：先处理 State / Override
 
-这是独立确定性实验，不调用 LLM：
+**状态：已完成，拒绝并回滚。** 候选修复了两个诊断会话的旧值残留，
+但 Development-160 丢失 3 个 hit、四 folds TechnicalScore 全部退化，故恢复
+`0.925` comparator。证据见
+[`docs/a13_1_state_override_evidence.md`](docs/a13_1_state_override_evidence.md)。
+这是独立确定性实验，未调用 LLM：
 
 - 诊断两个 override_old_value_still_active miss；
 - 要求旧值从 active state 和 QueryPlan positive roles 同时消失；
@@ -371,7 +375,7 @@ A13_LLM_MAX_VOCAB_ITEMS=200
 | 阶段 | 预计文件 |
 | --- | --- |
 | A13-0 | 主变更：`experiments/failure_taxonomy.py`、`tests/test_failure_taxonomy.py`；可复现证据：`tests/test_a13_0_baseline_evidence.py`、`docs/a13_0_baseline_evidence.{md,json}`、`docs/a13_0_reports/`；完成后同步 README、current status、roadmap 与 A-side workstream 导航/状态文档 |
-| A13-1 | `starter/core/state.py`、`starter/core/context_engine.py`、`starter/core/query_builder.py` 及对应现有 tests；决定完成后才新增 `docs/a13_1_state_override_evidence.{md,json}` |
+| A13-1 | 候选曾修改 `starter/core/state.py`、`starter/core/context_engine.py` 和 endpoint test，随后显式回滚；决定证据为 `docs/a13_1_state_override_evidence.{md,json}`、`docs/a13_1_reports/` 和 `tests/test_a13_1_state_override_evidence.py` |
 | A13-S0 | 新增 `starter/core/semantic_understanding.py`、`experiments/a13_shadow.py`、`experiments/fixtures/a13_ambiguity_v1.jsonl`、`tests/test_semantic_understanding.py`；仅为注入和 parity 修改 `starter/agent.py`、`tests/test_agent_smoke.py` |
 | A13-C1 | 只在 S0 文件和必要的 state/integration tests 内激活已通过的单一触发类；决定完成后才新增 `docs/a13_c1_evidence.{md,json}` |
 

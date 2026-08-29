@@ -24,8 +24,8 @@ definitions instead of creating local variants.
 
 - `workstreams/DEVELOPER_A_CONTROL_PLANE.md` — A-side dialogue/state route
 - `workstreams/DEVELOPER_B_RETRIEVAL_RANKING.md` — B-side retrieval/ranking route
-- `../DeepSeek_LLM接入实验方案.md` — selected A13 feature plan; A13 is planned,
-  not retained runtime behavior
+- `../DeepSeek_LLM接入实验方案.md` — selected A13 feature plan; A13-1 is
+  rejected/reverted and no LLM behavior is retained
 - `a_control_plane_handoff.md` — compatibility pointer for old A-side links
 - `b_retrieval_ranking_handoff.md` — compatibility pointer for old B-side links
 
@@ -50,6 +50,10 @@ definitions instead of creating local variants.
   and refreshed target-free taxonomy
 - `a13_0_reports/` — hash-bound raw Development, four-fold, and refreshed
   taxonomy reports used by the A13-0 evidence test
+- `a13_1_state_override_evidence.md` — rejected-and-reverted deterministic
+  State / Override candidate and restored Shadow comparator
+- `a13_1_reports/` — hash-bound candidate/revert Development, fold, and
+  taxonomy reports used by the A13-1 evidence test
 - `a8_stateful_intent_evidence.md` — retained persistent intent assessment
 - `ab0_decision_evidence.md` — complete A-side decision-evidence inventory
 - `a9_should_ask_evidence.md` — rejected should-ask candidate

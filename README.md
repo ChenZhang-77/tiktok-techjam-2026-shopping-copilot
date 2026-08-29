@@ -305,9 +305,12 @@ The planned A13 semantic interpreter is different: it will use DeepSeek as an
 A-owned, evidence-gated semantic interpreter before state mutation. A13-0 has
 bound the current no-LLM comparator, folds, hashes, and refreshed taxonomy in
 [`docs/a13_0_baseline_evidence.md`](docs/a13_0_baseline_evidence.md). A13-1 is
-next; the LLM implementation has not started. It must pass disabled parity and
-Shadow review before it may change state or metrics. Do not infer an A-side
-runtime feature from the presence of the plan.
+rejected and reverted after it lost three Development hits and regressed all
+four fixed folds; see
+[`docs/a13_1_state_override_evidence.md`](docs/a13_1_state_override_evidence.md).
+A13-S0 is next, but the LLM implementation has not started. It must pass
+disabled parity and Shadow review before it may change state or metrics. Do not
+infer an A-side runtime feature from the presence of the plan.
 
 ## Named Experiments and Visualizer
 
