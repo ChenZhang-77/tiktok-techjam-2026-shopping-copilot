@@ -45,7 +45,7 @@ deterministic State / Override candidate, leaving that runtime unchanged:
 | Retained default behavior commit | `7f520ba` |
 | Optional B12 code/default-parity commit | `82891c8` |
 | B10a experiment branch | `b/b10a-constraint-preserving-crossencoder` |
-| Latest local full test suite (2026-08-29) | 309 passed after A13-1 evidence tests; runtime remains reverted |
+| Latest local full test suite (2026-08-29) | 330 passed after A13-S0 offline evidence tests; default runtime remains no-LLM |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |
 
@@ -227,14 +227,18 @@ taxonomy, and changed no Agent behavior. See
 stale-value issue but failed the QueryPlan-positive-role half on `public_0002`;
 it also lost three Development hits and regressed TechnicalScore on all four
 folds, so it was rejected and explicitly reverted. See
-`docs/a13_1_state_override_evidence.md`. A13-S0 is now the next stage. No
-DeepSeek API call has been made for A13.
+`docs/a13_1_state_override_evidence.md`. The A13-S0 offline foundation now has
+types, fake, validator, six-signal gate, safe diagnostics, bounded vocabulary,
+and disabled/no-key/fake Development parity. See
+`docs/a13_s0_offline_evidence.md`. It has no DeepSeek transport; no API call or
+key read has been made for A13.
 
-The first runtime-capable stage is Shadow: it may call the provider and record a
-validated `UnderstandingDelta`, but it must not change SessionState, Strategy,
-QueryPlan, clarification, recommendations, or public output. Candidate
-activation requires exact fallback, bounded call rate/latency/cost, focused and
-full tests, and fixed Development-fold evidence.
+The offline Shadow foundation records a validated fake `UnderstandingDelta`
+without changing SessionState, Strategy, QueryPlan, clarification,
+recommendations, or public output. Before any provider run, the team must freeze
+the 60+ item ambiguity fixture through two-member independent annotation and
+reconciliation. Candidate activation still requires exact fallback, bounded
+call rate/latency/cost, focused/full tests, and fixed Development-fold evidence.
 
 A13 does not replace B10b-DS1. A13 interprets difficult user language before
 retrieval; B10b-DS1 reranks an existing Browsing Top-10 after retrieval. They
@@ -438,6 +442,7 @@ track in `docs/demo_and_submission_plan.md`.
 | `docs/a11_extraction_scope_evidence.md` | Retained bounded extraction scope, rejected expansions, folds, and remaining risks |
 | `docs/a13_0_baseline_evidence.md` | Current 0.925 comparator, hashes, folds, and refreshed target-free taxonomy |
 | `docs/a13_1_state_override_evidence.md` | Rejected-and-reverted deterministic state-reset candidate, folds, and restored comparator |
+| `docs/a13_s0_offline_evidence.md` | Retained offline Shadow foundation, Development parity, and pre-provider fixture gate |
 | `docs/b9_conditional_dense_evidence.md` | Retained Browsing-only dense gate, quality, route truth, cost, and folds |
 | `docs/b10a_constraint_rerank_evidence.md` | Rejected constraint-preserving CrossEncoder variants |
 | `docs/b11_prerequisite_evidence.md` | B11 prerequisite failure and no-start decision |
@@ -457,8 +462,9 @@ track in `docs/demo_and_submission_plan.md`.
   tested Top-3/Top-5 constraint-preserving variants.
 - B10b-DS1/DS2 are implemented opt-in LLM semantic-ranker experiments with
   provisional remote measurements; neither is retained in the default runtime.
-- A13-0 offline binding is complete and A13-1 is rejected/reverted; A13 A-side
-  semantic understanding remains planned and reviewed but is not implemented.
+- A13-0 is complete, A13-1 is rejected/reverted, and the A13-S0 offline Shadow
+  foundation passes parity. Provider transport, frozen human gold, and real
+  semantic-quality evidence are not implemented.
 - Profile ranking remains disabled at weight `0.0`; long-term profile value has
   not been demonstrated.
 - Candidate-aware clarification exists, but a complete should-ask gate has not

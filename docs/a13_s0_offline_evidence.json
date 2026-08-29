@@ -1,0 +1,99 @@
+{
+  "version": "a13-s0-offline-v1",
+  "experiment_id": "A13-S0-offline",
+  "owner": "developer_a_control_plane",
+  "decision": "offline_foundation_passed",
+  "stage_scope": "types, fake backend, validator, local trigger gate, fallback, safe diagnostics, Agent Shadow injection, and disabled/no-key/fake Development parity",
+  "commits": {
+    "a13_1_reviewed_comparator": "e816bc3141df9eb0e708d81b983c2a40a2ec1dec",
+    "offline_shadow_initial": "a98912f",
+    "offline_shadow_report_commit": "837214f5a6093ce545dd3bcc0e33c67b9c6aee77"
+  },
+  "reports": {
+    "disabled": {
+      "path": "docs/a13_s0_reports/disabled.json",
+      "sha256": "076265239952af29f5441b566f22d8105411e9facedf60e12ed5c28fd706c37f"
+    },
+    "no_key": {
+      "path": "docs/a13_s0_reports/no_key.json",
+      "sha256": "1f9348fcc048163e3364fbad8122558369b1eb155567c03f654cfc103196937c"
+    },
+    "fake": {
+      "path": "docs/a13_s0_reports/fake.json",
+      "sha256": "6ee478ebe02b03d2373a47309c654781ba4656b6e77e58a2298be6930fd592da"
+    }
+  },
+  "input_hashes": {
+    "catalog_sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
+    "public_set_sha256": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579",
+    "public_split_sha256": "98171487d3416ff97989e98aeca145b87df74337c5edbe7c908dd80afc538c50",
+    "development_folds_sha256": "d9219a4be4533c4f99156197d03e19e6512ce57b262944a201f8605244ccd78d"
+  },
+  "tests": {
+    "semantic_understanding": "8 passed",
+    "shadow_reporting": "4 passed",
+    "agent_shadow_integration": "5 new parity/boundary tests passed",
+    "full_before_evidence_test": "326 passed",
+    "evidence_tests": "4 passed",
+    "final_full_with_evidence_tests": "330 passed"
+  },
+  "development_160": {
+    "sample_count": 160,
+    "hit_rate_at_10": 0.925,
+    "mrr": 0.55276,
+    "mttc": 4.13125,
+    "efficiency": 0.686875,
+    "technical_score": 0.765703,
+    "response_count": 649,
+    "public_behavior_mismatches_by_mode": {
+      "disabled": 0,
+      "no_key": 0,
+      "fake": 0
+    }
+  },
+  "shadow": {
+    "eligible_turns": 67,
+    "eligible_rate": 0.103236,
+    "trigger_counts": {
+      "low_confidence_residual_feature": 67
+    },
+    "disabled_backend_calls": 0,
+    "no_key_backend_calls": 0,
+    "fake_backend_calls": 67,
+    "fake_valid_delta_turns": 67,
+    "fake_payload": "schema-valid abstain delta",
+    "remote_api_calls": 0,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "exact_response_mismatch_note": "All 649 paired raw response dicts contain independently measured retriever latency differences. After removing only latency_ms and stage_latencies_ms, behavior parity is exact for message, ask, recommendations, usage, state, Strategy, QueryPlan, retrieval route, candidates, and fallback diagnostics."
+  },
+  "implemented_invariants": [
+    "SemanticInterpreter exposes one interpret(request) seam",
+    "disabled, ineligible, no-key, input-bound, backend-error, and validator-error paths never apply a delta",
+    "each eligible turn makes at most one fake backend call and never retries",
+    "validator is all-or-nothing and checks exact schema, evidence spans, allowed attributes, bounded vocabulary, conflicts, and state restoration rules",
+    "Agent records only safe aggregate Shadow diagnostics outside the public response",
+    "semantic proposal never mutates SessionState, Strategy, QueryPlan, clarification, retrieval request, recommendations, or response",
+    "local vocabulary is capped at 200 items"
+  ],
+  "boundaries": {
+    "llm_transport_implemented": false,
+    "api_key_read_or_logged": false,
+    "deepseek_api_calls": 0,
+    "full_or_holdout_runs": 0,
+    "semantic_delta_applied": false,
+    "shared_contract_changed": false,
+    "retrieval_ranking_changed": false,
+    "route_weight_semantics_changed": false,
+    "question_policy_changed": false,
+    "evaluator_changed": false,
+    "catalog_changed": false
+  },
+  "next_gate": {
+    "fixture_path": "experiments/fixtures/a13_ambiguity_v1.jsonl",
+    "fixture_frozen": false,
+    "two_member_review_complete": false,
+    "real_api_authorized": false,
+    "reason": "The authoritative protocol requires at least 60 independently sourced examples, two members' independent annotations, reconciliation, schema instructions, and a frozen file hash before the first real API run. No such gold fixture is claimed in this offline foundation stage."
+  }
+}

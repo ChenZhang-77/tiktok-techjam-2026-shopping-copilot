@@ -202,7 +202,8 @@ Historical A8 -> AB0 -> A9 -> A10a -> A10b -> A11 -> AB1
 Current 0bd3375 baseline
   -> A13-0 current baseline and R0 binding complete
       -> A13-1 deterministic State / Override slice rejected and reverted
-          -> A13-S0 Shadow semantic understanding next
+          -> A13-S0 offline Shadow foundation complete
+              -> freeze and reconcile the two-member ambiguity fixture
               -> A13-C1 guarded activation or No-Go
                   -> A14 Question Policy as a separate experiment
 ```
@@ -552,7 +553,7 @@ Do not run Full/Holdout.
 
 ## A13 - Guarded LLM Semantic Understanding
 
-**Status: A13-0 complete; A13-1 rejected and reverted; A13-S0 is next; LLM implementation not started.** The authoritative spec,
+**Status: A13-0 complete; A13-1 rejected and reverted; A13-S0 offline foundation passes parity; provider work is gated.** The authoritative spec,
 phase order, interface, trigger conditions, safety invariants, latency/cost
 targets, and keep/revert gates are in
 [`DeepSeek_LLM接入实验方案.md`](../../DeepSeek_LLM接入实验方案.md).
@@ -563,7 +564,8 @@ is:
 ```text
 A13-0 complete at clean comparator b86a9e7
   -> A13-1 deterministic State / Override slice rejected and reverted
-      -> A13-S0 Shadow only next
+      -> A13-S0 offline Shadow foundation complete
+          -> freeze and reconcile the two-member ambiguity fixture
           -> review gate
               -> A13-C1 guarded activation or No-Go
 ```
@@ -579,6 +581,8 @@ current hash-bound audit. The A13-0 record is
 [`docs/a13_0_baseline_evidence.md`](../a13_0_baseline_evidence.md). The A13-1
 decision record is
 [`docs/a13_1_state_override_evidence.md`](../a13_1_state_override_evidence.md).
+The A13-S0 offline foundation record is
+[`docs/a13_s0_offline_evidence.md`](../a13_s0_offline_evidence.md).
 Do not combine A13 semantic understanding with an ask/stop policy change.
 
 ## Handoff to Developer B

@@ -1,6 +1,6 @@
 # DeepSeek LLM 接入实验方案
 
-> 状态：A13-0 已完成；A13-1 已拒绝并回滚；A13-S0 是下一阶段；LLM 实现尚未开始。
+> 状态：A13-0 已完成；A13-1 已拒绝并回滚；A13-S0 离线基础通过 parity；真实 provider 阶段仍受人工 fixture gate 阻塞。
 >
 > 当前分支：a/a13-llm-semantic-understanding
 >
@@ -232,6 +232,13 @@ DeepSeek。证据见
 - 单独 keep/revert 后重新冻结 Shadow comparator。
 
 ### A13-S0：Shadow 语义理解
+
+**状态：离线基础已完成。** types、fake、validator、六类 local gate、fallback、
+safe diagnostics、bounded vocabulary 与 Agent Shadow 注入已实现；disabled、no-key、
+fake-abstain 三条 Development-160 均保持 `0.925`，公共行为差异为 0。没有
+DeepSeek transport、key 读取或 API 调用。证据见
+[`docs/a13_s0_offline_evidence.md`](docs/a13_s0_offline_evidence.md)。下一步必须先完成
+不少于 60 条 fixture 的双人独立标注、共同复核和 hash freeze。
 
 - 先实现 types、fake、validator、gate、fallback 和 diagnostics；
 - disabled/no-key 路径逐 turn parity；

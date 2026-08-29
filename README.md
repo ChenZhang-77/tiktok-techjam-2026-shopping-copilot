@@ -308,9 +308,13 @@ bound the current no-LLM comparator, folds, hashes, and refreshed taxonomy in
 rejected and reverted after it lost three Development hits and regressed all
 four fixed folds; see
 [`docs/a13_1_state_override_evidence.md`](docs/a13_1_state_override_evidence.md).
-A13-S0 is next, but the LLM implementation has not started. It must pass
-disabled parity and Shadow review before it may change state or metrics. Do not
-infer an A-side runtime feature from the presence of the plan.
+A13-S0 now has an offline-only typed/fake/validated Shadow foundation with exact
+Development behavior parity; see
+[`docs/a13_s0_offline_evidence.md`](docs/a13_s0_offline_evidence.md). There is
+still no DeepSeek transport, key read, or API call. A frozen two-member human
+ambiguity fixture and Shadow review are required before provider testing, and
+Candidate review is required before any state or metric change. Do not infer an
+A-side provider feature from the presence of the offline plumbing.
 
 ## Named Experiments and Visualizer
 

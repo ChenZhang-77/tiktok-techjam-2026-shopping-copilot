@@ -540,13 +540,14 @@ TechnicalScore 增加 0.070391。其中证据最强、贡献最大的单步是�
   进入 QueryPlan positive residual，且四 folds 全部退化，因此未保留该候选；
 - 完整 should-ask gate 尚未有可保留版本；
 - 长期 profile 仍为 0 权重；
-- B10b-DS1 仅是 opt-in LLM ranker，默认仍关闭；A13 语义理解尚未实现；
+- B10b-DS1 仅是 opt-in LLM ranker，默认仍关闭；A13 只有离线 fake Shadow
+  基础，尚无 provider transport 或真实语义质量证据；
 - B9 的增益很小，内存成本明显；
 - 当前好结果仍是 Development 数据，私有 800 条才是真正的外部泛化检验。
 
-**建议下一步：** 以恢复后的 `0.925` comparator 进入 A13-S0 Shadow，先完成
-types、fake、validator、gate、fallback、diagnostics 和 disabled/no-key parity；
-冻结并复核人工歧义集后，才允许真实 API 只产生 Shadow delta。通过 review gate
+**建议下一步：** A13-S0 离线 types、fake、validator、gate、fallback、diagnostics
+和 disabled/no-key/fake parity 已完成。现在由两名成员独立标注不少于 60 条人工
+歧义集、共同复核并冻结 hash；完成此前不运行真实 API。通过 Shadow review gate
 后才做 A13-C1 单一触发类候选激活。10 个 Question Policy miss 属于独立的 A14，
 不与 A13 同时调参；B11、B12 和新的 reranker 同期冻结。
 
@@ -563,6 +564,7 @@ types、fake、validator、gate、fallback、diagnostics 和 disabled/no-key par
 - A11：`docs/a11_extraction_scope_evidence.md`
 - A13-0：`docs/a13_0_baseline_evidence.md`
 - A13-1：`docs/a13_1_state_override_evidence.md`
+- A13-S0 离线基础：`docs/a13_s0_offline_evidence.md`
 - AB1：`docs/ab1_route_semantics_evidence.md`
 - B8：`docs/b8_rejected_constraint_evidence.md`
 - B9：`docs/b9_conditional_dense_evidence.md`
