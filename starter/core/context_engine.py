@@ -51,6 +51,11 @@ OVERRIDE_RE = re.compile(
     r"\b(?:actually|instead|ignore|forget|rather|change|changed my mind|what i need)\b",
     re.I,
 )
+PRIOR_PREFERENCE_RESET_RE = re.compile(
+    r"\b(?:ignore|forget|discard)\s+(?:all\s+)?(?:of\s+)?(?:my\s+)?"
+    r"(?:earlier|previous|prior|old)\s+preferences?\b",
+    re.I,
+)
 NO_PREFERENCE_RE = re.compile(
     r"\b(?:no preference|don't care|do not care|don't have (?:an?\s+)?(?:additional\s+)?preference|do not have (?:an?\s+)?(?:additional\s+)?preference|doesn't matter|does not matter|any\s+(?:category|material|color|size|style|brand|budget|feature|use[ _]case|other)\s+(?:is\s+)?(?:fine|okay|ok|works)|use your judgment)\b",
     re.I,
@@ -612,6 +617,10 @@ def extract_constraints(
 
 def detect_override(user_message: str) -> bool:
     return OVERRIDE_RE.search(str(user_message or "")) is not None
+
+
+def detect_prior_preference_reset(user_message: str) -> bool:
+    return PRIOR_PREFERENCE_RESET_RE.search(str(user_message or "")) is not None
 
 
 def detect_no_preference(user_message: str) -> bool:
