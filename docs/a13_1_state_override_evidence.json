@@ -80,7 +80,7 @@
     "candidate_focused": "82 passed",
     "candidate_full": "305 passed",
     "reverted_full": "304 passed",
-    "final_full_with_evidence_tests": "308 passed",
+    "final_full_with_evidence_tests": "309 passed",
     "commands_executed": [
       "../shopping-copilot/.venv/bin/python -m unittest tests.test_state tests.test_context_engine tests.test_planner tests.test_query_builder tests.test_clarification tests.test_response_guard tests.test_agent_smoke -v",
       "../shopping-copilot/.venv/bin/python -m unittest discover -s tests -q",
@@ -152,7 +152,7 @@
     "original_sessions": ["public_0002", "public_0096"],
     "candidate_state_override_flags_after_eligible_turn": 0,
     "mechanism": "The evaluator's explicit earlier-preference reset refers to a value whose runtime attribute can differ from the new value's attribute. Same-attribute replacement cannot remove that old cross-attribute value.",
-    "candidate_result": "The bounded reset removed the old value from active state and QueryPlan and prevented silent reactivation, but removing target-derived old preferences degraded ranking and turn outcomes.",
+    "candidate_result": "The bounded reset removed the old value from active state and QueryPlan and prevented silent reactivation, but removing user-stated old preferences degraded ranking and turn outcomes.",
     "taxonomy_limit": "When an old instance and a newly reasserted instance normalize to the same value, the current offline audit can still emit inactive_value_present_in_query even though the new value is active. This did not affect the reject decision, which is determined from evaluator metrics and session outcomes."
   },
   "operational_impact": {

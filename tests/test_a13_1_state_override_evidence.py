@@ -113,6 +113,55 @@ class A131StateOverrideEvidenceTest(unittest.TestCase):
         ):
             self.assertEqual(reverted[key], baseline[key])
 
+    def test_scenario_and_operational_summaries_derive_from_candidate_report(self) -> None:
+        baseline = json.loads(
+            (ROOT / "docs/a13_0_reports/development.json").read_text(encoding="utf-8")
+        )
+        candidate = self._report("candidate_development")
+        intent_override = self.record["intent_override_scenario"]
+        for evidence_key, report_key in (
+            ("hit_rate_at_10", "hit_rate_at_10"),
+            ("mrr", "mrr"),
+            ("mttc", "mttc"),
+            ("technical_score", "recommended_technical_score"),
+        ):
+            baseline_value = baseline["scenario_metrics"]["intent_override"][report_key]
+            candidate_value = candidate["scenario_metrics"]["intent_override"][report_key]
+            self.assertEqual(intent_override["baseline"][evidence_key], baseline_value)
+            self.assertEqual(intent_override["candidate"][evidence_key], candidate_value)
+            self.assertAlmostEqual(
+                intent_override["delta"][evidence_key],
+                candidate_value - baseline_value,
+                places=6,
+            )
+
+        for scenario in self.record["unchanged_scenarios"]:
+            self.assertEqual(
+                candidate["scenario_metrics"][scenario],
+                baseline["scenario_metrics"][scenario],
+            )
+
+        impact = self.record["operational_impact"]
+        observed = candidate["observed_run_counts"]
+        tokens = candidate["reported_token_usage"]
+        responses = candidate["timing"]["responses"]
+        self.assertEqual(impact["candidate_response_count"], responses["response_count"])
+        self.assertEqual(impact["respond_exceptions"], observed["respond_exceptions"])
+        self.assertEqual(
+            impact["invalid_response_payloads"], observed["invalid_response_payloads"]
+        )
+        self.assertEqual(impact["reported_fallbacks"], observed["reported_fallbacks"])
+        self.assertEqual(impact["prompt_tokens"], tokens["prompt_tokens"])
+        self.assertEqual(impact["completion_tokens"], tokens["completion_tokens"])
+        self.assertEqual(impact["candidate_response_mean_ms"], responses["mean_ms"])
+        self.assertEqual(impact["candidate_response_p95_ms"], responses["p95_ms"])
+        self.assertEqual(
+            impact["candidate_initialization_ms"], candidate["timing"]["initialization_ms"]
+        )
+        self.assertEqual(
+            impact["candidate_peak_rss_bytes"], candidate["resources"]["peak_rss_bytes"]
+        )
+
     def test_state_goal_was_met_but_keep_gate_failed_without_llm_or_scope_drift(self) -> None:
         taxonomy = self._report("candidate_taxonomy")
         selected = {

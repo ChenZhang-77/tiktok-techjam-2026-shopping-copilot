@@ -68,8 +68,8 @@ Tests run during the decision:
 - candidate focused A-side suite: 82 passed;
 - candidate full suite: 305 passed;
 - reverted runtime full suite: 304 passed;
-- hash/metric decision-evidence suite: 4 passed.
-- final full suite including evidence tests: 308 passed.
+- hash/metric decision-evidence suite: 5 passed.
+- final full suite including evidence tests: 309 passed.
 
 The exact commands, input hashes, full commit identifiers, report hashes,
 scenario data, fold deltas, and operational counters are machine-checked in
