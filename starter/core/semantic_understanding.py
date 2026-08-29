@@ -245,9 +245,11 @@ class FakeSemanticBackend:
         self.result = result
         self.error = error
         self.calls = 0
+        self.requests: list[UnderstandingRequest] = []
 
     def infer(self, request: UnderstandingRequest) -> BackendResult:
         self.calls += 1
+        self.requests.append(request)
         if self.error is not None:
             raise self.error
         if isinstance(self.result, BackendResult):

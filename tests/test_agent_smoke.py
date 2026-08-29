@@ -248,6 +248,46 @@ class AgentSmokeTest(unittest.TestCase):
         )
         self.assertEqual(backend.calls, 0)
 
+    def test_shadow_bounds_catalog_vocabulary_before_backend_call(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            catalog_path = Path(directory) / "catalog.jsonl"
+            catalog_path.write_text(
+                "".join(
+                    json.dumps(
+                        {
+                            "parent_asin": f"P{index:03d}",
+                            "title": f"Product {index}",
+                            "categories": [f"Distinct Category {index}"],
+                            "features": [],
+                            "details": {},
+                            "store": "Example",
+                            "description": [],
+                        }
+                    )
+                    + "\n"
+                    for index in range(250)
+                ),
+                encoding="utf-8",
+            )
+            retriever = _RecordingRetriever()
+            retriever.catalog_path = catalog_path
+            backend = FakeSemanticBackend(_shadow_payload())
+            agent = Agent(
+                catalog_path,
+                retriever=retriever,
+                semantic_interpreter=GuardedSemanticInterpreter(
+                    backend,
+                    config=InterpreterConfig(enabled=True, key_available=True),
+                ),
+            )
+            agent.reset("bounded-vocabulary", {})
+
+            agent.respond("bounded-vocabulary", "Something unusually packable", 1, 2)
+
+        self.assertEqual(backend.calls, 1)
+        request = backend.requests[0]
+        self.assertLessEqual(sum(map(len, request.allowed_values.values())), 200)
+
     def test_full_candidate_pool_reaches_decision_evidence_without_public_raw_evidence(self) -> None:
         retriever = _RecordingRetriever()
 

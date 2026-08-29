@@ -11,6 +11,7 @@ from starter.core.context_engine import (
     COLORS,
     MATERIALS,
     STYLE_TERMS,
+    TOKEN_RE,
     USE_CASES,
     CatalogVocabulary,
     detect_no_preference_attributes,
@@ -80,10 +81,7 @@ class Agent:
         self._sessions: dict[str, SessionState] = {}
         self.semantic_interpreter = semantic_interpreter
         self._semantic_diagnostics: dict[tuple[str, int], dict[str, object]] = {}
-        self._semantic_allowed_values = {
-            "category": tuple(
-                sorted(self.context_vocabulary.category_terms | frozenset(CATEGORY_TERMS))
-            ),
+        self._semantic_static_allowed_values = {
             "material": tuple(sorted(MATERIALS)),
             "color": tuple(sorted(COLORS)),
             "size": (
@@ -378,7 +376,12 @@ class Agent:
             prior_intent=state.intent,
             deterministic_intent=deterministic_intent.intent,
             intent_evidence=deterministic_intent.evidence,
-            allowed_values=self._semantic_allowed_values,
+            allowed_values=self._semantic_allowed_values_for(
+                state=state,
+                user_message=user_message,
+                constraints=constraints,
+                rejected_constraints=rejected_constraints,
+            ),
         )
         try:
             outcome = self.semantic_interpreter.interpret(request)
@@ -434,3 +437,45 @@ class Agent:
             except (TypeError, ValueError):
                 continue
         return tuple(evidence)
+
+    def _semantic_allowed_values_for(
+        self,
+        *,
+        state: SessionState,
+        user_message: str,
+        constraints: list[dict],
+        rejected_constraints: list[dict],
+    ) -> dict[str, tuple[str, ...]]:
+        """Build a relevant vocabulary summary capped by the A13-S0 contract."""
+
+        allowed = dict(self._semantic_static_allowed_values)
+        category_values = set(CATEGORY_TERMS)
+        for item in (
+            *state.active_constraints,
+            *state.rejected_constraints,
+            *state.overridden_constraints,
+            *constraints,
+            *rejected_constraints,
+        ):
+            if item.get("attribute") != "category":
+                continue
+            value = str(item.get("normalized_value") or item.get("raw_value") or "").strip()
+            if value:
+                category_values.add(value)
+
+        message_tokens = {
+            token.group(0).lower() for token in TOKEN_RE.finditer(user_message)
+        }
+        related_catalog_values = sorted(
+            value
+            for value in self.context_vocabulary.category_terms
+            if message_tokens & set(value.split())
+        )
+        static_count = sum(len(values) for values in allowed.values())
+        remaining = max(0, 200 - static_count)
+        ordered_categories = sorted(category_values)
+        for value in related_catalog_values:
+            if value not in category_values:
+                ordered_categories.append(value)
+        allowed["category"] = tuple(ordered_categories[:remaining])
+        return allowed
