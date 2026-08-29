@@ -25,8 +25,23 @@ class A13S0OfflineEvidenceTest(unittest.TestCase):
             self.assertEqual(report["mode"], name)
             self.assertEqual(
                 report["code_provenance"],
-                {"commit": "837214f", "worktree_clean": True},
+                {"commit": "952803b", "worktree_clean": True},
             )
+            self.assertEqual(report["inputs"], self.record["input_hashes"])
+            semantic_config = dict(report["offline_semantic_config"])
+            config_sha256 = semantic_config.pop("sha256")
+            encoded = json.dumps(
+                semantic_config,
+                separators=(",", ":"),
+                sort_keys=True,
+            ).encode("utf-8")
+            self.assertEqual(config_sha256, hashlib.sha256(encoded).hexdigest())
+            self.assertEqual(
+                config_sha256,
+                self.record["offline_semantic_config_hashes"][name],
+            )
+            self.assertIsNone(semantic_config["transport"])
+            self.assertIsNone(semantic_config["prompt_template"])
             self.assertEqual(report["boundaries"]["split"], "development")
             self.assertEqual(report["boundaries"]["sample_count"], 160)
 

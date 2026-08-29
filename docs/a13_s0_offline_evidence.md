@@ -6,8 +6,9 @@
 
 The retained code adds the A-owned `SemanticInterpreter` seam, typed request and
 delta objects, a deterministic fake backend, six-signal local trigger gate,
-all-or-nothing validator, bounded input vocabulary, no-retry fallback, safe
-diagnostics, and Shadow-only Agent injection. No semantic proposal is applied
+all-or-nothing validator, bounded input vocabulary, hard caller deadline,
+per-session/turn call cap, no-retry fallback, safe diagnostics, and Shadow-only
+Agent injection. No semantic proposal is applied
 to SessionState, Strategy, QueryPlan, clarification, retrieval, recommendations,
 or the public response.
 
@@ -17,7 +18,7 @@ no frozen human gold fixture in this stage.
 
 ## Development-160 parity
 
-All three offline modes were run from clean commit `837214f` against the fixed
+All three offline modes were run from clean commit `952803b` against the fixed
 Development-160 split and the A13-0 input hashes:
 
 | Mode | Backend calls | Valid fake deltas | Behavior mismatches | HitRate@10 | MRR | MTTC | TechnicalScore |
@@ -41,21 +42,30 @@ retained rather than hiding the timing difference.
 
 ## Validation and safety coverage
 
-Tests cover:
+The offline foundation tests cover:
 
-- disabled, ineligible, no-key, fake, timeout, arbitrary exception, and input
-  bound fallbacks;
-- malformed types, missing/extra fields, illegal attributes and values,
-  evidence-span mismatch, duplicate/conflicting fields, unsupported override,
-  abstain conflict, and rejected/no-preference restoration;
+- disabled, ineligible, no-key, fake, actual blocking timeout, arbitrary
+  exception, invalid telemetry, and input-bound fallbacks;
+- wrong top-level/field types, missing/extra fields, illegal attributes and
+  values, token-bounded evidence mismatch, duplicate attributes/terms,
+  conflicting proposals, unsupported override, abstain conflict, and
+  rejected/no-preference restoration;
+- the domain-valid coexistence of an attribute-level no-positive-preference
+  marker with an explicit rejected value (for example, any color except black);
 - all six local trigger signals;
-- one backend call at most per eligible turn and no retry;
+- one backend call at most per eligible session/turn, including duplicate
+  `respond` calls, and no retry;
 - error-text, prompt, response, request-id, key, profile, session, and user-text
   exclusion from diagnostics;
 - multi-session isolation and exact state/response/retrieval-request parity;
 - catalog vocabulary capped at 200 items.
 
-The final suite is 330/330, including four hash/metric evidence tests. Reports
+Because S0 has no JSON or HTTP provider adapter, malformed/empty/truncated JSON,
+prompt-injection payloads, DNS failures, HTTP 401/403/429/5xx, and transport
+redaction remain explicit first-provider pre-run tests; this offline record does
+not claim that coverage.
+
+The final suite is 336/336, including four hash/metric evidence tests. Reports
 and hashes are machine-checked by
 [`test_a13_s0_offline_evidence.py`](../tests/test_a13_s0_offline_evidence.py).
 Raw reports are in [`a13_s0_reports/`](a13_s0_reports/), and structured
@@ -70,6 +80,12 @@ provenance is in
 - No DeepSeek transport or API call.
 - No environment key read or logged secret.
 - No LLM usage or cost claim.
+- Reports also bind the evaluator, evaluation config, schema/config versions,
+  effective offline config, and all A13-0 data/split/fold hashes.
+- An over-strict candidate that rejected all same-attribute no-preference plus
+  rejected-value deltas was explicitly reverted because it contradicted the
+  existing `SessionState` domain semantics; a positive coexistence regression
+  test is retained instead.
 
 ## Next gate
 

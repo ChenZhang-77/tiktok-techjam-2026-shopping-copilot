@@ -281,6 +281,40 @@ class SemanticUnderstandingTest(unittest.TestCase):
             "missing_no_preference_evidence",
         )
 
+    def test_no_preference_can_coexist_with_an_explicit_rejection(self) -> None:
+        payload = {
+            **_valid_payload(),
+            "intent_hint": None,
+            "positive_constraints": [],
+            "rejected_constraints": [
+                {
+                    "attribute": "color",
+                    "value": "black",
+                    "evidence_span": "black",
+                }
+            ],
+            "no_preference_attributes": ["color"],
+            "override_attributes": ["color"],
+            "semantic_terms": [],
+        }
+        outcome = GuardedSemanticInterpreter(
+            FakeSemanticBackend(payload),
+            config=InterpreterConfig(enabled=True, key_available=True),
+        ).interpret(
+            _request(
+                current_message="I don't care about color, but not black.",
+                deterministic_no_preference_attributes=("color",),
+            )
+        )
+
+        self.assertIsNotNone(outcome.delta)
+        assert outcome.delta is not None
+        self.assertEqual(outcome.delta.no_preference_attributes, ("color",))
+        self.assertEqual(
+            [(item.attribute, item.value) for item in outcome.delta.rejected_constraints],
+            [("color", "black")],
+        )
+
     def test_low_confidence_cannot_restore_rejected_or_no_preference_state(self) -> None:
         for request in (
             _request(

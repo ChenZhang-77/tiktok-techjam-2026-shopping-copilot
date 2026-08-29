@@ -8,7 +8,7 @@
     "split": "development"
   },
   "code_provenance": {
-    "commit": "837214f",
+    "commit": "952803b",
     "worktree_clean": true
   },
   "evaluation": {
@@ -1335,10 +1335,28 @@
   "inputs": {
     "catalog_sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
     "development_folds_sha256": "d9219a4be4533c4f99156197d03e19e6512ce57b262944a201f8605244ccd78d",
+    "evaluation_config_sha256": "8ee0c899ddc68d521754cf9d2f239a8bc09851fb37c5872567160c30d431aa53",
+    "evaluator_sha256": "c21e10a6e772c4824d85f513f0d7d53d23942d20ec9eb3853ff49119317ef96f",
     "public_set_sha256": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579",
     "public_split_sha256": "98171487d3416ff97989e98aeca145b87df74337c5edbe7c908dd80afc538c50"
   },
   "mode": "fake",
+  "offline_semantic_config": {
+    "backend": "deterministic_fake",
+    "config_version": "a13-s0-config-v1",
+    "enabled": true,
+    "key_available": true,
+    "max_state_chars": 2000,
+    "max_user_chars": 2000,
+    "max_vocab_items": 200,
+    "mode": "fake",
+    "prompt_template": null,
+    "prompt_version": "a13-understanding-v1",
+    "schema_version": "a13-understanding-schema-v1",
+    "sha256": "b99f38b90610ca97c30b8cb64ab8af7b59c9dc872fbd2e4f8d067db1fb113c83",
+    "timeout_ms": 2500,
+    "transport": null
+  },
   "shadow": {
     "backend_called_turns": 67,
     "completion_tokens": 0,

@@ -384,7 +384,7 @@ A13_LLM_MAX_VOCAB_ITEMS=200
 | --- | --- |
 | A13-0 | 主变更：`experiments/failure_taxonomy.py`、`tests/test_failure_taxonomy.py`；可复现证据：`tests/test_a13_0_baseline_evidence.py`、`docs/a13_0_baseline_evidence.{md,json}`、`docs/a13_0_reports/`；完成后同步 README、current status、roadmap 与 A-side workstream 导航/状态文档 |
 | A13-1 | 候选曾修改 `starter/core/state.py`、`starter/core/context_engine.py` 和 endpoint test，随后显式回滚；决定证据为 `docs/a13_1_state_override_evidence.{md,json}`、`docs/a13_1_reports/` 和 `tests/test_a13_1_state_override_evidence.py` |
-| A13-S0 | 新增 `starter/core/semantic_understanding.py`、`experiments/a13_shadow.py`、`experiments/fixtures/a13_ambiguity_v1.jsonl`、`tests/test_semantic_understanding.py`；仅为注入和 parity 修改 `starter/agent.py`、`tests/test_agent_smoke.py` |
+| A13-S0 | 离线基础已新增 `starter/core/semantic_understanding.py`、`experiments/a13_shadow.py`、`tests/test_semantic_understanding.py`，并仅为注入和 parity 修改 `starter/agent.py`、`tests/test_agent_smoke.py`；`experiments/fixtures/a13_ambiguity_v1.jsonl` 仍是双人标注完成后才能新增的下一 gate 产物 |
 | A13-C1 | 只在 S0 文件和必要的 state/integration tests 内激活已通过的单一触发类；决定完成后才新增 `docs/a13_c1_evidence.{md,json}` |
 
 临时真实 API 报告仍写 `/private/tmp`。只有阶段决定完成、provenance/hash 完整且
