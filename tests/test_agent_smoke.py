@@ -468,60 +468,6 @@ class AgentSmokeTest(unittest.TestCase):
             self.assertIn("leather", state.previous_diagnostics["query_plan"]["excluded_terms"])
             self.assertEqual(state.previous_diagnostics["last_override"]["reason"], "attribute replacement")
 
-    def test_explicit_prior_preference_reset_removes_old_cross_attribute_values(self) -> None:
-        retriever = _RecordingRetriever()
-        agent = Agent(retriever=retriever)
-        agent.reset("preference-reset", {})
-
-        agent.respond(
-            "preference-reset",
-            "I'm looking for a shirt. Pull On closure.",
-            1,
-            2,
-        )
-        agent.respond(
-            "preference-reset",
-            "For that, what matters is: Imported; Pull On closure.",
-            2,
-            2,
-        )
-        reset_response = agent.respond(
-            "preference-reset",
-            "Actually, ignore my earlier preference. What I need is: polyester.",
-            3,
-            2,
-        )
-        response = agent.respond(
-            "preference-reset",
-            "For that, what matters is: Pull On closure.",
-            4,
-            2,
-        )
-
-        active = {
-            (item["attribute"], item["value"])
-            for item in response["diagnostics"]["active_constraints"]
-        }
-        overridden = {
-            (item["attribute"], item["value"])
-            for item in response["diagnostics"]["overridden_constraints"]
-        }
-        query_plan = response["diagnostics"]["query_plan"]
-
-        self.assertIn(("category", "shirt"), active)
-        self.assertIn(("material", "polyester"), active)
-        self.assertIn(("feature", "imported"), active)
-        self.assertNotIn(("feature", "pull on closure"), active)
-        self.assertNotIn(("feature", "imported"), overridden)
-        self.assertIn(("feature", "pull on closure"), overridden)
-        self.assertIn("imported", query_plan["rendered_query"].lower())
-        self.assertNotIn("pull on closure", query_plan["rendered_query"].lower())
-        self.assertIn("polyester", query_plan["rendered_query"].lower())
-        self.assertEqual(
-            reset_response["diagnostics"]["last_override"]["reason"],
-            "preference reset",
-        )
-
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,24 +1,10 @@
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from starter.core.context_engine import IntentAssessment
-
-
-def _normalized_words(value: object) -> str:
-    return " ".join(re.findall(r"[a-z0-9]+", str(value or "").lower()))
-
-
-def _contains_normalized_phrase(container: object, phrase: object) -> bool:
-    normalized_container = _normalized_words(container)
-    normalized_phrase = _normalized_words(phrase)
-    return bool(
-        normalized_phrase
-        and f" {normalized_phrase} " in f" {normalized_container} "
-    )
 
 
 @dataclass
@@ -101,26 +87,12 @@ class SessionState:
             ):
                 self.rejected_constraints.append(rejected)
         if override and constraints:
-            from starter.core.context_engine import detect_prior_preference_reset
-
-            reset_prior_preferences = bool(
-                self.raw_history
-                and detect_prior_preference_reset(
-                    self.raw_history[-1].user_message
-                )
-            )
             self.override_seen = True
             override_attributes = {str(item.get("attribute")) for item in constraints if item.get("attribute")}
             if "category" in override_attributes:
                 override_attributes.update({"material", "color", "size", "style", "brand", "budget", "feature", "use_case"})
             for attribute in override_attributes:
                 self._deactivate_attribute(attribute, destination=self.overridden_constraints)
-            if reset_prior_preferences and "category" not in override_attributes:
-                override_attributes.update(
-                    self._deactivate_initial_preferences(
-                        destination=self.overridden_constraints
-                    )
-                )
             self.previous_candidate_ids = []
             self.override_events.append({
                 "turn": self.current_turn,
@@ -130,13 +102,7 @@ class SessionState:
                     for item in constraints
                     if item.get("attribute")
                 ],
-                "reason": (
-                    "category reset"
-                    if "category" in override_attributes
-                    else "preference reset"
-                    if reset_prior_preferences
-                    else "attribute replacement"
-                ),
+                "reason": "category reset" if "category" in override_attributes else "attribute replacement",
             })
         # "No preference" suppresses future questions, but it must not hide a
         # later explicit preference supplied by the user.
@@ -157,53 +123,8 @@ class SessionState:
                 str(constraint.get("attribute") or ""),
                 str(constraint.get("normalized_value") or constraint.get("raw_value") or ""),
             ) not in rejected_keys
-            and (
-                override
-                or not self._matches_overridden_constraint(constraint)
-            )
         ]
         self.add_constraints(filtered)
-
-    def _deactivate_initial_preferences(self, *, destination: list[dict]) -> set[str]:
-        if len(self.raw_history) < 2:
-            return set()
-        initial_message = self.raw_history[0].user_message
-        deactivated_attributes: set[str] = set()
-        kept: list[dict] = []
-        for constraint in self.active_constraints:
-            attribute = str(constraint.get("attribute") or "")
-            value = constraint.get("normalized_value") or constraint.get("raw_value")
-            if (
-                attribute == "category"
-                or not constraint.get("active", True)
-                or not _contains_normalized_phrase(initial_message, value)
-            ):
-                kept.append(constraint)
-                continue
-            inactive = dict(constraint)
-            inactive["active"] = False
-            destination.append(inactive)
-            deactivated_attributes.add(attribute)
-        self.active_constraints = kept
-        return deactivated_attributes
-
-    def _matches_overridden_constraint(self, constraint: dict) -> bool:
-        attribute = str(constraint.get("attribute") or "")
-        value = constraint.get("normalized_value") or constraint.get("raw_value")
-        return any(
-            str(item.get("attribute") or "") == attribute
-            and (
-                _contains_normalized_phrase(
-                    item.get("normalized_value") or item.get("raw_value"),
-                    value,
-                )
-                or _contains_normalized_phrase(
-                    value,
-                    item.get("normalized_value") or item.get("raw_value"),
-                )
-            )
-            for item in self.overridden_constraints
-        )
 
     def _deactivate_value(self, attribute: str, value: str, *, destination: list[dict]) -> None:
         kept: list[dict] = []
