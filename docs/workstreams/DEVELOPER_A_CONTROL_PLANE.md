@@ -82,15 +82,13 @@ main metric. A10b was then retained at `9560344` with exact Development session
 parity and no shared schema change. A11 was retained as a bounded deterministic
 slice at `350cce2`: Development score rose to `0.721420` and all four folds
 improved, without a shared schema or question-policy change. AB1 and B9 are now
-complete. Chen's later A-side state corrections produced the current
-Development-only checkpoint HR `0.925`, MRR `0.552760`, MTTC `4.13125`,
-and TechnicalScore `0.765703`.
+complete. Chen's later A-side corrections define the selected A13 comparator;
+read `../current_status.md` for its current metrics and audit caveats.
 
-A planning-only refresh of the current 12 misses reports Question Policy 10 and
-State / Override 2, with zero primary Extraction or Intent / Routing misses.
-That refresh still needs clean-commit hash binding. The selected next feature
-is A13: first bind the current baseline, then diagnose the two deterministic
-override misses, then run DeepSeek semantic understanding in Shadow mode.
+The planning-only refresh assigns the remaining misses to Question Policy and
+State / Override, not Extraction or Intent / Routing. The selected next feature
+is A13: first bind the current baseline, then diagnose the deterministic
+override slice, then run DeepSeek semantic understanding in Shadow mode.
 The retained A8 confidence is an A-owned ordinal stability signal with
 `low`/`medium`/`high` diagnostic bands, not a calibrated probability or B-side
 gate.
@@ -174,10 +172,9 @@ feature availability.
 
 ### 4. Rule and scope limitations
 
-Extraction still uses bounded vocabulary and regexes, but the current
-`0.925` planning audit reports no primary Extraction miss. Broader parser
-work therefore requires new evidence and must not globally replace the
-deterministic path.
+Extraction still uses bounded vocabulary and regexes, but the current planning
+audit reports no primary Extraction miss. Broader parser work therefore
+requires new evidence and must not globally replace the deterministic path.
 
 ### 5. Query evidence is flattened into one string
 
@@ -577,9 +574,9 @@ validator-failure paths must preserve exact no-LLM behavior. A13 does not
 change the shared retrieval contract, and the same turn must not activate both
 A13 and the optional B10b-DS1 reranker during metric attribution.
 
-Question Policy remains a separate A14 experiment because the current
-planning-only audit assigns 10 of 12 misses to that class. Do not combine A13
-semantic understanding with an ask/stop policy change.
+Question Policy remains a separate A14 experiment because it dominates the
+current planning-only audit. Do not combine A13 semantic understanding with an
+ask/stop policy change.
 
 ## Handoff to Developer B
 

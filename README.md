@@ -139,9 +139,9 @@ zero rejection turns. B9 is retained at `7f520ba`: dense and fusion actually
 executed on 102 of 725 retrieval turns, only Browsing outcomes changed, and all
 four fixed folds were non-regressing. B10a then tested Top-3 and Top-5 anchored
 CrossEncoder tails; both reduced MRR and TechnicalScore, so the B9 default is
-unchanged. B10b-DS1 subsequently measured an opt-in DeepSeek Top-10 reranker;
-it improved MRR/TechnicalScore without changing HitRate@10 or MTTC, while DS2
-Top-20 failed its reliability gate. Neither is enabled by default. B12's
+unchanged. B10b-DS1/DS2 subsequently added opt-in DeepSeek reranking code and
+provisional remote measurements, but complete reports are not yet hash-bound.
+Neither is enabled by default. B12's
 optional bounded depth candidate has favorable aggregate metrics but remains
 disabled because it lacks a contemporaneous keep/revert gate and gains are
 concentrated in fold 4.
@@ -292,24 +292,14 @@ For the full Development-160 DS1 experiment:
   --output /private/tmp/tiktok-techjam-deepseek-ds1-development.json
 ```
 
-The 40-session holdout is for one final generalization check only and must not
-be used for tuning:
+Do not run the exposed 40-session public holdout during optimization; the
+organizer's private test remains the external generalization check.
 
-```bash
-.venv/bin/python -m experiments.deepseek_ds1 \
-  --split holdout --limit 40 \
-  --output /private/tmp/tiktok-techjam-deepseek-ds1-holdout.json
-```
-
-DS1 only reranks the existing Browsing Top-10. It improved the current
-Development-160 median TechnicalScore from `0.765703` to `0.780991`, with
-HitRate@10, MTTC, and Efficiency unchanged. Three full runs and all four
-Development folds were checked. The 40-session holdout comparison also showed
-MRR `0.428562 -> 0.491448` and TechnicalScore `0.743069 -> 0.761934`.
-
-DS2 Top-20 was tested but rejected: it showed metric gains, yet had 9 fallbacks
-out of 371 calls (`2.43%`), above the predeclared `2%` reliability gate. Do not
-enable DS2 in the default runtime.
+DS1 only reranks the existing Browsing Top-10, and DS2 expands that experiment
+to Top-20. Their current remote measurements are provisional because complete
+reports remain outside Git and are not hash-bound tracked evidence. Neither is
+enabled by default; see `docs/current_status.md` for the exact provisional
+disposition and caveats.
 
 The planned A13 experiment is different: it will use DeepSeek as an A-owned,
 evidence-gated semantic interpreter before state mutation. A13 is currently a
@@ -425,10 +415,9 @@ B9 now retains the Browsing-first conditional dense Route at `7f520ba`; see
 B10a is rejected as a runtime default while its reproducible experiment remains
 available; see
 [`docs/b10a_constraint_rerank_evidence.md`](docs/b10a_constraint_rerank_evidence.md).
-B10b-DS1 was subsequently implemented and measured as an opt-in Browsing
-Top-10 experiment. It improved MRR and median TechnicalScore while preserving
-HitRate@10, MTTC, and Efficiency; it is not part of the default runtime.
-DS2 Top-20 was rejected by its reliability gate. The refreshed B11 audit found
+B10b-DS1/DS2 code and provisional remote measurements exist, but complete
+reports are not yet hash-bound; neither is part of the default runtime. The
+refreshed B11 audit found
 zero retrieval/ranking primary misses and 157/160 retained-depth lexical
 recall, so B11 was not started. B12 remains an explicit exploratory option at
 `82891c8`; it is disabled by default because no contemporaneous selection gate
@@ -472,8 +461,8 @@ hard filters, duplicate/invalid ASINs, and Candidate Pool shortages.
   replaces the older tracked R0 evidence.
 - Profile ranking is disabled at weight 0.0.
 - B9 closes the literal Browsing-dense route only for its narrow gate; global
-  dense remains rejected. DeepSeek DS1 is validated only as an opt-in isolated
-  experiment and is not part of the default runtime yet.
+  dense remains rejected. DeepSeek DS1 is an opt-in isolated experiment with
+  provisional remote evidence and is not part of the default runtime.
 - B9 adds about 1.5 seconds of initialization and about 546 MB of observed peak
   RSS for a small rank/turn gain with no additional hits.
 - Long-term profile value has not been demonstrated; profile ranking remains

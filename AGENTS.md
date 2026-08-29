@@ -248,10 +248,10 @@ global RRF and CrossEncoder reranking remain rejected experiments. B10a Top-3 an
 constraint-preserving CrossEncoder candidates both failed the MRR and
 TechnicalScore gate; the B9 default remains exact at `93b5b19`. See
 `docs/b10a_constraint_rerank_evidence.md`. B10b-DS1 is implemented and
-measured only as an opt-in Browsing Top-10 DeepSeek experiment; it improves MRR
-but is not the retained default. DS2 Top-20 is rejected because its fallback
-rate exceeded the predeclared reliability gate. B11 is also not started: the
-earlier R0 refresh finds zero
+has only provisional remote measurements; it is not the retained default.
+Complete evidence and the current DS2 disposition must be checked in
+`docs/current_status.md`, not inferred from the presence of experiment code.
+B11 is also not started: the earlier R0 refresh finds zero
 retrieval/ranking primary causes and retained-depth recall of 157/160. See
 `docs/b11_prerequisite_evidence.md`. B12 remains an explicit, disabled-by-default
 experiment at `82891c8`: its aggregate result is favorable, but there was no
@@ -365,10 +365,10 @@ clarification policy, response guard, or `starter/agent.py` orchestration.
 
 Neither side changes shared contract or route-weight semantics alone.
 
-A13 DeepSeek semantic understanding is a reviewed plan, not retained behavior.
-It proposes a validated `UnderstandingDelta` before state mutation and never
-allows the model to write SessionState directly. A13 and the optional B10b-DS1
-reranker must not be activated together in one metric experiment.
+Any A-side semantic-understanding experiment must return a locally validated
+proposal before state mutation and never let a model write `SessionState`
+directly. Do not activate A- and B-side LLM experiments together in one metric
+experiment; use the selected experiment's spec for the concrete interface.
 
 An A-side decision-evidence adapter is not a second retrieval stack. B owns the
 meaning of any retrieval-produced score, coverage, partition, route, or fallback

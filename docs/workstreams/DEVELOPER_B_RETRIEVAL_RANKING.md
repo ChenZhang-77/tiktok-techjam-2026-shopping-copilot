@@ -22,16 +22,15 @@ user explicitly requests it.
 ## Current integrated state
 
 - Retained B9 route commit: `7f520ba`; optional B12 code commit: `82891c8`.
-- Current full test suite: `297/297` passing on the A13 planning branch.
 - Retained default route: structured scoring, plus pinned local dense/RRF only
   behind the broad-Browsing gate.
 - Global dense/RRF and CrossEncoder remain rejected experiments. B10b-DS1 is
-  an implemented and measured opt-in DeepSeek Top-10 reranker; it is not the
-  retained default. DS2 Top-20 is rejected.
-- Latest A-side state-correction checkpoint: HitRate@10 `0.925`, MRR
-  `0.552760`, MTTC `4.13125`, TechnicalScore `0.765703`.
+  implemented as an opt-in DeepSeek Top-10 reranker but is not the retained
+  default; its remote measurements and DS2 disposition are still provisional
+  until complete reports are hash-bound.
 
-The authoritative status and caveats live in `docs/current_status.md`.
+The authoritative current test count, metrics, and caveats live in
+`docs/current_status.md`.
 
 ## Ownership and stable seam
 
@@ -69,8 +68,8 @@ behavior only for a diagnosed B-owned class.
 2. B9's rank/turn gain is small, adds no hits, and raises observed peak RSS by
    about 546 MB.
 3. B10a's bounded Top-3 and Top-5 variants regressed MRR and aggregate
-   TechnicalScore. B10b-DS1 improved MRR as an opt-in Top-10 experiment, while
-   DS2 failed its reliability gate; neither is the retained default.
+   TechnicalScore. B10b remains opt-in and provisional; it is not the retained
+   default.
 4. Lexical recall should only be changed if R0 shows genuine candidate-pool
    misses rather than ordering failures.
 5. Retrieval depth is mostly fixed; deeper pools add cost and noise when the
@@ -195,11 +194,11 @@ TechnicalScore by `0.001366`. See `docs/b10a_constraint_rerank_evidence.md`.
 
 ## B10b — LLM semantic ranking
 
-**Status: DS1 measured opt-in; DS2 rejected; default remains off.** DS1 reranks
-only the existing Browsing Top-10. It improved MRR and median TechnicalScore
-while HitRate@10, MTTC, and Efficiency stayed unchanged. DS2 expanded to
-Top-20 but produced 9 fallbacks in 371 calls (`2.43%`), above its predeclared
-`2%` reliability gate.
+**Status: opt-in code exists; remote measurements remain provisional; default
+remains off.** DS1 reranks only the existing Browsing Top-10. DS2 expands that
+experiment to Top-20. Do not promote either result into retained or ablation
+evidence until the complete reports are hash-bound; use `docs/current_status.md`
+for the current provisional disposition.
 
 The selected A13 work is not B-side ranking. It is an A-owned, pre-retrieval
 semantic-understanding experiment. B must not consume A13 model confidence,

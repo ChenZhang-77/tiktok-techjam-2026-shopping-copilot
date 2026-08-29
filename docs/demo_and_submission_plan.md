@@ -39,19 +39,17 @@ implemented capability. Profile ranking remains disabled at weight 0.0.
 ## Evidence available now
 
 - Retained B9 route commit: `7f520ba`; optional B12 code commit: `82891c8`.
-- Current full test suite: `297/297` passing on the A13 planning branch.
-- Latest A-side correction checkpoint: HitRate@10 `0.925`, MRR `0.552760`,
-  MTTC `4.13125`, TechnicalScore `0.765703`; this is Development-only and does
-  not isolate the contribution of each correction.
+- Current test count and latest A-side correction metrics: see
+  `docs/current_status.md`; the checkpoint is Development-only and does not
+  isolate the contribution of each correction.
 - Earlier retained A11+B9 checkpoint: HitRate@10 `0.8625`, MRR `0.547329`,
   MTTC `4.66875`, TechnicalScore `0.722074`.
 - B9 route: dense/fusion executed 102 times; all four folds non-regressing;
   startup about `3.58 s`, peak RSS about `1.109 GB`.
 - B10a: Top-3 and Top-5 anchored CrossEncoder candidates rejected; the default
   remains B9.
-- B10b-DS1: opt-in Top-10 experiment improved MRR/TechnicalScore while
-  HitRate@10 and MTTC stayed unchanged; DS2 Top-20 was rejected by its
-  reliability gate.
+- B10b: opt-in code and provisional remote measurements exist, but complete
+  reports are not yet hash-bound tracked evidence; default remains off.
 - A13: reviewed Shadow-first semantic-understanding plan only; no runtime or
   score claim is allowed until its gates pass.
 - B11: not started because the current R0 refresh finds zero retrieval/ranking

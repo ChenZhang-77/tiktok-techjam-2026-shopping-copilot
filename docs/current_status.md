@@ -35,7 +35,8 @@ read-only.
 
 ## Verified Behavior Checkpoint
 
-Verified on 2026-08-28:
+The retained B12 checkpoint was verified on 2026-08-28. The A13 planning
+branch test and baseline reproduction were verified on 2026-08-29:
 
 | Item | Value |
 | --- | --- |
@@ -43,7 +44,7 @@ Verified on 2026-08-28:
 | Retained default behavior commit | `7f520ba` |
 | Optional B12 code/default-parity commit | `82891c8` |
 | B10a experiment branch | `b/b10a-constraint-preserving-crossencoder` |
-| Latest local full test suite | 297 passed on the A13 planning branch |
+| Latest local full test suite (2026-08-29) | 297 passed on the A13 planning branch |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |
 
@@ -176,8 +177,8 @@ does not use an unavailable intent-confidence field.
 | Global weighted RRF fusion | Reject as default; cross-validation regression |
 | Top-30 CrossEncoder semantic rerank | Reject globally; small aggregate gain but MRR and Intent Override regression, high cost |
 | B10a anchored CrossEncoder | Reject as default; Top 3 and Top 5 both reduce MRR and TechnicalScore |
-| B10b-DS1 DeepSeek Browsing Top-10 | Measured opt-in experiment; improves MRR, default remains off |
-| B10b-DS2 DeepSeek Browsing Top-20 | Rejected; fallback rate exceeded the predeclared reliability gate |
+| B10b-DS1 DeepSeek Browsing Top-10 | Opt-in code and provisional remote measurement; default remains off |
+| B10b-DS2 DeepSeek Browsing Top-20 | Provisional remote rejection; complete report is not yet tracked |
 | Profile ranking | Disabled at weight 0.0; no evidence-backed gain |
 
 Do not claim that every request combines lexical, dense, and semantic routes.
@@ -440,8 +441,8 @@ track in `docs/demo_and_submission_plan.md`.
   broad-Browsing gate; it is not a global route.
 - CrossEncoder reranking is reproducible but rejected both globally and in the
   tested Top-3/Top-5 constraint-preserving variants.
-- B10b-DS1 is an implemented and measured opt-in LLM semantic ranker, but it is
-  not retained in the default runtime; DS2 was rejected.
+- B10b-DS1/DS2 are implemented opt-in LLM semantic-ranker experiments with
+  provisional remote measurements; neither is retained in the default runtime.
 - A13 A-side semantic understanding is planned and reviewed, not implemented.
 - Profile ranking remains disabled at weight `0.0`; long-term profile value has
   not been demonstrated.

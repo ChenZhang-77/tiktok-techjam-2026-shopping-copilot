@@ -69,9 +69,10 @@ Chen 状态修正后的 Development-160 检查点：
 
 ### 2.3 与现有 B 侧 DeepSeek 的关系
 
-B10b-DS1 已完成为可选实验：它只重排 Browsing Top-10，改善 MRR，
-HitRate@10、MTTC 和 Efficiency 不变。DS2 Top-20 因 fallback 率超过预声明
-gate 而拒绝。
+B10b-DS1/DS2 的 opt-in 代码已存在；`/private/tmp` 中的临时远程报告显示 DS1
+可能改善排序、DS2 触发可靠性问题，但完整报告尚未 hash-bound，因此两项结论
+都只能称为 provisional，且都不是默认路径。证据边界以
+[`docs/current_status.md`](docs/current_status.md) 为准。
 
 A13 不替换、不重写 B10b-DS1：
 
@@ -224,8 +225,21 @@ Candidate 只开放 Shadow 已证明有效的触发类型。不使用“模型�
 - disabled/no-key 路径逐 turn parity；
 - 真实 API 只产生 Shadow delta；
 - 不改变 state、query、Strategy、question 或 recommendations；
-- 用人工审查的困难表达集比较规则与模型，不用 target ASIN 调 prompt；
+- 在真实 API 前冻结 `experiments/fixtures/a13_ambiguity_v1.jsonl` 及 SHA256；
+- 用冻结的人工歧义集比较规则与模型，不用 target ASIN 调 prompt；
 - 报告触发率、有效建议率、schema、fallback、延迟、token 和费用。
+
+人工歧义集及判分协议必须在第一次真实 API 运行前固定：
+
+- 至少 60 条，不少于 10 条/预定义触发类型；准备进入 Candidate 的单一触发类
+  至少 20 条；
+- 样本来源可以是去标识化的规则失败表达和独立编写的边界表达，但不含 target
+  ASIN、hit/miss、scenario label、未来 turn 或推荐结果；
+- 每条保存 prior-state 摘要、当前消息、触发类型和规范化 gold delta；
+- 两名成员独立标注，分歧经共同复核后冻结；记录 schema 版本、标注说明和文件 hash；
+- 主指标为完整 `UnderstandingDelta` exact-match；另报字段级 precision/recall、
+  abstain、invalid 和状态不变量违反数；
+- 确定性解析器在同一冻结集上的输出是 comparator，不在看到 LLM 结果后改 gold。
 
 ### A13 审查门
 
@@ -234,7 +248,9 @@ Candidate 只开放 Shadow 已证明有效的触发类型。不使用“模型�
 1. schema success >= 99%；
 2. fallback exactness = 100%；
 3. Shadow 用户可见行为变化 = 0；
-4. 至少一个预定义触发类型在人工歧义集上明显优于规则；
+4. 至少一个预定义触发类型（样本数 >= 20）的 exact-match 比确定性 comparator
+   高 >= 10 个百分点且至少净多 5 条正确；其他触发类型不得回退超过 5 个百分点，
+   状态不变量违反数必须为 0；
 5. 预计 Candidate 调用率 <= 20% turns；
 6. remote p95 目标 <= 2000 ms，硬超时 2500 ms；
 7. 平均 prompt 目标 <= 500 tokens；
@@ -254,10 +270,14 @@ Candidate 保留门：
 
 1. 至少净新增一个 Development 命中，或预定义且可复现地降低 MTTC；
 2. TechnicalScore delta 三次运行中位数为正；
-3. 至少 3/4 folds 不回退，且无不可接受 scenario 损失；
-4. 失败时与冻结 comparator 严格等价；
-5. 零状态不变量违反、零 invalid response、零 evaluator leakage；
-6. 满足调用率、延迟、token、成本和 fallback gate。
+3. 三次运行的中位数至少 3/4 folds TechnicalScore delta >= 0；
+4. 三次运行的 scenario 中位数满足：Buying/Browsing 各自最多损失 1 个 hit 且
+   TechnicalScore delta >= -0.005；Intent Override 和 Boundary 不得损失 hit，
+   Intent Override TechnicalScore delta >= -0.005；Boundary 其余指标因 n=8 只作
+   披露，不单独据此 keep；
+5. 失败时与冻结 comparator 严格等价；
+6. 零状态不变量违反、零 invalid response、零 evaluator leakage；
+7. 满足调用率、延迟、token、成本和 fallback gate。
 
 ### A14：Question Policy，后续独立实验
 
@@ -320,21 +340,36 @@ A13_LLM_ENABLED=false
 A13_LLM_SHADOW=false
 A13_LLM_TIMEOUT_MS=2500
 A13_LLM_PROMPT_VERSION=a13-understanding-v1
+A13_LLM_TEMPERATURE=0
+A13_LLM_MAX_COMPLETION_TOKENS=256
+A13_LLM_RESPONSE_FORMAT=json_object
+A13_LLM_THINKING_MODE=disabled
+A13_LLM_MAX_USER_CHARS=2000
+A13_LLM_MAX_STATE_CHARS=2000
+A13_LLM_MAX_VOCAB_ITEMS=200
 ~~~
 
 - key 只放 .env.local 或进程环境，永不进 Git；
 - 不在日志、diagnostics、报告或截图显示 key；
 - CI 只使用 fake；
 - no-key 是支持的正常运行方式；
+- config hash 必须包含以上全部有效字段、system/user prompt 模板和 schema 版本；
+- 超出输入上限时不调用模型，记录 `input_too_large` 并走确定性路径；
 - 模型、价格和 API 行为以实验当日官方信息为准。
 
 ## 10. 文件范围和提交纪律
 
-A13-0/A13-1 只修改当前 R0 推荐逻辑、已诊断的 State/Override slice、
-focused tests 和独立 evidence。
+预计文件按阶段限定如下；只有实际诊断需要时才修改列出的 runtime 文件：
 
-A13-S0/A13-C1 预计新增 A-owned semantic-understanding Module、Agent 可注入
-编排、fake/validator/fallback/state/integration tests，以及独立实验 runner。
+| 阶段 | 预计文件 |
+| --- | --- |
+| A13-0 | `experiments/failure_taxonomy.py`、`tests/test_failure_taxonomy.py`、决定完成后才新增 `docs/a13_0_baseline_evidence.{md,json}` |
+| A13-1 | `starter/core/state.py`、`starter/core/context_engine.py`、`starter/core/query_builder.py` 及对应现有 tests；决定完成后才新增 `docs/a13_1_state_override_evidence.{md,json}` |
+| A13-S0 | 新增 `starter/core/semantic_understanding.py`、`experiments/a13_shadow.py`、`experiments/fixtures/a13_ambiguity_v1.jsonl`、`tests/test_semantic_understanding.py`；仅为注入和 parity 修改 `starter/agent.py`、`tests/test_agent_smoke.py` |
+| A13-C1 | 只在 S0 文件和必要的 state/integration tests 内激活已通过的单一触发类；决定完成后才新增 `docs/a13_c1_evidence.{md,json}` |
+
+临时真实 API 报告仍写 `/private/tmp`。只有阶段决定完成、provenance/hash 完整且
+工作树干净时，才新增上表中的 tracked evidence。
 
 首轮不改：
 

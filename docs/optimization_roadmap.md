@@ -79,7 +79,7 @@ Historical R0 failure taxonomy
                                       -> B11/B12 only when diagnosed
 
 Current Chen baseline @ 0bd3375
-  -> A13-0 bind 0.925 baseline and refreshed 12-miss taxonomy
+  -> A13-0 bind current baseline and refreshed taxonomy
       -> A13-1 deterministic State / Override slice
           -> A13-S0 Shadow semantic understanding
               -> A13 review gate
@@ -90,9 +90,9 @@ Current Chen baseline @ 0bd3375
 ```
 
 B9's A8 and AB1 blockers are complete, and B9 is retained. B10a has been
-measured and rejected. B10b-DS1 was implemented and measured as an opt-in
-Browsing Top-10 experiment; DS2 was rejected by its reliability gate. The
-selected next route is A13, whose authoritative plan is
+measured and rejected. B10b-DS1/DS2 code and provisional remote measurements
+exist, but neither is retained and complete reports are not yet hash-bound.
+The selected next route is A13, whose authoritative plan is
 [`DeepSeek_LLM接入实验方案.md`](../DeepSeek_LLM接入实验方案.md). B11 and B12
 remain prerequisite-gated.
 
@@ -268,8 +268,8 @@ individually unproven. Boundary technical score regressed by `0.057083` and
 remains a disclosed risk. See
 `docs/a11_extraction_scope_evidence.md`.
 
-Do not replace the deterministic parser globally. The current `0.925`
-planning audit reports no primary Extraction or Intent / Routing miss, so A13
+Do not replace the deterministic parser globally. The current planning audit
+reports no primary Extraction or Intent / Routing miss, so A13
 starts in Shadow mode and may activate only a locally diagnosed ambiguity
 class. AB1 and B9 are complete; later B modules remain evidence-gated.
 
@@ -397,12 +397,11 @@ cost, latency, and fallback disclosed.
 
 ### B10b - LLM semantic ranking
 
-**Status: DS1 measured opt-in; DS2 rejected; default remains off.** DS1 reranks
-only the existing Browsing Top-10 and therefore changes MRR but not HitRate@10,
-MTTC, or Efficiency. Three Development-160 runs and four fixed folds were
-checked; median TechnicalScore improved from `0.765703` to `0.780991`.
-DS2 expanded to Top-20 but was rejected because 9 of 371 calls fell back
-(`2.43%`), above the predeclared `2%` reliability gate.
+**Status: opt-in code exists; remote measurements remain provisional; default
+remains off.** DS1 reranks the existing Browsing Top-10 and DS2 expands the
+candidate prefix. Complete reports are not yet hash-bound tracked evidence, so
+the current disposition belongs in `docs/current_status.md`, not in the retained
+ablation chain.
 
 Do not broaden DS1 while A13 is being evaluated. A13 is an A-side pre-retrieval
 semantic-understanding experiment, not a replacement for B10b. The same turn
