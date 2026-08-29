@@ -56,6 +56,7 @@ SAFE_FALLBACK_REASONS = {
     "timeout",
     "truncated_json",
     "unsupported_override",
+    "value_evidence_mismatch",
     "wrong_type",
 }
 TOKEN_RE = re.compile(r"[a-z0-9]+", re.I)
@@ -448,11 +449,21 @@ def validate_understanding_delta(
         raise SemanticUnderstandingError("unsupported_override")
     if overrides and not request.override_detected:
         raise SemanticUnderstandingError("unsupported_override")
-    if no_preference and not (
-        set(no_preference) <= set(request.deterministic_no_preference_attributes)
-        or NO_PREFERENCE_RE.search(request.current_message)
-    ):
-        raise SemanticUnderstandingError("missing_no_preference_evidence")
+    detected_no_preference = set(request.deterministic_no_preference_attributes)
+    for attribute in no_preference:
+        aliases = {attribute, attribute.replace("_", " ")}
+        explicit_attribute = any(
+            re.search(
+                rf"(?<![A-Za-z0-9]){re.escape(alias)}(?![A-Za-z0-9])",
+                request.current_message,
+                re.I,
+            )
+            for alias in aliases
+        )
+        if attribute not in detected_no_preference and not (
+            explicit_attribute and NO_PREFERENCE_RE.search(request.current_message)
+        ):
+            raise SemanticUnderstandingError("missing_no_preference_evidence")
 
     if payload["abstain"] and (
         intent_hint is not None
@@ -506,6 +517,8 @@ def _parse_constraints(
         if not evidence_span or evidence_span.casefold() not in request.current_message.casefold():
             raise SemanticUnderstandingError("bad_span")
         normalized = _validated_value(attribute, raw_value, request)
+        if normalized not in _normalize(evidence_span):
+            raise SemanticUnderstandingError("value_evidence_mismatch")
         proposals.append(
             ConstraintProposal(
                 attribute=attribute,

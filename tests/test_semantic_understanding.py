@@ -174,6 +174,19 @@ class SemanticUnderstandingTest(unittest.TestCase):
                     }
                 ],
             },
+            "value_evidence_mismatch": {
+                **_valid_payload(),
+                "positive_constraints": [
+                    {
+                        "attribute": "feature",
+                        "value": "waterproof",
+                        "evidence_span": "leather",
+                        "hard": True,
+                    }
+                ],
+                "override_attributes": ["feature"],
+                "semantic_terms": [],
+            },
             "positive_rejected_conflict": {
                 **_valid_payload(),
                 "rejected_constraints": [
@@ -200,6 +213,31 @@ class SemanticUnderstandingTest(unittest.TestCase):
                 self.assertIsNone(outcome.delta)
                 self.assertEqual(outcome.fallback_reason, expected_reason)
                 self.assertEqual(backend.calls, 1)
+
+    def test_generic_no_preference_cannot_clear_an_unmentioned_attribute(self) -> None:
+        payload = {
+            **_valid_payload(),
+            "intent_hint": None,
+            "positive_constraints": [],
+            "no_preference_attributes": ["material"],
+            "override_attributes": ["material"],
+            "semantic_terms": [],
+        }
+        outcome = GuardedSemanticInterpreter(
+            FakeSemanticBackend(payload),
+            config=InterpreterConfig(enabled=True, key_available=True),
+        ).interpret(
+            _request(
+                current_message="Actually, I don't care.",
+                deterministic_no_preference_attributes=(),
+            )
+        )
+
+        self.assertIsNone(outcome.delta)
+        self.assertEqual(
+            outcome.fallback_reason,
+            "missing_no_preference_evidence",
+        )
 
     def test_low_confidence_cannot_restore_rejected_or_no_preference_state(self) -> None:
         for request in (
