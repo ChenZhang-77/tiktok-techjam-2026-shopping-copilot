@@ -2,6 +2,31 @@
   "version": "a13-0-v1",
   "experiment_id": "A13-0",
   "decision": "keep_offline_baseline_and_taxonomy_binding",
+  "experiment_record": {
+    "owner": "developer_a_offline_diagnostics",
+    "hypothesis": "The current 0.925 Development-160 baseline and its 12 misses can be rebound reproducibly without changing Agent behavior, and the stale generated A9 stage recommendation can be replaced by diagnosis-only output.",
+    "primary_behavior_change": "none_offline_evidence_and_taxonomy_tooling_only",
+    "expected_files": [
+      "experiments/failure_taxonomy.py",
+      "tests/test_failure_taxonomy.py",
+      "tests/test_a13_0_baseline_evidence.py",
+      "docs/a13_0_baseline_evidence.json",
+      "docs/a13_0_baseline_evidence.md",
+      "docs/a13_0_reports/",
+      "DeepSeek_LLM接入实验方案.md",
+      "README.md",
+      "docs/README.md",
+      "docs/current_status.md",
+      "docs/optimization_roadmap.md",
+      "docs/workstreams/DEVELOPER_A_CONTROL_PLANE.md"
+    ],
+    "file_scope_exception": "The A13 plan originally listed only primary implementation and decision files. The evidence test, raw hash-bound reports, and authoritative status/navigation synchronization are required to make the completed checkpoint independently verifiable and discoverable; no runtime, evaluator, data, retrieval/ranking, shared-contract, or route-weight file is included.",
+    "gained_lost_sessions": {
+      "gained": 0,
+      "lost": 0,
+      "reason": "No Agent runtime behavior changed; this is an offline comparator binding."
+    }
+  },
   "starting_point": {
     "branch": "a/a13-llm-semantic-understanding",
     "requested_head": "3a5fbea13a2c993f5681bbc47da99fcb5f10c1b1",
@@ -54,31 +79,31 @@
     },
     "run_artifacts": {
       "development": {
-        "path": "/private/tmp/a13-0-development.json",
+        "path": "docs/a13_0_reports/development.json",
         "sha256": "29c3f988cfa78f09052ad93cb097f860cd72dbab7b03f8347988c3a10a45a4db"
       },
       "fold_1": {
-        "path": "/private/tmp/a13-0-fold_1.json",
+        "path": "docs/a13_0_reports/fold_1.json",
         "sha256": "635b9c18f52d5fa9d304a9f8ce25d5abe886189df0ba18e00f249d297cab221e"
       },
       "fold_2": {
-        "path": "/private/tmp/a13-0-fold_2.json",
+        "path": "docs/a13_0_reports/fold_2.json",
         "sha256": "6928a3ca7769181ba72d526c76e8c7ed5ff73a4cd0a312ffac88804316e5e1a1"
       },
       "fold_3": {
-        "path": "/private/tmp/a13-0-fold_3.json",
+        "path": "docs/a13_0_reports/fold_3.json",
         "sha256": "a66f92d93def01388e94af6968c86b1da8f464ecce5ed1a26075df219bc0545e"
       },
       "fold_4": {
-        "path": "/private/tmp/a13-0-fold_4.json",
+        "path": "docs/a13_0_reports/fold_4.json",
         "sha256": "78d768f9c8228834925b0c51cd77d3ab1d3c2e7a3c2844e473efc19921b04d2e"
       },
       "taxonomy_json": {
-        "path": "/private/tmp/a13-0-taxonomy.json",
+        "path": "docs/a13_0_reports/failure_taxonomy.json",
         "sha256": "691ecd05cf0de5ccb67925e47cad509248f92b9a14f32b32d73c3294bb001c46"
       },
       "taxonomy_markdown": {
-        "path": "/private/tmp/a13-0-taxonomy.md",
+        "path": "docs/a13_0_reports/failure_taxonomy.md",
         "sha256": "025fb2c5bfc687db0984bb1174c54d7fdfa07cc86f8fa212cbca06127c0536f6"
       }
     }
@@ -87,10 +112,18 @@
     "protocol_tests": "24 passed",
     "taxonomy_and_historical_evidence_tests": "21 passed",
     "full_suite_at_clean_comparator": "298 passed",
-    "commands": [
-      ".venv/bin/python -m unittest tests.test_splits tests.test_development_folds tests.test_evaluator tests.test_development_reporting -v",
-      ".venv/bin/python -m unittest tests.test_failure_taxonomy tests.test_r0_failure_taxonomy_evidence -v",
-      ".venv/bin/python -m unittest discover -s tests -v"
+    "full_suite_after_review_fixes": "304 passed",
+    "commands_executed": [
+      "../shopping-copilot/.venv/bin/python -m unittest tests.test_splits tests.test_development_folds tests.test_evaluator tests.test_development_reporting -v",
+      "../shopping-copilot/.venv/bin/python -m unittest tests.test_failure_taxonomy tests.test_r0_failure_taxonomy_evidence -v",
+      "../shopping-copilot/.venv/bin/python -m unittest discover -s tests -v",
+      "../shopping-copilot/.venv/bin/python -m experiments.evaluation_reporting --split development --structured-filter --output /private/tmp/a13-0-development.json",
+      "../shopping-copilot/.venv/bin/python -m experiments.evaluation_reporting --split development --fold fold_1 --structured-filter --output /private/tmp/a13-0-fold_1.json",
+      "../shopping-copilot/.venv/bin/python -m experiments.evaluation_reporting --split development --fold fold_2 --structured-filter --output /private/tmp/a13-0-fold_2.json",
+      "../shopping-copilot/.venv/bin/python -m experiments.evaluation_reporting --split development --fold fold_3 --structured-filter --output /private/tmp/a13-0-fold_3.json",
+      "../shopping-copilot/.venv/bin/python -m experiments.evaluation_reporting --split development --fold fold_4 --structured-filter --output /private/tmp/a13-0-fold_4.json",
+      "../shopping-copilot/.venv/bin/python -m experiments.failure_taxonomy --output-json /private/tmp/a13-0-taxonomy.json --output-markdown /private/tmp/a13-0-taxonomy.md",
+      "../shopping-copilot/.venv/bin/python -m unittest discover -s tests -v"
     ]
   },
   "development_160": {
@@ -205,6 +238,12 @@
       "hits": 158,
       "sessions": 160,
       "recall": 0.9875
+    },
+    "next_investigation": {
+      "dominant_failure_class": "question_policy",
+      "owner": "control_plane",
+      "direction": "diagnose the current question-policy mechanism",
+      "selection_authority": "docs/optimization_roadmap.md"
     },
     "misses": [
       {"sample_id": "public_0002", "scenario_type": "intent_override", "primary_cause": "state_override", "secondary_causes": ["query_construction", "question_policy", "ranking_filtering"], "mechanism": "override_old_value_still_active"},

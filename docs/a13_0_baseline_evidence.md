@@ -12,6 +12,23 @@ direction, and `docs/optimization_roadmap.md` as the experiment-selection
 authority. Historical R0 and A9 evidence remains unchanged. A9 is still a
 rejected and reverted ablation, not the current next step.
 
+## Experiment record
+
+- Owner: Developer A, offline diagnostics.
+- Hypothesis: the current `0.925` Development-160 comparator and its 12 misses
+  can be rebound reproducibly without changing Agent behavior, while the stale
+  generated A9 stage recommendation is replaced by diagnosis-only output.
+- Primary behavior change: none; offline evidence and taxonomy tooling only.
+- Gained / lost sessions: `0 / 0`; there is no runtime behavior comparator.
+- Expected files: taxonomy implementation/test, A13-0 evidence/test/raw-report
+  directory, and authoritative status/navigation documents synchronized at
+  completion.
+- Scope exception: the reviewed A13 plan originally named only primary
+  implementation and decision files. The evidence test, hash-bound raw reports,
+  and status/navigation synchronization were added so the checkpoint is
+  independently verifiable and discoverable. No runtime, evaluator, data,
+  retrieval/ranking, shared-contract, or route-weight file is in scope.
+
 ## Git and scope
 
 - Starting branch / HEAD: `a/a13-llm-semantic-understanding` / `3a5fbea`.
@@ -41,6 +58,11 @@ The catalog contains 50,000 rows and 50,000 unique `parent_asin` values. The
 Development folds reproduce their deterministic manifest exactly and contain
 40 sessions each. The 40 exposed sessions were counted from the manifest but
 were not evaluated.
+
+The evidence test performs those checks rather than trusting the recorded
+booleans: it counts catalog rows and unique `parent_asin` values, rebuilds the
+split and four-fold manifests, hashes every bound input, and compares the
+rebuilt objects with their tracked manifests.
 
 ## Development-160 result
 
@@ -117,8 +139,26 @@ unauthorized until the user confirms and A13-1 has its own keep/revert decision.
 ## Verification
 
 Focused protocol, taxonomy, historical-evidence, and complete test suites pass.
-The exact commands and run-artifact hashes are recorded in
-`docs/a13_0_baseline_evidence.json`.
+The clean comparator ran 298 tests; after adding the evidence checks and review
+fixes, the complete suite runs 304 tests. The exact commands and run-artifact
+hashes are recorded in `docs/a13_0_baseline_evidence.json`.
+
+The raw Development, four-fold, and taxonomy outputs are retained under
+`docs/a13_0_reports/`. Their bytes match the hashes recorded in the JSON, and
+the evidence test derives the published metrics and taxonomy counts from those
+raw files.
+
+Exact Development/taxonomy commands used (the sibling interpreter was reused
+because this checkout has no local `.venv`; no dependency was installed):
+
+```bash
+../shopping-copilot/.venv/bin/python -m experiments.evaluation_reporting --split development --structured-filter --output /private/tmp/a13-0-development.json
+../shopping-copilot/.venv/bin/python -m experiments.evaluation_reporting --split development --fold fold_1 --structured-filter --output /private/tmp/a13-0-fold_1.json
+../shopping-copilot/.venv/bin/python -m experiments.evaluation_reporting --split development --fold fold_2 --structured-filter --output /private/tmp/a13-0-fold_2.json
+../shopping-copilot/.venv/bin/python -m experiments.evaluation_reporting --split development --fold fold_3 --structured-filter --output /private/tmp/a13-0-fold_3.json
+../shopping-copilot/.venv/bin/python -m experiments.evaluation_reporting --split development --fold fold_4 --structured-filter --output /private/tmp/a13-0-fold_4.json
+../shopping-copilot/.venv/bin/python -m experiments.failure_taxonomy --output-json /private/tmp/a13-0-taxonomy.json --output-markdown /private/tmp/a13-0-taxonomy.md
+```
 
 ## Keep / revert recommendation
 

@@ -370,7 +370,7 @@ A13_LLM_MAX_VOCAB_ITEMS=200
 
 | 阶段 | 预计文件 |
 | --- | --- |
-| A13-0 | `experiments/failure_taxonomy.py`、`tests/test_failure_taxonomy.py`、决定完成后才新增 `docs/a13_0_baseline_evidence.{md,json}` |
+| A13-0 | 主变更：`experiments/failure_taxonomy.py`、`tests/test_failure_taxonomy.py`；可复现证据：`tests/test_a13_0_baseline_evidence.py`、`docs/a13_0_baseline_evidence.{md,json}`、`docs/a13_0_reports/`；完成后同步 README、current status、roadmap 与 A-side workstream 导航/状态文档 |
 | A13-1 | `starter/core/state.py`、`starter/core/context_engine.py`、`starter/core/query_builder.py` 及对应现有 tests；决定完成后才新增 `docs/a13_1_state_override_evidence.{md,json}` |
 | A13-S0 | 新增 `starter/core/semantic_understanding.py`、`experiments/a13_shadow.py`、`experiments/fixtures/a13_ambiguity_v1.jsonl`、`tests/test_semantic_understanding.py`；仅为注入和 parity 修改 `starter/agent.py`、`tests/test_agent_smoke.py` |
 | A13-C1 | 只在 S0 文件和必要的 state/integration tests 内激活已通过的单一触发类；决定完成后才新增 `docs/a13_c1_evidence.{md,json}` |
