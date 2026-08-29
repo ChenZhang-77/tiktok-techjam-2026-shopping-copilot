@@ -6,6 +6,14 @@ from starter.retrieval.dense import DenseConfig, DenseRetriever
 from starter.retrieval.fusion import FusionConfig, FusionRetriever
 from starter.retrieval.hybrid import HybridRetriever
 from starter.retrieval.reranker import RerankerConfig, RerankingRetriever
+from starter.retrieval.semantic_ranker import (
+    DeepSeekSemanticRanker,
+    GuardedSemanticRanker,
+    ModelUsage,
+    SemanticRankItem,
+    SemanticRankOutcome,
+    SemanticRankRequest,
+)
 from starter.retrieval.structured import StructuredConfig
 
 
@@ -20,4 +28,10 @@ __all__ = [
     "RerankerConfig",
     "RerankingRetriever",
     "StructuredConfig",
+    "DeepSeekSemanticRanker",
+    "GuardedSemanticRanker",
+    "ModelUsage",
+    "SemanticRankItem",
+    "SemanticRankOutcome",
+    "SemanticRankRequest",
 ]

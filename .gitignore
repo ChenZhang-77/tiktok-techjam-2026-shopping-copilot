@@ -2,6 +2,7 @@ __pycache__/
 *.py[cod]
 .DS_Store
 .env
+.env.local
 .venv/
 .pytest_cache/
 results.json
