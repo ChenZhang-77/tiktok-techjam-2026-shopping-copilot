@@ -219,12 +219,13 @@ class AgentSmokeTest(unittest.TestCase):
         )
         self.assertIsNone(shadow.semantic_diagnostics("second", 1))
 
-    def test_shadow_request_construction_failure_cannot_escape_into_agent_behavior(self) -> None:
+    def test_shadow_filters_local_other_attribute_without_changing_agent_behavior(self) -> None:
+        backend = FakeSemanticBackend(_shadow_payload())
         baseline = Agent(retriever=_RecordingRetriever())
         shadow = Agent(
             retriever=_RecordingRetriever(),
             semantic_interpreter=GuardedSemanticInterpreter(
-                FakeSemanticBackend(_shadow_payload()),
+                backend,
                 config=InterpreterConfig(enabled=True, key_available=True),
             ),
         )
@@ -243,8 +244,9 @@ class AgentSmokeTest(unittest.TestCase):
             shadow.semantic_diagnostics("unsupported-local-attribute", 1)[
                 "fallback_reason"
             ],
-            "interpreter_error",
+            "ineligible",
         )
+        self.assertEqual(backend.calls, 0)
 
     def test_full_candidate_pool_reaches_decision_evidence_without_public_raw_evidence(self) -> None:
         retriever = _RecordingRetriever()

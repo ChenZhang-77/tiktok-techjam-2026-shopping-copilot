@@ -25,6 +25,7 @@ from starter.core.planner import Strategy, StrategyConfig, plan_strategy
 from starter.core.query_builder import QueryPlan, build_query_plan
 from starter.core.response_guard import guard_response
 from starter.core.semantic_understanding import (
+    ALLOWED_ATTRIBUTES,
     ConstraintEvidence,
     SemanticInterpreter,
     UnderstandingRequest,
@@ -328,7 +329,13 @@ class Agent:
             turn=turn,
             previous=state.intent_assessment,
             override=override,
-            no_preference_attributes=tuple(sorted(state.no_preference_attributes)),
+            no_preference_attributes=tuple(
+                sorted(
+                    attribute
+                    for attribute in state.no_preference_attributes
+                    if attribute in ALLOWED_ATTRIBUTES
+                )
+            ),
         )
         request = UnderstandingRequest(
             current_message=user_message,
@@ -355,7 +362,11 @@ class Agent:
                 source="parser_rejected",
             ),
             deterministic_no_preference_attributes=tuple(
-                sorted(no_preference_attributes)
+                sorted(
+                    attribute
+                    for attribute in no_preference_attributes
+                    if attribute in ALLOWED_ATTRIBUTES
+                )
             ),
             override_detected=override,
             prior_intent=state.intent,
