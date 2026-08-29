@@ -84,9 +84,10 @@ hypothesis, inputs, tests, and keep/revert gate. Do not copy the full sequence
 into an experiment note.
 
 The A13 teammate-ready independent annotation source is
-`fixtures/a13_annotation_pack_v1/`. It contains 60 unlabeled items, a blank
-annotation template, examples, schema, and validation instructions. Build the
-standalone zip with:
+`fixtures/a13_annotation_pack_v1/`. It contains 60 unlabeled items, a generated
+double-click offline annotation page, a clearer double-click example guide,
+the JSONL compatibility template, schema, and validation instructions. Build
+the standalone zip with:
 
 ```bash
 python3 -m experiments.build_a13_annotation_bundle \

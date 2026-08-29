@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A13 离线标注工具</title>
+  <style>
+    :root { color-scheme: light; --ink:#172033; --muted:#667085; --line:#d9deea; --brand:#315efb; --soft:#f5f7fb; --warn:#a15c00; }
+    * { box-sizing: border-box; }
+    body { margin:0; color:var(--ink); background:#eef2f8; font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    button,input,select,textarea { font:inherit; }
+    button { cursor:pointer; }
+    .top { position:sticky; top:0; z-index:4; display:flex; gap:14px; align-items:center; padding:12px 20px; background:#fff; border-bottom:1px solid var(--line); box-shadow:0 2px 9px #21304a12; }
+    .top h1 { font-size:18px; margin:0; white-space:nowrap; }
+    .top label { display:flex; align-items:center; gap:7px; }
+    .top input { width:180px; }
+    .progress { flex:1; min-width:150px; }
+    progress { width:100%; height:10px; }
+    .actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .primary { color:#fff; background:var(--brand); border-color:var(--brand); }
+    button,.file-button { border:1px solid #b9c1d2; border-radius:8px; background:#fff; padding:7px 11px; }
+    .file-button { cursor:pointer; display:inline-block; }
+    .file-button input { display:none; }
+    .layout { max-width:1300px; margin:18px auto; padding:0 18px; display:grid; grid-template-columns:210px minmax(0,1fr); gap:18px; }
+    .side,.card { background:#fff; border:1px solid var(--line); border-radius:13px; }
+    .side { padding:14px; align-self:start; position:sticky; top:78px; max-height:calc(100vh - 96px); overflow:auto; }
+    .side h2 { font-size:14px; margin:0 0 10px; }
+    .jump { display:grid; grid-template-columns:repeat(5,1fr); gap:5px; }
+    .jump button { padding:5px 2px; font-size:11px; border-radius:6px; }
+    .jump button.current { outline:2px solid var(--brand); }
+    .jump button.done { background:#e9f8ef; border-color:#8bd2a4; }
+    .card { padding:22px; }
+    .meta { color:var(--muted); display:flex; justify-content:space-between; gap:12px; }
+    .message { margin:13px 0 18px; padding:18px; border-left:5px solid var(--brand); background:#f4f7ff; font-size:20px; font-weight:650; }
+    details { margin:10px 0 18px; }
+    pre { white-space:pre-wrap; background:var(--soft); padding:12px; border-radius:8px; font-size:12px; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .field { margin:12px 0; }
+    .field > label:first-child,.field > .label { display:block; font-weight:650; margin-bottom:5px; }
+    input,select,textarea { width:100%; border:1px solid #b9c1d2; border-radius:7px; padding:8px; background:#fff; }
+    textarea { min-height:72px; resize:vertical; }
+    .checks { display:grid; grid-template-columns:repeat(3,minmax(110px,1fr)); gap:5px 10px; }
+    .checks label { display:flex; gap:6px; align-items:center; }
+    .checks input { width:auto; }
+    .section { margin-top:18px; padding-top:15px; border-top:1px solid var(--line); }
+    .section-head { display:flex; justify-content:space-between; align-items:center; }
+    .section h3 { margin:0; font-size:16px; }
+    .constraint { display:grid; grid-template-columns:145px 1fr 1fr 112px 42px; gap:7px; margin-top:8px; align-items:center; }
+    .constraint.rejected { grid-template-columns:145px 1fr 1fr 42px; }
+    .remove { color:#a12424; padding:7px; }
+    .help { color:var(--muted); font-size:12px; margin-top:4px; }
+    .footer { display:flex; justify-content:space-between; gap:12px; margin-top:24px; padding-top:18px; border-top:1px solid var(--line); }
+    .status { min-height:24px; color:var(--muted); }
+    .error { color:#a12424; font-weight:600; }
+    .warning { color:var(--warn); }
+    @media (max-width:850px) { .layout{grid-template-columns:1fr}.side{position:static;max-height:none}.top{position:static;flex-wrap:wrap}.grid2{grid-template-columns:1fr}.constraint,.constraint.rejected{grid-template-columns:1fr}.jump{grid-template-columns:repeat(10,1fr)} }
+  </style>
+</head>
+<body data-a13-annotation-app="v1">
+  <header class="top">
+    <h1>A13 离线标注工具</h1>
+    <label>标注者代号 <input id="annotator" placeholder="例如 member_b" autocomplete="off"></label>
+    <div class="progress"><progress id="progress" max="60" value="0"></progress><div id="progressText">0 / 60 已填写</div></div>
+    <div class="actions">
+      <a class="file-button" href="标注示例.html" target="_blank">查看清晰示例</a>
+      <label class="file-button">导入草稿<input id="importFile" type="file" accept=".jsonl,.txt"></label>
+      <button id="download" class="primary" type="button">验证并下载 JSONL</button>
+    </div>
+  </header>
+  <main class="layout">
+    <aside class="side"><h2>题目导航</h2><div id="jump" class="jump"></div></aside>
+    <section class="card">
+      <div class="meta"><span id="counter"></span><span id="trigger"></span></div>
+      <div id="message" class="message"></div>
+      <details><summary>查看本轮之前的状态</summary><pre id="prior"></pre></details>
+
+      <div class="grid2">
+        <div class="field"><label for="confidence">置信度</label><select id="confidence"><option value="">请选择</option><option value="high">高</option><option value="medium">中</option><option value="low">低</option></select></div>
+        <div class="field"><label for="abstain">本题能否安全标注</label><select id="abstain"><option value="">请选择</option><option value="false">可以，下面填写变化</option><option value="true">不能，选择 abstain</option></select></div>
+        <div class="field"><label for="intent">本轮意图变化</label><select id="intent"><option value="">无明确变化</option><option value="buying">buying</option><option value="browsing">browsing</option></select></div>
+        <div class="field"><label for="notes">备注（可选）</label><input id="notes" placeholder="不确定或 abstain 时说明原因"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h3>新增或接受的约束</h3><button id="addPositive" type="button">＋ 添加</button></div>
+        <div class="help">value 写小写规范词；evidence 必须逐字出现在上方当前消息中。hard 表示明确要求。</div>
+        <div id="positiveRows"></div>
+      </div>
+      <div class="section">
+        <div class="section-head"><h3>明确排除的约束</h3><button id="addRejected" type="button">＋ 添加</button></div>
+        <div class="help">只标当前消息明确排除的值。</div>
+        <div id="rejectedRows"></div>
+      </div>
+      <div class="section grid2">
+        <div class="field"><span class="label">明确表示无偏好的属性</span><div id="noPreference" class="checks"></div></div>
+        <div class="field"><span class="label">明确覆盖 prior state 的属性</span><div id="overrides" class="checks"></div></div>
+      </div>
+      <div class="field"><label for="terms">其他检索语义短语（每行一个）</label><textarea id="terms" placeholder="只填无法安全归入属性、且逐字出现于当前消息的短语"></textarea></div>
+      <div id="status" class="status"></div>
+      <footer class="footer"><button id="previous" type="button">← 上一条</button><button id="next" type="button">保存并下一条 →</button></footer>
+    </section>
+  </main>
+
+  <script id="a13-items" type="application/json">__A13_ITEMS_JSON__</script>
+  <script>
+    "use strict";
+    const ITEMS = JSON.parse(document.getElementById("a13-items").textContent);
+    const ATTRIBUTES = ["category","material","color","size","style","brand","budget","feature","use_case"];
+    const STORAGE_KEY = "a13-annotation-pack-v1-draft";
+    const $ = id => document.getElementById(id);
+    const esc = value => String(value ?? "").replace(/[&<>\"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+    const blankLabel = () => ({intent_hint:null,positive_constraints:[],rejected_constraints:[],no_preference_attributes:[],override_attributes:[],semantic_terms:[],abstain:null});
+    const blankRows = () => ITEMS.map(item => ({item_id:item.item_id,annotator_id:"",confidence:"",label:blankLabel(),notes:""}));
+    let rows = loadDraft();
+    let index = 0;
+    let autosaveTimer = null;
+
+    function loadDraft() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+        if (parsed && Array.isArray(parsed.rows) && parsed.rows.length === ITEMS.length && parsed.rows.every((row,i) => row.item_id === ITEMS[i].item_id)) return parsed.rows;
+      } catch (_) {}
+      return blankRows();
+    }
+    function persist() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify({rows})); $("status").className = "status"; $("status").textContent = "草稿已自动保存在此浏览器。"; }
+      catch (_) { $("status").textContent = "浏览器未允许自动保存，请经常下载 JSONL 备份。"; $("status").className = "status warning"; }
+    }
+    function queueAutosave() {
+      clearTimeout(autosaveTimer);
+      autosaveTimer = setTimeout(saveCurrent, 180);
+    }
+    function attributeOptions(selected) {
+      return ATTRIBUTES.map(value => `<option value="${value}"${value===selected?" selected":""}>${value}</option>`).join("");
+    }
+    function constraintRow(entry, position, kind) {
+      const positive = kind === "positive";
+      return `<div class="constraint ${positive?"":"rejected"}" data-position="${position}">
+        <select class="attribute">${attributeOptions(entry.attribute)}</select>
+        <input class="value" value="${esc(entry.value)}" placeholder="value">
+        <input class="evidence" value="${esc(entry.evidence_span)}" placeholder="原文 evidence span">
+        ${positive?`<select class="hard"><option value="true"${entry.hard!==false?" selected":""}>明确要求 hard</option><option value="false"${entry.hard===false?" selected":""}>弱偏好 soft</option></select>`:""}
+        <button type="button" class="remove" data-kind="${kind}" data-position="${position}">×</button>
+      </div>`;
+    }
+    function checks(containerId, selected) {
+      $(containerId).innerHTML = ATTRIBUTES.map(attribute => `<label><input type="checkbox" value="${attribute}"${selected.includes(attribute)?" checked":""}>${attribute}</label>`).join("");
+    }
+    function render() {
+      const item = ITEMS[index], row = rows[index], label = row.label || blankLabel();
+      $("annotator").value = row.annotator_id || rows.find(entry => entry.annotator_id)?.annotator_id || "";
+      $("counter").textContent = `${item.item_id} · 第 ${index+1} / ${ITEMS.length} 条`;
+      $("trigger").textContent = `触发原因：${item.trigger_type}`;
+      $("message").textContent = item.current_message;
+      $("prior").textContent = JSON.stringify(item.prior_state, null, 2);
+      $("confidence").value = row.confidence || "";
+      $("abstain").value = label.abstain === true ? "true" : label.abstain === false ? "false" : "";
+      $("intent").value = label.intent_hint || "";
+      $("notes").value = row.notes || "";
+      $("positiveRows").innerHTML = (label.positive_constraints || []).map((entry,i) => constraintRow(entry,i,"positive")).join("");
+      $("rejectedRows").innerHTML = (label.rejected_constraints || []).map((entry,i) => constraintRow(entry,i,"rejected")).join("");
+      checks("noPreference", label.no_preference_attributes || []);
+      checks("overrides", label.override_attributes || []);
+      $("terms").value = (label.semantic_terms || []).join("\n");
+      $("previous").disabled = index === 0;
+      $("next").textContent = index === ITEMS.length-1 ? "保存本条" : "保存并下一条 →";
+      renderProgress();
+      bindRemoveButtons();
+    }
+    function readConstraints(containerId, positive) {
+      return [...$(containerId).querySelectorAll(".constraint")].map(element => {
+        const entry = {attribute:element.querySelector(".attribute").value,value:element.querySelector(".value").value.trim(),evidence_span:element.querySelector(".evidence").value.trim()};
+        if (positive) entry.hard = element.querySelector(".hard").value === "true";
+        return entry;
+      });
+    }
+    function readChecked(containerId) { return [...$(containerId).querySelectorAll("input:checked")].map(input => input.value); }
+    function saveCurrent() {
+      const abstainValue = $("abstain").value;
+      const annotator = $("annotator").value.trim();
+      rows.forEach(row => { if (annotator) row.annotator_id = annotator; });
+      rows[index] = {item_id:ITEMS[index].item_id,annotator_id:annotator,confidence:$("confidence").value,label:{intent_hint:$("intent").value||null,positive_constraints:readConstraints("positiveRows",true),rejected_constraints:readConstraints("rejectedRows",false),no_preference_attributes:readChecked("noPreference"),override_attributes:readChecked("overrides"),semantic_terms:$("terms").value.split(/\n/).map(value=>value.trim()).filter(Boolean),abstain:abstainValue==="true"?true:abstainValue==="false"?false:null},notes:$("notes").value.trim()};
+      persist();
+      renderProgress();
+    }
+    function isComplete(row) { return Boolean(row.annotator_id && row.confidence && typeof row.label?.abstain === "boolean"); }
+    function renderProgress() {
+      const complete = rows.filter(isComplete).length;
+      $("progress").value = complete;
+      $("progressText").textContent = `${complete} / ${ITEMS.length} 已填写`;
+      $("jump").innerHTML = ITEMS.map((item,i) => `<button type="button" data-index="${i}" class="${i===index?"current ":""}${isComplete(rows[i])?"done":""}">${i+1}</button>`).join("");
+      $("jump").querySelectorAll("button").forEach(button => button.addEventListener("click", () => { saveCurrent(); index=Number(button.dataset.index); render(); }));
+    }
+    function bindRemoveButtons() {
+      document.querySelectorAll(".remove").forEach(button => button.addEventListener("click", () => {
+        saveCurrent();
+        const key = button.dataset.kind === "positive" ? "positive_constraints" : "rejected_constraints";
+        rows[index].label[key].splice(Number(button.dataset.position),1);
+        persist(); render();
+      }));
+    }
+    function addConstraint(kind) {
+      saveCurrent();
+      const key = kind === "positive" ? "positive_constraints" : "rejected_constraints";
+      const entry = {attribute:"category",value:"",evidence_span:""};
+      if (kind === "positive") entry.hard = true;
+      rows[index].label[key].push(entry); render();
+    }
+    function validationErrors() {
+      const errors=[];
+      const annotator=rows[0]?.annotator_id || "";
+      if (!/^[A-Za-z0-9_.-]{2,40}$/.test(annotator)) errors.push("标注者代号需为 2–40 位英文字母、数字、点、下划线或连字符。");
+      rows.forEach((row,i) => {
+        const prefix=`第 ${i+1} 条 ${row.item_id}`;
+        if (row.annotator_id !== annotator) errors.push(`${prefix}：标注者代号不一致。`);
+        if (!["low","medium","high"].includes(row.confidence)) errors.push(`${prefix}：未选择置信度。`);
+        if (typeof row.label?.abstain !== "boolean") errors.push(`${prefix}：未选择能否安全标注。`);
+        const populated=(row.label?.intent_hint!==null)||(row.label?.positive_constraints?.length)||(row.label?.rejected_constraints?.length)||(row.label?.no_preference_attributes?.length)||(row.label?.override_attributes?.length)||(row.label?.semantic_terms?.length);
+        if (row.label?.abstain === true && populated) errors.push(`${prefix}：abstain 时其他 label 字段必须清空。`);
+        if (row.label?.abstain === false && !populated) errors.push(`${prefix}：选择可标注后至少填写一个有效变化。`);
+        [...(row.label?.positive_constraints||[]),...(row.label?.rejected_constraints||[])].forEach(entry => { if (!entry.value || !entry.evidence_span) errors.push(`${prefix}：约束的 value/evidence 未填完整。`); });
+      });
+      return errors;
+    }
+    function downloadAnnotations() {
+      saveCurrent();
+      const errors=validationErrors();
+      if (errors.length) { $("status").className="status error"; $("status").textContent=`还不能下载：${errors[0]}（共 ${errors.length} 个问题）`; const first=rows.findIndex(row=>!isComplete(row)); if(first>=0){index=first;render();} return; }
+      const text=rows.map(row=>JSON.stringify(row)).join("\n")+"\n";
+      const url=URL.createObjectURL(new Blob([text],{type:"application/x-ndjson;charset=utf-8"}));
+      const link=document.createElement("a"); link.href=url; link.download=`annotations.${rows[0].annotator_id}.jsonl`; link.click(); URL.revokeObjectURL(url);
+      $("status").className="status"; $("status").textContent="JSONL 已下载，可以直接发给协调者。";
+    }
+    async function importDraft(file) {
+      try {
+        const imported=(await file.text()).split(/\r?\n/).filter(line=>line.trim()).map(line=>JSON.parse(line));
+        if (imported.length!==ITEMS.length || imported.some((row,i)=>row.item_id!==ITEMS[i].item_id)) throw new Error("题目数量或顺序不匹配");
+        rows=imported; index=0; persist(); render(); $("status").textContent="草稿已导入。";
+      } catch (error) { $("status").className="status error"; $("status").textContent=`导入失败：${error.message}`; }
+    }
+    $("addPositive").addEventListener("click",()=>addConstraint("positive"));
+    $("addRejected").addEventListener("click",()=>addConstraint("rejected"));
+    $("previous").addEventListener("click",()=>{saveCurrent();if(index>0){index--;render();}});
+    $("next").addEventListener("click",()=>{saveCurrent();if(index<ITEMS.length-1){index++;render();}});
+    $("download").addEventListener("click",downloadAnnotations);
+    $("importFile").addEventListener("change",event=>{if(event.target.files[0])importDraft(event.target.files[0]);});
+    $("annotator").addEventListener("input",queueAutosave);
+    document.querySelector(".card").addEventListener("input",queueAutosave);
+    document.querySelector(".card").addEventListener("change",queueAutosave);
+    render();
+  </script>
+</body>
+</html>

@@ -45,7 +45,7 @@ deterministic State / Override candidate, leaving that runtime unchanged:
 | Retained default behavior commit | `7f520ba` |
 | Optional B12 code/default-parity commit | `82891c8` |
 | B10a experiment branch | `b/b10a-constraint-preserving-crossencoder` |
-| Latest local full test suite (2026-08-29) | 345 passed after the teammate-ready A13 annotation pack; default runtime remains no-LLM |
+| Latest local full test suite (2026-08-30) | 347 passed after the double-click A13 annotation UI and clearer example guide; default runtime remains no-LLM |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |
 
@@ -242,7 +242,8 @@ call rate/latency/cost, focused/full tests, and fixed Development-fold evidence.
 
 A teammate-ready but unlabeled 60-item package now lives at
 `experiments/fixtures/a13_annotation_pack_v1/`; it includes the shared items,
-blank per-annotator template, schema, examples, standalone validator, and a
+generated double-click offline annotation UI, a clearer double-click example
+guide, blank per-annotator template, schema, standalone validator, and a
 post-submission disagreement comparison command. Its status is annotation-ready,
 not reconciled or gold-frozen, so it grants no provider authorization. All five
 runtime-reachable semantic strata are replayed against the bound catalog during

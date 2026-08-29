@@ -5,14 +5,16 @@
 
 这不是推荐质量标注。你不需要挑商品，也不会看到商品 ID、命中结果或模型输出。
 
-## 你只需要做这四步
+## 最简单的操作方法
 
-1. 不查看另一位标注者的文件，也不要运行规则解析器或任何 LLM。
-2. 复制 `annotations.template.jsonl`，重命名为
-   `annotations.<你的代号>.jsonl`。
-3. 用文本编辑器逐行填写 `annotator_id`、`confidence`、`label` 和可选的
-   `notes`；不要修改 `item_id` 或行顺序。
-4. 在本目录运行：
+1. 双击 `开始标注.html`，不需要安装软件，也不需要直接编辑 JSONL。
+2. 填写你的标注者代号；需要参考时，点击页面右上角的“查看清晰示例”。
+3. 逐条填写。页面会在当前浏览器自动保存草稿，也可以导入之前下载的 JSONL 继续。
+4. 完成 60 条后点击“验证并下载 JSONL”。页面会生成
+   `annotations.<你的代号>.jsonl`；把这个文件发回即可。
+
+标注者不需要打开终端。协调者收到文件后，为确保 evidence 和 runtime vocabulary
+也正确，在本目录运行最终校验：
 
 ```bash
 python3 validate_annotations.py validate \
@@ -20,13 +22,15 @@ python3 validate_annotations.py validate \
   --annotations annotations.<你的代号>.jsonl
 ```
 
-看到 `annotation_count: 60` 才算交付完成。把填写后的单个 JSONL 文件发回即可。
+看到 `annotation_count: 60` 才算正式验收完成。
+如果不方便使用浏览器，`annotations.template.jsonl` 仍可作为高级/兼容入口，
+但普通标注者无需直接打开它。
 `annotation_schema.json` 只描述 JSON 形状；交叉字段不变量、evidence 和 runtime
 vocabulary 以 `validate_annotations.py` 的结果为准。
 
 ## 独立性规则
 
-- 可以查看 `items.jsonl`、本 README 和 `annotation_examples.md`。
+- 可以查看 `开始标注.html`、`标注示例.html`、`items.jsonl` 和本 README。
 - 不得查看另一名标注者的答案、规则解析器输出、DeepSeek 输出或分歧报告。
 - 不得搜索商品或推测最终推荐。
 - 不确定时不要猜：使用 `abstain=true`，并在 `notes` 简述原因。

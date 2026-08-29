@@ -246,7 +246,8 @@ DeepSeek transport、key 读取或 API 调用。证据见
 不少于 60 条 fixture 的双人独立标注、共同复核和 hash freeze。
 已准备可直接分发的 `experiments/fixtures/a13_annotation_pack_v1/`：60 条
 无 gold items（五类可达语义 trigger 各 10 条，`low_confidence_residual_feature` 额外 10 条）、
-独立标注模板、schema、示例、validator 和 disagreement compare CLI。该包仅是
+可双击离线标注页、更清晰的双击示例页、兼容模板、schema、validator 和
+disagreement compare CLI。该包仅是
 `annotation_ready_not_gold_frozen`，不代表双人标注或 fixture freeze 已完成。
 
 - 先实现 types、fake、validator、gate、fallback 和 diagnostics；

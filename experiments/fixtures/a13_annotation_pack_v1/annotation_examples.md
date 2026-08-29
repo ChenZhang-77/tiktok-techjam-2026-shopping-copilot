@@ -1,109 +1,45 @@
-# 标注示例
+# A13 标注示例速查
 
-以下示例不属于 `items.jsonl`，只用于说明格式。
+普通标注者请直接双击 `标注示例.html`。HTML 版本包含九个完整示例，每个示例都按
+“Prior state → Current message → 为什么这样标 → 不要这样标 → 完整 label”解释。
 
-## 1. 明确替换
+## 判断顺序
 
-Prior state：`material=cotton`  
-Current message：`Actually, make it leather instead.`
+1. 新 evidence 只能来自 `current_message`。
+2. `prior_state` 只用于判断 override，不要把旧字段复制到 label。
+3. 能得到完整、无矛盾、逐字可举证的变化时，才设置 `abstain=false`。
+4. 替换指令没有新值，或同一个 attribute/value 既要又不要时，设置
+   `abstain=true`，其余 label 字段全部为空。
 
-```json
-{
-  "intent_hint": null,
-  "positive_constraints": [
-    {
-      "attribute": "material",
-      "value": "leather",
-      "evidence_span": "leather",
-      "hard": true
-    }
-  ],
-  "rejected_constraints": [],
-  "no_preference_attributes": [],
-  "override_attributes": ["material"],
-  "semantic_terms": [],
-  "abstain": false
-}
-```
+## 最容易混淆的三种情况
 
-## 2. 无正向偏好，但保留排除条件
+### 明确替换
 
-Current message：`Any color is fine, but not black.`
+- Prior：`color=black`
+- Current：`Actually, make it blue instead.`
+- 标注：positive `color=blue`、`hard=true`、override `color`。
+- 不要把旧的 black 自动标成 rejected；当前消息没有逐字排除它。
 
-```json
-{
-  "intent_hint": null,
-  "positive_constraints": [],
-  "rejected_constraints": [
-    {
-      "attribute": "color",
-      "value": "black",
-      "evidence_span": "black"
-    }
-  ],
-  "no_preference_attributes": ["color"],
-  "override_attributes": [],
-  "semantic_terms": [],
-  "abstain": false
-}
-```
+### 无偏好但仍有排除值
 
-## 3. 弱偏好
+- Current：`Any color is fine, but not black.`
+- 标注：no-preference `color`，同时 rejected `color=black`。
+- 不要创建 `color=any`。无正向偏好不等于接受全部值。
 
-Current message：`I would prefer something packable.`
+### 不完整替换
 
-```json
-{
-  "intent_hint": "buying",
-  "positive_constraints": [
-    {
-      "attribute": "feature",
-      "value": "packable",
-      "evidence_span": "packable",
-      "hard": false
-    }
-  ],
-  "rejected_constraints": [],
-  "no_preference_attributes": [],
-  "override_attributes": [],
-  "semantic_terms": [],
-  "abstain": false
-}
-```
+- Prior：`color=black`
+- Current：`Use a different color instead.`
+- 标注：`abstain=true`，其他字段为空。
+- 不要只输出 override，也不要猜一个新颜色。
 
-## 4. 无法消解的自相矛盾
+## evidence、value 和 hard
 
-Current message：`I want red, but no red.`
+- `evidence_span` 是当前消息中逐字出现的证据。
+- `value` 是小写、去标点的规范值，不能凭空改写成原文没有的概念。
+- “must / need / make it”通常是 `hard=true`；“prefer / would like”通常是
+  `hard=false`。
+- 例如 `Keep it under 80 dollars.` 应使用 value 和 evidence
+  `under 80 dollars`，不要猜成 `cheap`，也不要只截取 `80`。
 
-```json
-{
-  "intent_hint": null,
-  "positive_constraints": [],
-  "rejected_constraints": [],
-  "no_preference_attributes": [],
-  "override_attributes": [],
-  "semantic_terms": [],
-  "abstain": true
-}
-```
-
-Notes 可写：`Same value is explicitly both required and rejected.`
-
-## 5. 只有不完整的 override 指令
-
-Prior state：`color=black`  
-Current message：`Use a different color instead.`
-
-没有提供新颜色，也没有明确变成 color no-preference，因此不要创造值：
-
-```json
-{
-  "intent_hint": null,
-  "positive_constraints": [],
-  "rejected_constraints": [],
-  "no_preference_attributes": [],
-  "override_attributes": [],
-  "semantic_terms": [],
-  "abstain": true
-}
-```
+完整 JSON label 与更多边界示例请打开 `标注示例.html`。

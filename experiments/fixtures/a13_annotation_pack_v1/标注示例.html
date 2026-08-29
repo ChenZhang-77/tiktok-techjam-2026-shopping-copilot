@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A13 标注示例</title>
+  <style>
+    :root { --ink:#172033; --muted:#667085; --line:#d9deea; --brand:#315efb; --good:#146c43; --bad:#a12424; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:#eef2f8; font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    main { max-width:980px; margin:24px auto; padding:0 18px 60px; }
+    h1 { margin-bottom:4px; }
+    h2 { margin-top:34px; }
+    .lead { color:var(--muted); }
+    .flow,.example { background:#fff; border:1px solid var(--line); border-radius:13px; padding:20px; margin:16px 0; }
+    .flow ol { margin-bottom:0; }
+    .context { display:grid; grid-template-columns:1fr 2fr; gap:12px; }
+    .box { background:#f5f7fb; border-radius:8px; padding:11px 13px; }
+    .why { border-left:4px solid var(--good); padding-left:12px; }
+    .dont { border-left:4px solid var(--bad); padding-left:12px; }
+    code { background:#edf0f6; padding:2px 5px; border-radius:4px; }
+    pre { overflow:auto; background:#172033; color:#f7f8fa; border-radius:9px; padding:15px; font-size:13px; line-height:1.5; }
+    a { color:var(--brand); }
+    table { width:100%; border-collapse:collapse; background:#fff; }
+    th,td { border:1px solid var(--line); padding:9px; text-align:left; vertical-align:top; }
+    @media(max-width:700px){.context{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main>
+  <p><a href="开始标注.html">← 返回标注工具</a></p>
+  <h1>A13 清晰标注示例</h1>
+  <p class="lead">下面不是让你照抄答案，而是说明每个字段什么时候该填、什么时候必须留空。</p>
+
+  <section class="flow">
+    <h2>先判断是否应该 abstain</h2>
+    <ol>
+      <li>先读 <strong>current message</strong>。新增字段的 evidence 只能来自这里。</li>
+      <li>再看 prior state，只用来判断本轮是否明确覆盖旧属性，不要把旧约束复制进 label。</li>
+      <li>如果能得到一组完整、无矛盾、可逐字举证的变化，选择“可以标注”。</li>
+      <li>如果替换指令缺少新值，或同一个值既被要求又被排除，选择 <code>abstain=true</code>。</li>
+      <li>最后检查：每个 value/evidence 是否来自当前消息，hard 是否符合语气。</li>
+    </ol>
+  </section>
+
+  <section class="example">
+    <h2>示例 1｜明确替换：标 override 和新值</h2>
+    <div class="context"><div class="box"><strong>Prior state</strong><br><code>color=black</code></div><div class="box"><strong>Current message</strong><br>Actually, make it blue instead.</div></div>
+    <p class="why"><strong>为什么这样标：</strong><code>blue</code> 是本轮明确的新值，<code>instead</code> 表示替换旧颜色，所以同时标 positive color 和 override color。</p>
+    <p class="dont"><strong>不要这样标：</strong>不要把旧的 black 再写入 rejected；当前消息没有逐字排除 black，状态替换由 override 表达。</p>
+    <pre>{
+  "intent_hint": null,
+  "positive_constraints": [
+    {"attribute":"color","value":"blue","evidence_span":"blue","hard":true}
+  ],
+  "rejected_constraints": [],
+  "no_preference_attributes": [],
+  "override_attributes": ["color"],
+  "semantic_terms": [],
+  "abstain": false
+}</pre>
+  </section>
+
+  <section class="example">
+    <h2>示例 2｜无偏好与排除值可以共存</h2>
+    <div class="context"><div class="box"><strong>Prior state</strong><br>无</div><div class="box"><strong>Current message</strong><br>Any color is fine, but not black.</div></div>
+    <p class="why"><strong>为什么这样标：</strong>用户没有正向颜色偏好，但仍明确排除 black。无偏好不等于接受所有颜色。</p>
+    <p class="dont"><strong>不要这样标：</strong>不要创建 <code>color=any</code>，也不要因为“随便”而丢掉 black 的排除条件。</p>
+    <pre>{
+  "intent_hint": null,
+  "positive_constraints": [],
+  "rejected_constraints": [
+    {"attribute":"color","value":"black","evidence_span":"black"}
+  ],
+  "no_preference_attributes": ["color"],
+  "override_attributes": [],
+  "semantic_terms": [],
+  "abstain": false
+}</pre>
+  </section>
+
+  <section class="example">
+    <h2>示例 3｜一句话中同时有想要和排除</h2>
+    <div class="context"><div class="box"><strong>Prior state</strong><br>无</div><div class="box"><strong>Current message</strong><br>I want a leather bag, but not black.</div></div>
+    <p class="why"><strong>为什么这样标：</strong><code>I want</code> 支持 buying；leather 是明确材质要求，black 是明确排除颜色，二者不冲突。</p>
+    <p class="dont"><strong>不要这样标：</strong>不要因为句中有 but 就 abstain；只有同一个 attribute/value 自相矛盾时才必须 abstain。</p>
+    <pre>{
+  "intent_hint": "buying",
+  "positive_constraints": [
+    {"attribute":"material","value":"leather","evidence_span":"leather","hard":true}
+  ],
+  "rejected_constraints": [
+    {"attribute":"color","value":"black","evidence_span":"black"}
+  ],
+  "no_preference_attributes": [],
+  "override_attributes": [],
+  "semantic_terms": [],
+  "abstain": false
+}</pre>
+  </section>
+
+  <section class="example">
+    <h2>示例 4｜弱偏好：hard=false</h2>
+    <div class="context"><div class="box"><strong>Prior state</strong><br><code>intent=buying</code></div><div class="box"><strong>Current message</strong><br>I would prefer something packable.</div></div>
+    <p class="why"><strong>为什么这样标：</strong><code>would prefer</code> 是弱偏好，不是不可妥协的要求，因此 feature 使用 <code>hard=false</code>。</p>
+    <p class="dont"><strong>不要这样标：</strong>不要因为 prior state 是 buying 就复制 intent；这里的 intent_hint 只反映当前消息提供的新意图证据。</p>
+    <pre>{
+  "intent_hint": null,
+  "positive_constraints": [
+    {"attribute":"feature","value":"packable","evidence_span":"packable","hard":false}
+  ],
+  "rejected_constraints": [],
+  "no_preference_attributes": [],
+  "override_attributes": [],
+  "semantic_terms": [],
+  "abstain": false
+}</pre>
+  </section>
+
+  <section class="example">
+    <h2>示例 5｜不完整的替换指令：必须 abstain</h2>
+    <div class="context"><div class="box"><strong>Prior state</strong><br><code>color=black</code></div><div class="box"><strong>Current message</strong><br>Use a different color instead.</div></div>
+    <p class="why"><strong>为什么这样标：</strong>用户想换颜色，但没有给出新颜色，也没有明确表示颜色随便。此时不能安全生成完整 delta。</p>
+    <p class="dont"><strong>不要这样标：</strong>不要只填 <code>override_attributes=["color"]</code>，也不要猜测任意替代颜色。</p>
+    <pre>{
+  "intent_hint": null,
+  "positive_constraints": [],
+  "rejected_constraints": [],
+  "no_preference_attributes": [],
+  "override_attributes": [],
+  "semantic_terms": [],
+  "abstain": true
+}</pre>
+  </section>
+
+  <section class="example">
+    <h2>示例 6｜同一个值既要又不要：必须 abstain</h2>
+    <div class="context"><div class="box"><strong>Prior state</strong><br>无</div><div class="box"><strong>Current message</strong><br>I want red, but no red.</div></div>
+    <p class="why"><strong>为什么这样标：</strong>同一个 color=red 同时被正向要求和明确排除，没有可靠规则决定哪一半覆盖另一半。</p>
+    <p class="dont"><strong>不要这样标：</strong>不要同时输出 positive red 和 rejected red，也不要擅自认为后半句一定覆盖前半句。</p>
+    <pre>{
+  "intent_hint": null,
+  "positive_constraints": [],
+  "rejected_constraints": [],
+  "no_preference_attributes": [],
+  "override_attributes": [],
+  "semantic_terms": [],
+  "abstain": true
+}</pre>
+  </section>
+
+  <section class="example">
+    <h2>示例 7｜evidence_span 与 value 的区别</h2>
+    <div class="context"><div class="box"><strong>Prior state</strong><br>无</div><div class="box"><strong>Current message</strong><br>Keep it under 80 dollars.</div></div>
+    <p class="why"><strong>为什么这样标：</strong><code>value</code> 是小写规范值；<code>evidence_span</code> 是当前消息中的逐字证据。这个例子两者相同，但职责不同。</p>
+    <p class="dont"><strong>不要这样标：</strong>不要写 <code>value="cheap"</code>，因为原文没有 cheap；也不要只截取 <code>80</code> 而丢掉预算关系。</p>
+    <pre>{
+  "intent_hint": null,
+  "positive_constraints": [
+    {"attribute":"budget","value":"under 80 dollars","evidence_span":"under 80 dollars","hard":true}
+  ],
+  "rejected_constraints": [],
+  "no_preference_attributes": [],
+  "override_attributes": [],
+  "semantic_terms": [],
+  "abstain": false
+}</pre>
+  </section>
+
+  <section class="example">
+    <h2>示例 8｜无法安全归入属性时使用 semantic_terms</h2>
+    <div class="context"><div class="box"><strong>Prior state</strong><br><code>intent=browsing</code></div><div class="box"><strong>Current message</strong><br>Show me something quiet when it moves.</div></div>
+    <p class="why"><strong>为什么这样标：</strong><code>quiet when it moves</code> 对检索有用，但不适合强行塞进受限的结构化属性值中，因此保留原文短语。</p>
+    <p class="dont"><strong>不要这样标：</strong>不要把完整短语拆成脱离语境的 <code>quiet</code>，也不要同时把同一短语重复写入 positive constraint。</p>
+    <pre>{
+  "intent_hint": "browsing",
+  "positive_constraints": [],
+  "rejected_constraints": [],
+  "no_preference_attributes": [],
+  "override_attributes": [],
+  "semantic_terms": ["quiet when it moves"],
+  "abstain": false
+}</pre>
+  </section>
+
+  <section class="example">
+    <h2>示例 9｜明确清除旧偏好：no-preference + override</h2>
+    <div class="context"><div class="box"><strong>Prior state</strong><br><code>material=cotton</code></div><div class="box"><strong>Current message</strong><br>Any material is fine now.</div></div>
+    <p class="why"><strong>为什么这样标：</strong>当前消息明确把 material 改成无偏好，因此既标 no-preference，也标对旧 material 的 override。</p>
+    <p class="dont"><strong>不要这样标：</strong>不要创建 <code>material=any</code>；“随便”是状态变化，不是商品属性值。</p>
+    <pre>{
+  "intent_hint": null,
+  "positive_constraints": [],
+  "rejected_constraints": [],
+  "no_preference_attributes": ["material"],
+  "override_attributes": ["material"],
+  "semantic_terms": [],
+  "abstain": false
+}</pre>
+  </section>
+
+  <h2>字段速查</h2>
+  <table>
+    <tr><th>字段</th><th>什么时候填</th><th>常见误区</th></tr>
+    <tr><td>intent_hint</td><td>当前消息本身明确支持 buying/browsing</td><td>照抄 prior intent</td></tr>
+    <tr><td>positive_constraints</td><td>当前消息明确想要或接受某个值</td><td>把 any/fine 当成值</td></tr>
+    <tr><td>rejected_constraints</td><td>当前消息明确排除某个值</td><td>把被覆盖的旧值自动当 rejected</td></tr>
+    <tr><td>no_preference_attributes</td><td>当前消息明确表示某属性随便</td><td>误解为接受全部值、丢弃明确排除</td></tr>
+    <tr><td>override_attributes</td><td>明确覆盖 prior 属性，且本轮有新值/排除/no-preference</td><td>只有“换一个”也强行标 override</td></tr>
+    <tr><td>semantic_terms</td><td>有检索价值但无法安全归入属性的原文短语</td><td>与 positive/rejected 重复</td></tr>
+    <tr><td>abstain</td><td>无法得到完整、无矛盾、可举证的 delta</td><td>abstain 时仍填写其他 label 字段</td></tr>
+  </table>
+</main>
+</body>
+</html>

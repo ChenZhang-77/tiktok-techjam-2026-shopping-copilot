@@ -18,11 +18,14 @@ BUNDLE_NAME = "a13_annotation_pack_v1"
 PACK_FILES = (
     "README.md",
     "annotation_examples.md",
+    "标注示例.html",
     "annotation_schema.json",
     "annotations.template.jsonl",
     "items.jsonl",
     "validate_annotations.py",
 )
+ANNOTATION_PAGE_TEMPLATE = "annotation_app.template.html"
+ANNOTATION_PAGE_NAME = "开始标注.html"
 
 
 def build_annotation_bundle(
@@ -46,6 +49,18 @@ def build_annotation_bundle(
         bundle.mkdir()
         for filename in PACK_FILES:
             shutil.copy2(source / filename, bundle / filename)
+        annotation_page = (source / ANNOTATION_PAGE_TEMPLATE).read_text(
+            encoding="utf-8"
+        ).replace(
+            "__A13_ITEMS_JSON__",
+            json.dumps(items, ensure_ascii=False, separators=(",", ":"))
+            .replace("<", "\\u003c")
+            .replace(">", "\\u003e"),
+        )
+        (bundle / ANNOTATION_PAGE_NAME).write_text(
+            annotation_page,
+            encoding="utf-8",
+        )
         shutil.copy2(
             root / "experiments/a13_annotation_pack.py",
             bundle / "a13_annotation_pack.py",

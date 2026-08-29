@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -328,6 +329,56 @@ class A13AnnotationPackTest(unittest.TestCase):
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertIn('"item_count": 60', completed.stdout)
+
+    def test_built_zip_contains_a_double_click_offline_annotation_page(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "a13_annotation_pack_v1.zip"
+            build_annotation_bundle(ROOT, output)
+
+            with zipfile.ZipFile(output) as archive:
+                page = archive.read(
+                    "a13_annotation_pack_v1/开始标注.html"
+                ).decode("utf-8")
+
+            match = re.search(
+                r'<script id="a13-items" type="application/json">(.*?)</script>',
+                page,
+                flags=re.DOTALL,
+            )
+            self.assertIsNotNone(match)
+            embedded_items = json.loads(match.group(1))
+            self.assertEqual(
+                [item["item_id"] for item in embedded_items],
+                [item["item_id"] for item in self.items],
+            )
+            self.assertIn("localStorage", page)
+            self.assertIn("downloadAnnotations", page)
+            self.assertIn("下载 JSONL", page)
+            self.assertNotIn("fetch(", page)
+            self.assertNotIn("https://", page)
+
+    def test_built_zip_contains_clear_double_click_annotation_examples(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "a13_annotation_pack_v1.zip"
+            build_annotation_bundle(ROOT, output)
+
+            with zipfile.ZipFile(output) as archive:
+                examples = archive.read(
+                    "a13_annotation_pack_v1/标注示例.html"
+                ).decode("utf-8")
+
+            for expected in (
+                "先判断是否应该 abstain",
+                "明确替换：标 override 和新值",
+                "无偏好与排除值可以共存",
+                "不完整的替换指令：必须 abstain",
+                "同一个值既要又不要：必须 abstain",
+                "evidence_span 与 value 的区别",
+                "为什么这样标",
+                "不要这样标",
+            ):
+                self.assertIn(expected, examples)
+            self.assertNotIn("https://", examples)
 
 
 if __name__ == "__main__":
