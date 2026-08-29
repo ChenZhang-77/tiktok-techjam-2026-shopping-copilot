@@ -45,7 +45,7 @@ deterministic State / Override candidate, leaving that runtime unchanged:
 | Retained default behavior commit | `7f520ba` |
 | Optional B12 code/default-parity commit | `82891c8` |
 | B10a experiment branch | `b/b10a-constraint-preserving-crossencoder` |
-| Latest local full test suite (2026-08-30) | 347 passed after the double-click A13 annotation UI and clearer example guide; default runtime remains no-LLM |
+| Latest local full test suite (2026-08-30) | 349 passed after the double-click A13 annotation UI and clearer example guide; default runtime remains no-LLM |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |
 

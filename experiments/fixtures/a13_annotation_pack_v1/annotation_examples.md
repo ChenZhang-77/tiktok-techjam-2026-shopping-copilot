@@ -42,4 +42,12 @@
 - 例如 `Keep it under 80 dollars.` 应使用 value 和 evidence
   `under 80 dollars`，不要猜成 `cheap`，也不要只截取 `80`。
 
+## feature 与 semantic_terms 的边界
+
+- 明确描述商品性质或行为时，优先使用 open `feature`。例如
+  `quiet when it moves` 标为 feature，而不是 semantic term。
+- `semantic_terms` 只保留不描述商品属性、又无法进入 closed vocabulary 的检索
+  上下文。例如 `graduation gift` 可以作为 semantic term。
+- 同一短语不得同时出现在 positive/rejected constraint 和 `semantic_terms`。
+
 完整 JSON label 与更多边界示例请打开 `标注示例.html`。

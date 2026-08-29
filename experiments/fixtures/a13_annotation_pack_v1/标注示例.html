@@ -169,25 +169,40 @@
   </section>
 
   <section class="example">
-    <h2>示例 8｜无法安全归入属性时使用 semantic_terms</h2>
+    <h2>示例 8｜feature 与 semantic_terms 的边界</h2>
+    <p><strong>A. 明确的商品性质或行为 → feature</strong></p>
     <div class="context"><div class="box"><strong>Prior state</strong><br><code>intent=browsing</code></div><div class="box"><strong>Current message</strong><br>Show me something quiet when it moves.</div></div>
-    <p class="why"><strong>为什么这样标：</strong><code>quiet when it moves</code> 对检索有用，但不适合强行塞进受限的结构化属性值中，因此保留原文短语。</p>
-    <p class="dont"><strong>不要这样标：</strong>不要把完整短语拆成脱离语境的 <code>quiet</code>，也不要同时把同一短语重复写入 positive constraint。</p>
+    <p class="why"><strong>为什么这样标：</strong><code>quiet when it moves</code> 明确描述商品本身的行为，open feature 可以安全承载完整短语。</p>
+    <pre>{
+  "intent_hint": "browsing",
+  "positive_constraints": [
+    {"attribute":"feature","value":"quiet when it moves","evidence_span":"quiet when it moves","hard":true}
+  ],
+  "rejected_constraints": [],
+  "no_preference_attributes": [],
+  "override_attributes": [],
+  "semantic_terms": [],
+  "abstain": false
+}</pre>
+    <p><strong>B. 不描述商品属性的检索上下文 → semantic_terms</strong></p>
+    <div class="context"><div class="box"><strong>Prior state</strong><br>无</div><div class="box"><strong>Current message</strong><br>Show me ideas for a graduation gift.</div></div>
+    <p class="why"><strong>为什么这样标：</strong><code>graduation gift</code> 是购物背景，不是商品性质，而且不属于当前 closed use_case vocabulary，因此保留为上下文短语。</p>
+    <p class="dont"><strong>不要这样标：</strong>不要把商品性质放入 semantic_terms，也不要把同一短语同时写入 constraint 和 semantic_terms。</p>
     <pre>{
   "intent_hint": "browsing",
   "positive_constraints": [],
   "rejected_constraints": [],
   "no_preference_attributes": [],
   "override_attributes": [],
-  "semantic_terms": ["quiet when it moves"],
+  "semantic_terms": ["graduation gift"],
   "abstain": false
 }</pre>
   </section>
 
   <section class="example">
     <h2>示例 9｜明确清除旧偏好：no-preference + override</h2>
-    <div class="context"><div class="box"><strong>Prior state</strong><br><code>material=cotton</code></div><div class="box"><strong>Current message</strong><br>Any material is fine now.</div></div>
-    <p class="why"><strong>为什么这样标：</strong>当前消息明确把 material 改成无偏好，因此既标 no-preference，也标对旧 material 的 override。</p>
+    <div class="context"><div class="box"><strong>Prior state</strong><br><code>material=cotton</code></div><div class="box"><strong>Current message</strong><br>Actually, any material is fine now.</div></div>
+    <p class="why"><strong>为什么这样标：</strong><code>Actually</code> 是明确的替换 marker，当前消息把 material 改成无偏好，因此既标 no-preference，也标对旧 material 的 override。</p>
     <p class="dont"><strong>不要这样标：</strong>不要创建 <code>material=any</code>；“随便”是状态变化，不是商品属性值。</p>
     <pre>{
   "intent_hint": null,
@@ -208,7 +223,7 @@
     <tr><td>rejected_constraints</td><td>当前消息明确排除某个值</td><td>把被覆盖的旧值自动当 rejected</td></tr>
     <tr><td>no_preference_attributes</td><td>当前消息明确表示某属性随便</td><td>误解为接受全部值、丢弃明确排除</td></tr>
     <tr><td>override_attributes</td><td>明确覆盖 prior 属性，且本轮有新值/排除/no-preference</td><td>只有“换一个”也强行标 override</td></tr>
-    <tr><td>semantic_terms</td><td>有检索价值但无法安全归入属性的原文短语</td><td>与 positive/rejected 重复</td></tr>
+    <tr><td>semantic_terms</td><td>不描述商品属性、又无法进入 closed vocabulary 的检索上下文</td><td>把 open feature 放进来，或与 constraint 重复</td></tr>
     <tr><td>abstain</td><td>无法得到完整、无矛盾、可举证的 delta</td><td>abstain 时仍填写其他 label 字段</td></tr>
   </table>
 </main>

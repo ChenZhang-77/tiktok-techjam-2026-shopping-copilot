@@ -343,6 +343,11 @@ def _validate_label(value: object, item: dict[str, Any]) -> None:
 
     positive_keys = {(row["attribute"], _normalize(row["value"])) for row in positive}
     rejected_keys = {(row["attribute"], _normalize(row["value"])) for row in rejected}
+    structured_values = {normalized for _, normalized in (*positive_keys, *rejected_keys)}
+    if set(normalized_terms) & structured_values:
+        raise AnnotationPackError(
+            f"annotation {item_id}: semantic term duplicates structured value"
+        )
     if positive_keys & rejected_keys:
         raise AnnotationPackError(f"annotation {item_id}: positive/rejected conflict")
     if {row["attribute"] for row in positive} & set(no_preference):

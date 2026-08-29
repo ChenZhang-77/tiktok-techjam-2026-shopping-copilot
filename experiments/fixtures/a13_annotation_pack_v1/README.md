@@ -112,8 +112,11 @@ vocabulary 以 `validate_annotations.py` 的结果为准。
 
 ### `semantic_terms`
 
-仅用于当前消息中明确、对购物检索有用、但无法安全归入上述属性的原文短语。必须逐字
-出现在当前消息中。不要重复已经写入 positive/rejected 的 value。
+仅用于当前消息中明确、对购物检索有用、但不描述商品属性且无法安全归入上述属性的
+上下文短语。必须逐字出现在当前消息中。明确的商品性质或行为（如
+`quiet when it moves`）优先标为 open `feature`；活动背景等无法进入 closed
+`use_case` vocabulary 的上下文（如 `graduation gift`）才进入 `semantic_terms`。
+不要重复已经写入 positive/rejected 的 value。
 
 ### `abstain`
 

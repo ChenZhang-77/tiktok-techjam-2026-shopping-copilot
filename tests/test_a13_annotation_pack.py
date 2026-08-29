@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 import re
 from pathlib import Path
@@ -259,6 +260,26 @@ class A13AnnotationPackTest(unittest.TestCase):
         with self.assertRaisesRegex(AnnotationPackError, "allowed_values"):
             validate_annotation_pack(self.items, disallowed_closed_value)
 
+        duplicated_semantic_term = abstain_rows()
+        duplicated_semantic_term[lrf_index]["label"] = {
+            "intent_hint": None,
+            "positive_constraints": [
+                {
+                    "attribute": "feature",
+                    "value": "packable",
+                    "evidence_span": "packable",
+                    "hard": False,
+                }
+            ],
+            "rejected_constraints": [],
+            "no_preference_attributes": [],
+            "override_attributes": [],
+            "semantic_terms": ["packable"],
+            "abstain": False,
+        }
+        with self.assertRaisesRegex(AnnotationPackError, "duplicates structured"):
+            validate_annotation_pack(self.items, duplicated_semantic_term)
+
     def test_comparison_reports_only_label_disagreements_without_mutating_inputs(self) -> None:
         base_label = {
             "intent_hint": None,
@@ -374,11 +395,125 @@ class A13AnnotationPackTest(unittest.TestCase):
                 "不完整的替换指令：必须 abstain",
                 "同一个值既要又不要：必须 abstain",
                 "evidence_span 与 value 的区别",
+                "feature 与 semantic_terms 的边界",
                 "为什么这样标",
                 "不要这样标",
             ):
                 self.assertIn(expected, examples)
+            self.assertIn("Show me ideas for a graduation gift.", examples)
+            self.assertIn('"semantic_terms": ["graduation gift"]', examples)
+            self.assertIn(
+                '{"attribute":"feature","value":"quiet when it moves"',
+                examples,
+            )
             self.assertNotIn("https://", examples)
+
+    def test_no_preference_override_example_matches_the_validator(self) -> None:
+        current_message = "Actually, any material is fine now."
+        examples = (PACK / "标注示例.html").read_text(encoding="utf-8")
+        self.assertIn(current_message, examples)
+
+        items = copy.deepcopy(self.items)
+        items[0]["current_message"] = current_message
+        items[0]["prior_state"] = {
+            "intent": "buying",
+            "active_constraints": [{"attribute": "material", "value": "cotton"}],
+            "rejected_constraints": [],
+            "no_preference_attributes": [],
+        }
+        annotations = [
+            {
+                "item_id": item["item_id"],
+                "annotator_id": "example_reviewer",
+                "confidence": "high",
+                "label": {
+                    "intent_hint": None,
+                    "positive_constraints": [],
+                    "rejected_constraints": [],
+                    "no_preference_attributes": [],
+                    "override_attributes": [],
+                    "semantic_terms": [],
+                    "abstain": True,
+                },
+                "notes": "",
+            }
+            for item in items
+        ]
+        annotations[0]["label"] = {
+            "intent_hint": None,
+            "positive_constraints": [],
+            "rejected_constraints": [],
+            "no_preference_attributes": ["material"],
+            "override_attributes": ["material"],
+            "semantic_terms": [],
+            "abstain": False,
+        }
+
+        summary = validate_annotation_pack(items, annotations)
+        self.assertEqual(summary["annotation_count"], 60)
+
+    def test_feature_and_semantic_term_examples_match_the_validator(self) -> None:
+        items = copy.deepcopy(self.items)
+        items[0]["current_message"] = "Show me something quiet when it moves."
+        items[0]["prior_state"] = {
+            "intent": "browsing",
+            "active_constraints": [],
+            "rejected_constraints": [],
+            "no_preference_attributes": [],
+        }
+        items[1]["current_message"] = "Show me ideas for a graduation gift."
+        items[1]["prior_state"] = {
+            "intent": None,
+            "active_constraints": [],
+            "rejected_constraints": [],
+            "no_preference_attributes": [],
+        }
+        annotations = [
+            {
+                "item_id": item["item_id"],
+                "annotator_id": "example_reviewer",
+                "confidence": "high",
+                "label": {
+                    "intent_hint": None,
+                    "positive_constraints": [],
+                    "rejected_constraints": [],
+                    "no_preference_attributes": [],
+                    "override_attributes": [],
+                    "semantic_terms": [],
+                    "abstain": True,
+                },
+                "notes": "",
+            }
+            for item in items
+        ]
+        annotations[0]["label"] = {
+            "intent_hint": "browsing",
+            "positive_constraints": [
+                {
+                    "attribute": "feature",
+                    "value": "quiet when it moves",
+                    "evidence_span": "quiet when it moves",
+                    "hard": True,
+                }
+            ],
+            "rejected_constraints": [],
+            "no_preference_attributes": [],
+            "override_attributes": [],
+            "semantic_terms": [],
+            "abstain": False,
+        }
+        annotations[1]["label"] = {
+            "intent_hint": "browsing",
+            "positive_constraints": [],
+            "rejected_constraints": [],
+            "no_preference_attributes": [],
+            "override_attributes": [],
+            "semantic_terms": ["graduation gift"],
+            "abstain": False,
+        }
+
+        summary = validate_annotation_pack(items, annotations)
+        self.assertEqual(summary["annotation_count"], 60)
 
 
 if __name__ == "__main__":

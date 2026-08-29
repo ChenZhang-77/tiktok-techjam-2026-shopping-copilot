@@ -95,7 +95,7 @@
         <div class="field"><span class="label">明确表示无偏好的属性</span><div id="noPreference" class="checks"></div></div>
         <div class="field"><span class="label">明确覆盖 prior state 的属性</span><div id="overrides" class="checks"></div></div>
       </div>
-      <div class="field"><label for="terms">其他检索语义短语（每行一个）</label><textarea id="terms" placeholder="只填无法安全归入属性、且逐字出现于当前消息的短语"></textarea></div>
+      <div class="field"><label for="terms">其他检索上下文短语（每行一个）</label><textarea id="terms" placeholder="商品性质优先用 feature；这里只填无法归入属性的上下文短语"></textarea></div>
       <div id="status" class="status"></div>
       <footer class="footer"><button id="previous" type="button">← 上一条</button><button id="next" type="button">保存并下一条 →</button></footer>
     </section>
@@ -208,6 +208,7 @@
     }
     function validationErrors() {
       const errors=[];
+      const normalize=value=>String(value||"").toLowerCase().match(/[a-z0-9]+/g)?.join(" ")||"";
       const annotator=rows[0]?.annotator_id || "";
       if (!/^[A-Za-z0-9_.-]{2,40}$/.test(annotator)) errors.push("标注者代号需为 2–40 位英文字母、数字、点、下划线或连字符。");
       rows.forEach((row,i) => {
@@ -219,6 +220,8 @@
         if (row.label?.abstain === true && populated) errors.push(`${prefix}：abstain 时其他 label 字段必须清空。`);
         if (row.label?.abstain === false && !populated) errors.push(`${prefix}：选择可标注后至少填写一个有效变化。`);
         [...(row.label?.positive_constraints||[]),...(row.label?.rejected_constraints||[])].forEach(entry => { if (!entry.value || !entry.evidence_span) errors.push(`${prefix}：约束的 value/evidence 未填完整。`); });
+        const structured=new Set([...(row.label?.positive_constraints||[]),...(row.label?.rejected_constraints||[])].map(entry=>normalize(entry.value)));
+        if ((row.label?.semantic_terms||[]).some(term=>structured.has(normalize(term)))) errors.push(`${prefix}：semantic term 不能与结构化 value 重复。`);
       });
       return errors;
     }
