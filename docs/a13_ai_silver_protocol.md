@@ -18,6 +18,7 @@ Current state:
 protocol_status = offline_core_contracts_passed_roles_and_runner_pending
 as0_core_contracts_frozen = true
 candidate_config_frozen = true
+role_manifest_prepared = true
 role_manifest_frozen = false
 execution_runner_ready = false
 fresh_fixture_frozen = false

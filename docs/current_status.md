@@ -52,7 +52,7 @@ behavior-identical Question Policy Module and turn-audit slice:
 | Current A13 publication branch | `llm`, cut from reviewed A13 HEAD `bbb0075` |
 | A14-0 runtime source commit | `f594601`; exact visible-response parity to legacy `2e4108a` across 649 Development turns |
 | A14-1 runtime/audit source commit | `b238c68`; closed Question Policy diagnostics, retained fallback semantics, and ten closed-schema attribute-evidence records per turn with the same visible response |
-| Latest local full test suite (2026-08-30) | 408 passed after reviewed A13-AS0 core contracts; default runtime remains no-LLM |
+| Latest local full test suite (2026-08-30) | 409 passed after reviewed A13-AS0 core contracts and AS0R manifest preparation; default runtime remains no-LLM |
 | Committed annotation bundle | `A13_annotation_pack_v1.zip`, SHA256 `8eb3379c730df8ee1a536b1ccfcb198bc456198ee280dea82c2100fc9cd0658b` |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |
@@ -257,7 +257,9 @@ contract tests now pass: the source-neutral applied-state comparator, Candidate
 request config, schemas/prompts, contamination checks, role-independence
 preflight, consensus, and fixed-denominator KPI calculator are hash-bound in
 [`docs/a13_as0_offline_tooling_evidence.md`](a13_as0_offline_tooling_evidence.md).
-The exact independent role manifest remains intentionally invalid/pending;
+AS0R has prepared `role_manifest.pending.json` with the known Candidate identity
+and actual prompt/config hashes. Its six reference-role identities remain
+intentional placeholders, so the exact independent role manifest is pending;
 AS0X execution, isolated repair, and request/response provenance are not yet
 implemented. This is not a completed execution toolchain, so
 AI-silver is not frozen, reference-builder/Candidate provider calls are not

@@ -1,0 +1,60 @@
+{
+  "candidate": {
+    "role": "candidate",
+    "provider": "deepseek",
+    "family": "deepseek",
+    "model_version": "DeepSeek-V4-Flash-0731",
+    "prompt_sha256": "ff258f8d7c320ec4682247f6ef8822aeb65215d5612884da8e84d5189666861a",
+    "config_sha256": "1083ebbe9f3398a85115f12202ec62004fdf6b82b31054f0e4583dedbeefcf51"
+  },
+  "generator": {
+    "role": "generator",
+    "provider": "REPLACE_PROVIDER",
+    "family": "REPLACE_FAMILY",
+    "model_version": "REPLACE_MODEL_VERSION",
+    "prompt_sha256": "8cef3e365ac941bc846a44bc0efce5cb5ad1ff6f84703f6b157d7037194e57fb",
+    "config_sha256": "94d8d481c50bd2aa67a0354f7937b513d15d1709737c8f876fcb181392ba2465"
+  },
+  "duplicate_auditor": {
+    "role": "duplicate_auditor",
+    "provider": "REPLACE_PROVIDER",
+    "family": "REPLACE_FAMILY",
+    "model_version": "REPLACE_MODEL_VERSION",
+    "prompt_sha256": "d6e584e513167f7ebff2e10e49f3ad29783fbf7ec41d922c6ef962147860555b",
+    "config_sha256": "066fdc2e72016bd2d5055c70bed98692133b8c48c9aeeea70a978aec28e839d3"
+  },
+  "labelers": [
+    {
+      "role": "J1",
+      "provider": "REPLACE_PROVIDER",
+      "family": "REPLACE_FAMILY",
+      "model_version": "REPLACE_MODEL_VERSION",
+      "prompt_sha256": "b95a64a10e15218f6d87082b8c6e866ab310d4baf8c45c1f5ce4acdc32bd9b41",
+      "config_sha256": "b6318261faa455f7bb5c15be07ccb07c6454052b9c5adaa1136fba8ea5ab1c40"
+    },
+    {
+      "role": "J2",
+      "provider": "REPLACE_PROVIDER",
+      "family": "REPLACE_FAMILY",
+      "model_version": "REPLACE_MODEL_VERSION",
+      "prompt_sha256": "b95a64a10e15218f6d87082b8c6e866ab310d4baf8c45c1f5ce4acdc32bd9b41",
+      "config_sha256": "b6318261faa455f7bb5c15be07ccb07c6454052b9c5adaa1136fba8ea5ab1c40"
+    },
+    {
+      "role": "J3",
+      "provider": "REPLACE_PROVIDER",
+      "family": "REPLACE_FAMILY",
+      "model_version": "REPLACE_MODEL_VERSION",
+      "prompt_sha256": "b95a64a10e15218f6d87082b8c6e866ab310d4baf8c45c1f5ce4acdc32bd9b41",
+      "config_sha256": "b6318261faa455f7bb5c15be07ccb07c6454052b9c5adaa1136fba8ea5ab1c40"
+    }
+  ],
+  "adjudicator": {
+    "role": "adjudicator",
+    "provider": "REPLACE_PROVIDER",
+    "family": "REPLACE_FAMILY",
+    "model_version": "REPLACE_MODEL_VERSION",
+    "prompt_sha256": "5cccdc400d1c2fa48b8d89202094839d5cfa47da251a86ba678d0ec572075f05",
+    "config_sha256": "6bcee1fbf241404dd257ab90abd84d78ee3b77ef6cb4068437727fce14ed01c9"
+  }
+}

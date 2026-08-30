@@ -71,8 +71,8 @@ expected labels for the exposed legacy 60 rows.
 
 ```text
 tests.test_a13_ai_silver: 27 passed
-tests.test_a13_as0_tooling_evidence: 1 passed
-full suite: 408 passed
+tests.test_a13_as0_tooling_evidence: 2 passed
+full suite: 409 passed
 provider calls: 0
 Full/Holdout runs: 0
 ```
@@ -83,8 +83,11 @@ implementation/test hashes in
 
 ## Remaining blocker
 
-`role_manifest.template.json` is intentionally invalid. Before AS1F, the team
-must freeze exact identities and config/prompt hashes for:
+AS0R has prepared `role_manifest.pending.json`: the frozen Candidate identity
+and all actual prompt/config hashes are filled. Its six independent reference
+identities remain placeholders, and preflight correctly stops at
+`invalid generator provider`. The generic template is also intentionally
+invalid. Before AS1F, the team must freeze exact identities for:
 
 1. one non-Candidate fresh-item generator;
 2. one non-Candidate semantic duplicate auditor;

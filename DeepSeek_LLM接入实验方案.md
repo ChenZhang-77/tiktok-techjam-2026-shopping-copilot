@@ -439,7 +439,7 @@ A13_LLM_MAX_VOCAB_ITEMS=200
 | A13-1 | 候选曾修改 `starter/core/state.py`、`starter/core/context_engine.py` 和 endpoint test，随后显式回滚；决定证据为 `docs/a13_1_state_override_evidence.{md,json}`、`docs/a13_1_reports/` 和 `tests/test_a13_1_state_override_evidence.py` |
 | A13-S0 | 离线基础已新增 `starter/core/semantic_understanding.py`、`experiments/a13_shadow.py`、`tests/test_semantic_understanding.py`，并仅为注入和 parity 修改 `starter/agent.py`、`tests/test_agent_smoke.py` |
 | A13-AS0T | 已实现并 hash 绑定 `applied_state_delta_v1` serializer、Candidate config、新题生成规则、schemas/prompts、fail-closed role/污染检查、共识、固定分母 KPI 和 synthetic tests；未调用 provider |
-| A13-AS0R | 将 `role_manifest.template.json` 的占位符替换为精确独立 generator、duplicate auditor、J1/J2/J3、adjudicator model/version 与 prompt/config hashes；只做离线 preflight |
+| A13-AS0R | 已准备 `role_manifest.pending.json`，填入 Candidate 身份及真实 prompt/config hashes；仍须选择精确独立 generator、duplicate auditor、J1/J2/J3、adjudicator model/version；只做离线 preflight |
 | A13-AS0X | 待实现执行 runner、一次隔离 repair、request/response/input/output hashes、raw-outside-Git 与 normalized summary emission，并用 synthetic 端到端测试验证；不调用 provider |
 | A13-AS1F/AS1J/AS2 | 经明确授权后才执行 reference-builder API：先生成并 hash-freeze 新 target-free fixture，再做 blind judging、bounded repair、共识/仲裁、Candidate-trigger 独立复跑；完成后新增 `docs/a13_ai_silver_evidence.{md,json}`，普通 raw provider material 留在 Git 外 |
 | A13-S1 | AI-silver gate 通过并再次获得明确授权后，才运行真实 Candidate provider Shadow；不改变公共行为 |

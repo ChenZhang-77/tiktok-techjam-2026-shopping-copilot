@@ -36,6 +36,9 @@ authorization.
   model versions, prompt hashes, and config hashes are supplied for the
   Candidate, generator, semantic duplicate auditor, three labelers, and
   adjudicator. Placeholders must never be treated as a frozen manifest.
+- `role_manifest.pending.json` is the AS0R preparation: Candidate identity and
+  every actual prompt/config hash are filled, but six reference-role identities
+  remain placeholders. Its preflight must still fail at the generator identity.
 - The Markdown prompt contracts are frozen inputs whose SHA256 values belong in
   the final role manifest. Preflight compares those values with actual file
   hashes and canonical config hashes from `as0_policy.json`.

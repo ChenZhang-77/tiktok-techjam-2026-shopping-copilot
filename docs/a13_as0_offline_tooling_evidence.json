@@ -26,7 +26,7 @@
     "fixed all-item denominator coverage, exact-agreement, delta, net-item, and repeat-stability metrics"
   ],
   "artifact_sha256": {
-    "README.md": "071490f60eae2c0d80e6f38cf436b93619184fef709f9890c1930537e547d73f",
+    "README.md": "1df1b5b26b43fbb7300c9e48ecbcc8ab89992f4402b0b43d8993030b71afc1e8",
     "adjudicator_prompt_v1.md": "5cccdc400d1c2fa48b8d89202094839d5cfa47da251a86ba678d0ec572075f05",
     "applied_state_delta_v1.schema.json": "aac893f90aabb352f63a9acc22705b61b05bb27d6e55bffe0e07f8e9040fd753",
     "as0_policy.json": "4c7650fda87b120fdd695586a6dead1522f6afc4fcb9b9a740a938c649fad888",
@@ -37,6 +37,7 @@
     "judge_input.schema.json": "de58ef5e5327a031010d39d2c3102b9b0cc1c8f182cdff00a0d158f5e394a228",
     "judge_prompt_v1.md": "b95a64a10e15218f6d87082b8c6e866ab310d4baf8c45c1f5ce4acdc32bd9b41",
     "role_manifest.template.json": "c287e39b6c126cb9ec123faca06bc14362384c5c50e373ab37419d32856389cf",
+    "role_manifest.pending.json": "3d27275e82d375123e59c227da45405d5b9e8a344ce03f52bb9c4fb5c5dcfc71",
     "semantic_duplicate_audit_prompt_v1.md": "d6e584e513167f7ebff2e10e49f3ad29783fbf7ec41d922c6ef962147860555b"
   },
   "code_sha256": {
@@ -45,8 +46,8 @@
   },
   "tests": {
     "focused_protocol_tests": 27,
-    "evidence_tests": 1,
-    "full_suite_passed": 408
+    "evidence_tests": 2,
+    "full_suite_passed": 409
   },
   "boundaries": {
     "provider_calls": 0,
@@ -54,6 +55,7 @@
     "candidate_provider_authorized": false,
     "a13_c1_authorized": false,
     "role_manifest_frozen": false,
+    "role_manifest_prepared": true,
     "execution_runner_ready": false,
     "fresh_fixture_frozen": false,
     "ai_silver_frozen": false,

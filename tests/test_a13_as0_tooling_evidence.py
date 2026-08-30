@@ -5,7 +5,10 @@ import json
 from pathlib import Path
 import unittest
 
-from experiments.a13_ai_silver import build_as0_preflight_report
+from experiments.a13_ai_silver import (
+    build_as0_preflight_report,
+    build_role_artifact_bindings,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,6 +21,30 @@ def _sha256(path: Path) -> str:
 
 
 class A13AS0ToolingEvidenceTest(unittest.TestCase):
+    def test_pending_role_manifest_binds_known_fields_but_does_not_authorize(self) -> None:
+        path = CONTRACT / "role_manifest.pending.json"
+        pending = json.loads(path.read_text(encoding="utf-8"))
+        bindings = build_role_artifact_bindings(CONTRACT)
+        roles = [
+            pending["candidate"],
+            pending["generator"],
+            pending["duplicate_auditor"],
+            *pending["labelers"],
+            pending["adjudicator"],
+        ]
+        for role in roles:
+            for field, digest in bindings[role["role"]].items():
+                self.assertEqual(role[field], digest)
+        self.assertEqual(pending["candidate"]["provider"], "deepseek")
+        self.assertEqual(
+            pending["candidate"]["model_version"], "DeepSeek-V4-Flash-0731"
+        )
+        report = build_as0_preflight_report(CONTRACT, path)
+        self.assertEqual(report["status"], "blocked_role_manifest")
+        self.assertEqual(report["role_manifest_error"], "invalid generator provider")
+        self.assertFalse(report["reference_builder_provider_authorized"])
+        self.assertFalse(report["execution_runner_ready"])
+
     def test_evidence_binds_offline_contracts_and_the_provider_blocker(self) -> None:
         evidence = json.loads(EVIDENCE.read_text(encoding="utf-8"))
         preflight = build_as0_preflight_report(
