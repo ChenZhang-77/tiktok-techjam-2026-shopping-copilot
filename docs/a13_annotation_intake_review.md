@@ -114,11 +114,12 @@ human review:
 | `provisional_valid34_ai_adjudication_suggestions.json` | `560f000ada6dfba284c64f4c45f81e8d85ba9cf43662a179a9f44e7fbe8abd5c` |
 | `provisional_valid34_ai_labels.jsonl` | `ed802888715962348c30f4f18c260a4bfc683b1336fa55c20ec1b3da7228618d` |
 
-Both live beside the returned annotation files. The suggestion record carries
-the 16 exact agreements, recommends the `codex` label for 17 disagreements,
-and proposes one synthesized resolution for `LRF-011`: feature `hides dust`
-with `hard=false`, preserving the minimal complete property from one submission
-and the weak “would be ideal” modality from the other. All 34 proposed labels
+Both live beside the returned annotation files. The labels JSONL carries the 16
+exact agreements plus 18 proposed resolutions. The suggestions JSON documents
+only those 18 pending decisions: it recommends the `codex` label for 17 and
+proposes one synthesized resolution for `LRF-011`, feature `hides dust` with
+`hard=false`, preserving the minimal complete property from one submission and
+the weak “would be ideal” modality from the other. All 34 proposed labels
 individually pass the package's label validator.
 
 Every one of the 18 suggestions remains `human_status=pending`. These artifacts
