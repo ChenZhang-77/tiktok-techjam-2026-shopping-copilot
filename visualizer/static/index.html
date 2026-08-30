@@ -10,7 +10,7 @@
     <header class="topbar">
       <div>
         <h1>Shopping Copilot Dialogue</h1>
-        <p>Inspect one selected customer session and its completed Agent trace.</p>
+        <p>Inspect one selected customer session turn by turn.</p>
       </div>
       <div class="controls" aria-label="Run controls">
         <label>
@@ -21,6 +21,12 @@
           Session
           <select id="sessionSelect"></select>
         </label>
+        <label>
+          Interval (seconds)
+          <input id="intervalInput" type="number" min="0" max="60" step="0.1" value="0.7">
+        </label>
+        <button id="startButton" type="button">Start</button>
+        <button id="stopButton" type="button" disabled>Stop</button>
       </div>
     </header>
 
@@ -34,10 +40,7 @@
         <section class="side-panel">
           <h2>Current Customer</h2>
           <dl id="sessionMeta"></dl>
-          <h3>Target Product</h3>
-          <div id="targetBox" class="target-box">Select a session and start it.</div>
-          <h3>Session Result</h3>
-          <div id="finalBox" class="final-box">Waiting.</div>
+          <div id="sessionOutcome" class="session-outcome">Waiting for dialogue.</div>
         </section>
       </aside>
 
@@ -45,6 +48,7 @@
         <div class="timeline-header">
           <h2>Dialogue</h2>
           <span id="statusText">Idle</span>
+          <span id="turnProgress">Ready</span>
         </div>
         <div id="chat" class="chat"></div>
       </section>

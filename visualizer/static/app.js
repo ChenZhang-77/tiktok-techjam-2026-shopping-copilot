@@ -3,10 +3,15 @@ const sessionSelect = document.getElementById("sessionSelect");
 const overallMetrics = document.getElementById("overallMetrics");
 const scenarioMetrics = document.getElementById("scenarioMetrics");
 const sessionMeta = document.getElementById("sessionMeta");
-const targetBox = document.getElementById("targetBox");
-const finalBox = document.getElementById("finalBox");
+const sessionOutcome = document.getElementById("sessionOutcome");
 const chat = document.getElementById("chat");
 const statusText = document.getElementById("statusText");
+const turnProgress = document.getElementById("turnProgress");
+const intervalInput = document.getElementById("intervalInput");
+const startButton = document.getElementById("startButton");
+const stopButton = document.getElementById("stopButton");
+let activeEventSource = null;
+let runStartedAt = 0;
 
 function selectedExperiment() {
   return experimentSelect.value || "current";
@@ -31,7 +36,7 @@ function compactList(values, limit = 2) {
 }
 
 function escapeAttr(value) {
-  return escapeHtml(value).replaceAll("\n", " ");
+  return escapeHtml(value).replaceAll("\n", "&#10;");
 }
 
 function renderMeta(payload) {
@@ -43,15 +48,6 @@ function renderMeta(payload) {
     <dt>Max turns</dt><dd>${escapeHtml(payload.max_turns)}</dd>
   `;
 
-  const product = payload.target_product || {};
-  const categories = compactList(product.categories, 3);
-  const features = compactList(product.features, 3);
-  targetBox.innerHTML = `
-    <div class="target-title">${escapeHtml(product.title || payload.target)}</div>
-    <div class="muted">${escapeHtml(payload.target)}</div>
-    <div>${categories ? escapeHtml(categories) : "No category"}</div>
-    <div class="muted">${features ? escapeHtml(features) : ""}</div>
-  `;
 }
 
 function fmt(value, digits = 4) {
@@ -69,6 +65,7 @@ function renderOverall(payload) {
     <dt>HitRate@10</dt><dd>${escapeHtml(fmt(payload.hit_rate_at_10, 6))}</dd>
     <dt>MRR</dt><dd>${escapeHtml(fmt(payload.mrr, 6))}</dd>
     <dt>MTTC</dt><dd>${escapeHtml(fmt(payload.mttc, 4))}</dd>
+    <dt>Efficiency</dt><dd>${escapeHtml(fmt(payload.efficiency, 6))}</dd>
     <dt>TechnicalScore</dt><dd>${escapeHtml(fmt(payload.technical_score, 6))}</dd>
   `;
   const scenarios = payload.scenario_metrics || {};
@@ -82,7 +79,7 @@ function renderOverall(payload) {
   `).join("");
 }
 
-function renderRecommendations(recommendations) {
+function renderRecommendations(recommendations, turnPayload = {}) {
   if (!recommendations || recommendations.length === 0) {
     return '<div class="mini-recs empty">No valid recommendations</div>';
   }
@@ -90,24 +87,25 @@ function renderRecommendations(recommendations) {
     <div class="mini-recs" aria-label="Top 10 recommendations">
       ${recommendations.map((item) => {
         const product = item.product || {};
-        const categories = compactList(product.categories, 3);
+        const categories = compactList(product.categories, 2);
         const price = product.price === null || product.price === undefined ? "" : `$${product.price}`;
-        const features = compactList(product.features, 3);
+        const features = compactList(product.features, 2);
         const tip = [
-          product.title || item.parent_asin,
-          item.parent_asin,
-          price,
-          categories,
-          features,
+          `Title: ${product.title || item.parent_asin}`,
+          `ASIN: ${item.parent_asin}`,
+          categories ? `Category: ${categories}` : "",
+          price ? `Price: ${price}` : "",
           product.store ? `Store: ${product.store}` : "",
           product.average_rating ? `Rating: ${product.average_rating} (${product.rating_number || 0})` : "",
+          features ? `Features: ${features}` : "",
         ].filter(Boolean).join("\n");
         const name = product.title || item.parent_asin;
+        const isHit = turnPayload.hit === true && item.is_target && item.rank !== undefined;
         return `
-          <div class="mini-rec ${item.is_target ? "target" : ""}" data-tip="${escapeAttr(tip)}">
+          <div class="mini-rec ${isHit ? "target" : ""}" data-tip="${escapeAttr(tip)}">
             <span class="mini-rank">#${escapeHtml(item.rank)}</span>
             <span class="mini-title">${escapeHtml(name)}</span>
-            ${item.is_target ? '<span class="target-dot">TARGET</span>' : ""}
+            ${isHit ? '<span class="target-dot">HIT</span>' : ""}
           </div>
         `;
       }).join("")}
@@ -135,15 +133,13 @@ function appendCustomer(message, meta = "") {
 
 function appendAgent(payload) {
   const ask = payload.ask_attribute ?? "null";
-  const status = payload.hit ? `Hit at rank ${payload.target_rank}` : "No hit";
   const html = `
     <div class="agent-text">${escapeHtml(payload.agent_message)}</div>
     <div class="agent-toolbar">
       <span>ask_attribute: <strong>${escapeHtml(ask)}</strong></span>
-      <span class="${payload.hit ? "hit-text" : "muted"}">${escapeHtml(status)}</span>
     </div>
     ${payload.error ? `<div class="error">${escapeHtml(payload.error)}</div>` : ""}
-    ${renderRecommendations(payload.recommendations)}
+    ${renderRecommendations(payload.recommendations, payload)}
   `;
   bubble("agent", html, `Turn ${payload.turn}`);
 }
@@ -156,15 +152,11 @@ function appendSystem(text) {
 }
 
 function renderFinal(payload) {
-  finalBox.innerHTML = `
-    <div><strong>${payload.hit ? "Hit" : "Miss"}</strong></div>
-    <div>First hit turn: ${escapeHtml(payload.first_hit_turn ?? "none")}</div>
-    <div>Best rank: ${escapeHtml(payload.best_rank ?? "none")}</div>
-    <div>Reciprocal rank: ${escapeHtml(Number(payload.reciprocal_rank || 0).toFixed(4))}</div>
-  `;
-  appendSystem(payload.hit
-    ? `Session stopped after finding the target at turn ${payload.first_hit_turn}, rank ${payload.best_rank}.`
-    : "Session reached turn 10 without finding the target.");
+  sessionOutcome.className = `session-outcome ${payload.hit ? "hit" : "miss"}`;
+  sessionOutcome.innerHTML = payload.hit
+    ? `<strong>Hit</strong><br>First hit: turn ${escapeHtml(payload.first_hit_turn)}<br>Rank: ${escapeHtml(payload.best_rank)}`
+    : "No hit within 10 turns.";
+  appendSystem("Dialogue complete.");
 }
 
 function renderTraceStart(payload) {
@@ -174,9 +166,6 @@ function renderTraceStart(payload) {
 
 function renderTraceTurn(payload) {
   appendAgent(payload);
-  if (payload.next_user_message) {
-    appendCustomer(payload.next_user_message, "Customer follow-up");
-  }
 }
 
 async function loadSessions() {
@@ -216,32 +205,106 @@ async function loadOverall() {
   renderOverall(payload);
 }
 
-async function loadSelectedTrace() {
+function clearTrace(message = "Select a session and click Start.") {
+  if (activeEventSource) {
+    activeEventSource.close();
+    activeEventSource = null;
+  }
   chat.innerHTML = "";
   sessionMeta.innerHTML = "";
-  targetBox.textContent = "Waiting for session metadata.";
-  finalBox.textContent = "Loading.";
-  statusText.textContent = "Loading";
+  sessionOutcome.className = "session-outcome";
+  sessionOutcome.textContent = "Waiting for dialogue.";
+  statusText.textContent = "Ready";
+  turnProgress.textContent = "Ready";
+  startButton.disabled = false;
+  stopButton.disabled = true;
+}
+
+function stopTrace(status = "Stopped") {
+  if (activeEventSource) {
+    activeEventSource.close();
+    activeEventSource = null;
+  }
+  sessionSelect.disabled = false;
+  experimentSelect.disabled = false;
+  startButton.disabled = false;
+  stopButton.disabled = true;
+  statusText.textContent = status;
+  turnProgress.textContent = status;
+}
+
+async function startSelectedTrace() {
+  if (activeEventSource) stopTrace("Stopped");
+  chat.innerHTML = "";
+  sessionMeta.innerHTML = "";
+  sessionOutcome.className = "session-outcome";
+  sessionOutcome.textContent = "Running.";
+  statusText.textContent = "Starting";
+  turnProgress.textContent = "Starting";
+  runStartedAt = performance.now();
   sessionSelect.disabled = true;
+  experimentSelect.disabled = true;
+  startButton.disabled = true;
+  stopButton.disabled = false;
 
   const index = sessionSelect.value || "0";
-  const response = await fetch(`/api/session_trace?index=${encodeURIComponent(index)}&${experimentQuery()}`);
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to load session trace");
+  const intervalSeconds = Number(intervalInput.value);
+  if (!Number.isFinite(intervalSeconds) || intervalSeconds < 0 || intervalSeconds > 60) {
+    throw new Error("Interval must be a number from 0 to 60 seconds.");
   }
-  const payload = await response.json();
-  renderTraceStart(payload.start);
-  payload.turns.forEach(renderTraceTurn);
-  renderFinal(payload.final);
-  requestAnimationFrame(() => {
-    chat.scrollTop = 0;
+  const delay = Math.round(intervalSeconds * 1000);
+  const source = new EventSource(
+    `/events?index=${encodeURIComponent(index)}&${experimentQuery()}&delay_ms=${encodeURIComponent(delay)}`
+  );
+  activeEventSource = source;
+  let finished = false;
+  source.addEventListener("start", (event) => {
+    renderTraceStart(JSON.parse(event.data));
+    statusText.textContent = "Running";
   });
-  statusText.textContent = "Loaded";
-  sessionSelect.disabled = false;
+  source.addEventListener("turn", (event) => {
+    const payload = JSON.parse(event.data);
+    renderTraceTurn(payload);
+    const elapsed = ((performance.now() - runStartedAt) / 1000).toFixed(1);
+    turnProgress.textContent = `Turn ${payload.turn}/10 · ${elapsed}s`;
+  });
+  source.addEventListener("customer", (event) => {
+    const payload = JSON.parse(event.data);
+    appendCustomer(payload.message, payload.label || "Customer follow-up");
+  });
+  source.addEventListener("done", (event) => {
+    finished = true;
+    renderFinal(JSON.parse(event.data));
+    statusText.textContent = "Loaded";
+    turnProgress.textContent = "";
+    sessionSelect.disabled = false;
+    experimentSelect.disabled = false;
+    startButton.disabled = false;
+    stopButton.disabled = true;
+    source.close();
+    if (activeEventSource === source) activeEventSource = null;
+    requestAnimationFrame(() => {
+      chat.scrollTop = 0;
+    });
+  });
+  source.addEventListener("error", (event) => {
+    if (finished) return;
+    let message = "Failed to stream session trace";
+    if (event.data) {
+      try { message = JSON.parse(event.data).message || message; } catch (_) {}
+    }
+    statusText.textContent = message;
+    sessionSelect.disabled = false;
+    experimentSelect.disabled = false;
+    startButton.disabled = false;
+    stopButton.disabled = true;
+    source.close();
+    if (activeEventSource === source) activeEventSource = null;
+  });
 }
 
 experimentSelect.addEventListener("change", () => {
+  stopTrace("Ready");
   const params = new URLSearchParams(window.location.search);
   if (selectedExperiment() === "current") {
     params.delete("experiment");
@@ -251,7 +314,7 @@ experimentSelect.addEventListener("change", () => {
   const query = params.toString();
   window.history.replaceState(null, "", query ? `?${query}` : window.location.pathname);
   Promise.all([loadSessions(), loadOverall()])
-    .then(() => loadSelectedTrace())
+    .then(() => clearTrace())
     .catch((error) => {
     statusText.textContent = error.message;
     sessionSelect.disabled = false;
@@ -259,15 +322,21 @@ experimentSelect.addEventListener("change", () => {
 });
 
 sessionSelect.addEventListener("change", () => {
-  loadSelectedTrace().catch((error) => {
+  clearTrace();
+});
+
+startButton.addEventListener("click", () => {
+  startSelectedTrace().catch((error) => {
     statusText.textContent = error.message;
-    sessionSelect.disabled = false;
+    stopTrace("Error");
   });
 });
 
+stopButton.addEventListener("click", () => stopTrace());
+
 Promise.all([loadExperiments(), loadSessions()])
   .then(() => loadOverall())
-  .then(() => loadSelectedTrace())
+  .then(() => clearTrace())
   .catch((error) => {
   statusText.textContent = `Failed to load sessions: ${error.message}`;
 });

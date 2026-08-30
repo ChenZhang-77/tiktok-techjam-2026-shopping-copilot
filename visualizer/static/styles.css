@@ -166,6 +166,23 @@ dd {
   margin-bottom: 8px;
 }
 
+.session-outcome {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.session-outcome.hit {
+  color: var(--hit);
+}
+
+.session-outcome.miss {
+  color: var(--muted);
+}
+
 .scenario-metrics {
   display: grid;
   gap: 6px;

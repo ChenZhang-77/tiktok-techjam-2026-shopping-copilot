@@ -1,68 +1,67 @@
 # Dialogue Visualizer
 
-Process visualizer for one public Track 4 session at a time.
+Local process visualizer for one customer session at a time. It is separate
+from the official evaluator and does not change `evaluator/local_evaluator.py`.
 
-This tool is for debugging and understanding agent behavior. It does not replace the official local evaluator and does not modify `evaluator/local_evaluator.py`.
+## Run An Experiment
 
-## Recommended Experiment Flow
-
-From the repository root, run one experiment with a name:
+From the repository root:
 
 ```bash
-./scripts/start_experiment.sh baseline-bm25 --split development
+./scripts/start_experiment.sh my-experiment --split development
 ```
 
-The script will:
-
-- create a new folder under `experiments/runs/`;
-- save this run's `results.json`;
-- copy the current `starter/agent.py` to `agent_snapshot.py`;
-- create `metadata.json` and `notes.md`;
-- open a visualizer URL for that run, such as:
+The command evaluates the Agent, creates a new directory under
+`experiments/runs/`, saves `results.json`, copies the Agent snapshot, starts
+the visualizer, and prints a URL such as:
 
 ```text
-http://127.0.0.1:8765?experiment=2026-08-25-2105-baseline-bm25
+http://127.0.0.1:8765?experiment=2026-08-31-0646-my-experiment-development
 ```
 
-Each experiment gets its own directory and URL. Old experiment outputs are not overwritten.
-When an experiment was run on `development` or `holdout`, the Session dropdown
-shows only sessions from that split.
+The URL is also opened automatically on macOS when possible. If no browser tab
+opens, copy the printed URL into a browser. Every run has its own directory and
+URL; earlier runs are not overwritten.
 
-## Manual Visualizer
+## Use The Page
 
-You can also start only the visualizer:
+1. Select an experiment from `Experiment`.
+2. Select one customer session from `Session`.
+3. Enter the delay between messages in `Interval (seconds)`. The default is
+   `0.7`; use `0` for immediate playback.
+4. Click `Start` to play the selected conversation.
+5. Click `Stop` to stop playback.
+
+The page shows the initial customer request, each Agent response, the
+recommendations, and the simulated customer follow-up one event at a time.
+When the evaluator-valid target is found, the matching recommendation is green,
+the left panel reports the first hit turn and rank, and playback stops.
+
+The left panel also shows the five overall metrics from the saved run:
+HitRate@10, MRR, MTTC, Efficiency, and TechnicalScore. These are aggregate
+experiment metrics, not metrics for only the selected customer.
+
+## Start Only The Visualizer
+
+If a saved experiment already exists, start the page without running another
+evaluation:
 
 ```bash
 python3 visualizer/server.py
 ```
 
-Open:
+Then open:
 
 ```text
 http://127.0.0.1:8765
 ```
 
-Use the Experiment dropdown to switch between the current workspace and saved experiment runs.
+The repository must contain `data/catalog.jsonl` and `data/public_set.jsonl`.
+The experiment dropdown discovers saved runs under `experiments/runs/`.
 
-## What It Shows
+## Scope And Safety
 
-The page contains two different information classes:
-
-- **Agent View**: customer messages, agent message, `ask_attribute`, active
-  state, distilled query, route diagnostics, and Top 10 recommendations.
-- **Evaluator View**: target product, target highlight/rank, final hit/miss,
-  first-hit turn, and aggregate experiment metrics.
-
-Evaluator View exists only for offline analysis. Target ASIN, target rank,
-hit/miss labels, and future turns must never flow into agent state, retrieval,
-ranking, prompts, or routing. Keep the two views visibly labeled in screenshots
-and demo recordings.
-
-The integrated agent may currently ask a non-repeating, priority-biased
-clarification while returning recommendations. It does not yet have a retained
-candidate-evidence should-ask gate, so do not label the current choice as
-expected information gain. After A9 is retained, this page may describe a
-`null` `ask_attribute` as a measured no-ask decision.
-
-See `../docs/demo_and_submission_plan.md` for the rehearsed demo flow and
-submission safety checklist.
+The page is a local demo and debugging tool. It does not affect scoring and
+does not send target answers into Agent state, retrieval, ranking, prompts, or
+routing. Generated run directories and downloaded data are local artifacts and
+are ignored by Git.

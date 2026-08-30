@@ -242,6 +242,16 @@ An optional fold can be selected:
 Generated runs are written under ignored `experiments/runs/` directories and
 can be inspected with the local visualizer.
 
+Each run gets a new directory and a new URL. The runner starts the visualizer
+automatically after evaluation and opens the URL on macOS when possible. The
+terminal always prints the URL, so automatic browser opening is not required.
+The page is a single Demo view: select a saved run and customer, enter the
+message interval in seconds (default `0.7`), then click `Start`. Customer and
+Agent messages appear one at a time, recommendations marked `HIT` stop the
+dialogue immediately, and the left panel reports the current customer's hit
+turn. The five overall metrics are shown on the left: HitRate@10, MRR, MTTC,
+Efficiency, and TechnicalScore.
+
 Manual visualizer:
 
 ```bash
@@ -250,10 +260,9 @@ python3 visualizer/server.py
 
 Open `http://127.0.0.1:8765`.
 
-The visualizer may show target and scoring information to a human reviewer.
-That information is evaluator-only and is never a valid Agent or retrieval
-input. A public demo must clearly separate the Agent-visible view from the
-evaluator/debug view.
+The visualizer is for local process inspection and demo recording. It does not
+change the official evaluator or send target information into the Agent. Target
+product details and evaluator-only internals are not exposed in the page.
 
 ## Local Dense and Optional Semantic Setup
 

@@ -4,6 +4,7 @@ import argparse
 import importlib
 import importlib.util
 import json
+import subprocess
 import time
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -26,6 +27,7 @@ from evaluator.local_evaluator import (
     normalize_recommendations,
 )
 from starter.agent import Agent
+from starter.retrieval import HybridRetriever, StructuredConfig
 
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
@@ -70,13 +72,14 @@ class InteractiveSession:
         categories: dict[str, list[str]],
         products: dict[str, dict],
         agent_cls: type[Agent] = Agent,
+        retriever=None,
     ) -> None:
         self.index = index
         self.sample = sample
         self.catalog_ids = catalog_ids
         self.categories = categories
         self.products = products
-        self.agent = agent_cls(catalog_path)
+        self.agent = agent_cls(catalog_path, retriever=retriever)
         self.session_id = f"visual_{uuid.uuid4().hex}"
         self.agent.reset(self.session_id, sample["user_profile"])
 
@@ -214,6 +217,24 @@ class TraceRunner:
         run_dir = self._run_dir(experiment_id)
         if run_dir is None:
             return Agent
+        metadata_path = run_dir / "metadata.json"
+        if metadata_path.exists():
+            try:
+                metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                metadata = {}
+            try:
+                current_commit = subprocess.run(
+                    ["git", "rev-parse", "--short", "HEAD"],
+                    cwd=ROOT,
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                ).stdout.strip()
+            except (OSError, subprocess.CalledProcessError):
+                current_commit = ""
+            if metadata.get("git_commit") == current_commit:
+                return Agent
         cache_key = run_dir.name
         if cache_key in self._agent_cache:
             return self._agent_cache[cache_key]
@@ -254,6 +275,19 @@ class TraceRunner:
             raise ValueError(f"agent_snapshot.py in {cache_key} does not define Agent.")
         self._agent_cache[cache_key] = agent_cls
         return agent_cls
+
+    def _retriever_for(self, experiment_id: str | None):
+        """Mirror the saved experiment's deterministic retrieval configuration."""
+        result = self._experiment_result(experiment_id)
+        evaluation = result.get("evaluation") if isinstance(result.get("evaluation"), dict) else {}
+        mode = str(evaluation.get("retrieval_mode") or "conditional_dense")
+        if mode not in {"structured", "no_guarded_filter", "lexical"}:
+            return None
+        return HybridRetriever(
+            self.catalog_path,
+            structured_config=StructuredConfig(enabled=mode != "lexical"),
+            constraint_rerank_enabled=mode != "lexical",
+        )
 
     def _experiment_result(self, experiment_id: str | None) -> dict:
         run_dir = self._run_dir(experiment_id)
@@ -358,6 +392,7 @@ class TraceRunner:
             categories=self.categories,
             products=self.products,
             agent_cls=self._agent_class(experiment_id),
+            retriever=self._retriever_for(experiment_id),
         )
         run_id = uuid.uuid4().hex
         self.active_sessions[run_id] = session
@@ -386,13 +421,15 @@ class TraceRunner:
                 break
         return {"start": start, "turns": turns, "final": final}
 
-    def stream_session(self, index: int, delay_ms: int):
+    def stream_session(self, index: int, delay_ms: int, experiment_id: str | None = None):
         if index < 0 or index >= len(self.samples):
             yield _sse("error", {"message": f"Session index out of range: {index}"})
             return
 
         sample = self.samples[index]
-        agent = Agent(self.catalog_path)
+        agent_cls = self._agent_class(experiment_id)
+        retriever = self._retriever_for(experiment_id)
+        agent = agent_cls(self.catalog_path, retriever=retriever)
         session_id = f"visual_{uuid.uuid4().hex}"
         agent.reset(session_id, sample["user_profile"])
 
@@ -419,8 +456,18 @@ class TraceRunner:
                 "target_product": _safe_product(target_product),
                 "user_profile": sample.get("user_profile", {}),
                 "max_turns": MAX_TURNS,
+                "initial_user_message": user_message,
             },
         )
+        last_event_at = time.monotonic()
+
+        def wait_for_pace() -> None:
+            nonlocal last_event_at
+            if delay_ms > 0:
+                remaining = delay_ms / 1000 - (time.monotonic() - last_event_at)
+                if remaining > 0:
+                    time.sleep(remaining)
+            last_event_at = time.monotonic()
 
         for turn in range(1, MAX_TURNS + 1):
             try:
@@ -468,6 +515,7 @@ class TraceRunner:
                     )
                     next_user_message = preview_message
 
+            wait_for_pace()
             yield _sse(
                 "turn",
                 {
@@ -499,8 +547,14 @@ class TraceRunner:
                     effective_sample, response.get("ask_attribute"), disclosed, boundary_used
                 )
 
-            if delay_ms > 0:
-                time.sleep(delay_ms / 1000)
+            wait_for_pace()
+            yield _sse(
+                "customer",
+                {
+                    "message": user_message,
+                    "label": "Customer follow-up",
+                },
+            )
 
         yield _sse(
             "done",
@@ -511,6 +565,9 @@ class TraceRunner:
                 "reciprocal_rank": 0.0 if best_rank is None else 1.0 / best_rank,
             },
         )
+        close_retriever = getattr(retriever, "close", None)
+        if callable(close_retriever):
+            close_retriever()
 
 
 class VisualizerHandler(BaseHTTPRequestHandler):
@@ -593,14 +650,15 @@ class VisualizerHandler(BaseHTTPRequestHandler):
         if parsed.path == "/events":
             query = parse_qs(parsed.query)
             index = int(query.get("index", ["0"])[0])
-            delay_ms = int(query.get("delay_ms", ["700"])[0])
+            delay_ms = int(query.get("delay_ms", ["0"])[0])
+            experiment_id = query.get("experiment", ["current"])[0]
 
             self.send_response(200)
             self.send_header("Content-Type", "text/event-stream; charset=utf-8")
             self.send_header("Cache-Control", "no-cache")
             self.send_header("Connection", "keep-alive")
             self.end_headers()
-            for chunk in self.runner.stream_session(index, delay_ms):
+            for chunk in self.runner.stream_session(index, delay_ms, experiment_id):
                 self.wfile.write(chunk)
                 self.wfile.flush()
             return
