@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Protocol
 
 from starter.contracts import RetrievalRequest, RetrievalResult
-from starter.core.clarification import choose_clarification
 from starter.core.context_engine import (
     CATEGORY_TERMS,
     COLORS,
@@ -22,9 +21,9 @@ from starter.core.context_engine import (
     extract_constraints,
 )
 from starter.core.diagnostics import state_diagnostics
-from starter.core.decision_evidence import build_decision_evidence
 from starter.core.planner import Strategy, StrategyConfig, plan_strategy
 from starter.core.query_builder import QueryPlan, build_query_plan
+from starter.core.question_policy import QuestionPolicy
 from starter.core.response_guard import guard_response
 from starter.core.semantic_understanding import (
     ALLOWED_ATTRIBUTES,
@@ -96,6 +95,7 @@ class Agent:
         }
         self._catalog_ids = set(self.retriever.catalog_ids)
         self._fallback_ids = list(self.retriever.fallback_ids)
+        self.question_policy = QuestionPolicy()
 
     def reset(self, session_id: str, user_profile: dict) -> None:
         # The profile is anonymized and may be used for personalization.
@@ -267,36 +267,25 @@ class Agent:
                 isinstance(response_diagnostics, dict)
                 and response_diagnostics.get("fallback_used")
             ) or len(valid_response_ids) < top_k
-            decision_evidence = build_decision_evidence(
-                retrieval_result,
+            question_outcome = self.question_policy.decide(
                 state=state,
+                result=retrieval_result,
                 turn=turn,
                 top_k=top_k,
                 response_fallback_used=response_fallback_used,
             )
+            decision_evidence = question_outcome.decision_evidence
             diagnostics = response.get("diagnostics") if isinstance(response, dict) else {}
             if not isinstance(diagnostics, dict):
                 diagnostics = {}
             diagnostics["decision_evidence"] = decision_evidence.to_diagnostics()
+            diagnostics["question_policy"] = dict(question_outcome.diagnostics)
             diagnostics.update(state_diagnostics(state))
             if query_plan is not None:
                 diagnostics["query_plan"] = query_plan.to_diagnostics()
             response["diagnostics"] = diagnostics
-            candidate_evidence = {
-                candidate.parent_asin: candidate.evidence_text or ""
-                for candidate in (retrieval_result.candidates[:top_k] if retrieval_result else [])
-            }
-            candidate_texts = [
-                candidate_evidence.get(str(item.get("parent_asin", "")).strip(), "")
-                for item in raw_recommendations
-                if isinstance(item, dict)
-            ]
-            ask_attribute, question = choose_clarification(
-                state,
-                turn=turn,
-                candidate_texts=candidate_texts,
-                decision_evidence=decision_evidence,
-            )
+            ask_attribute = question_outcome.decision.attribute
+            question = question_outcome.decision.question
             if ask_attribute:
                 response["ask_attribute"] = ask_attribute
                 base_message = response.get("message") if isinstance(response, dict) else ""

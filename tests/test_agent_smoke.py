@@ -623,6 +623,43 @@ class AgentSmokeTest(unittest.TestCase):
                 },
             )
 
+    def test_agent_routes_the_legacy_question_through_question_policy(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            catalog_path = Path(directory) / "catalog.jsonl"
+            _write_catalog(catalog_path)
+            agent = Agent(catalog_path)
+            agent.reset("s1", {})
+
+            response = agent.respond("s1", "I need leather shoes", 1, 2)
+
+            self.assertEqual(response["ask_attribute"], "feature")
+            self.assertEqual(
+                response["message"],
+                "Here are the closest matches I found. "
+                "Which specific feature matters most to you?",
+            )
+            self.assertEqual(
+                response["diagnostics"]["question_policy"],
+                {
+                    "policy_version": "a14-0-legacy-parity-v1",
+                    "mode": "legacy_parity",
+                    "eligible_attributes": [
+                        "feature",
+                        "color",
+                        "size",
+                        "style",
+                        "use_case",
+                        "brand",
+                        "budget",
+                        "other",
+                    ],
+                    "baseline_action": "ask",
+                    "baseline_attribute": "feature",
+                    "reason_code": "legacy_ask",
+                    "evidence_status": "degraded",
+                },
+            )
+
     def test_agent_records_isolated_session_history(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             catalog_path = Path(directory) / "catalog.jsonl"

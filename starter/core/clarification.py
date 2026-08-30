@@ -49,20 +49,21 @@ CANDIDATE_PHRASE_PATTERNS = {
 WORD_RE = re.compile(r"\w+", re.UNICODE)
 
 
-def _available_attributes(state: SessionState, priority: tuple[str, ...]) -> list[str]:
+def available_attributes(state: SessionState) -> tuple[str, ...]:
+    priority = BUYING_PRIORITY if state.intent == "buying" else BROWSING_PRIORITY
     known = {
         str(constraint.get("attribute"))
         for constraint in state.active_constraints
         if constraint.get("active", True)
     }
     unavailable = set(state.asked_attributes) | set(state.no_preference_attributes)
-    return [
+    return tuple(
         attribute
         for attribute in priority
         if attribute in ALLOWED_ASK_ATTRIBUTES
         and attribute not in unavailable
         and (attribute not in known or attribute == "other")
-    ]
+    )
 
 
 def candidate_attribute_scores(candidate_texts: list[str]) -> dict[str, float]:
@@ -117,7 +118,7 @@ def choose_clarification(
         return None, ""
 
     priority = BUYING_PRIORITY if state.intent == "buying" else BROWSING_PRIORITY
-    available = _available_attributes(state, priority)
+    available = list(available_attributes(state))
     if not available:
         return None, ""
 
