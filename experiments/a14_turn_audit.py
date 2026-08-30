@@ -45,6 +45,54 @@ A14_ATTRIBUTE_DIAGNOSTIC_FIELDS = (
     "eligibility_status",
     "missing_data_behavior",
 )
+A14_BOUNDED_ATTRIBUTES = {
+    "category",
+    "material",
+    "color",
+    "style",
+    "use_case",
+}
+A14_SOURCE_BY_ATTRIBUTE = {
+    **{
+        attribute: "candidate_evidence_text_bounded_vocabulary"
+        for attribute in A14_BOUNDED_ATTRIBUTES
+    },
+    "size": "candidate_field_tags_absent",
+    "brand": "candidate_field_tags_absent",
+    "budget": "candidate_field_tags_absent",
+    "feature": "candidate_evidence_text_unstructured",
+    "other": "controlled_legacy_fallback",
+}
+A14_STATUSES_BY_SOURCE = {
+    "candidate_evidence_text_bounded_vocabulary": {
+        "available",
+        "partial",
+        "unavailable",
+        "degraded",
+    },
+    "candidate_evidence_text_unstructured": {
+        "unavailable",
+        "uncalibrated",
+        "degraded",
+    },
+    "candidate_field_tags_absent": {"unavailable"},
+    "controlled_legacy_fallback": {"not_applicable"},
+}
+A14_LIFECYCLE = "current_turn_full_pool"
+A14_VALUE_RANGE = (
+    "coverage_and_split_float_0_1;value_count_int_gte_0;"
+    "null_when_not_comparable"
+)
+A14_ELIGIBILITY_STATUSES = {
+    "final_turn",
+    "policy_state_invalid",
+    "asked",
+    "no_preference",
+    "satisfied",
+    "eligible",
+    "not_in_legacy_priority",
+}
+A14_COMPARABILITY_FAMILY = "bounded_candidate_vocabulary_v1"
 
 
 def _sha256_bytes(value: bytes) -> str:
@@ -181,6 +229,44 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
                             raise ValueError(
                                 f"attribute evidence {field} must be non-empty"
                             )
+                    evidence_source = str(raw_record["source"])
+                    if evidence_source != A14_SOURCE_BY_ATTRIBUTE[evidence_attribute]:
+                        raise ValueError(
+                            "attribute evidence source is inconsistent with attribute"
+                        )
+                    if status not in A14_STATUSES_BY_SOURCE[evidence_source]:
+                        raise ValueError(
+                            "attribute evidence status is inconsistent with source"
+                        )
+                    if raw_record["lifecycle"] != A14_LIFECYCLE:
+                        raise ValueError("attribute evidence lifecycle is not allowed")
+                    if raw_record["value_range"] != A14_VALUE_RANGE:
+                        raise ValueError("attribute evidence value range is not allowed")
+                    expected_answerability = (
+                        "open_text_fallback"
+                        if evidence_attribute == "other"
+                        else "canonical_question"
+                    )
+                    if raw_record["answerability_status"] != expected_answerability:
+                        raise ValueError(
+                            "attribute evidence answerability is inconsistent"
+                        )
+                    expected_actionability = (
+                        "residual_extractor"
+                        if evidence_attribute == "other"
+                        else "bounded_or_residual_extractor"
+                        if evidence_attribute == "feature"
+                        else "bounded_extractor"
+                    )
+                    if raw_record["actionability_status"] != expected_actionability:
+                        raise ValueError(
+                            "attribute evidence actionability is inconsistent"
+                        )
+                    eligibility_status = str(raw_record["eligibility_status"])
+                    if eligibility_status not in A14_ELIGIBILITY_STATUSES:
+                        raise ValueError(
+                            "attribute evidence eligibility status is not allowed"
+                        )
                     eligible_value = raw_record.get("eligible")
                     if not isinstance(eligible_value, bool):
                         raise ValueError("attribute evidence eligible must be boolean")
@@ -191,6 +277,10 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
                     if eligible_value != expected_eligible:
                         raise ValueError(
                             "attribute evidence eligibility must match policy eligibility"
+                        )
+                    if eligible_value != (eligibility_status == "eligible"):
+                        raise ValueError(
+                            "attribute evidence eligibility status is inconsistent"
                         )
                     coverage = raw_record.get("candidate_coverage")
                     split = raw_record.get("rank_weighted_split")
@@ -225,9 +315,20 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
                         )
                     numeric_values = (coverage, value_count, split)
                     if status in {"available", "partial"}:
-                        if family is None or any(value is None for value in numeric_values):
+                        if (
+                            family != A14_COMPARABILITY_FAMILY
+                            or any(value is None for value in numeric_values)
+                        ):
                             raise ValueError(
                                 "comparable evidence requires family and numeric values"
+                            )
+                        if status == "available" and value_count < 2:
+                            raise ValueError(
+                                "available evidence requires at least two values"
+                            )
+                        if status == "partial" and value_count != 1:
+                            raise ValueError(
+                                "partial evidence requires exactly one value"
                             )
                     elif family is not None or any(
                         value is not None for value in numeric_values

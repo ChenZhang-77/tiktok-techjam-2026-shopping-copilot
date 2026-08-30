@@ -14,6 +14,38 @@ ATTRIBUTES = {
     "category", "material", "color", "size", "style", "brand", "budget",
     "feature", "use_case", "other",
 }
+BOUNDED_ATTRIBUTES = {"category", "material", "color", "style", "use_case"}
+SOURCE_BY_ATTRIBUTE = {
+    **{
+        attribute: "candidate_evidence_text_bounded_vocabulary"
+        for attribute in BOUNDED_ATTRIBUTES
+    },
+    "size": "candidate_field_tags_absent",
+    "brand": "candidate_field_tags_absent",
+    "budget": "candidate_field_tags_absent",
+    "feature": "candidate_evidence_text_unstructured",
+    "other": "controlled_legacy_fallback",
+}
+STATUSES_BY_SOURCE = {
+    "candidate_evidence_text_bounded_vocabulary": {
+        "available", "partial", "unavailable", "degraded",
+    },
+    "candidate_evidence_text_unstructured": {
+        "unavailable", "uncalibrated", "degraded",
+    },
+    "candidate_field_tags_absent": {"unavailable"},
+    "controlled_legacy_fallback": {"not_applicable"},
+}
+ELIGIBILITY_STATUSES = {
+    "final_turn", "policy_state_invalid", "asked", "no_preference",
+    "satisfied", "eligible", "not_in_legacy_priority",
+}
+LIFECYCLE = "current_turn_full_pool"
+VALUE_RANGE = (
+    "coverage_and_split_float_0_1;value_count_int_gte_0;"
+    "null_when_not_comparable"
+)
+COMPARABILITY_FAMILY = "bounded_candidate_vocabulary_v1"
 
 
 class A141AttributeEvidenceTest(unittest.TestCase):
@@ -93,7 +125,25 @@ class A141AttributeEvidenceTest(unittest.TestCase):
                     ):
                         self.assertIsInstance(item[field], str)
                         self.assertTrue(item[field].strip())
+                    self.assertEqual(item["source"], SOURCE_BY_ATTRIBUTE[attribute])
+                    self.assertIn(item["status"], STATUSES_BY_SOURCE[item["source"]])
+                    self.assertEqual(item["lifecycle"], LIFECYCLE)
+                    self.assertEqual(item["value_range"], VALUE_RANGE)
+                    self.assertEqual(
+                        item["answerability_status"],
+                        "open_text_fallback" if attribute == "other" else "canonical_question",
+                    )
+                    self.assertEqual(
+                        item["actionability_status"],
+                        "residual_extractor" if attribute == "other"
+                        else "bounded_or_residual_extractor" if attribute == "feature"
+                        else "bounded_extractor",
+                    )
+                    self.assertIn(item["eligibility_status"], ELIGIBILITY_STATUSES)
                     self.assertEqual(item["eligible"], attribute in eligible_attributes)
+                    self.assertEqual(
+                        item["eligible"], item["eligibility_status"] == "eligible"
+                    )
                     for field in ("candidate_coverage", "rank_weighted_split"):
                         value = item[field]
                         self.assertTrue(
@@ -120,8 +170,14 @@ class A141AttributeEvidenceTest(unittest.TestCase):
                         item["rank_weighted_split"],
                     )
                     if item["status"] in {"available", "partial"}:
-                        self.assertTrue(item["comparability_family"])
+                        self.assertEqual(
+                            item["comparability_family"], COMPARABILITY_FAMILY
+                        )
                         self.assertTrue(all(value is not None for value in numeric_values))
+                        if item["status"] == "available":
+                            self.assertGreaterEqual(item["value_count"], 2)
+                        else:
+                            self.assertEqual(item["value_count"], 1)
                     else:
                         self.assertIsNone(item["comparability_family"])
                         self.assertTrue(all(value is None for value in numeric_values))

@@ -16,18 +16,41 @@ class A14TurnAuditTest(unittest.TestCase):
             "category", "material", "color", "size", "style", "brand",
             "budget", "feature", "use_case", "other",
         )
+        bounded_attributes = {"category", "material", "color", "style", "use_case"}
         records = {
             attribute: {
                 "attribute": attribute,
-                "status": "available" if attribute == "material" else "unavailable",
-                "source": "bounded_fixture",
+                "status": (
+                    "available" if attribute == "material"
+                    else "uncalibrated" if attribute == "feature"
+                    else "not_applicable" if attribute == "other"
+                    else "unavailable"
+                ),
+                "source": (
+                    "candidate_evidence_text_bounded_vocabulary"
+                    if attribute in bounded_attributes
+                    else "candidate_evidence_text_unstructured"
+                    if attribute == "feature"
+                    else "controlled_legacy_fallback"
+                    if attribute == "other"
+                    else "candidate_field_tags_absent"
+                ),
                 "lifecycle": "current_turn_full_pool",
-                "value_range": "bounded",
+                "value_range": (
+                    "coverage_and_split_float_0_1;value_count_int_gte_0;"
+                    "null_when_not_comparable"
+                ),
                 "candidate_coverage": 0.5 if attribute == "material" else None,
                 "value_count": 2 if attribute == "material" else None,
                 "rank_weighted_split": 0.25 if attribute == "material" else None,
-                "answerability_status": "canonical_question",
-                "actionability_status": "bounded_extractor",
+                "answerability_status": (
+                    "open_text_fallback" if attribute == "other" else "canonical_question"
+                ),
+                "actionability_status": (
+                    "residual_extractor" if attribute == "other"
+                    else "bounded_or_residual_extractor" if attribute == "feature"
+                    else "bounded_extractor"
+                ),
                 "comparability_family": (
                     "bounded_candidate_vocabulary_v1"
                     if attribute == "material"
@@ -40,6 +63,8 @@ class A14TurnAuditTest(unittest.TestCase):
                 "missing_data_behavior": (
                     "comparable_within_family"
                     if attribute == "material"
+                    else "controlled_legacy_fallback"
+                    if attribute == "other"
                     else "preserve_legacy_action"
                 ),
             }
@@ -115,6 +140,29 @@ class A14TurnAuditTest(unittest.TestCase):
         ]["material"]["eligible"] = False
         with self.assertRaises(ValueError):
             build_turn_audit(invalid_eligibility)
+
+        for field in (
+            "source",
+            "lifecycle",
+            "value_range",
+            "answerability_status",
+            "actionability_status",
+            "eligibility_status",
+        ):
+            invalid_semantics = copy.deepcopy(source)
+            invalid_semantics["sessions"][0]["turns"][0]["question_policy"][
+                "attribute_evidence"
+            ]["material"][field] = "nonsense"
+            with self.subTest(semantic_field=field):
+                with self.assertRaises(ValueError):
+                    build_turn_audit(invalid_semantics)
+
+        invalid_available_gate = copy.deepcopy(source)
+        invalid_available_gate["sessions"][0]["turns"][0]["question_policy"][
+            "attribute_evidence"
+        ]["material"]["value_count"] = 1
+        with self.assertRaises(ValueError):
+            build_turn_audit(invalid_available_gate)
 
     def test_builds_a_target_free_question_trace_with_answer_outcomes(self) -> None:
         source = {
