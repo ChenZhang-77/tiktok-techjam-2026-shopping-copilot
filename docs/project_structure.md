@@ -1,5 +1,12 @@
 # Project Structure and File Placement
 
+## Release disposition
+
+Read [final release plan](final_release_plan.md) and [branch inventory](branch_inventory.md)
+first. Unfinished experiments are frozen in place. Hash-bound files, caches,
+annotations and Git checkpoints are preserved; there is no active annotation
+or AI-silver build queue. `submission/` is staging, not a completed package.
+
 ## Verdict
 
 The repository is not structurally chaotic. Runtime code, evaluation code,
@@ -47,7 +54,7 @@ Use the following order instead of reading `docs/` alphabetically:
 3. `optimization_roadmap.md` - dependency order and experiment gates.
 4. `question_policy_optimization_plan.md` - authoritative A14 design and
    experiment plan when Question Policy is selected.
-5. `a13_ai_silver_protocol.md` - active no-human A13 reference and KPI protocol
+5. `a13_ai_silver_protocol.md` - frozen no-human A13 reference and KPI protocol
    when semantic understanding is selected.
 6. `workstreams/` - independently readable A-side and B-side instructions.
 7. `*_evidence.md` - one decision record per recent experiment or offline gate.

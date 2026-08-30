@@ -1,30 +1,9 @@
 # DeepSeek LLM 接入实验方案
 
-> 最新单独实测（2026-08-31）：按“先重排、再语义理解”的顺序，
-> [A13-F1](docs/a13_semantic_score_test.md)已完成 160 会话基线和真实 Shadow。
-> 67 次 Flash 调用无 API 错误，但仅 60 次通过校验（89.55%，低于 95% 门槛），
-> 其中 56 次弃答、4 次兼容建议。未进入 Candidate，不声称语义方案能提分。
-> 大模型工作整体归为备选方案二，A13 保持关闭；主线是无外部 LLM 的方案一。
-> [B10b-F2 限时重排复核](docs/b10b_paired_verification.md)已完成：两轮配对
-> 验证均通过，但仅保留为方案二，不切换默认；现在回到主方案验证与交付。
-> 不追加付费轮次，也不恢复开放式 LLM 优化。
-> 此授权仅属于独立截止期试验，不等于通过下方正式 A13/AI-silver 门槛。
-
-> 2026-08-31 截止期更新：按协调者“剩一天、比赛得分优先”的要求，
-> [轻量 AI 评审](docs/a13_light_review.md)已完成，仅保留为离线辅助。
-> 多模型 AI-silver 管线和 A13 运行时暂缓，不代表通过原门槛。
-> 当前转向独立的 [A14 得分对照试验](docs/a14_deadline_selection.md)。
-> 下方 provider 未授权等描述属于原正式 A13 阶段，不否定已单独授权的 LR0。
-
-> 状态：A13-0 已完成；A13-1 已拒绝并回滚；A13-S0 离线基础通过 parity；A13-AS0T 核心合约测试通过，但 AS0R 精确独立角色与 AS0X runner/repair/provenance 均待完成，provider 未授权。
->
-> 当前发布分支：llm（源实验分支：a/a13-llm-semantic-understanding）
->
-> 运行时来源基线：0bd33755dcef6db066cf11b5a0a87e0ade554a5e
->
-> A13-0 clean comparator：b86a9e788f0388947351d14cedefa8f047367001
->
-> 实验代号：A13-S0 影子语义理解；通过审查门后才能进入 A13-C1。
+> 发布冻结（2026-08-31）：A13 语义理解与 AI-silver 未完成部分停止推进；
+> 不启用 Candidate，不把人工 valid-34 当 gold。大模型仅保留 B10b-F2 商品重排
+> 为备选方案二。此文件以下是历史设计与门槛，不是当前待办；
+> 当前执行入口为 [最终总纲](docs/final_release_plan.md)。
 
 ## 1. 一句话定位
 

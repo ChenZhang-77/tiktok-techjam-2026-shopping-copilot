@@ -39,6 +39,10 @@ existence of a roadmap item.
 
 ## 3. Current State
 
+Release disposition (2026-08-31): `docs/final_release_plan.md` freezes unfinished
+experiments; `docs/optimization_roadmap.md` now schedules delivery only. Older
+A13/A14/B10b “next step” prose below is historical, not permission to resume.
+
 `docs/current_status.md` is the single source of truth for checkout-specific
 state, metrics, retained architecture, known risks, and the next decision.
 Re-check Git state because branch and remote facts can drift.

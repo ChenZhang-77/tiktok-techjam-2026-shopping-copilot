@@ -1,5 +1,9 @@
 # A13 AI-Silver Evaluation Protocol
 
+> Release freeze (2026-08-31): incomplete reference-building work is frozen,
+> not passed. Do not execute old next-step commands without a new authorized
+> experiment. Current direction: [final plan](final_release_plan.md).
+
 Deadline disposition (2026-08-31): this full multi-family protocol is deferred,
 not passed. The coordinator authorized only the separate
 [LR0 synthetic editor diagnostic](a13_light_review.md); its result is not

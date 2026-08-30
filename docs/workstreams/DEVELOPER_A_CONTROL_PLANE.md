@@ -1,5 +1,10 @@
 # Developer A Optimization Route - Control Plane
 
+> Release freeze (2026-08-31): [final plan](../final_release_plan.md) and
+> [current status](../current_status.md) supersede historical “next steps” below.
+> No automatic A13/A14/model/parameter work. This branch's only current track is
+> source validation, documentation/publication, then separately verified packaging.
+
 ## Purpose
 
 This is the standalone route for a fresh Codex conversation working on the

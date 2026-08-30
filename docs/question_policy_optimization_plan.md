@@ -1,5 +1,9 @@
 # A14 Question Policy Optimization Plan
 
+> Release freeze (2026-08-31): the selector pilot and pending counterfactual
+> work are frozen, not promoted. A14-0/1 parity infrastructure remains in llm.
+> Historical next steps below do not override [final plan](final_release_plan.md).
+
 ## Status and Authority
 
 2026-08-31 deadline supplement: A13 runtime/reference construction has a

@@ -17,99 +17,22 @@ available as an explicit, isolated performance experiment.
 
 ## Current Status
 
-**Latest priority:** local/no-external-LLM **Plan One** remains the main path.
-Hosted LLM features are optional **Plan Two**. The coordinator requested one
-bounded [paired reranking verification](docs/b10b_paired_verification.md), now
-complete: two clean paired passes give score `0.779043 / 0.779199` versus
-`0.766231`, all four folds positive. It is verified **only as optional Plan Two**;
-HR/MTTC are unchanged and API latency has a 7.3-second tail. Semantic
-understanding remains inactive; no packaging or default switch is implied.
+Plan One is the Chen local/no-external-LLM runtime, published to `yuqing`.
+Plan Two is the explicit optional F2 product reranker on `llm`; both branches
+still default to local behavior. A13 semantic understanding and A14 selector
+experiments are frozen, not enabled.
 
-**Earlier requested order (2026-08-31):** complete
-[B10b-F1 product reranking](docs/b10b_full_rerank_test.md), report its measured
-effect, then test semantic understanding separately. The first full pass is
-complete: 412 successful real Flash requests, MRR `0.554521 -> 0.597225`,
-TechnicalScore `0.766231 -> 0.779043`, all four folds positive. Two sessions have
-cross-arm trace differences, so the strict parity gate fails: no repeat or
-default promotion. The subsequent [A13-F1 semantic test](docs/a13_semantic_score_test.md)
-completed baseline + real Shadow on 160 sessions each: 67 API calls, zero API
-failures, but only 60/67 valid proposals (89.55%, below 95%). Candidate was not
-run; semantic score improvement is unproven. No default or packaging change.
+The [final release plan](docs/final_release_plan.md) defines the two paths,
+[branch inventory](docs/branch_inventory.md) identifies frozen work, and
+[current status](docs/current_status.md) owns all current metrics and caveats.
+The new same-protocol [Development-160 comparison](docs/release_comparison.md)
+selects Chen: score `0.766231` versus original P0 `0.722074`, HR `0.925`
+versus `0.8625`. This is the default B9 route, not the older structured-only
+`0.765703` checkpoint. It is not a private/holdout result.
 
-**2026-08-31 deadline route:** [lightweight AI review](docs/a13_light_review.md)
-is complete and retained only as an offline helper; it does not demonstrate
-competition gains. Full AI-silver construction and A13 runtime are deferred.
-The separate [A14 selection pilot](docs/a14_deadline_selection.md) reproduced
-a small score gain against the actual default route, with one regressing fold;
-it remains opt-in pending its final counterfactual audit. Production defaults are unchanged.
-The latest reranking-first order above supersedes this older A14 next step
-and the pending-A13 sequence below.
-
-The verified integrated checkout and next optimization decision are documented
-in [`docs/current_status.md`](docs/current_status.md). The project-wide route is
-[`docs/optimization_roadmap.md`](docs/optimization_roadmap.md). For a plain-
-language Chinese walkthrough from A1/B1 through the current result, read
-[`docs/human_optimization_recap_zh.md`](docs/human_optimization_recap_zh.md).
-The reviewed A-side DeepSeek plan, gates, and branch boundary are in
-[`DeepSeek_LLM接入实验方案.md`](DeepSeek_LLM接入实验方案.md).
-The deferred no-human reference route and its evidence hierarchy are in
-[`docs/a13_ai_silver_protocol.md`](docs/a13_ai_silver_protocol.md).
-Its AS0 core comparator/config/schema tests have passed; exact independent
-roles and the execution/repair/provenance runner are still pending, as recorded in
-[`docs/a13_as0_offline_tooling_evidence.md`](docs/a13_as0_offline_tooling_evidence.md).
-
-The teammate-ready offline annotation bundle is committed at
-[`A13_annotation_pack_v1.zip`](A13_annotation_pack_v1.zip). Unzip it and
-double-click `开始标注.html`; the annotator does not need to edit JSONL or use a
-terminal. All 60 boundary expressions have a validator-supported reading, and
-the page hides internal trigger metadata so independent annotators are not
-prompted toward an answer. The bundle contains unlabeled fixtures only and does
-not authorize a reference-builder or Candidate provider run. Under the selected AI-silver
-route its now-exposed items are development diagnostics only; the semantic gate
-requires a fresh fixture generated after the Candidate config is frozen.
-
-Verified Development-160 result for the retained bounded A11 plus B9
-conditional-dense default:
-
-| Metric | Result |
-| --- | ---: |
-| HitRate@10 | 0.86250 |
-| MRR | 0.547329 |
-| MTTC | 4.66875 |
-| Efficiency | 0.633125 |
-| TechnicalScore | 0.722074 |
-
-Latest local A-side state-correction checkpoint (Development-160 only):
-
-| Metric | Result |
-| --- | ---: |
-| HitRate@10 | 0.925000 |
-| MRR | 0.552760 |
-| MTTC | 4.13125 |
-| Efficiency | 0.686875 |
-| TechnicalScore | 0.765703 |
-
-This checkpoint fixes negation scope, prevents low-confidence fallback text
-from revoking `no-preference`, and aligns the offline taxonomy with the shared
-no-preference detector. It preserves the existing A/B runtime interface and
-does not add an LLM. It was run only on Development-160 with zero response
-exceptions, invalid payloads, and fallbacks. It is not a holdout result and
-does not claim that any single fix caused the full metric change without a
-separate ablation.
-
-Historical Full-200 public snapshot:
-
-| Metric | Result |
-| --- | ---: |
-| HitRate@10 | 0.765000 |
-| MRR | 0.517355 |
-| MTTC | 5.375000 |
-| TechnicalScore | 0.650207 |
-
-The Full-200 result is not a sealed validation result. The public holdout had
-already been exposed, so later work must be selected only with fixed
-Development-160 cross-validation. The organizer's private 800 sessions remain
-the external generalization test.
+[B10b-F2](docs/b10b_paired_verification.md) verifies optional reranking gains in two paired rounds; it does not change defaults.
+The independent submission package, cold-start portability and final video
+remain delivery work; old P0 packaging must be regenerated for the selected source.
 
 ## Problem Framing
 
@@ -191,7 +114,7 @@ concentrated in fold 4.
 
 ## What the Ablations Showed
 
-Development-160:
+Historical Development-160 ablations on their recorded comparators (not the current Chen default):
 
 | Variant | HitRate@10 | MRR | TechnicalScore | Decision |
 | --- | ---: | ---: | ---: | --- |
@@ -256,7 +179,7 @@ Requirements:
 Clone and enter the repository:
 
 ```bash
-git clone https://github.com/ChenZhang-77/tiktok-techjam-2026-shopping-copilot.git
+git clone --branch llm https://github.com/ChenZhang-77/tiktok-techjam-2026-shopping-copilot.git
 cd tiktok-techjam-2026-shopping-copilot
 python3 --version
 ```
@@ -280,17 +203,20 @@ to its deterministic standard-library structured path:
 python3 -m unittest discover -s tests -v
 ```
 
-Run an ordinary Development-160 evaluation:
+Run the actual default B9 Development-160 audit after preparing local dense assets:
 
 ```bash
-.venv/bin/python -m experiments.evaluation_reporting \
-  --split development --structured-filter \
-  --output /private/tmp/shopping-copilot-development.json
+.venv/bin/python -m experiments.release_default_audit \
+  --output /private/tmp/shopping-copilot-development-new.json
 ```
 
 Do not use `--split full` or `--split holdout` for optimization.
 
 ### Optional DeepSeek API setup
+
+Historical DS1/DS2 setup below is not the verified F2 recipe. API work is
+optional Plan Two only; see [current disposition](docs/current_status.md).
+
 
 The default deterministic experiment does not require an API key. For the
 optional LLM shadow/reranking experiments, create a local credentials file:
@@ -377,6 +303,10 @@ offline annotation UI, and is not gold, AI-silver, or model output.
 
 ## Named Experiments and Visualizer
 
+Historical experiment commands below are reference-only. The active release
+route and frozen experiment list are in [final release plan](docs/final_release_plan.md).
+
+
 For an isolated named development run:
 
 ```bash
@@ -437,79 +367,10 @@ failures return the exact structured order.
 
 ## Current Optimization Route
 
-R0 is complete: the corrected clean Development-160 audit classified 25 of 38
-misses as Intent / Strategy Routing, seven as State / Override, and six as
-Extraction, while the target entered the retained lexical pool in 145 of 160
-sessions. See
-[`docs/r0_development_failure_taxonomy.md`](docs/r0_development_failure_taxonomy.md).
-The retained A8 module now persists a complete cross-turn `IntentAssessment`.
-Development-160 HitRate stayed `0.7625`, MRR rose by `0.002823`, Buying improved
-in three of four folds, and Browsing did not regress; the overall score was
-effectively neutral and Intent Override regressed slightly. See
-[`docs/a8_stateful_intent_evidence.md`](docs/a8_stateful_intent_evidence.md).
-AB0 now makes a compact full-pool `DecisionEvidence` available before
-clarification with exact 160-session / 818-turn dialogue parity and no shared
-contract change. See
-[`docs/ab0_decision_evidence.md`](docs/ab0_decision_evidence.md). The
-tested A9 should-ask gate was rejected and reverted after HitRate fell to
-`0.7500` and MTTC rose to `5.43125`.
-See [`docs/a9_should_ask_evidence.md`](docs/a9_should_ask_evidence.md). The
-A10a full-pool question-value candidate was also rejected and reverted after
-HitRate fell to `0.75625`, MRR to `0.520012`, and MTTC rose to `5.3625`; current
-partition evidence is incomplete across allowed attributes. See
-[`docs/a10a_question_value_evidence.md`](docs/a10a_question_value_evidence.md).
-A10b now retains an A-internal `QueryPlan` that separates positive roles,
-residual text, and excluded values while continuing to send B the same single
-query string. Development-160 metrics and all session outcomes are unchanged.
-See [`docs/a10b_query_plan_evidence.md`](docs/a10b_query_plan_evidence.md).
-A11 now retains bounded catalog-derived multi-word category extraction,
-clause-scoped positive/negative/no-preference evidence, and numeric/hyphen
-disambiguation. Review fixes also keep comma-delimited negative/no-preference
-lists scoped, prevent catalog phrases from crossing punctuation, and bind
-injected retrievers to their actual catalog. Development-160 improved to HR
-`0.8625`, MRR `0.545568`, MTTC `4.675`, and technical score `0.721420`; all four
-fixed folds improved. The combined broad candidate was rejected, while its
-individual components remain unproven without independent evidence. Boundary
-quality remains a disclosed risk. See
-[`docs/a11_extraction_scope_evidence.md`](docs/a11_extraction_scope_evidence.md).
-AB1 retained exact Development/fold/session parity while making requested and
-executed Routes truthful. See
-[`docs/ab1_route_semantics_evidence.md`](docs/ab1_route_semantics_evidence.md).
-B8's exact, confidence-aware penalty passed targeted tests but was reverted
-because all 726 Development turns carried zero rejected constraints. See
-[`docs/b8_rejected_constraint_evidence.md`](docs/b8_rejected_constraint_evidence.md).
-B9 now retains the Browsing-first conditional dense Route at `7f520ba`; see
-[`docs/b9_conditional_dense_evidence.md`](docs/b9_conditional_dense_evidence.md).
-B10a is rejected as a runtime default while its reproducible experiment remains
-available; see
-[`docs/b10a_constraint_rerank_evidence.md`](docs/b10a_constraint_rerank_evidence.md).
-B10b-DS1/DS2 code and provisional remote measurements exist, but complete
-reports are not yet hash-bound; neither is part of the default runtime. The
-refreshed B11 audit found
-zero retrieval/ranking primary misses and 157/160 retained-depth lexical
-recall, so B11 was not started. B12 remains an explicit exploratory option at
-`82891c8`; it is disabled by default because no contemporaneous selection gate
-was recorded and its fold gain is concentrated. See
-[`docs/b11_prerequisite_evidence.md`](docs/b11_prerequisite_evidence.md) and
-[`docs/b12_adaptive_depth_evidence.md`](docs/b12_adaptive_depth_evidence.md).
-`AGENTS.md` owns the taxonomy and
-leakage boundary; [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md)
-owns the complete order.
-
-The reviewed next Question Policy direction is A14. It does not begin by
-reusing the rejected A9 stop threshold or by giving an LLM control of the
-conversation. A14-0 retains a hash-bound 649-turn audit and a deep
-one-entry-point Question Policy Module; A14-1 retains complete explicit
-ten-attribute evidence. Both preserve exact legacy-visible behavior. The next
-deterministic selection Shadow/Candidate must wait for the A13 review gate.
-Optional catalog-
-only policy learning, an offline-only LLM teacher Shadow/No-Go, and a guarded
-online LLM advisor remain later, separate slices. The teacher has no direct
-runtime path.
-See
-[`docs/a14_0_question_policy_evidence.md`](docs/a14_0_question_policy_evidence.md),
-[`docs/a14_1_attribute_evidence.md`](docs/a14_1_attribute_evidence.md),
-and [`docs/question_policy_optimization_plan.md`](docs/question_policy_optimization_plan.md).
+New behavior work is frozen. Follow [release roadmap](docs/optimization_roadmap.md):
+source verification, documentation/review, authorized branch publication, then
+fresh-source packaging and demo. Historical experiment “next steps” do not
+reopen work. All freeze/recovery decisions are in [final release plan](docs/final_release_plan.md).
 
 ## Reliability and Cost
 

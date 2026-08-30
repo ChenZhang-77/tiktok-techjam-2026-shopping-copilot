@@ -38,29 +38,15 @@ implemented capability. Profile ranking remains disabled at weight 0.0.
 
 ## Evidence available now
 
-- Retained B9 route commit: `7f520ba`; optional B12 code commit: `82891c8`.
-- Current test count and latest A-side correction metrics: see
-  `docs/current_status.md`; the checkpoint is Development-only and does not
-  isolate the contribution of each correction.
-- Earlier retained A11+B9 checkpoint: HitRate@10 `0.8625`, MRR `0.547329`,
-  MTTC `4.66875`, TechnicalScore `0.722074`.
-- B9 route: dense/fusion executed 102 times; all four folds non-regressing;
-  startup about `3.58 s`, peak RSS about `1.109 GB`.
-- B10a: Top-3 and Top-5 anchored CrossEncoder candidates rejected; the default
-  remains B9.
-- B10b: opt-in code and provisional remote measurements exist, but complete
-  reports are not yet hash-bound tracked evidence; default remains off.
-- A13: reviewed Shadow-first semantic-understanding plan only; no runtime or
-  score claim is allowed until its gates pass.
-- B11: not started because the current R0 refresh finds zero retrieval/ranking
-  primary misses; do not claim a lexical-recall refinement.
-- B12: exploratory and disabled by default; favorable aggregate result, but no
-  contemporaneous gate and a gain concentrated in fold 4.
-- Historical full-200 run: HitRate@10 `0.765`, MRR `0.517355`, MTTC `5.375`,
-  TechnicalScore `0.650207`.
+Use [current status](current_status.md) for measured default metrics and LLM
+cost/latency caveats; use [release comparison](release_comparison.md) for source
+selection and tests. Do not reuse the old P0/B12 default score as Chen's score,
+or describe old DS1 evidence as the verified F2 recipe.
 
-The full-200 run is non-confirmatory because those public sessions have already
-been exposed. Say “historical public result,” not “unseen holdout validation.”
+The old P0 independent package/report/video drafts remain frozen at `aaa7e45`.
+Neither selected branch currently contains a regenerated independent package.
+Reuse requires source synchronization and fresh-directory tests. Final video,
+team contributions and submission metadata are not marked complete here.
 
 ## Four-case demo script
 
