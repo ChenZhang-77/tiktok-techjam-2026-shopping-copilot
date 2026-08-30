@@ -85,13 +85,18 @@ Current Chen runtime source @ 0bd3375
               -> freeze two-member ambiguity fixture before any real API
               -> A13 review gate
                   -> A13-C1 guarded activation or No-Go
-                      -> A14-0 turn audit and deep-Module parity
-                          -> A14-1 complete attribute-evidence coverage
-                              -> A14-S1 deterministic selection Shadow
-                                  -> A14-C1 selection-only Candidate
-                                      -> optional synthetic/LLM/stop slices
-                                          -> R4 integrated freeze
-                                              -> R5 delivery and rehearsal
+
+Current runtime and frozen evidence
+  -> A14-0 turn audit and deep-Module parity             may run before A13 gate
+      -> A14-1 complete attribute-evidence coverage      may run before A13 gate
+          -> wait for the A13 review disposition
+              -> A14-S1 deterministic selection Shadow
+                  -> A14-C1 selection-only Candidate
+                      -> optional synthetic/LLM/stop slices
+
+A13 disposition + retained A14 slices
+  -> R4 integrated freeze
+      -> R5 delivery and rehearsal
 ```
 
 B9's A8 and AB1 blockers are complete, and B9 is retained. B10a has been

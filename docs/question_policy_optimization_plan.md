@@ -309,13 +309,14 @@ is the missing capability.
 
 Preferred roles:
 
-1. cluster open Candidate feature phrases into two to four grounded, answerable
-   concepts;
-2. rerank a deterministic shortlist when comparable Question Value estimates
-   are close;
-3. act offline as a teacher for catalog-grounded feature normalization or
-   synthetic question generation, followed by deterministic validation and
-   optional distillation;
+1. act offline as a teacher that clusters a frozen, hash-bound set of grounded
+   catalog feature phrases into two to four answerable concepts; the result
+   must pass deterministic validation before becoming policy evidence and is
+   not an online-advisor input;
+2. let an online advisor rerank a deterministic shortlist when comparable
+   Question Value estimates are close;
+3. act offline as a teacher for synthetic question generation, followed by
+   deterministic validation and optional distillation;
 4. generate clearer user-facing wording after the deterministic attribute is
    fixed.
 
@@ -324,9 +325,10 @@ LLM wording may improve real UX, Impact, and demo quality, but should not be
 claimed as a TechnicalScore mechanism.
 
 An online advisor is an internal seam with at least a deterministic/fake
-adapter and a provider adapter. It receives only an eligible shortlist and
-bounded aggregate evidence. It may return existing proposal IDs, confidence,
-and closed reason codes. It cannot:
+adapter and a provider adapter. Unlike the separate offline feature teacher,
+it receives only an eligible shortlist and bounded aggregate evidence; it does
+not receive or cluster raw feature phrases. It may return existing proposal
+IDs, confidence, and closed reason codes. It cannot:
 
 - decide stop in its first Candidate;
 - create a new attribute or bypass eligibility;

@@ -31,8 +31,9 @@ Browsing 条件式 dense/RRF** 之上，又加入三项 A 侧状态正确性修�
 | Efficiency | 0.686875 | 由 MTTC 换算的效率分；越高越好 |
 | TechnicalScore | 0.765703 | 50% 命中率 + 30% 排名 + 20% 效率的总分 |
 
-这份结果来自 **Development-160**，不是未见过的最终测试集。A13 规划分支当前
-完整测试为 **297/297 passed**。本轮没有运行 Holdout-40 或 Full-200。
+这份结果来自 **Development-160**，不是未见过的最终测试集。当前仓库完整测试为
+**353/353 passed**；权威运行状态与最新验证命令以 `docs/current_status.md` 为准。
+本轮没有运行 Holdout-40 或 Full-200。
 
 ## 编号为什么不是连续的
 
