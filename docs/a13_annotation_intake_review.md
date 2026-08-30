@@ -214,11 +214,12 @@ a preflight diagnostic and is explicitly not treated as official comparison.
    historical cleanup, not an A13 blocker under the selected route.
 2. Keep the valid-34 results diagnostic only. They may motivate failure classes
    but may not seed, tune, adjudicate, or score AI-silver.
-3. Preserve the completed A13-AS0T offline comparator/config/schema tooling and
+3. Preserve the tested A13-AS0T core comparator/config/schema contracts and
    its hash-bound evidence. Complete A13-AS0R without provider access by binding
    exact independent generator, duplicate-auditor, labeler, and adjudicator
-   identities/config hashes. The exposed legacy 60 items cannot score the
-   semantic gate.
+   identities/config hashes. Complete AS0X execution, isolated repair, and
+   request/response provenance before any provider work. The exposed legacy 60
+   items cannot score the semantic gate.
 4. Obtain explicit authorization for reference-builder provider calls only
    after that role manifest passes fail-closed preflight, then
    execute A13-AS1F/AS1J/AS2 under `docs/a13_ai_silver_protocol.md`.

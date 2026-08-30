@@ -11,4 +11,3 @@ extra keys, prose, tools, browsing, or Markdown. Abstain when the evidence does
 not support one valid delta. A machine validator may return one bounded repair
 request containing only this item, your own invalid output, and validation
 errors.
-

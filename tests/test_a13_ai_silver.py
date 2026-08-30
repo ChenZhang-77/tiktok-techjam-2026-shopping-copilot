@@ -2,12 +2,15 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import tempfile
 import unittest
 
 from experiments.a13_ai_silver import (
     AISilverProtocolError,
     APPLIED_STATE_FIELDS,
     build_as0_preflight_report,
+    build_role_artifact_bindings,
+    canonical_item_collection_sha256,
     REACHABLE_TRIGGERS,
     apply_understanding_delta,
     audit_fresh_fixture,
@@ -158,46 +161,124 @@ class AppliedStateDeltaTest(unittest.TestCase):
         ):
             apply_understanding_delta(prior_state, abstain)
 
+    def test_rejected_only_override_deactivates_every_stale_attribute_value(self) -> None:
+        prior_state = {
+            "intent": "buying",
+            "active_constraints": [
+                {"attribute": "color", "value": "red"},
+                {"attribute": "color", "value": "blue"},
+            ],
+            "rejected_constraints": [],
+            "no_preference_attributes": [],
+        }
+        delta = UnderstandingDelta(
+            intent_hint=None,
+            positive_constraints=(),
+            rejected_constraints=(_proposal("color", "blue", hard=False),),
+            no_preference_attributes=(),
+            override_attributes=("color",),
+            semantic_terms=(),
+            abstain=False,
+        )
 
-def _role(role: str, provider: str, family: str, model_version: str) -> dict:
+        projection = apply_understanding_delta(prior_state, delta)
+
+        expected = [
+            {"attribute": "color", "value": "blue"},
+            {"attribute": "color", "value": "red"},
+        ]
+        self.assertEqual(projection["active_constraints_deactivated"], expected)
+        self.assertEqual(projection["stale_values_deactivated"], expected)
+
+    def test_category_override_records_all_dependent_stale_values(self) -> None:
+        prior_state = {
+            "intent": "buying",
+            "active_constraints": [
+                {"attribute": "category", "value": "shoes"},
+                {"attribute": "color", "value": "red"},
+            ],
+            "rejected_constraints": [],
+            "no_preference_attributes": [],
+        }
+        delta = UnderstandingDelta(
+            intent_hint=None,
+            positive_constraints=(_proposal("category", "bags"),),
+            rejected_constraints=(),
+            no_preference_attributes=(),
+            override_attributes=("category",),
+            semantic_terms=(),
+            abstain=False,
+        )
+
+        projection = apply_understanding_delta(prior_state, delta)
+
+        self.assertEqual(
+            projection["stale_values_deactivated"],
+            [
+                {"attribute": "category", "value": "shoes"},
+                {"attribute": "color", "value": "red"},
+            ],
+        )
+
+
+def _role(
+    role: str,
+    provider: str,
+    family: str,
+    model_version: str,
+    bindings: dict[str, dict[str, str]],
+) -> dict:
     return {
         "role": role,
         "provider": provider,
         "family": family,
         "model_version": model_version,
-        "prompt_sha256": "a" * 64,
-        "config_sha256": "b" * 64,
+        **bindings[role],
     }
 
 
 class RoleManifestTest(unittest.TestCase):
     def _manifest(self) -> dict:
+        bindings = build_role_artifact_bindings(SILVER_CONTRACT)
         return {
             "candidate": _role(
-                "candidate", "deepseek", "deepseek", "deepseek-candidate-v1"
+                "candidate",
+                "deepseek",
+                "deepseek",
+                "deepseek-candidate-v1",
+                bindings,
             ),
             "generator": _role(
-                "generator", "mistral", "mistral", "mistral-generator-v1"
+                "generator",
+                "mistral",
+                "mistral",
+                "mistral-generator-v1",
+                bindings,
             ),
             "duplicate_auditor": _role(
                 "duplicate_auditor",
                 "cohere",
                 "cohere",
                 "cohere-duplicate-auditor-v1",
+                bindings,
             ),
             "labelers": [
-                _role("J1", "openai", "openai", "openai-judge-v1"),
-                _role("J2", "anthropic", "anthropic", "anthropic-judge-v1"),
-                _role("J3", "google", "google", "google-judge-v1"),
+                _role("J1", "openai", "openai", "openai-judge-v1", bindings),
+                _role(
+                    "J2", "anthropic", "anthropic", "anthropic-judge-v1", bindings
+                ),
+                _role("J3", "google", "google", "google-judge-v1", bindings),
             ],
             "adjudicator": _role(
-                "adjudicator", "xai", "xai", "xai-adjudicator-v1"
+                "adjudicator", "xai", "xai", "xai-adjudicator-v1", bindings
             ),
         }
 
     def test_preflight_accepts_independent_role_identities_and_families(self) -> None:
         self.assertEqual(
-            validate_role_manifest(self._manifest()),
+            validate_role_manifest(
+                self._manifest(), build_role_artifact_bindings(SILVER_CONTRACT)
+            ),
             {
                 "candidate_family": "deepseek",
                 "generator_family": "mistral",
@@ -215,7 +296,9 @@ class RoleManifestTest(unittest.TestCase):
         with self.assertRaisesRegex(
             AISilverProtocolError, "labeler families must be distinct"
         ):
-            validate_role_manifest(manifest)
+            validate_role_manifest(
+                manifest, build_role_artifact_bindings(SILVER_CONTRACT)
+            )
 
     def test_preflight_fails_closed_when_adjudicator_can_share_a_vote_family(self) -> None:
         manifest = self._manifest()
@@ -224,7 +307,32 @@ class RoleManifestTest(unittest.TestCase):
         with self.assertRaisesRegex(
             AISilverProtocolError, "adjudicator family must be distinct"
         ):
-            validate_role_manifest(manifest)
+            validate_role_manifest(
+                manifest, build_role_artifact_bindings(SILVER_CONTRACT)
+            )
+
+    def test_preflight_rejects_well_formed_but_unbound_artifact_hash(self) -> None:
+        manifest = self._manifest()
+        manifest["candidate"]["prompt_sha256"] = "f" * 64
+
+        with self.assertRaisesRegex(AISilverProtocolError, "artifact hash mismatch"):
+            validate_role_manifest(
+                manifest, build_role_artifact_bindings(SILVER_CONTRACT)
+            )
+
+    def test_bound_roles_cannot_bypass_the_missing_execution_runner(self) -> None:
+        manifest = self._manifest()
+        manifest["candidate"]["model_version"] = "DeepSeek-V4-Flash-0731"
+        with tempfile.TemporaryDirectory() as temporary:
+            manifest_path = Path(temporary) / "roles.json"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+            report = build_as0_preflight_report(SILVER_CONTRACT, manifest_path)
+
+        self.assertTrue(report["role_manifest_frozen"])
+        self.assertEqual(report["status"], "blocked_execution_runner")
+        self.assertFalse(report["execution_runner_ready"])
+        self.assertFalse(report["reference_builder_provider_authorized"])
 
 
 class ConsensusTest(unittest.TestCase):
@@ -256,6 +364,15 @@ class ConsensusTest(unittest.TestCase):
         self.assertIsNone(adjudicator_disagreement["canonical_projection"])
         self.assertEqual(three_way["status"], "silver_unresolved")
         self.assertIsNone(three_way["canonical_projection"])
+
+    def test_malformed_projection_type_is_retained_as_an_invalid_vote(self) -> None:
+        invalid = _applied_projection("buying")
+        invalid["intent_after"] = ["buying"]
+
+        result = resolve_ai_silver_consensus([invalid, invalid, invalid])
+
+        self.assertEqual(result["status"], "silver_unresolved")
+        self.assertEqual(result["valid_labeler_count"], 0)
 
 
 class FreshFixtureAuditTest(unittest.TestCase):
@@ -290,24 +407,37 @@ class FreshFixtureAuditTest(unittest.TestCase):
                 )
         return rows
 
+    @staticmethod
+    def _legacy_items(*, duplicate_message: str | None = None) -> list[dict]:
+        return [
+            {
+                "item_id": f"LEGACY-{index:03d}",
+                "current_message": (
+                    duplicate_message
+                    if duplicate_message is not None and index == 1
+                    else f"Legacy exposed expression {index}."
+                ),
+            }
+            for index in range(1, 61)
+        ]
+
     def test_audit_requires_fresh_balanced_items_and_projects_target_free_judge_input(self) -> None:
         fresh = self._fresh_items()
-        legacy = [
-            {
-                "item_id": "LEGACY-001",
-                "current_message": "A legacy exposed shopping expression.",
-            }
-        ]
+        legacy = self._legacy_items()
 
         report = audit_fresh_fixture(
             fresh,
             legacy,
+            expected_legacy_item_count=60,
+            expected_legacy_fixture_sha256=canonical_item_collection_sha256(legacy),
             candidate_trigger="low_confidence_residual_feature",
             near_duplicate_threshold=0.9,
             semantic_audited_item_ids=[item["item_id"] for item in fresh],
             semantic_duplicate_pairs=[],
         )
-        judge_input = project_judge_input(fresh[0])
+        judge_input = project_judge_input(
+            fresh[0], blind_salt="independent-blind-salt-v1"
+        )
 
         self.assertEqual(report["item_count"], 60)
         self.assertEqual(report["candidate_trigger_count"], 20)
@@ -316,19 +446,20 @@ class FreshFixtureAuditTest(unittest.TestCase):
             set(judge_input), {"item_id", "prior_state", "current_message"}
         )
         self.assertNotIn("trigger_type", judge_input)
+        self.assertNotIn(fresh[0]["trigger_type"], judge_input["item_id"])
+        self.assertEqual(len(report["fixture_manifest"]["item_inventory"]), 60)
 
     def test_audit_rejects_legacy_duplicates_and_target_keys_before_scoring(self) -> None:
         fresh = self._fresh_items()
-        legacy = [
-            {
-                "item_id": "LEGACY-001",
-                "current_message": fresh[0]["current_message"],
-            }
-        ]
+        legacy = self._legacy_items(duplicate_message=fresh[0]["current_message"])
         with self.assertRaisesRegex(AISilverProtocolError, "legacy duplicate"):
             audit_fresh_fixture(
                 fresh,
                 legacy,
+                expected_legacy_item_count=60,
+                expected_legacy_fixture_sha256=canonical_item_collection_sha256(
+                    legacy
+                ),
                 candidate_trigger="low_confidence_residual_feature",
                 near_duplicate_threshold=0.9,
                 semantic_audited_item_ids=[item["item_id"] for item in fresh],
@@ -340,7 +471,11 @@ class FreshFixtureAuditTest(unittest.TestCase):
         with self.assertRaisesRegex(AISilverProtocolError, "forbidden fixture key"):
             audit_fresh_fixture(
                 fresh,
-                [],
+                self._legacy_items(),
+                expected_legacy_item_count=60,
+                expected_legacy_fixture_sha256=canonical_item_collection_sha256(
+                    self._legacy_items()
+                ),
                 candidate_trigger="low_confidence_residual_feature",
                 near_duplicate_threshold=0.9,
                 semantic_audited_item_ids=[item["item_id"] for item in fresh],
@@ -355,15 +490,81 @@ class FreshFixtureAuditTest(unittest.TestCase):
         ):
             audit_fresh_fixture(
                 fresh,
-                [],
+                self._legacy_items(),
+                expected_legacy_item_count=60,
+                expected_legacy_fixture_sha256=canonical_item_collection_sha256(
+                    self._legacy_items()
+                ),
                 candidate_trigger="low_confidence_residual_feature",
                 near_duplicate_threshold=0.9,
                 semantic_audited_item_ids=[item["item_id"] for item in fresh[:-1]],
                 semantic_duplicate_pairs=[],
             )
 
+    def test_audit_rejects_an_incomplete_or_unbound_legacy_fixture(self) -> None:
+        fresh = self._fresh_items()
+        legacy = self._legacy_items()[:-1]
+
+        with self.assertRaisesRegex(AISilverProtocolError, "legacy fixture count"):
+            audit_fresh_fixture(
+                fresh,
+                legacy,
+                expected_legacy_item_count=60,
+                expected_legacy_fixture_sha256=canonical_item_collection_sha256(
+                    self._legacy_items()
+                ),
+                candidate_trigger="low_confidence_residual_feature",
+                near_duplicate_threshold=0.9,
+                semantic_audited_item_ids=[item["item_id"] for item in fresh],
+                semantic_duplicate_pairs=[],
+            )
+
+    def test_audit_rejects_a_changed_legacy_fixture_hash(self) -> None:
+        fresh = self._fresh_items()
+
+        with self.assertRaisesRegex(AISilverProtocolError, "legacy fixture hash"):
+            audit_fresh_fixture(
+                fresh,
+                self._legacy_items(),
+                expected_legacy_item_count=60,
+                expected_legacy_fixture_sha256="f" * 64,
+                candidate_trigger="low_confidence_residual_feature",
+                near_duplicate_threshold=0.9,
+                semantic_audited_item_ids=[item["item_id"] for item in fresh],
+                semantic_duplicate_pairs=[],
+            )
+
+    def test_judge_id_blinding_removes_trigger_encoded_private_ids(self) -> None:
+        item = self._fresh_items()[0]
+        item["item_id"] = "override_without_value-001"
+
+        projected = project_judge_input(item, blind_salt="independent-run-salt-v1")
+
+        self.assertRegex(projected["item_id"], r"^BLIND-[0-9a-f]{24}$")
+        self.assertNotIn("override", projected["item_id"])
+
 
 class SemanticGateMetricTest(unittest.TestCase):
+    @staticmethod
+    def _manifest(rows: list[dict]) -> dict:
+        return {
+            "version": "a13-frozen-fixture-manifest-v1",
+            "fixture_sha256": "f" * 64,
+            "item_inventory": [
+                {"item_id": row["item_id"], "trigger_type": row["trigger_type"]}
+                for row in rows
+            ],
+        }
+
+    def _other_trigger_rows(self) -> list[dict]:
+        rows: list[dict] = []
+        for trigger in REACHABLE_TRIGGERS:
+            if trigger != "low_confidence_residual_feature":
+                rows += self._rows(
+                    trigger, 10, candidate_matches=8, deterministic_matches=8
+                )
+        return rows
+
     def _rows(
         self,
         trigger: str,
@@ -409,9 +610,12 @@ class SemanticGateMetricTest(unittest.TestCase):
             candidate_matches=15,
             deterministic_matches=10,
         )
+        rows += self._other_trigger_rows()
 
         report = summarize_semantic_gate(
-            rows, candidate_trigger="low_confidence_residual_feature"
+            rows,
+            candidate_trigger="low_confidence_residual_feature",
+            fixture_manifest=self._manifest(rows),
         )
         trigger = report["by_trigger"]["low_confidence_residual_feature"]
 
@@ -436,19 +640,46 @@ class SemanticGateMetricTest(unittest.TestCase):
             candidate_matches=15,
             deterministic_matches=10,
         )
-        rows += self._rows(
-            "mixed_polarity_clause",
-            10,
-            candidate_matches=8,
-            deterministic_matches=8,
-        )
+        rows += self._other_trigger_rows()
 
         report = summarize_semantic_gate(
-            rows, candidate_trigger="low_confidence_residual_feature"
+            rows,
+            candidate_trigger="low_confidence_residual_feature",
+            fixture_manifest=self._manifest(rows),
         )
 
         self.assertTrue(report["gate_passed"])
         self.assertEqual(report["gate_failures"], [])
+
+    def test_gate_rejects_missing_rows_against_the_frozen_inventory(self) -> None:
+        rows = self._rows(
+            "low_confidence_residual_feature",
+            20,
+            candidate_matches=15,
+            deterministic_matches=10,
+        ) + self._other_trigger_rows()
+
+        with self.assertRaisesRegex(AISilverProtocolError, "frozen fixture accounting"):
+            summarize_semantic_gate(
+                rows[:-1],
+                candidate_trigger="low_confidence_residual_feature",
+                fixture_manifest=self._manifest(rows),
+            )
+
+    def test_gate_rejects_an_incomplete_trigger_inventory(self) -> None:
+        rows = self._rows(
+            "low_confidence_residual_feature",
+            20,
+            candidate_matches=15,
+            deterministic_matches=10,
+        )
+
+        with self.assertRaisesRegex(AISilverProtocolError, "frozen fixture trigger"):
+            summarize_semantic_gate(
+                rows,
+                candidate_trigger="low_confidence_residual_feature",
+                fixture_manifest=self._manifest(rows),
+            )
 
 
 class CommittedAS0ContractTest(unittest.TestCase):
@@ -486,6 +717,17 @@ class CommittedAS0ContractTest(unittest.TestCase):
             policy["authorization"]["reference_builder_provider_authorized"]
         )
         self.assertFalse(policy["authorization"]["candidate_provider_authorized"])
+        legacy_path = ROOT / "experiments/fixtures/a13_annotation_pack_v1/items.jsonl"
+        legacy_items = [
+            json.loads(line)
+            for line in legacy_path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        self.assertEqual(len(legacy_items), policy["fixture"]["legacy_item_count"])
+        self.assertEqual(
+            canonical_item_collection_sha256(legacy_items),
+            policy["fixture"]["legacy_fixture_canonical_sha256"],
+        )
 
     def test_role_template_is_deliberately_not_a_frozen_manifest(self) -> None:
         template = json.loads(
@@ -495,7 +737,9 @@ class CommittedAS0ContractTest(unittest.TestCase):
         )
 
         with self.assertRaises(AISilverProtocolError):
-            validate_role_manifest(template)
+            validate_role_manifest(
+                template, build_role_artifact_bindings(SILVER_CONTRACT)
+            )
 
         self.assertFalse((SILVER_CONTRACT / "items.jsonl").exists())
         self.assertFalse((SILVER_CONTRACT / "labels.jsonl").exists())
@@ -508,6 +752,7 @@ class CommittedAS0ContractTest(unittest.TestCase):
 
         self.assertEqual(report["status"], "blocked_role_manifest")
         self.assertFalse(report["role_manifest_frozen"])
+        self.assertFalse(report["execution_runner_ready"])
         self.assertEqual(report["provider_calls"], 0)
         self.assertFalse(report["reference_builder_provider_authorized"])
         self.assertIn("as0_policy.json", report["artifact_sha256"])

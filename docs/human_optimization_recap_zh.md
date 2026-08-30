@@ -550,7 +550,8 @@ TechnicalScore 增加 0.070391。其中证据最强、贡献最大的单步是�
 config、schema/prompt、污染检查、角色 preflight、共识与固定分母 KPI 工具均已完成并
 hash 绑定。下一步是 A13-AS0R：在不调用 provider 的前提下，冻结独立 generator、
 semantic duplicate auditor、三个 blind judge 和 adjudicator 的精确身份与配置哈希。
-旧 60 条已暴露，只保留作开发
+然后完成 AS0X 的执行器、一次隔离 repair、请求/响应 provenance 和输出哈希；当前
+核心合约测试通过不等于执行器已就绪。旧 60 条已暴露，只保留作开发
 诊断；经单独授权后，reference-builder 先生成并冻结新 target-free fixture，再完成
 AI-silver 判断/复跑。它只负责筛选语义候选，固定 Development-160 四折仍负责最终
 keep/revert。reference-builder 和 Candidate provider 调用分开授权，Candidate 模型

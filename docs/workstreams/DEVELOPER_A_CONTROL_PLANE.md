@@ -219,7 +219,7 @@ Current 0bd3375 baseline
   -> A13-0 current baseline and R0 binding complete
       -> A13-1 deterministic State / Override slice rejected and reverted
           -> A13-S0 offline Shadow foundation complete
-              -> A13-AS0 comparator/Candidate/generator protocol freeze
+              -> A13-AS0T/AS0R/AS0X core-contract/role/runner gates
                   -> A13-AS1F fresh fixture build and hash freeze
                       -> A13-AS1J/AS2 blind AI-silver build and review
                           -> A13-S1 Candidate provider Shadow
@@ -583,7 +583,7 @@ Do not run Full/Holdout.
 
 ## A13 - Guarded LLM Semantic Understanding
 
-**Status: A13-0 complete; A13-1 rejected and reverted; A13-S0 offline foundation passes parity; A13-AS0T offline tooling passes; exact independent roles and provider work remain gated.** The authoritative spec,
+**Status: A13-0 complete; A13-1 rejected and reverted; A13-S0 offline foundation passes parity; A13-AS0T core contracts pass; exact roles, execution runner and provider work remain gated.** The authoritative spec,
 phase order, interface, trigger conditions, safety invariants, latency/cost
 targets, and keep/revert gates are in
 [`DeepSeek_LLM接入实验方案.md`](../../DeepSeek_LLM接入实验方案.md).
@@ -598,13 +598,14 @@ is:
 A13-0 complete at clean comparator b86a9e7
   -> A13-1 deterministic State / Override slice rejected and reverted
       -> A13-S0 offline Shadow foundation complete
-          -> A13-AS0T offline comparator/config/schema tooling complete
+          -> A13-AS0T core comparator/config/schema tests pass
               -> A13-AS0R exact independent role manifest pending
-                  -> explicit reference-builder authorization
-                      -> A13-AS1F fresh fixture generation and hash freeze
-                          -> A13-AS1J/AS2 blind judging, audit, and freeze
-                              -> A13-S1 Candidate provider Shadow
-                                  -> A13-C1 guarded activation or No-Go
+                  -> A13-AS0X execution/repair/provenance runner pending
+                      -> explicit reference-builder authorization
+                          -> A13-AS1F fresh fixture generation and hash freeze
+                              -> A13-AS1J/AS2 blind judging, audit, and freeze
+                                  -> A13-S1 Candidate provider Shadow
+                                      -> A13-C1 guarded activation or No-Go
 ```
 
 The LLM proposes a validated `UnderstandingDelta`; it never mutates
@@ -620,7 +621,7 @@ decision record is
 [`docs/a13_1_state_override_evidence.md`](../a13_1_state_override_evidence.md).
 The A13-S0 offline foundation record is
 [`docs/a13_s0_offline_evidence.md`](../a13_s0_offline_evidence.md).
-The A13-AS0T offline tooling record is
+The A13-AS0T core-contract record (not a complete execution runner) is
 [`docs/a13_as0_offline_tooling_evidence.md`](../a13_as0_offline_tooling_evidence.md).
 The teammate-facing legacy annotation package is
 [`experiments/fixtures/a13_annotation_pack_v1/README.md`](../../experiments/fixtures/a13_annotation_pack_v1/README.md).

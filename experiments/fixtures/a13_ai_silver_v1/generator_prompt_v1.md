@@ -10,4 +10,3 @@ Return only private fixture rows. Each row must contain a unique item ID, one
 valid prior state, one natural current customer message, the requested private
 trigger, and `source=fresh_independent_expression`. Do not provide a label or an
 answer. Rejected generator rows remain in the accounting report.
-

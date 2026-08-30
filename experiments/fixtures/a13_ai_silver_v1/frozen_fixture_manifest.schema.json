@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "frozen_fixture_manifest.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "fixture_sha256", "item_inventory"],
+  "properties": {
+    "version": {"const": "a13-frozen-fixture-manifest-v1"},
+    "fixture_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "item_inventory": {
+      "type": "array",
+      "minItems": 60,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["item_id", "trigger_type"],
+        "properties": {
+          "item_id": {"type": "string", "minLength": 1},
+          "trigger_type": {
+            "$ref": "fresh_fixture_item.schema.json#/properties/trigger_type"
+          }
+        }
+      }
+    }
+  }
+}

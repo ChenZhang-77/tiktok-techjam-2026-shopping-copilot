@@ -11,4 +11,3 @@ from the current message. Return the complete closed schema with no extra keys.
 Use `abstain=true` with all other fields empty when evidence is insufficient or
 conflicting. Do not mutate state, call tools, browse, explain, or wrap JSON in
 Markdown.
-

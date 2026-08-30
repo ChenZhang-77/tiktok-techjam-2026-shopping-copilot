@@ -9,4 +9,3 @@ materially the same boundary case despite wording differences.
 This audit cannot create, edit, select, or label a fresh item. Any reported pair
 is rejected before Candidate scoring and remains accounted for in the duplicate
 report.
-

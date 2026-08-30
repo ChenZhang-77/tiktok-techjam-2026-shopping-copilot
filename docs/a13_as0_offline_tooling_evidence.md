@@ -2,15 +2,17 @@
 
 ## Decision
 
-**Keep the offline protocol tooling. A13-AS0 is not yet fully frozen and AS1F
+**Keep the offline core contracts. A13-AS0 is not yet fully frozen and AS1F
 must not start.**
 
-The implementation creates the source-neutral `applied_state_delta_v1`
+The AS0T core-contract slice creates the source-neutral `applied_state_delta_v1`
 projection, fresh-fixture and contamination preflight, automated-role
 independence preflight, blind consensus, and fixed-denominator semantic gate.
 It also freezes the first Candidate trigger and request configuration. It does
 not create a fresh fixture, choose the independent reference-builder models,
-call a provider, apply an LLM delta to runtime, or authorize A13-C1.
+call a provider, apply an LLM delta to runtime, or authorize A13-C1. AS0R exact
+roles and AS0X execution runner/repair/provenance remain pending; this is not a
+claim that the complete offline execution toolchain is ready.
 
 ## Frozen Candidate slice
 
@@ -41,20 +43,25 @@ run, and fail closed if the returned version differs from the frozen manifest:
   and at least 20 in the Candidate trigger.
 - Legacy exact/lexical near-duplicates, semantic duplicate findings, forbidden
   target/evaluator keys, missing semantic-audit coverage, and unbalanced
-  fixtures fail before scoring.
-- Judge input contains only item ID, prior state, and current message; private
-  trigger/source fields are stripped.
+  fixtures fail before scoring. The legacy collection must match its frozen
+  60-item count and canonical content hash.
+- Judge input contains only a run-salted opaque ID, prior state, and current
+  message; private IDs, trigger/source fields are stripped.
 - J1/J2/J3 must use three distinct model/version identities and three distinct
   families outside the Candidate family. The single adjudicator is stricter
   than the earlier majority-only wording: its family must differ from all three
   labeler families so every possible 2/3 majority is safe. A separate semantic
-  duplicate auditor is also preflighted.
+  duplicate auditor is also preflighted. Every role's declared prompt/config
+  hashes are compared with actual prompt files and canonical policy config
+  objects; preflight also binds the manifest and comparator/validator/state code.
 - `3/3` is unanimous; `2/3` remains pending until a matching blind adjudication;
   three-way disagreement, invalid adjudication, or adjudicator mismatch remains
   unresolved.
 - Coverage, model exact agreement, semantic delta, net exact items, and repeat
   stability all use the complete frozen per-trigger denominator. Invalid and
-  unresolved items never disappear from it.
+  unresolved items never disappear from it. Scoring requires the complete
+  frozen ID-to-trigger inventory and carries its fixture hash into the report;
+  missing rows, relabeled triggers, or incomplete trigger inventories fail.
 
 ## Verification
 
@@ -62,9 +69,9 @@ The retained tests use synthetic items and labels only. They do not encode
 expected labels for the exposed legacy 60 rows.
 
 ```text
-tests.test_a13_ai_silver: 16 passed
+tests.test_a13_ai_silver: 26 passed
 tests.test_a13_as0_tooling_evidence: 1 passed
-expected full suite after evidence: 397 passed
+full suite: 407 passed
 provider calls: 0
 Full/Holdout runs: 0
 ```
@@ -83,15 +90,18 @@ must freeze exact identities and config/prompt hashes for:
 3. J1/J2/J3 from three distinct non-Candidate model families;
 4. one adjudicator whose family differs from every labeler family.
 
-Only after that manifest passes fail-closed preflight may the coordinator give
-separate explicit authorization for reference-builder calls. Until then:
+AS0X must then implement and test the isolated one-repair workflow, raw
+request/response provenance, input/output hashes, raw-outside-Git storage, and
+normalized summary runner. Only after both role and runner gates pass may the
+coordinator give separate explicit authorization for reference-builder calls.
+Until then:
 
 ```text
 role_manifest_frozen = false
+execution_runner_ready = false
 fresh_fixture_frozen = false
 ai_silver_frozen = false
 reference_builder_provider_authorized = false
 candidate_provider_authorized = false
 A13_C1_authorized = false
 ```
-

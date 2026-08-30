@@ -1,6 +1,6 @@
 {
   "version": "a13-ai-silver-as0-policy-v1",
-  "status": "tooling_frozen_role_manifest_pending",
+  "status": "core_contracts_frozen_roles_and_runner_pending",
   "candidate_trigger": "low_confidence_residual_feature",
   "candidate_config": {
     "provider": "deepseek",
@@ -24,10 +24,44 @@
     "minimum_candidate_trigger_items": 20,
     "source": "fresh_independent_expression",
     "legacy_item_reuse_allowed": false,
+    "legacy_item_count": 60,
+    "legacy_fixture_canonical_sha256": "ace39b80e8c6dc3877cf851f1384f820de091ff9c34519732c7640cb7de13772",
     "normalized_exact_duplicate_allowed": false,
     "lexical_near_duplicate_method": "token_jaccard_v1",
     "lexical_near_duplicate_threshold": 0.9,
     "semantic_duplicate_audit_coverage": 1.0
+  },
+  "reference_configs": {
+    "generator": {
+      "temperature": 0,
+      "response_format": "json_object",
+      "max_completion_tokens": 8192,
+      "timeout_ms": 120000,
+      "automatic_retries": 0
+    },
+    "duplicate_auditor": {
+      "temperature": 0,
+      "response_format": "json_object",
+      "max_completion_tokens": 4096,
+      "timeout_ms": 120000,
+      "automatic_retries": 0
+    },
+    "judge": {
+      "temperature": 0,
+      "response_format": "json_object",
+      "max_completion_tokens": 512,
+      "timeout_ms": 30000,
+      "automatic_retries": 0,
+      "validation_repair_calls": 1
+    },
+    "adjudicator": {
+      "temperature": 0,
+      "response_format": "json_object",
+      "max_completion_tokens": 512,
+      "timeout_ms": 30000,
+      "automatic_retries": 0,
+      "validation_repair_calls": 0
+    }
   },
   "roles": {
     "labeler_count": 3,

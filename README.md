@@ -26,8 +26,8 @@ The reviewed A-side DeepSeek plan, gates, and branch boundary are in
 [`DeepSeek_LLM接入实验方案.md`](DeepSeek_LLM接入实验方案.md).
 The selected no-human reference route and its evidence hierarchy are in
 [`docs/a13_ai_silver_protocol.md`](docs/a13_ai_silver_protocol.md).
-Its AS0 offline comparator/config/schema tooling has passed; the exact
-independent role manifest is still pending, as recorded in
+Its AS0 core comparator/config/schema tests have passed; exact independent
+roles and the execution/repair/provenance runner are still pending, as recorded in
 [`docs/a13_as0_offline_tooling_evidence.md`](docs/a13_as0_offline_tooling_evidence.md).
 
 The teammate-ready offline annotation bundle is committed at
@@ -335,7 +335,8 @@ annotation attempt is no longer the active route. A13-AS0T has frozen the
 applied-state comparator, Candidate config, fresh-fixture rules, schemas, and
 fail-closed offline checks without provider access. A13-AS0R must still bind
 exact independent generator/auditor/judge/adjudicator identities. Separately
-authorized reference-builder calls then create and judge a new target-free
+complete the AS0X runner/repair/provenance gate before any authorized
+reference-builder calls create and judge a new target-free
 fixture; Candidate provider calls require a later authorization. AI-silver may
 open Candidate Shadow;
 only fixed Development folds may retain runtime behavior. Do not infer an A-side

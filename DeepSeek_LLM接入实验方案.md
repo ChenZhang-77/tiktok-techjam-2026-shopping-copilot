@@ -1,6 +1,6 @@
 # DeepSeek LLM 接入实验方案
 
-> 状态：A13-0 已完成；A13-1 已拒绝并回滚；A13-S0 离线基础通过 parity；A13-AS0T 离线工具链已通过，精确独立角色清单待冻结，reference-builder/candidate provider 均未授权。
+> 状态：A13-0 已完成；A13-1 已拒绝并回滚；A13-S0 离线基础通过 parity；A13-AS0T 核心合约测试通过，但 AS0R 精确独立角色与 AS0X runner/repair/provenance 均待完成，provider 未授权。
 >
 > 当前发布分支：llm（源实验分支：a/a13-llm-semantic-understanding）
 >
@@ -246,7 +246,8 @@ DeepSeek transport、key 读取或 API 调用。证据见
 不走人工标注。A13-AS0T 已冻结 comparator、Candidate config、schemas/prompts、
 污染/独立性 preflight、共识与固定分母 KPI 工具，证据见
 [`docs/a13_as0_offline_tooling_evidence.md`](docs/a13_as0_offline_tooling_evidence.md)。
-下一步 A13-AS0R 只冻结精确独立角色清单，仍不调用 provider。
+下一步 A13-AS0R 只冻结精确独立角色清单，随后完成 AS0X 执行器、隔离 repair 与
+请求/响应 provenance；两者完成前都不调用 provider。
 已准备可直接分发的 `experiments/fixtures/a13_annotation_pack_v1/`：60 条
 无 gold items（五类可达语义 trigger 各 10 条，`low_confidence_residual_feature` 额外 10 条）、
 可双击离线标注页、更清晰的双击示例页、兼容模板、schema、validator 和
@@ -438,6 +439,7 @@ A13_LLM_MAX_VOCAB_ITEMS=200
 | A13-S0 | 离线基础已新增 `starter/core/semantic_understanding.py`、`experiments/a13_shadow.py`、`tests/test_semantic_understanding.py`，并仅为注入和 parity 修改 `starter/agent.py`、`tests/test_agent_smoke.py` |
 | A13-AS0T | 已实现并 hash 绑定 `applied_state_delta_v1` serializer、Candidate config、新题生成规则、schemas/prompts、fail-closed role/污染检查、共识、固定分母 KPI 和 synthetic tests；未调用 provider |
 | A13-AS0R | 将 `role_manifest.template.json` 的占位符替换为精确独立 generator、duplicate auditor、J1/J2/J3、adjudicator model/version 与 prompt/config hashes；只做离线 preflight |
+| A13-AS0X | 待实现执行 runner、一次隔离 repair、request/response/input/output hashes、raw-outside-Git 与 normalized summary emission，并用 synthetic 端到端测试验证；不调用 provider |
 | A13-AS1F/AS1J/AS2 | 经明确授权后才执行 reference-builder API：先生成并 hash-freeze 新 target-free fixture，再做 blind judging、bounded repair、共识/仲裁、Candidate-trigger 独立复跑；完成后新增 `docs/a13_ai_silver_evidence.{md,json}`，普通 raw provider material 留在 Git 外 |
 | A13-S1 | AI-silver gate 通过并再次获得明确授权后，才运行真实 Candidate provider Shadow；不改变公共行为 |
 | A13-C1 | 只在 S0 文件和必要的 state/integration tests 内激活已通过的单一触发类；决定完成后才新增 `docs/a13_c1_evidence.{md,json}` |
@@ -470,8 +472,9 @@ chen/chenzhang-77-baseline-setup @ 0bd3375
       -> A13-0
       -> A13-1
       -> A13-S0
-      -> A13-AS0T offline tooling freeze complete
+      -> A13-AS0T core contract tests pass
       -> A13-AS0R exact independent role manifest pending
+      -> A13-AS0X execution/repair/provenance runner pending
       -> explicit reference-builder authorization
       -> A13-AS1F fresh fixture build and hash freeze
       -> A13-AS1J/AS2 blind AI-silver build and review

@@ -26,8 +26,8 @@ class A13AS0ToolingEvidenceTest(unittest.TestCase):
         )
 
         self.assertEqual(evidence["version"], "a13-as0-offline-tooling-v1")
-        self.assertEqual(evidence["decision"], "offline_tooling_passed")
-        self.assertEqual(evidence["phase_status"], "blocked_role_manifest")
+        self.assertEqual(evidence["decision"], "offline_core_contracts_passed")
+        self.assertEqual(evidence["phase_status"], "blocked_roles_and_runner")
         self.assertEqual(evidence["artifact_sha256"], preflight["artifact_sha256"])
         self.assertEqual(
             evidence["code_sha256"],
@@ -45,6 +45,8 @@ class A13AS0ToolingEvidenceTest(unittest.TestCase):
             evidence["boundaries"]["reference_builder_provider_authorized"]
         )
         self.assertFalse(evidence["boundaries"]["candidate_provider_authorized"])
+        self.assertFalse(evidence["boundaries"]["execution_runner_ready"])
+        self.assertFalse(preflight["execution_runner_ready"])
         self.assertFalse(evidence["boundaries"]["runtime_changed"])
         self.assertFalse(evidence["boundaries"]["legacy_fixture_reused"])
 

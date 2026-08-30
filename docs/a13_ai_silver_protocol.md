@@ -15,10 +15,11 @@ file or the valid-34 AI draft into reference truth.
 Current state:
 
 ```text
-protocol_status = offline_tooling_passed_role_manifest_pending
-as0_tooling_frozen = true
+protocol_status = offline_core_contracts_passed_roles_and_runner_pending
+as0_core_contracts_frozen = true
 candidate_config_frozen = true
 role_manifest_frozen = false
+execution_runner_ready = false
 fresh_fixture_frozen = false
 ai_silver_frozen = false
 reference_builder_provider_authorized = false
@@ -86,11 +87,13 @@ already been inspected while selecting failure classes and the applied-state
 seam. They must not be reused in an eligible semantic gate, even if their labels
 are withheld from the judges.
 
-AS0T has frozen the Candidate prompt/config, comparator, fixture-generation
+AS0T has frozen the core Candidate prompt/config, comparator, fixture-generation
 rubric, source policy, and duplicate-audit method/threshold before any new
 evaluation item is generated or inspected. AS0R must still replace the
 fail-closed role-manifest placeholders with exact independent identities and
-hashes. AS1F then creates a fresh target-free,
+hashes. AS0X must still implement and validate the execution runner, isolated
+repair bookkeeping, request/response provenance, and normalized output writer.
+AS1F then creates a fresh target-free,
 trigger-balanced fixture that:
 
 - contains at least 60 new items overall;
@@ -103,12 +106,14 @@ trigger-balanced fixture that:
   model/version may not author any item;
 - has no normalized-message exact duplicate or predeclared-threshold
   lexical/semantic near-duplicate of the legacy 60; rejected generated items
-  remain accounted for in a pre-score duplicate audit;
+  remain accounted for in a pre-score duplicate audit; the legacy collection
+  must match the frozen count and canonical content hash, not a caller-selected
+  subset;
 - freezes item order, item SHA256, schema, instructions, validator, comparator,
   trigger counts, generator prompt/config, and Candidate config before judging;
 - keeps target ASIN, hit/miss, scenario label, future turns, recommendations,
   comparator output, candidate output, and internal trigger names out of judge
-  inputs.
+  inputs; private IDs are replaced with run-salted opaque IDs before judging.
 
 The following artifacts are excluded from reference generation and prompt
 tuning:
@@ -122,6 +127,9 @@ tuning:
 The legacy item text remains L0; returned and provisional labels remain L1.
 All are historical diagnostics. Their existence and prior exposure must be
 disclosed in the final evidence record.
+The sole text-only exception is the isolated semantic duplicate auditor: it
+may compare legacy/new message text to reject duplicates, but cannot generate,
+edit, select, label, or adjudicate an evaluation item.
 
 ## Independent Automated Reference Roles
 
@@ -268,19 +276,20 @@ An eligible Candidate additionally requires:
 
 ```text
 A13-S0 offline foundation complete
-  -> A13-AS0T offline comparator/config/schema/tooling freeze  complete, no provider
+  -> A13-AS0T core comparator/config/schema/KPI contracts     complete, no provider
       -> A13-AS0R exact independent role-manifest freeze       pending, no provider
-          -> explicit authorization for reference-builder provider calls
-              -> A13-AS1F fresh blind fixture generation and hash freeze
-                  -> A13-AS1J blind AI-silver judging and adjudication
-                      -> A13-AS2 audit, repeat-build check, and hash freeze
-                          -> semantic review gate
-                              -> explicit authorization for candidate provider Shadow
-                                  -> A13-S1 real-provider Shadow
-                                      -> A13-C1 or No-Go
+          -> A13-AS0X runner/repair/provenance freeze           pending, no provider
+              -> explicit authorization for reference-builder provider calls
+                  -> A13-AS1F fresh blind fixture generation and hash freeze
+                      -> A13-AS1J blind AI-silver judging and adjudication
+                          -> A13-AS2 audit, repeat-build check, and hash freeze
+                              -> semantic review gate
+                                  -> explicit authorization for candidate provider Shadow
+                                      -> A13-S1 real-provider Shadow
+                                          -> A13-C1 or No-Go
 ```
 
-AS0T/AS0R are documentation/tooling work only. The hash-bound AS0T evidence is
+AS0T/AS0R/AS0X are documentation/tooling work only. The hash-bound AS0T evidence is
 [`a13_as0_offline_tooling_evidence.md`](a13_as0_offline_tooling_evidence.md).
 AS1F/AS1J/AS2 may call the independent
 fixture generator, judges, and adjudicator only after explicit
@@ -322,19 +331,18 @@ weaken thresholds merely to demonstrate LLM usage.
 
 ## Required Artifacts Before Execution
 
-AS0 must define, but this planning change does not yet create:
+AS0 is not complete merely because its core contract tests pass:
 
-- `experiments/fixtures/a13_ai_silver_v1/` with target-free judge inputs;
-- a versioned `applied_state_delta_v1` schema and serializer;
-- a fresh-fixture generator/source config and legacy duplicate audit;
-- three blind labeler configs, an adjudicator config, and identity/family
-  enforcement;
-- a manifest binding model/prompt/config/input/validator/comparator hashes;
-- a runner that keeps raw provider material out of Git and emits normalized,
-  hash-bound summaries;
-- synthetic tests for validation, consensus, disagreement retention,
-  contamination rejection, comparator symmetry, and fallback;
-- `docs/a13_ai_silver_evidence.{md,json}` only after AS1F/AS1J/AS2 complete.
+| Slice | Implemented | Still required before execution |
+| --- | --- | --- |
+| AS0T core contracts | Versioned applied-state schema/serializer; prompt and request-config contracts; full legacy count/content-hash audit; blinded judge IDs; full frozen fixture inventory accounting; consensus and fixed-denominator KPI tests | No fresh item or label is produced by this slice |
+| AS0R role freeze | Exact identity/family checks and comparison of role-declared prompt/config hashes with actual files/config objects; manifest, validator, comparator and state-semantic hashes | Select exact independent model versions; validate provider-specific config support; persist the passing role manifest |
+| AS0X execution runner | Existing production raw-delta schema/evidence validator is available for reuse | Implement isolated one-repair bookkeeping, raw request/response provenance, input/normalized-output hashes, raw-outside-Git storage and normalized summary emission; synthetic end-to-end tests |
+| AS1F/AS1J/AS2 evidence | None | Only after separate provider authorization: generate/freeze fresh items, blind labels and repeat build; then create `docs/a13_ai_silver_evidence.{md,json}` |
+
+The preflight currently reports `blocked_role_manifest` or
+`blocked_execution_runner`, never `ready_for_authorization`. An incomplete
+runner must not be bypassed by a passing role manifest.
 
 ## Stop Conditions
 

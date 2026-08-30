@@ -82,15 +82,16 @@ Current Chen runtime source @ 0bd3375
   -> A13-0 complete at clean comparator b86a9e7
       -> A13-1 deterministic State / Override slice rejected and reverted
           -> A13-S0 offline Shadow foundation complete
-              -> A13-AS0T offline tooling freeze                         complete
+              -> A13-AS0T core contract tests                            pass
                   -> A13-AS0R exact independent role-manifest freeze     pending
-                      -> explicitly authorize reference-builder provider calls
-                      -> A13-AS1F fresh fixture generation and hash freeze
-                          -> A13-AS1J/AS2 blind judging, audit, and freeze
-                              -> A13 semantic review gate
-                                  -> explicitly authorize Candidate provider Shadow
-                                      -> A13-S1 real-provider Shadow
-                                          -> A13-C1 guarded activation or No-Go
+                      -> A13-AS0X execution/repair/provenance runner     pending
+                          -> explicitly authorize reference-builder provider calls
+                              -> A13-AS1F fresh fixture generation and hash freeze
+                                  -> A13-AS1J/AS2 blind judging, audit, and freeze
+                                      -> A13 semantic review gate
+                                          -> explicitly authorize Candidate provider Shadow
+                                              -> A13-S1 real-provider Shadow
+                                                  -> A13-C1 guarded activation or No-Go
 
 Current runtime and frozen evidence
   -> A14-0 turn audit and deep-Module parity             retained @ f594601
@@ -120,8 +121,8 @@ The active no-human A13 reference route is defined separately in
 [`docs/a13_ai_silver_protocol.md`](a13_ai_silver_protocol.md): AI-silver may
 open a Candidate experiment, while fixed Development folds remain the primary
 runtime keep/revert evidence. Reference-builder and Candidate provider
-authorizations are separate gates. AS0 offline tooling is complete and
-hash-bound; AS0R exact independent role selection is the next gate. The exposed
+authorizations are separate gates. AS0 core contracts are hash-bound; AS0R exact
+roles and AS0X execution/repair/provenance runner remain pending. The exposed
 legacy 60 items remain development diagnostics; the semantic gate requires a
 fresh fixture generated only after the Candidate config is frozen.
 
@@ -590,10 +591,11 @@ Required outcomes:
 ### If at least two development days remain
 
 A13-0 is complete, A13-1 is rejected/reverted, and the A13-S0 offline foundation
-passes parity against the restored `0.925` comparator. A13-AS0T offline tooling
-is complete. Finish A13-AS0R without provider access by binding the exact
-independent generator, duplicate auditor, three judges, and adjudicator; then,
-only with explicit reference-builder authorization, generate and
+passes parity against the restored `0.925` comparator. A13-AS0T core contracts
+pass. Finish A13-AS0R without provider access by binding the exact independent
+generator, duplicate auditor, three judges, and adjudicator; complete the AS0X
+execution/repair/provenance runner, then only with explicit reference-builder
+authorization generate and
 freeze a new target-free fixture and its blind multi-model AI-silver reference
 before a separately authorized Candidate Shadow. Apply both the semantic gate
 and fixed Development-fold gate, then run A13-C1 or record No-Go. A14-0/A14-1

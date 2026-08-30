@@ -9,4 +9,3 @@ Return one complete JSON `UnderstandingDelta`; do not select a label ID or
 explain the vote. Local code projects your result through production state
 semantics. The majority becomes canonical only when your applied-state
 projection exactly matches it; otherwise the item remains unresolved.
-

@@ -38,6 +38,15 @@ ROLE_FIELDS = {
     "prompt_sha256",
     "config_sha256",
 }
+ROLE_ARTIFACTS = {
+    "candidate": ("candidate_prompt_v1.md", "candidate_config"),
+    "generator": ("generator_prompt_v1.md", "generator"),
+    "duplicate_auditor": ("semantic_duplicate_audit_prompt_v1.md", "duplicate_auditor"),
+    "J1": ("judge_prompt_v1.md", "judge"),
+    "J2": ("judge_prompt_v1.md", "judge"),
+    "J3": ("judge_prompt_v1.md", "judge"),
+    "adjudicator": ("adjudicator_prompt_v1.md", "adjudicator"),
+}
 ROLE_NAME_RE = re.compile(r"[A-Za-z0-9._:/-]+")
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
 APPLIED_STATE_FIELDS = {
@@ -131,7 +140,9 @@ def _load_prior_state(prior_state: Mapping[str, object]) -> SessionState:
     if set(prior_state) != PRIOR_STATE_FIELDS:
         raise AISilverProtocolError("prior state fields do not match schema")
     intent = prior_state["intent"]
-    if intent not in {None, "buying", "browsing"}:
+    if intent is not None and (
+        not isinstance(intent, str) or intent not in {"buying", "browsing"}
+    ):
         raise AISilverProtocolError("invalid prior intent")
     active = prior_state["active_constraints"]
     rejected = prior_state["rejected_constraints"]
@@ -146,6 +157,11 @@ def _load_prior_state(prior_state: Mapping[str, object]) -> SessionState:
         raise AISilverProtocolError("invalid prior state type")
     if any(set(row) != {"attribute", "value"} for row in (*active, *rejected)):
         raise AISilverProtocolError("prior constraint fields do not match schema")
+    if any(
+        not isinstance(row["attribute"], str) or not isinstance(row["value"], str)
+        for row in (*active, *rejected)
+    ):
+        raise AISilverProtocolError("invalid prior constraint type")
     if any(attribute not in ALLOWED_ATTRIBUTES for attribute in no_preference):
         raise AISilverProtocolError("invalid prior no-preference attribute")
     if len(set(no_preference)) != len(no_preference):
@@ -198,6 +214,25 @@ def apply_understanding_delta(
         for proposal in delta.positive_constraints
         if proposal.attribute in override_attributes
     ]
+    positive_override_attributes = {
+        proposal.attribute
+        for proposal in delta.positive_constraints
+        if proposal.attribute in override_attributes
+    }
+    # Empty, non-explicit control rows activate production's attribute reset,
+    # but SessionState.add_constraints never stores an empty value. This also
+    # represents validator-legal rejected-only/no-preference overrides without
+    # inventing a positive value or mutating production state code.
+    override_constraints.extend(
+        {
+            "attribute": attribute,
+            "normalized_value": "",
+            "raw_value": "",
+            "confidence": 0.0,
+            "active": True,
+        }
+        for attribute in sorted(override_attributes - positive_override_attributes)
+    )
     regular_constraints = [
         _proposal_row(proposal, active=True)
         for proposal in delta.positive_constraints
@@ -222,6 +257,11 @@ def apply_understanding_delta(
     rejected_after = _constraint_keys(state.rejected_constraints)
     no_preference_after = set(state.no_preference_attributes)
     active_deactivated = active_before - active_after
+    effective_override_attributes = (
+        set(ALLOWED_ATTRIBUTES)
+        if "category" in override_attributes
+        else override_attributes
+    )
     return {
         "schema_version": APPLIED_STATE_SCHEMA_VERSION,
         "intent_before": intent_before,
@@ -242,7 +282,7 @@ def apply_understanding_delta(
             {
                 key
                 for key in active_deactivated
-                if key[0] in override_attributes
+                if key[0] in effective_override_attributes
             }
         ),
     }
@@ -287,7 +327,10 @@ def validate_applied_state_delta(projection: object) -> dict[str, object]:
     if projection.get("schema_version") != APPLIED_STATE_SCHEMA_VERSION:
         raise AISilverProtocolError("invalid applied-state schema version")
     for field in ("intent_before", "intent_after"):
-        if projection.get(field) not in {None, "buying", "browsing"}:
+        intent = projection[field]
+        if intent is not None and (
+            not isinstance(intent, str) or intent not in {"buying", "browsing"}
+        ):
             raise AISilverProtocolError(f"invalid {field}")
     added = _validate_canonical_constraint_rows(
         projection["active_constraints_added"], "active_constraints_added"
@@ -317,7 +360,10 @@ def validate_applied_state_delta(projection: object) -> dict[str, object]:
         raise AISilverProtocolError("active constraint added/deactivated conflict")
     if no_preference_added & no_preference_removed:
         raise AISilverProtocolError("no-preference added/removed conflict")
-    if not stale <= deactivated or any(attribute not in overrides for attribute, _ in stale):
+    stale_attributes = set(ALLOWED_ATTRIBUTES) if "category" in overrides else overrides
+    if not stale <= deactivated or any(
+        attribute not in stale_attributes for attribute, _ in stale
+    ):
         raise AISilverProtocolError("stale values must be override deactivations")
     return projection
 
@@ -406,7 +452,10 @@ def _role_identity(role: Mapping[str, str]) -> tuple[str, str]:
     return role["provider"], role["model_version"]
 
 
-def validate_role_manifest(manifest: object) -> dict[str, object]:
+def validate_role_manifest(
+    manifest: object,
+    artifact_bindings: Mapping[str, Mapping[str, str]],
+) -> dict[str, object]:
     """Fail closed unless all automated-reference roles are independent."""
 
     if not isinstance(manifest, dict) or set(manifest) != ROLE_MANIFEST_FIELDS:
@@ -424,6 +473,15 @@ def validate_role_manifest(manifest: object) -> dict[str, object]:
         for raw_labeler, expected_role in zip(raw_labelers, ("J1", "J2", "J3"))
     ]
     adjudicator = _validated_role(manifest["adjudicator"], "adjudicator")
+    if set(artifact_bindings) != set(ROLE_ARTIFACTS):
+        raise AISilverProtocolError("role artifact bindings are incomplete")
+    roles = [candidate, generator, duplicate_auditor, *labelers, adjudicator]
+    for role_name, role in zip(ROLE_ARTIFACTS, roles):
+        binding = artifact_bindings[role_name]
+        if set(binding) != {"prompt_sha256", "config_sha256"}:
+            raise AISilverProtocolError("role artifact bindings are incomplete")
+        if any(role[field] != binding[field] for field in binding):
+            raise AISilverProtocolError(f"{role_name} artifact hash mismatch")
 
     labeler_families = {role["family"] for role in labelers}
     if len(labeler_families) != 3:
@@ -505,10 +563,15 @@ def _validate_fresh_item(item: object) -> dict[str, object]:
     return item
 
 
-def project_judge_input(item: object) -> dict[str, object]:
+def project_judge_input(item: object, *, blind_salt: str) -> dict[str, object]:
     validated = _validate_fresh_item(item)
+    if not isinstance(blind_salt, str) or len(blind_salt) < 16:
+        raise AISilverProtocolError("judge ID blinding requires a run-specific salt")
+    blind_id = hashlib.sha256(
+        f"{blind_salt}:{validated['item_id']}".encode("utf-8")
+    ).hexdigest()[:24]
     projected = {
-        "item_id": validated["item_id"],
+        "item_id": f"BLIND-{blind_id}",
         "prior_state": validated["prior_state"],
         "current_message": validated["current_message"],
     }
@@ -526,10 +589,25 @@ def _jaccard(first: set[str], second: set[str]) -> float:
     return len(first & second) / len(union) if union else 1.0
 
 
+def _canonical_json_sha256(value: object) -> str:
+    serialized = json.dumps(
+        value, ensure_ascii=False, separators=(",", ":"), sort_keys=True
+    )
+    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+def canonical_item_collection_sha256(items: Sequence[Mapping[str, object]]) -> str:
+    return _canonical_json_sha256(
+        sorted(items, key=lambda item: str(item.get("item_id") or ""))
+    )
+
+
 def audit_fresh_fixture(
     items: Sequence[object],
     legacy_items: Sequence[Mapping[str, object]],
     *,
+    expected_legacy_item_count: int,
+    expected_legacy_fixture_sha256: str,
     candidate_trigger: str,
     near_duplicate_threshold: float,
     semantic_audited_item_ids: Sequence[str],
@@ -553,6 +631,16 @@ def audit_fresh_fixture(
             raise AISilverProtocolError(f"trigger requires at least 10 items: {trigger}")
     if trigger_counts[candidate_trigger] < 20:
         raise AISilverProtocolError("candidate trigger requires at least 20 items")
+
+    if expected_legacy_item_count != 60 or len(legacy_items) != expected_legacy_item_count:
+        raise AISilverProtocolError("legacy fixture count must match frozen 60 items")
+    if (
+        not isinstance(expected_legacy_fixture_sha256, str)
+        or not SHA256_RE.fullmatch(expected_legacy_fixture_sha256)
+        or canonical_item_collection_sha256(legacy_items)
+        != expected_legacy_fixture_sha256
+    ):
+        raise AISilverProtocolError("legacy fixture hash mismatch")
 
     legacy_messages = [str(item.get("current_message") or "") for item in legacy_items]
     legacy_ids = {str(item.get("item_id") or "") for item in legacy_items}
@@ -598,6 +686,15 @@ def audit_fresh_fixture(
         "duplicate_count": 0,
         "semantic_duplicate_count": 0,
         "semantic_audited_item_count": len(semantic_audited_item_ids),
+        "legacy_fixture_sha256": expected_legacy_fixture_sha256,
+        "fixture_manifest": {
+            "version": "a13-frozen-fixture-manifest-v1",
+            "fixture_sha256": canonical_item_collection_sha256(validated),
+            "item_inventory": [
+                {"item_id": item["item_id"], "trigger_type": item["trigger_type"]}
+                for item in sorted(validated, key=lambda item: str(item["item_id"]))
+            ],
+        },
         "judge_input_fields": sorted(JUDGE_INPUT_FIELDS),
         "provider_calls": 0,
     }
@@ -612,10 +709,49 @@ def _validated_projection_or_none(value: object) -> dict[str, object] | None:
         return None
 
 
+def _validated_frozen_inventory(
+    manifest: Mapping[str, object], candidate_trigger: str
+) -> dict[str, str]:
+    if not isinstance(manifest, dict) or set(manifest) != {
+        "version", "fixture_sha256", "item_inventory"
+    }:
+        raise AISilverProtocolError("frozen fixture manifest fields do not match schema")
+    digest = manifest["fixture_sha256"]
+    if (
+        manifest["version"] != "a13-frozen-fixture-manifest-v1"
+        or not isinstance(digest, str)
+        or not SHA256_RE.fullmatch(digest)
+        or not isinstance(manifest["item_inventory"], list)
+    ):
+        raise AISilverProtocolError("invalid frozen fixture manifest")
+    inventory: dict[str, str] = {}
+    for item in manifest["item_inventory"]:
+        if not isinstance(item, dict) or set(item) != {"item_id", "trigger_type"}:
+            raise AISilverProtocolError("invalid frozen fixture inventory item")
+        item_id = item["item_id"]
+        trigger = item["trigger_type"]
+        if (
+            not isinstance(item_id, str)
+            or not item_id
+            or item_id in inventory
+            or not isinstance(trigger, str)
+            or trigger not in REACHABLE_TRIGGERS
+        ):
+            raise AISilverProtocolError("invalid frozen fixture inventory item")
+        inventory[item_id] = trigger
+    counts = Counter(inventory.values())
+    if len(inventory) < 60 or any(counts[trigger] < 10 for trigger in REACHABLE_TRIGGERS):
+        raise AISilverProtocolError("frozen fixture trigger inventory is incomplete")
+    if counts[candidate_trigger] < 20:
+        raise AISilverProtocolError("frozen fixture candidate trigger requires 20 items")
+    return inventory
+
+
 def summarize_semantic_gate(
     rows: Sequence[object],
     *,
     candidate_trigger: str,
+    fixture_manifest: Mapping[str, object],
 ) -> dict[str, object]:
     """Compute every semantic KPI against frozen all-item denominators."""
 
@@ -623,6 +759,7 @@ def summarize_semantic_gate(
         raise AISilverProtocolError("semantic gate rows must not be empty")
     if candidate_trigger not in REACHABLE_TRIGGERS:
         raise AISilverProtocolError("invalid candidate trigger")
+    inventory = _validated_frozen_inventory(fixture_manifest, candidate_trigger)
     identifiers: set[str] = set()
     grouped: dict[str, list[dict[str, object]]] = {}
     candidate_valid_count = 0
@@ -636,13 +773,21 @@ def summarize_semantic_gate(
             raise AISilverProtocolError("invalid or duplicate semantic item_id")
         if not isinstance(trigger, str) or trigger not in REACHABLE_TRIGGERS:
             raise AISilverProtocolError("invalid semantic trigger")
-        if status not in CANONICAL_REFERENCE_STATUSES | NONCANONICAL_REFERENCE_STATUSES:
+        if not isinstance(status, str) or status not in (
+            CANONICAL_REFERENCE_STATUSES | NONCANONICAL_REFERENCE_STATUSES
+        ):
             raise AISilverProtocolError("invalid reference status")
         identifiers.add(item_id)
         grouped.setdefault(trigger, []).append(raw_row)
         candidate_valid_count += int(
             _validated_projection_or_none(raw_row["candidate_projection"]) is not None
         )
+
+    if identifiers != set(inventory) or any(
+        raw_row["trigger_type"] != inventory[raw_row["item_id"]]
+        for raw_row in rows
+    ):
+        raise AISilverProtocolError("frozen fixture accounting mismatch")
 
     by_trigger: dict[str, dict[str, object]] = {}
     overall = Counter()
@@ -749,6 +894,7 @@ def summarize_semantic_gate(
     ):
         failures.append("other_trigger_regression")
     return {
+        "fixture_sha256": fixture_manifest["fixture_sha256"],
         "denominator": denominator,
         "canonical_reference_count": overall["canonical_reference_count"],
         "reference_coverage": overall["canonical_reference_count"] / denominator,
@@ -763,6 +909,30 @@ def summarize_semantic_gate(
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def build_role_artifact_bindings(
+    contract_directory: str | Path,
+) -> dict[str, dict[str, str]]:
+    contract_path = Path(contract_directory)
+    try:
+        policy = json.loads((contract_path / "as0_policy.json").read_text())
+        bindings = {}
+        for role_name, (prompt_file, config_key) in ROLE_ARTIFACTS.items():
+            config = (
+                policy["candidate_config"]
+                if role_name == "candidate"
+                else policy["reference_configs"][config_key]
+            )
+            if not isinstance(config, dict) or not config:
+                raise AISilverProtocolError("role config must not be empty")
+            bindings[role_name] = {
+                "prompt_sha256": _sha256(contract_path / prompt_file),
+                "config_sha256": _canonical_json_sha256(config),
+            }
+    except (OSError, KeyError, TypeError, json.JSONDecodeError) as error:
+        raise AISilverProtocolError("role artifacts are incomplete") from error
+    return bindings
 
 
 def build_as0_preflight_report(
@@ -803,16 +973,36 @@ def build_as0_preflight_report(
         raise AISilverProtocolError("AS0 policy must keep provider authorization false")
     role_error: str | None = None
     try:
-        role_summary = validate_role_manifest(role_manifest)
+        role_summary = validate_role_manifest(
+            role_manifest, build_role_artifact_bindings(contract_path)
+        )
+        candidate_config = policy["candidate_config"]
+        if (
+            role_manifest["candidate"]["provider"] != candidate_config["provider"]
+            or role_manifest["candidate"]["model_version"]
+            != candidate_config["expected_model_version"]
+        ):
+            raise AISilverProtocolError("candidate identity differs from frozen config")
     except AISilverProtocolError as error:
         role_summary = None
         role_error = str(error)
     return {
         "version": "a13-ai-silver-as0-preflight-v1",
-        "status": "ready_for_authorization" if role_summary else "blocked_role_manifest",
+        "status": "blocked_execution_runner" if role_summary else "blocked_role_manifest",
+        "execution_runner_ready": False,
         "role_manifest_frozen": role_summary is not None,
         "role_manifest_error": role_error,
         "role_summary": role_summary,
+        "role_manifest_sha256": _sha256(Path(role_manifest_path)),
+        "implementation_sha256": {
+            "comparator": _sha256(Path(__file__)),
+            "validator": _sha256(
+                Path(__file__).parents[1] / "starter/core/semantic_understanding.py"
+            ),
+            "state_semantics": _sha256(
+                Path(__file__).parents[1] / "starter/core/state.py"
+            ),
+        },
         "artifact_sha256": {
             path.name: _sha256(path)
             for path in artifacts

@@ -52,7 +52,7 @@ behavior-identical Question Policy Module and turn-audit slice:
 | Current A13 publication branch | `llm`, cut from reviewed A13 HEAD `bbb0075` |
 | A14-0 runtime source commit | `f594601`; exact visible-response parity to legacy `2e4108a` across 649 Development turns |
 | A14-1 runtime/audit source commit | `b238c68`; closed Question Policy diagnostics, retained fallback semantics, and ten closed-schema attribute-evidence records per turn with the same visible response |
-| Latest local full test suite (2026-08-30) | 397 passed after A13-AS0 offline tooling; default runtime remains no-LLM |
+| Latest local full test suite (2026-08-30) | 407 passed after reviewed A13-AS0 core contracts; default runtime remains no-LLM |
 | Committed annotation bundle | `A13_annotation_pack_v1.zip`, SHA256 `8eb3379c730df8ee1a536b1ccfcb198bc456198ee280dea82c2100fc9cd0658b` |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |
@@ -252,12 +252,14 @@ The offline Shadow foundation records a validated fake `UnderstandingDelta`
 without changing SessionState, Strategy, QueryPlan, clarification,
 recommendations, or public output. The coordinator has selected a no-human
 AI-silver route. Its authoritative protocol is
-[`docs/a13_ai_silver_protocol.md`](a13_ai_silver_protocol.md). A13-AS0T offline
-tooling now passes: the source-neutral applied-state comparator, Candidate
+[`docs/a13_ai_silver_protocol.md`](a13_ai_silver_protocol.md). A13-AS0T core
+contract tests now pass: the source-neutral applied-state comparator, Candidate
 request config, schemas/prompts, contamination checks, role-independence
 preflight, consensus, and fixed-denominator KPI calculator are hash-bound in
 [`docs/a13_as0_offline_tooling_evidence.md`](a13_as0_offline_tooling_evidence.md).
-The exact independent role manifest remains intentionally invalid/pending, so
+The exact independent role manifest remains intentionally invalid/pending;
+AS0X execution, isolated repair, and request/response provenance are not yet
+implemented. This is not a completed execution toolchain, so
 AI-silver is not frozen, reference-builder/Candidate provider calls are not
 authorized, and A13-C1 is not open. Candidate activation still
 requires exact fallback, bounded call rate/latency/cost, focused/full tests,
@@ -326,8 +328,9 @@ comparison unit: deterministic, Candidate, and AI-silver deltas are applied to
 the same isolated prior state. Raw `UnderstandingDelta` exact remains a trigger
 diagnostic. The Candidate config and fresh-fixture rules are frozen; AS0R must
 still bind exact identities and hashes for the independent generator, semantic
-duplicate auditor, three blind judges, and adjudicator before any new
-evaluation item or reference output is viewed. The exposed legacy 60 items
+duplicate auditor, three blind judges, and adjudicator; AS0X must then validate
+the execution/repair/provenance runner before any new evaluation item or
+reference output is viewed. The exposed legacy 60 items
 cannot score the semantic gate. AS1F/AS1J/AS2 require separate explicit
 authorization for reference-builder provider calls; the Candidate model/version
 cannot generate, label, or adjudicate. AI-silver agreement uses fixed all-item
@@ -600,7 +603,7 @@ track in `docs/demo_and_submission_plan.md`.
 | `docs/a13_1_state_override_evidence.md` | Rejected-and-reverted deterministic state-reset candidate, folds, and restored comparator |
 | `docs/a13_s0_offline_evidence.md` | Retained offline Shadow foundation, Development parity, and the historical pre-provider gate at that checkpoint |
 | `docs/a13_ai_silver_protocol.md` | Active no-human A13 reference protocol, comparator seam, KPI hierarchy, contamination controls, and provider boundaries |
-| `docs/a13_as0_offline_tooling_evidence.md` | Hash-bound AS0 offline comparator/config/schema tooling and the pending independent-role blocker |
+| `docs/a13_as0_offline_tooling_evidence.md` | Hash-bound AS0 core contracts and pending exact-role/execution-runner blockers |
 | `docs/b9_conditional_dense_evidence.md` | Retained Browsing-only dense gate, quality, route truth, cost, and folds |
 | `docs/b10a_constraint_rerank_evidence.md` | Rejected constraint-preserving CrossEncoder variants |
 | `docs/b11_prerequisite_evidence.md` | B11 prerequisite failure and no-start decision |
@@ -621,8 +624,9 @@ track in `docs/demo_and_submission_plan.md`.
 - B10b-DS1/DS2 are implemented opt-in LLM semantic-ranker experiments with
   provisional remote measurements; neither is retained in the default runtime.
 - A13-0 is complete, A13-1 is rejected/reverted, and the A13-S0 offline Shadow
-  foundation passes parity. AS0 offline tooling is hash-bound, but the exact
-  independent role manifest is pending; no frozen AI-silver or real
+  foundation passes parity. AS0 core contracts are hash-bound, but exact
+  independent roles and the execution/repair/provenance runner are pending;
+  no frozen AI-silver or real
   semantic-quality evidence exists, and
   reference-builder/Candidate provider calls remain unauthorized. The exposed
   legacy 60 items cannot score the semantic gate.
