@@ -292,16 +292,19 @@ draft labels pass row-level validation, but all 18 disagreements remain marked
 human-pending. The draft is only a review accelerator; it does not resolve
 human provenance, create gold, or authorize comparator/LLM selection claims.
 
-A clean-commit (`c3e76ea`) deterministic dry-run against those 34 AI-provisional
+A clean-commit (`c556231`) deterministic dry-run against those 34 AI-provisional
 labels is now hash-bound in the same coordinator-local directory. It records
 13/34 complete-label exact matches and 16/34 invalid predictions: nine
 positive/rejected conflicts, six unnormalized values, and one closed-vocabulary
 violation. `MCS` is 10/10 exact while `PRC` is 0/10 with ten invalid outputs;
 positive-constraint field exact is only 15/34. These are failure-localization
 diagnostics, not accuracy evidence: the subset is unbalanced and its pending AI
-labels are not independent human gold. The next deterministic slice should
-therefore target polarity-conflict resolution and legal value projection before
-any LLM/provider experiment. Exact hashes and boundaries are in
+labels are not independent human gold. Applied-state replay leaves zero
+active/rejected same-value conflicts, so the nine raw PRC conflicts do not prove
+that final runtime state is invalid. Before any parser or LLM/provider
+experiment, predeclare whether the official comparator measures raw Shadow
+request evidence or applied state delta; do not choose the projection by its
+score on this subset. Exact hashes and boundaries are in
 `docs/a13_annotation_intake_review.md`.
 
 A13 does not replace B10b-DS1. A13 interprets difficult user language before

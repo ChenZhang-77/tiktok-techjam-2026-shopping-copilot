@@ -136,8 +136,8 @@ deterministic-parser dry-run. The report is coordinator-local:
 `/Users/patryk/Documents/workspace/tiktoktechjam/a13_annotation_pack_v1/provisional_valid34_deterministic_comparator.json`
 
 Its SHA256 is
-`27cba05a7caa15fa5639940d9a678a27c9b80ed988de0ffac9c74ce5f65cc1a6`.
-It was generated from clean commit `c3e76ea`, binds the items, provisional
+`098494e451dc36799d6cea63fb7c6623fb00660c689ea55aed33606ceab1a336`.
+It was generated from clean commit `c556231`, binds the items, provisional
 annotations, and catalog hashes, validates each prediction without repairing
 it, and makes no provider call.
 
@@ -150,12 +150,17 @@ it, and makes no provider call.
 | Intent-hint field exact | 19 / 34 (55.88%) |
 | Abstain field exact | 24 / 34 (70.59%) |
 | No-preference / override / semantic-term field exact | 34 / 34 each |
+| Applied runtime-state active/rejected conflicts | 0 / 34 |
 
-The 16 invalid outputs comprise nine positive/rejected conflicts, six
-unnormalized proposal values, and one value outside the closed vocabulary.
+The raw request projection's 16 invalid outputs comprise nine
+positive/rejected conflicts, six unnormalized proposal values, and one value
+outside the closed vocabulary.
 Trigger-level exact counts are `OWV` 1/1, `MPC` 2/9, `LRF` 0/4, `MCS` 10/10,
-and `PRC` 0/10. This points first to polarity-conflict resolution and proposal
-normalization/validation, not to broad prompt or retrieval changes.
+and `PRC` 0/10. However, replaying the same deterministic evidence through the
+default `SessionState.apply_user_context` leaves zero items with the same value
+in active and rejected state: rejected evidence wins before the final query.
+The nine raw PRC conflicts are therefore trigger/request-shape diagnostics, not
+nine demonstrated runtime-state invariant failures.
 
 These numbers are not an official accuracy result. The subset is unbalanced,
 18 labels are still human-pending, and 17 of those AI recommendations copied
@@ -163,6 +168,14 @@ the `codex` draft, so the comparison is not independent of the implementation
 being diagnosed. Its permitted use is narrower: locate contract/failure
 classes, prepare adjudication, and predeclare the next deterministic test. It
 must not select an LLM trigger or satisfy A13-C1.
+
+Before changing the parser, the team must decide and document whether the
+official deterministic comparator represents raw pre-state Shadow evidence or
+the applied state delta. The former faithfully exposes why A13 is triggered;
+the latter better represents default runtime behavior. Optimizing either
+projection against these AI-pending labels would be circular, so this decision
+must be made before full human adjudication and must not be chosen by whichever
+version scores higher on the valid-34 subset.
 
 ## Scope and method
 

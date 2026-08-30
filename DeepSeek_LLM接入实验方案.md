@@ -252,10 +252,12 @@ disagreement compare CLI。60 条表达已经逐条审查并通过 runtime trigg
 `annotation_ready_not_gold_frozen`，不代表双人标注或 fixture freeze 已完成。
 协调者允许先用其中 34 条逐条合法的 Zhangchen 子集做 provisional 审查；基于
 AI-pending 标签的 clean-commit 离线 deterministic dry-run 为 13/34 exact、
-16/34 invalid，其中 9 条为正负约束冲突。该结果只用于定位 parser/contract
-失败，不是独立人工 gold 上的准确率，也不能开放真实 API 或选择 Candidate。
-下一确定性调查优先处理 polarity conflict 与合法 value projection；完整细节、
-hash 和偏差边界见 `docs/a13_annotation_intake_review.md`。
+16/34 raw-projection invalid，其中 9 条为正负约束冲突；但相同 evidence 经默认
+`SessionState` 应用后，34 条最终 active/rejected 同值冲突为 0。该结果只用于定位
+request/projection 边界，不是独立人工 gold 上的准确率，也不能开放真实 API 或
+选择 Candidate。下一步先预声明 comparator 比较 raw Shadow request 还是 applied
+state delta，不能按这 34 条哪种分数高来选；完整细节、hash 和偏差边界见
+`docs/a13_annotation_intake_review.md`。
 
 - 先实现 types、fake、validator、gate、fallback 和 diagnostics；
 - disabled/no-key 路径逐 turn parity；

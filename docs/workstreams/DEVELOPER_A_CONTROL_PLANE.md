@@ -627,10 +627,13 @@ disagreement remains human-pending and the suggested labels must not be copied
 into the committed fixture as gold without explicit human decisions.
 The clean offline valid-34 deterministic dry-run is diagnostic only: 13/34
 complete-label exact and 16/34 invalid predictions, dominated by nine
-positive/rejected conflicts. It identifies polarity-conflict resolution and
-legal value projection as the next bounded deterministic investigation; it
-does not satisfy the human-fixture or A13-C1 gate. See the same intake review
-for the report hash, field breakdown, and circularity warning.
+positive/rejected conflicts in the raw request projection. Applied-state replay
+has zero surviving active/rejected same-value conflicts, so do not treat those
+nine as final-state bugs. The next bounded investigation is to predeclare the
+comparator seam (raw Shadow request versus applied state delta), independent of
+which scores better on the AI-pending subset. This does not satisfy the
+human-fixture or A13-C1 gate. See the same intake review for the report hash,
+field breakdown, and circularity warning.
 Do not combine A13 semantic understanding with an ask/stop policy change.
 
 ## A14 - Question Policy Deepening
