@@ -20,6 +20,7 @@ from experiments.a13_annotation_trigger_audit import (
 from experiments.evaluation_reporting import code_provenance
 from starter.core.context_engine import CatalogVocabulary
 from starter.core.semantic_understanding import UnderstandingRequest
+from starter.core.state import SessionState
 
 
 PROJECTION_VERSION = "deterministic_request_fields_v1"
@@ -98,6 +99,84 @@ def project_deterministic_label(
     }
 
 
+def _applied_state_positive_rejected_conflicts(
+    item: dict[str, Any],
+    vocabulary: CatalogVocabulary,
+) -> list[str]:
+    """Replay the default state mutation and report surviving state conflicts."""
+
+    prior = item["prior_state"]
+    request = build_runtime_annotation_request(item, vocabulary)
+    state = SessionState(session_id="a13-provisional-audit", user_profile={})
+    state.current_turn = 1
+    state.active_constraints = [
+        {
+            "attribute": row["attribute"],
+            "normalized_value": row["value"],
+            "active": True,
+        }
+        for row in prior["active_constraints"]
+    ]
+    state.rejected_constraints = [
+        {
+            "attribute": row["attribute"],
+            "normalized_value": row["value"],
+            "active": False,
+        }
+        for row in prior["rejected_constraints"]
+    ]
+    state.no_preference_attributes = set(prior["no_preference_attributes"])
+    constraints = [
+        {
+            "attribute": proposal.attribute,
+            "normalized_value": proposal.value,
+            "raw_value": proposal.evidence_span,
+            "confidence": proposal.confidence,
+            "hard": proposal.hard,
+            "active": True,
+        }
+        for proposal in request.deterministic_constraints
+    ]
+    rejected = [
+        {
+            "attribute": proposal.attribute,
+            "normalized_value": proposal.value,
+            "raw_value": proposal.evidence_span,
+            "confidence": proposal.confidence,
+            "hard": proposal.hard,
+            "active": False,
+        }
+        for proposal in request.deterministic_rejected_constraints
+    ]
+    state.apply_user_context(
+        constraints=constraints,
+        override=request.override_detected,
+        no_preference_attributes=list(
+            request.deterministic_no_preference_attributes
+        ),
+        rejected_constraints=rejected,
+    )
+    active_keys = {
+        (
+            str(row.get("attribute") or ""),
+            str(row.get("normalized_value") or row.get("raw_value") or ""),
+        )
+        for row in state.active_constraints
+        if row.get("active", True)
+    }
+    rejected_keys = {
+        (
+            str(row.get("attribute") or ""),
+            str(row.get("normalized_value") or row.get("raw_value") or ""),
+        )
+        for row in state.rejected_constraints
+    }
+    return [
+        f"{attribute}={value}"
+        for attribute, value in sorted(active_keys & rejected_keys)
+    ]
+
+
 def evaluate_provisional_comparator(
     items: list[dict[str, Any]],
     annotations: list[dict[str, Any]],
@@ -117,12 +196,19 @@ def evaluate_provisional_comparator(
     trigger_counts: dict[str, Counter[str]] = {}
     field_exact_counts: Counter[str] = Counter()
     invalid_reasons: Counter[str] = Counter()
+    applied_state_conflict_items: list[str] = []
     exact_count = 0
     invalid_count = 0
     for item, annotation in zip(items, annotations):
         expected = annotation.get("label")
         validate_annotation_label(item, expected)
         prediction = project_deterministic_label(item, vocabulary)
+        applied_state_conflicts = _applied_state_positive_rejected_conflicts(
+            item,
+            vocabulary,
+        )
+        if applied_state_conflicts:
+            applied_state_conflict_items.append(str(item.get("item_id") or ""))
         prediction_status = "valid"
         validation_error: str | None = None
         try:
@@ -149,6 +235,7 @@ def evaluate_provisional_comparator(
                 "prediction_status": prediction_status,
                 "validation_error": validation_error,
                 "exact_match": exact,
+                "applied_state_positive_rejected_conflicts": applied_state_conflicts,
                 "prediction": prediction,
                 "provisional_label": expected,
             }
@@ -182,6 +269,12 @@ def evaluate_provisional_comparator(
             for field in COMPARISON_FIELDS
         },
         "invalid_prediction_reasons": dict(sorted(invalid_reasons.items())),
+        "applied_state_invariants": {
+            "positive_rejected_conflict_item_count": len(
+                applied_state_conflict_items
+            ),
+            "positive_rejected_conflict_items": applied_state_conflict_items,
+        },
         "items": rows,
     }
 

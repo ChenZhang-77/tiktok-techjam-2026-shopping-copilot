@@ -145,11 +145,22 @@ class A13ProvisionalComparatorTest(unittest.TestCase):
             report["invalid_prediction_reasons"],
             {"positive/rejected conflict": 1},
         )
+        self.assertEqual(
+            report["applied_state_invariants"],
+            {
+                "positive_rejected_conflict_item_count": 0,
+                "positive_rejected_conflict_items": [],
+            },
+        )
         rows = {row["item_id"]: row for row in report["items"]}
         self.assertEqual(rows["MCS-T01"]["prediction_status"], "valid")
         self.assertTrue(rows["MCS-T01"]["exact_match"])
         self.assertEqual(rows["PRC-T01"]["prediction_status"], "invalid")
         self.assertIn("positive/rejected conflict", rows["PRC-T01"]["validation_error"])
+        self.assertEqual(
+            rows["PRC-T01"]["applied_state_positive_rejected_conflicts"],
+            [],
+        )
         self.assertFalse(rows["PRC-T01"]["exact_match"])
 
     def test_cli_binds_valid_subset_and_input_hashes(self) -> None:
