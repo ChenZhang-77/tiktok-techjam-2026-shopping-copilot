@@ -5,7 +5,13 @@ from old reports.
 
 ## Start here
 
-For the latest requested order (2026-08-31), start with
+Latest decision: offline **Plan One** is primary; hosted LLM is optional
+**Plan Two**. Start with [B10b-F2 paired verification](b10b_paired_verification.md)
+and its [bound result](b10b_paired_verification_result.json): two fully paired
+positive passes verify optional Plan Two, without a default switch. It does not
+reopen LLM-led optimization or activate semantic understanding. Return to Plan One.
+
+For the earlier requested order (2026-08-31), see
 [B10b-F1 full product reranking](b10b_full_rerank_test.md) and its
 [bound results](b10b_full_rerank_result.json): the authorized full pass completed
 412 real API requests and improved score on all four folds, but two sessions
@@ -13,8 +19,8 @@ have trace differences and the strict parity gate fails. No default switch or
 repeat pass. The subsequent [A13-F1 semantic test](a13_semantic_score_test.md)
 and [bound result](a13_semantic_score_result.json) are complete: 67 real calls,
 60 valid proposals, below the 95% gate. No Candidate was run and no semantic
-score benefit is claimed. Next recommendation: resolve paired-retrieval
-timing differences in B10b-F1 before another paid reranking comparison.
+score benefit is claimed. Its then-recommended paired-retrieval follow-up is
+the bounded F2 check above; use that record for the newer disposition.
 Earlier deadline evidence remains in [A13 lightweight review](a13_light_review.md)
 and [A14 default-route selection pilot](a14_deadline_selection.md).
 The older multi-family A13 reference pipeline is deferred, not a prerequisite

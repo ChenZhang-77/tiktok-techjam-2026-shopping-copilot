@@ -58,13 +58,19 @@ Do not edit code when the user asks only for a review, diagnosis, or plan.
 
 ## Current Integrated State
 
+Latest coordinator decision: local/no-external-LLM Plan One is primary; all
+hosted LLM work is optional Plan Two. The single bounded
+[B10b-F2 follow-up](../b10b_paired_verification.md) does not activate A13 or
+change A-side state/question semantics. Return to low-risk Plan One review
+and delivery after its disposition; do not start another LLM tuning cycle.
+
 Latest separate test (2026-08-31): [A13-F1](../a13_semantic_score_test.md)
 completed the user's post-reranking semantic comparison. Real Shadow has exact
 160-session/649-turn parity, 67 calls and no API failures, but its 60 valid
 returns (89.55%) fail the 95% gate. No Candidate was run; stop this recipe and
 leave defaults unchanged. This deadline authorization does not pass the formal
-AI-silver gates below. Current score-first recommendation: resolve B10b-F1's
-paired-retrieval timing issue, not extend annotation/reference infrastructure.
+AI-silver gates below. Its then-recommended B10b-F1 follow-up is now the bounded
+F2 check above, not an extension of annotation/reference infrastructure.
 
 Deadline update (2026-08-31): [A13-LR0](../a13_light_review.md) is complete;
 only the cheap offline editor is retained. A13 runtime and multi-family

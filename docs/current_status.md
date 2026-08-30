@@ -38,7 +38,28 @@ read-only.
 
 ## Verified Behavior Checkpoint
 
-### Latest user order — reranking first, report, then semantic understanding
+### Latest priority — offline Plan One, optional LLM Plan Two
+
+The coordinator now places all hosted LLM work in **Plan Two**, not on the
+main delivery path. Plan One is the existing local/no-external-LLM runtime,
+including conditional local MiniLM retrieval. Prioritize evidence-backed
+low-risk improvements and reproducible offline delivery; no default LLM switch.
+
+The requested [B10b-F2 paired verification](b10b_paired_verification.md) is
+complete at frozen runner `c6b1a45`: baseline/placebo plus two real 160-session
+passes, full request/pre-rerank-result/question/membership parity and zero
+upstream/API failures. Score `0.766231 -> 0.779043 / 0.779199`; both passes
+improve all four folds. Total 826 calls, estimated `$0.69472392`. HR/MTTC do
+not improve; second-pass provider p95 is 1.609 s with a 7.318 s maximum.
+See [bound evidence](b10b_paired_verification_result.json). Ranking order is
+not identical between paid passes; the repeated positive gates are verified.
+
+Decision: **verified optional Plan Two, not a default switch**. Full suite:
+**443 passed**. No further paid round or tuning follows from this result;
+return to low-risk Plan One review and delivery. A13 stays inactive. Packaging
+and other-machine cold-start reliability remain unverified by this experiment.
+
+### Earlier sequence — reranking first, report, then semantic understanding
 
 [B10b-F1 full reranking](b10b_full_rerank_test.md) completed before the separate
 A13-F1 semantic test below, ahead of the older A14 counterfactual step. It compares actual default B9
@@ -68,9 +89,9 @@ See [bound results](a13_semantic_score_result.json). Full offline suite:
 **440 passed**; runtime source, catalog, evaluator and shared contracts unchanged.
 No hidden-test or independent semantic-accuracy claim.
 
-Recommended next score-first work, pending selection: diagnose and eliminate
-B10b-F1 paired-retrieval timing differences before authorizing another paid
-comparison. Do not loosen A13-F1's gate or restart the deferred AI-silver build.
+The next question at that checkpoint was B10b-F1 paired-retrieval timing.
+The latest Plan One / Plan Two decision and F2 disposition above supersede that
+older priority. Do not loosen A13-F1's gate or restart the AI-silver build.
 
 ### 2026-08-31 deadline override — read before historical phase blockers
 
@@ -115,7 +136,7 @@ behavior-identical Question Policy Module and turn-audit slice:
 | Current A13 publication branch | `llm`, cut from reviewed A13 HEAD `bbb0075` |
 | A14-0 runtime source commit | `f594601`; exact visible-response parity to legacy `2e4108a` across 649 Development turns |
 | A14-1 runtime/audit source commit | `b238c68`; closed Question Policy diagnostics, retained fallback semantics, and ten closed-schema attribute-evidence records per turn with the same visible response |
-| Latest local full test suite (2026-08-31) | 440 passed including B10b-F1 and A13-F1 bound evidence; semantic Shadow failed its validity gate, no Candidate; default remains unchanged/no-LLM |
+| Latest local full test suite (2026-08-31) | 443 passed including B10b-F2 paired evidence; reranking verified as optional Plan Two, semantic inactive; default remains unchanged/no-external-LLM |
 | Committed annotation bundle | `A13_annotation_pack_v1.zip`, SHA256 `8eb3379c730df8ee1a536b1ccfcb198bc456198ee280dea82c2100fc9cd0658b` |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |

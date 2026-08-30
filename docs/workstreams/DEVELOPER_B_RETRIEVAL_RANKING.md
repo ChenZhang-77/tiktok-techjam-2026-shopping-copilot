@@ -21,7 +21,14 @@ user explicitly requests it.
 
 ## Current integrated state
 
-- Latest selected work: [B10b-F1 full reranking](../b10b_full_rerank_test.md),
+- Latest coordinator priority: local Plan One is primary; LLM stays Plan Two.
+  The current bounded [B10b-F2 verification](../b10b_paired_verification.md)
+  adds shared synthetic prewarm and strict upstream observability, reusing the
+  exact F1 ranking recipe. Both paid passes now pass every gate, with score
+  `+0.012812 / +0.012968` and zero API/upstream failures. Retain verified
+  optional Plan Two only: no B9/default change, new paid round or parameter
+  sweep. Return to Plan One validation/delivery; disclose the 7.3-second tail.
+- Earlier test: [B10b-F1 full reranking](../b10b_full_rerank_test.md),
   an isolated current-default comparator with guarded Flash Top-10 ordering.
   Authorized full pass: 412 successful real calls, score +0.012812, all folds
   positive; two cross-arm trace-mismatched sessions prevent parity-gate passage.

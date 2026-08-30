@@ -14,7 +14,17 @@ the verified engineering work into a complete submission.
 
 ### Current deadline priority (2026-08-31)
 
-Latest explicit sequence: [B10b-F1 full product reranking](b10b_full_rerank_test.md)
+Latest coordinator correction: **Plan One is local/no-external-LLM; all hosted
+LLM work is optional Plan Two.** The only current LLM exception is the requested
+bounded [B10b-F2 verification](b10b_paired_verification.md), now complete with
+two fully paired positive passes (`+0.012812 / +0.012968`, all four folds
+positive). Retain verified optional Plan Two only; HR/MTTC remain unchanged,
+and network/latency risks remain. Return to low-risk Plan One validation and
+delivery, with no additional paid rounds, retuning or automatic activation.
+A13 remains inactive; do not restart AI-silver/annotation work.
+This priority supersedes the older reranking-first sequence below.
+
+Earlier explicit sequence: [B10b-F1 full product reranking](b10b_full_rerank_test.md)
 first, report the score/fold/reliability result, then test semantic understanding
 as a separate behavior. This supersedes the older "proceed to A14" next action
 below. The authorized B10b-F1 first full pass is complete: score `+0.012812`,
@@ -27,9 +37,9 @@ clean paired verification, not a relaxed gate or a selected 158-session score.
 The separate [A13-F1 semantic test](a13_semantic_score_test.md) is now complete:
 160 baseline + 160 real Shadow sessions, exact parity, 67 API calls; 60 valid
 returns (89.55%) miss the 95% gate. Candidate/repeat were not executed, so
-semantic score gain is unproven. Stop this recipe under the deadline. The
-recommended next step is resolving B10b-F1 paired-retrieval timing differences,
-then seeking authorization for a clean paired rerun; no post-hoc gate relaxation.
+semantic score gain is unproven. Stop this recipe under the deadline. Its
+then-recommended reranking follow-up is now the bounded F2 exception above;
+no post-hoc gate relaxation or open-ended LLM work is authorized.
 
 The coordinator's one-day score-first instruction supersedes the older A13
 reference-build dependency map below. A13-LR0 is complete: retain only its

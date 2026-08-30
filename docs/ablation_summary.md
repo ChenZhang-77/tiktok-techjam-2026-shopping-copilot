@@ -9,6 +9,13 @@ record.
 
 ## Baseline to Retained Runtime
 
+Latest optional result: [B10b-F2](b10b_paired_verification.md) verified the
+unchanged F1 reranker in two clean prewarmed paired runs. Current comparator
+TechnicalScore `0.766231` becomes `0.779043 / 0.779199`, all four folds positive,
+HR/MTTC unchanged. This is **verified optional Plan Two**, not retained default
+runtime. API latency includes a 7.3-second tail; local Plan One remains primary.
+The historical retained-runtime table below is not this experiment's comparator.
+
 Development-160 results:
 
 | Variant | HitRate@10 | MRR | MTTC | TechnicalScore | Decision |
