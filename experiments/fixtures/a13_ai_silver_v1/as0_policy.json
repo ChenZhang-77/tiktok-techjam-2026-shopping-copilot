@@ -70,6 +70,7 @@
     "labeler_families_exclude_candidate": true,
     "adjudicator_model_version_distinct": true,
     "adjudicator_family_excludes_all_labeler_families": true,
+    "adjudicator_family_excludes_candidate": true,
     "generator_family_excludes_candidate": true,
     "duplicate_auditor_family_excludes_candidate": true,
     "preflight_failure_mode": "no_go"

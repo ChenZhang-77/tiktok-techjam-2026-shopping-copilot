@@ -291,7 +291,8 @@ AI-silver reference 及判分协议必须在第一次 reference-builder API 运�
 - 独立 semantic duplicate auditor 只能看旧/新题目文本并输出重复对，不能看或生成
   label、Candidate/deterministic 输出、evaluator 字段，也不能编辑题目；
 - J1/J2/J3 必须是三个不同 model/version、三个互异且均不同于 Candidate 的模型家族；
-  adjudicator 必须不同于全部 labeler，且家族也不同于三个 labeler 家族。运行器请求前
+  adjudicator 必须不同于全部 labeler，且家族也不同于 Candidate 和三个 labeler 家族；
+  同一模型换代理 provider 不能算独立仲裁。运行器请求前
   强制校验，失败即 No-Go；
 - 3/3 形成 unanimous reference；2/3 必须由 blind adjudicator 复核；三方分歧或
   仲裁失败保留为 unresolved，不得删除以提高 agreement；

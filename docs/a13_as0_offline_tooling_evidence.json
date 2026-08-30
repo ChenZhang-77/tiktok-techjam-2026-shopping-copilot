@@ -29,7 +29,7 @@
     "README.md": "071490f60eae2c0d80e6f38cf436b93619184fef709f9890c1930537e547d73f",
     "adjudicator_prompt_v1.md": "5cccdc400d1c2fa48b8d89202094839d5cfa47da251a86ba678d0ec572075f05",
     "applied_state_delta_v1.schema.json": "aac893f90aabb352f63a9acc22705b61b05bb27d6e55bffe0e07f8e9040fd753",
-    "as0_policy.json": "5e33e6a341c79c8b303f91389620bfb6ca6f9a17b11eb743863acc6c00cfb383",
+    "as0_policy.json": "4c7650fda87b120fdd695586a6dead1522f6afc4fcb9b9a740a938c649fad888",
     "candidate_prompt_v1.md": "ff258f8d7c320ec4682247f6ef8822aeb65215d5612884da8e84d5189666861a",
     "fresh_fixture_item.schema.json": "d7e8cf86270cf217e639858df92c71778ab7a27522fd33140204ebea343db346",
     "frozen_fixture_manifest.schema.json": "3feccae5bcd2567a47fed9b0723ce19559708c58d7662a5e8689a5c684c3cdad",
@@ -40,13 +40,13 @@
     "semantic_duplicate_audit_prompt_v1.md": "d6e584e513167f7ebff2e10e49f3ad29783fbf7ec41d922c6ef962147860555b"
   },
   "code_sha256": {
-    "experiments/a13_ai_silver.py": "0407bc53795e1cf91dc20500c7933dc84694fc0c011749fa6190e3b2730088a7",
-    "tests/test_a13_ai_silver.py": "76d404f3e288b7d4e9ec19386429124a2f42803f7e26a277d879d422cdd5499d"
+    "experiments/a13_ai_silver.py": "003c9b97a9648eca749994719dab8d900580dc34241659f03038a059200c6ebe",
+    "tests/test_a13_ai_silver.py": "9c148319dee815341b7fcb3dbade80b3a8424f76693573bdf010889c0c4dd2fd"
   },
   "tests": {
-    "focused_protocol_tests": 26,
+    "focused_protocol_tests": 27,
     "evidence_tests": 1,
-    "full_suite_passed": 407
+    "full_suite_passed": 408
   },
   "boundaries": {
     "provider_calls": 0,
@@ -69,7 +69,7 @@
     "required_before_as1f": [
       "freeze exact generator and semantic duplicate-auditor identities",
       "freeze three distinct non-Candidate labeler families and model versions",
-      "freeze one adjudicator family distinct from every labeler family",
+      "freeze one adjudicator family distinct from Candidate and every labeler family",
       "bind every prompt and config hash in a role manifest",
       "complete AS0X isolated repair, provenance, hash-bound output runner and synthetic end-to-end tests",
       "obtain explicit reference-builder provider authorization"

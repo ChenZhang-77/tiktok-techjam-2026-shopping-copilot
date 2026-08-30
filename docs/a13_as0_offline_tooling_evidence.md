@@ -49,8 +49,9 @@ run, and fail closed if the returned version differs from the frozen manifest:
   message; private IDs, trigger/source fields are stripped.
 - J1/J2/J3 must use three distinct model/version identities and three distinct
   families outside the Candidate family. The single adjudicator is stricter
-  than the earlier majority-only wording: its family must differ from all three
-  labeler families so every possible 2/3 majority is safe. A separate semantic
+  than the earlier majority-only wording: its family must differ from the
+  Candidate and all three labeler families so a proxy Candidate cannot
+  adjudicate and every possible 2/3 majority is safe. A separate semantic
   duplicate auditor is also preflighted. Every role's declared prompt/config
   hashes are compared with actual prompt files and canonical policy config
   objects; preflight also binds the manifest and comparator/validator/state code.
@@ -69,9 +70,9 @@ The retained tests use synthetic items and labels only. They do not encode
 expected labels for the exposed legacy 60 rows.
 
 ```text
-tests.test_a13_ai_silver: 26 passed
+tests.test_a13_ai_silver: 27 passed
 tests.test_a13_as0_tooling_evidence: 1 passed
-full suite: 407 passed
+full suite: 408 passed
 provider calls: 0
 Full/Holdout runs: 0
 ```
@@ -88,7 +89,7 @@ must freeze exact identities and config/prompt hashes for:
 1. one non-Candidate fresh-item generator;
 2. one non-Candidate semantic duplicate auditor;
 3. J1/J2/J3 from three distinct non-Candidate model families;
-4. one adjudicator whose family differs from every labeler family.
+4. one adjudicator whose family differs from the Candidate and every labeler.
 
 AS0X must then implement and test the isolated one-repair workflow, raw
 request/response provenance, input/output hashes, raw-outside-Git storage, and

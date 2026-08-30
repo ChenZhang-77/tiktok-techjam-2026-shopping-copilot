@@ -320,6 +320,21 @@ class RoleManifestTest(unittest.TestCase):
                 manifest, build_role_artifact_bindings(SILVER_CONTRACT)
             )
 
+    def test_candidate_proxy_cannot_be_an_independent_adjudicator(self) -> None:
+        manifest = self._manifest()
+        manifest["adjudicator"].update(
+            provider="candidate-proxy",
+            family=manifest["candidate"]["family"],
+            model_version=manifest["candidate"]["model_version"],
+        )
+
+        with self.assertRaisesRegex(
+            AISilverProtocolError, "adjudicator family must exclude candidate"
+        ):
+            validate_role_manifest(
+                manifest, build_role_artifact_bindings(SILVER_CONTRACT)
+            )
+
     def test_bound_roles_cannot_bypass_the_missing_execution_runner(self) -> None:
         manifest = self._manifest()
         manifest["candidate"]["model_version"] = "DeepSeek-V4-Flash-0731"

@@ -147,8 +147,9 @@ Required independence:
   duplicate auditor sees only old/new item text and may return duplicate pairs,
   never labels, model outputs, evaluator fields, or item edits;
 - the adjudicator must use a model/version distinct from every labeler and a
-  family outside all three labeler families, so one fixed adjudicator remains
-  independent for every possible majority pair;
+  family outside the Candidate and all three labeler families, so one fixed
+  adjudicator remains independent for every possible majority pair and a
+  Candidate proxy provider cannot supply the adjudication vote;
 - labelers receive identical evidence and rubric but cannot see other labels;
 - model ID, provider, prompt hash, config, request/response hashes, latency,
   tokens, cost, retry status, and validator result are recorded;

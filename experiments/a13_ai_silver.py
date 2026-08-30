@@ -490,6 +490,8 @@ def validate_role_manifest(
         raise AISilverProtocolError("labeler families must exclude candidate family")
     if adjudicator["family"] in labeler_families:
         raise AISilverProtocolError("adjudicator family must be distinct")
+    if adjudicator["family"] == candidate["family"]:
+        raise AISilverProtocolError("adjudicator family must exclude candidate")
     if generator["family"] == candidate["family"]:
         raise AISilverProtocolError("generator family must exclude candidate family")
     if duplicate_auditor["family"] == candidate["family"]:
