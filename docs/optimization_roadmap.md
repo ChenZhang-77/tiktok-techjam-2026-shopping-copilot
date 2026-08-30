@@ -507,12 +507,15 @@ strictly outside runtime and training features. If a learned selector is later
 justified, fit only a compact frozen artifact from catalog-derived synthetic
 trajectories and use Development solely for fixed-fold Candidate selection.
 
-An optional LLM is an internal advisor, not the policy owner. It may cluster
-grounded feature phrases or rerank an eligible deterministic shortlist in one
-predeclared ambiguity bucket. It cannot stop, create attributes, mutate state,
-see Candidate IDs or evaluator data, or bypass deterministic fallback. LLM
-wording is primarily a real-UX/demo improvement because the local evaluator
-responds to `ask_attribute`, not prose quality.
+Optional LLM work has two separate seams, neither of which owns the policy. An
+offline teacher may cluster a frozen, hash-bound set of grounded catalog
+feature phrases and must pass deterministic validation. An online advisor may
+only rerank an eligible deterministic shortlist from bounded aggregate
+evidence in one predeclared ambiguity bucket; it does not receive raw feature
+phrases. Neither may stop, create attributes, mutate state, see Candidate IDs
+or evaluator data, or bypass deterministic fallback. LLM wording is primarily
+a real-UX/demo improvement because the local evaluator responds to
+`ask_attribute`, not prose quality.
 
 A14 planning and evidence-only preparation may occur while A13 annotation and
 review are pending. Do not activate A14 Candidate behavior until the active A13

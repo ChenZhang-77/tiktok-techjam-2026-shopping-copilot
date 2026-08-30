@@ -673,12 +673,14 @@ Required order:
 6. optional LLM advisor Shadow/Candidate or No-Go in one ambiguity bucket;
 7. broader ask/stop Candidate only after selection is stable.
 
-An optional LLM is an internal adapter. It may cluster grounded open-feature
-phrases or rerank an already eligible shortlist. It cannot decide stop in its
-first Candidate, create an attribute, mutate state, see Candidate IDs or
-evaluator data, or bypass deterministic fallback. Question wording may improve
-real UX and the demo, but the local evaluator responds to `ask_attribute`, not
-prose quality.
+Optional LLM work uses separate internal adapters. An offline teacher may
+cluster only a frozen, hash-bound set of grounded catalog feature phrases and
+must pass deterministic validation. The online advisor receives no raw feature
+phrases and may only rerank an already eligible shortlist from bounded
+aggregate evidence. Neither may decide stop in its first Candidate, create an
+attribute, mutate state, see Candidate IDs or evaluator data, or bypass
+deterministic fallback. Question wording may improve real UX and the demo, but
+the local evaluator responds to `ask_attribute`, not prose quality.
 
 Development-only target data may score counterfactual legal actions offline;
 it must not enter runtime or training features. A later learned policy must use

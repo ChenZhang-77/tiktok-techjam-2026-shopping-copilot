@@ -560,8 +560,9 @@ A14 已完成重新设计，但尚未改变运行时。关键结论不是“再�
 推荐顺序是：先做逐轮 audit 和深 Question Policy Module 的行为等价封装；再为全部
 允许属性建立 available/partial/unavailable/degraded 等显式证据状态；然后做确定性
 selection Shadow，最后才开启只改变属性选择的 Candidate。缺失证据绝不当作零分。
-LLM 只作为内部 advisor，用于开放 feature 聚类或难分候选问题重排；它不能决定
-stop、修改状态或绕过确定性回退。完整总纲见
+LLM 不拥有策略：离线 teacher 只能聚类冻结且 hash-bound 的 catalog feature 短语，
+并通过确定性验证；在线 advisor 不接收原始 feature 短语，只能基于有界汇总证据重排
+已合格的问题短名单。两者都不能决定 stop、修改状态或绕过确定性回退。完整总纲见
 `docs/question_policy_optimization_plan.md`。
 
 ## 证据入口
