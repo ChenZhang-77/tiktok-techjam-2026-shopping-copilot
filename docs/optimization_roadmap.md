@@ -17,9 +17,12 @@ the verified engineering work into a complete submission.
 Latest explicit sequence: [B10b-F1 full product reranking](b10b_full_rerank_test.md)
 first, report the score/fold/reliability result, then test semantic understanding
 as a separate behavior. This supersedes the older "proceed to A14" next action
-below. B10b-F1 is implemented/offline-tested, but provider execution awaits
-explicit query/constraint/catalog-text external-sharing authorization. No new
-score exists and no default may be promoted from unexecuted evidence.
+below. The authorized B10b-F1 first full pass is complete: score `+0.012812`,
+MRR `+0.042704`, all four folds positive, 412 successful real calls. Two sessions
+have cross-arm trace differences, so strict parity fails and no repeat/default
+promotion occurs. Preserve the positive result with its caveat; report it before
+the next semantic-understanding experiment. Any later reranking promotion needs
+clean paired verification, not a relaxed gate or a selected 158-session score.
 
 The coordinator's one-day score-first instruction supersedes the older A13
 reference-build dependency map below. A13-LR0 is complete: retain only its

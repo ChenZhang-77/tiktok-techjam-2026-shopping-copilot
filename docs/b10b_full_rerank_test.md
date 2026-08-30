@@ -61,21 +61,87 @@ hash-bound results and small authoritative status/navigation updates.
 
 ## Result
 
-Pending external-data authorization, not a negative result. The 2026-08-31
-execution request was rejected by safety review before process creation:
-the coordinator must explicitly approve sending runtime shopping queries,
-up to 12 active constraints and up to 10 truncated catalog-evidence texts to
-`https://api.deepseek.com/chat/completions`, with the above $3 estimate cap.
-No provider calls, charges, baseline pass, or Candidate measurement occurred
-in this attempt. Do not bypass this approval gate.
+**Completed first full pass after explicit external-data authorization**, at
+clean source `3045691`. The earlier blocked launch created no process or calls;
+the coordinator then explicitly authorized the bounded official-API transfer.
+No prompt, model, threshold, runtime source or evaluator changed during this run.
 
-The isolated runner and nine synthetic regressions are implemented. Full
-offline suite: 428 passed. Standards review found a truncated-HTTP-response
-failure-accounting gap; a reproduced RED test now passes after catching
-transport exceptions at the paid boundary. Spec review found no other issue.
-No production/default changes or publication occurred.
+| Metric | Default B9 | Flash reranking | Delta |
+| --- | ---: | ---: | ---: |
+| Development sessions | 160 | 160 | 0 |
+| HitRate@10 | 0.925000 | 0.925000 | 0 |
+| MRR | 0.554521 | 0.597225 | +0.042704 |
+| MTTC | 4.131250 | 4.131250 | 0 |
+| TechnicalScore | 0.766231 | 0.779043 | +0.012812 |
 
-After explicit authorization and a clean source commit, run from repository root:
+Four fixed-fold score deltas: `+0.011241, +0.006804, +0.021355, +0.011846`.
+All four scenario scores also improve: Boundary `+0.013750`, Browsing
+`+0.017898`, Buying `+0.008973`, Intent Override `+0.009167`. Runtime Browsing
+eligibility is inferred from the conversation, not the evaluator scenario label;
+that is why a Browsing-only reranker can affect sessions labeled Buying.
+There are 25 improved target ranks and one worsened rank, with zero gained or
+lost hits. Both arms have 649 response turns; 317 turns were reordered.
+
+### Real API execution and cost
+
+- 412 real requests to the official DeepSeek endpoint; **zero API failures**.
+  This means successful calls, not absence of API usage. Every response reported
+  `deepseek-v4-flash`; the docs advertise Flash-0731 but the response alias does
+  not independently establish that exact model revision.
+- 733,782 prompt tokens and 18,128 completion tokens; all usage known and
+  reconciled with public response usage. No failed-call unknown usage allowance.
+- Conservative peak/cache-miss estimate: **$0.34679304**, not an invoice.
+  Cached input/off-peak pricing may reduce the actual charge; the estimate uses
+  [official prices](https://api-docs.deepseek.com/quick_start/pricing/).
+- Provider latency: mean 0.799 s, median 0.785 s, p95 1.058 s. End-to-end
+  response p95: baseline 0.062 s versus Candidate 1.104 s. This is added latency,
+  not a speed improvement. No response exceptions or invalid payloads occurred.
+
+### Important comparison caveat and disposition
+
+The predeclared full gate **does not pass**: membership parity and question
+parity fail. Each arm had one local `dense_latency_budget_exceeded` fallback
+(not a DeepSeek failure). Across arms, ten turns differ in Top-10 membership
+within two sessions (`public_0002`, `public_0181`); two questions differ in the
+first of those sessions. The saved trace does not retain per-turn upstream
+failure diagnostics, so do not assert an exact causal mapping of each timeout
+to each difference. Within-call reranker membership preservation holds.
+
+`public_0002` misses in both arms. `public_0181` hits at turn 7 in both arms,
+with rank 3 -> 2. As an **ex-post sensitivity diagnostic only**, the other 158
+sessions have equal turn keys, candidate membership and visible questions, and
+still improve MRR by `+0.042189` / TechnicalScore by `+0.012657`. These matched
+sessions contribute about `+0.012499` to the original full-160 score difference.
+This supports a promising ranking signal but does not remove the two sessions
+from the official comparison or replace the frozen gate with a favorable subset.
+
+Decision: **keep the experiment available; do not promote it to the default**.
+The full score and all folds improve, but strict attribution/repeatability is
+not complete. The runner correctly stopped before the fresh-provider repeat;
+there was no second Candidate pass or parameter sweep. A future promotion
+needs a clean paired verification that controls local retrieval timing without
+changing the ranking recipe or relaxing the original gate.
+
+This first workstream is now reported. Semantic understanding is the separately
+requested next experiment and has not been run. No A13/A14 behavior was added,
+no Full/Holdout was evaluated, and no private competition-score gain is claimed.
+
+### Verification and reproduction
+
+[Bound result](b10b_full_rerank_result.json) retains all 160 session outcomes
+per arm, four-fold/scenario metrics, source/input/raw-report hashes, token/cost
+accounting and the independent audit. Raw full reports and the safe provider
+journal are in `experiments/runs/b10b-f1-20260831/` (Git-ignored).
+Independent validation recomputed metrics from ranks/hit turns, reconciled usage
+and budget, checked unique Development coverage and every bound source hash,
+and inspected the mismatched traces. Assessment: **share with caveats**.
+
+Pre-run Standards/Spec review passed after fixing the transport-truncation
+fallback. Post-run offline suite: 429 passed, including bound-evidence arithmetic
+and source checks. The runtime/default and evaluator remain unchanged.
+
+To reproduce, use a clean source commit and a fresh empty output directory.
+This command makes new paid API requests; do not run it merely to inspect results:
 
 ```bash
 ../shopping-copilot/.venv/bin/python -m experiments.b10b_full_rerank \

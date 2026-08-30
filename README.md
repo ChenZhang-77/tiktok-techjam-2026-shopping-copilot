@@ -19,10 +19,11 @@ available as an explicit, isolated performance experiment.
 
 **Latest requested order (2026-08-31):** complete
 [B10b-F1 product reranking](docs/b10b_full_rerank_test.md), report its measured
-effect, then test semantic understanding separately. The isolated runner passes
-428 offline tests, but the real run has not started: safety review requires
-explicit authorization to send bounded runtime query/catalog text to DeepSeek.
-There is no new reranking score yet. Default behavior remains unchanged.
+effect, then test semantic understanding separately. The first full pass is
+complete: 412 successful real Flash requests, MRR `0.554521 -> 0.597225`,
+TechnicalScore `0.766231 -> 0.779043`, all four folds positive. Two sessions have
+cross-arm trace differences, so the strict parity gate fails: no repeat or
+default promotion. Semantic understanding is next and has not run.
 
 **2026-08-31 deadline route:** [lightweight AI review](docs/a13_light_review.md)
 is complete and retained only as an offline helper; it does not demonstrate
@@ -30,7 +31,8 @@ competition gains. Full AI-silver construction and A13 runtime are deferred.
 The separate [A14 selection pilot](docs/a14_deadline_selection.md) reproduced
 a small score gain against the actual default route, with one regressing fold;
 it remains opt-in pending its final counterfactual audit. Production defaults are unchanged.
-This deadline disposition supersedes the older pending-A13 sequence below.
+The latest reranking-first order above supersedes this older A14 next step
+and the pending-A13 sequence below.
 
 The verified integrated checkout and next optimization decision are documented
 in [`docs/current_status.md`](docs/current_status.md). The project-wide route is

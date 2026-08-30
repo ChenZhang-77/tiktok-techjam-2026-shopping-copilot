@@ -6,10 +6,11 @@ from old reports.
 ## Start here
 
 For the latest requested order (2026-08-31), start with
-[B10b-F1 full product reranking](b10b_full_rerank_test.md): its offline runner
-is ready, but real execution awaits explicit approval to share bounded runtime
-query/catalog text with DeepSeek. Report reranking first, then separately test
-semantic understanding. There is no new reranking score yet.
+[B10b-F1 full product reranking](b10b_full_rerank_test.md) and its
+[bound results](b10b_full_rerank_result.json): the authorized full pass completed
+412 real API requests and improved score on all four folds, but two sessions
+have trace differences and the strict parity gate fails. No default switch or
+repeat pass. Reranking is reported first; semantic understanding is next/unrun.
 Earlier deadline evidence remains in [A13 lightweight review](a13_light_review.md)
 and [A14 default-route selection pilot](a14_deadline_selection.md).
 The older multi-family A13 reference pipeline is deferred, not a prerequisite

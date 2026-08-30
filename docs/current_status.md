@@ -43,15 +43,21 @@ read-only.
 [B10b-F1 full reranking](b10b_full_rerank_test.md) is the current selected work,
 ahead of the older A14 counterfactual next step. It compares actual default B9
 against isolated Flash Top-10 reranking on Development-160, without A13/A14
-behavior changes. Its runner and nine synthetic tests are implemented; full
-suite: **428 passed**. No runtime source or evaluator changed.
+behavior changes. After the initial approval block, the user explicitly
+authorized external data transfer. The full first pass ran at clean `3045691`:
+160 baseline and 160 Candidate sessions, 412 successful real Flash requests,
+zero provider failures, estimated peak/cache-miss cost `$0.34679304`.
+MRR `0.554521 -> 0.597225`, TechnicalScore `0.766231 -> 0.779043`; HR `0.925`
+and MTTC `4.13125` unchanged. All four folds improve. See the linked record and
+[bound evidence](b10b_full_rerank_result.json) for exact metrics and independent QA.
 
-The real execution request was blocked before process creation by safety review.
-Explicit approval is required to send bounded runtime queries, constraints and
-catalog text to DeepSeek's official API (estimated cap $3). No calls, new
-baseline, Candidate results or charges occurred in this attempt. Do not call
-this rejection evidence of model quality and do not bypass it. After approval,
-follow the frozen recipe and report reranking before beginning semantic testing.
+Do not promote: the frozen membership/question parity gates fail in two
+sessions. Both arms have one local dense latency-budget fallback; the other
+158 matched sessions still show positive diagnostic lift, but cannot replace
+the full gate. No provider repeat occurred. Preserve the experiment as promising
+evidence and default unchanged. Semantic understanding is the requested next
+separate test, not yet run. Full offline suite: **429 passed**; runtime source,
+catalog, evaluator and shared contracts unchanged. No hidden-test claim.
 
 ### 2026-08-31 deadline override — read before historical phase blockers
 
@@ -96,7 +102,7 @@ behavior-identical Question Policy Module and turn-audit slice:
 | Current A13 publication branch | `llm`, cut from reviewed A13 HEAD `bbb0075` |
 | A14-0 runtime source commit | `f594601`; exact visible-response parity to legacy `2e4108a` across 649 Development turns |
 | A14-1 runtime/audit source commit | `b238c68`; closed Question Policy diagnostics, retained fallback semantics, and ten closed-schema attribute-evidence records per turn with the same visible response |
-| Latest local full test suite (2026-08-31) | 428 passed including the isolated B10b-F1 runner; paid reranking test awaits external-data approval; default runtime remains unchanged/no-LLM |
+| Latest local full test suite (2026-08-31) | 429 passed including B10b-F1 bound-evidence validation; real reranking pass complete but not promotion-ready; default runtime remains unchanged/no-LLM |
 | Committed annotation bundle | `A13_annotation_pack_v1.zip`, SHA256 `8eb3379c730df8ee1a536b1ccfcb198bc456198ee280dea82c2100fc9cd0658b` |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |
