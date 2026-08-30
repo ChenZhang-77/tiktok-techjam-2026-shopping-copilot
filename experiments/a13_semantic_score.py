@@ -206,6 +206,7 @@ class TrialInterpreter:
                 self.journal.flush()
             except Exception:
                 self.stop_reason = "journal_failure"
+                record.update(status="fallback", fallback_reason="journal_failure")
                 raise SemanticUnderstandingError("journal_failure") from None
             if self.attempts and self.attempts % 10 == 0:
                 print(json.dumps({"semantic_attempts": self.attempts, "cost_usd": round(self.total_cost, 6)}), flush=True)
@@ -213,8 +214,17 @@ class TrialInterpreter:
             try:
                 _check_deadline(request)
             except SemanticUnderstandingError:
-                outcome = UnderstandingOutcome(None, signals, "deadline_exceeded", called, elapsed,
+                outcome = UnderstandingOutcome(None, signals, "deadline_exceeded", called, (time.monotonic() - started) * 1000,
                     outcome.prompt_tokens, outcome.completion_tokens, outcome.provider_model)
+                record.update(outcome.to_diagnostics())
+                if self.journal:
+                    try:
+                        self.journal.write(json.dumps({**record, "event": "final_disposition",
+                            "record_index": len(self.records) - 1}) + "\n")
+                        self.journal.flush()
+                    except Exception:
+                        self.stop_reason = "journal_failure"
+                        raise SemanticUnderstandingError("journal_failure") from None
         self.last = (request, outcome)
         return outcome
 

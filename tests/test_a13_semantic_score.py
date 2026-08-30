@@ -1,4 +1,6 @@
 import unittest
+import io
+import json
 from dataclasses import replace
 import time
 
@@ -29,6 +31,23 @@ def blocked_provider(connection, key, request):
 
 
 class SemanticScoreTest(unittest.TestCase):
+    def test_slow_journal_records_final_deadline_disposition(self):
+        class SlowJournal(io.StringIO):
+            def flush(self): time.sleep(.02)
+        journal = SlowJournal()
+        backend = FakeSemanticBackend(BackendResult(proposal(), prompt_tokens=100, completion_tokens=50))
+        interpreter = TrialInterpreter(backend, journal=journal)
+        request = UnderstandingRequest("arch support", 1, deterministic_constraints=(
+            ConstraintEvidence("feature", "arch support", confidence=.35),),
+            deadline_monotonic_ms=time.monotonic() * 1000 + 5)
+        outcome = interpreter.interpret(request)
+        self.assertIsNone(outcome.delta)
+        final = interpreter.records[-1]
+        self.assertEqual(final["fallback_reason"], "deadline_exceeded")
+        self.assertEqual(final["status"], "fallback")
+        self.assertGreaterEqual(final["latency_ms"], 20)
+        self.assertEqual(json.loads(journal.getvalue().splitlines()[-1])["fallback_reason"], "deadline_exceeded")
+
     def test_journal_failure_cannot_apply_a_prepared_proposal(self):
         class BrokenJournal:
             def write(self, text):
