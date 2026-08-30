@@ -163,6 +163,47 @@ class A13ProvisionalComparatorTest(unittest.TestCase):
         )
         self.assertFalse(rows["PRC-T01"]["exact_match"])
 
+    def test_applied_state_invariant_audit_has_a_positive_control(self) -> None:
+        item = _item(
+            "MPC-T02",
+            "mixed_polarity_clause",
+            "Any color is fine, but black would be nice.",
+            prior_intent="buying",
+        )
+        item["prior_state"]["active_constraints"] = [
+            {"attribute": "color", "value": "black"}
+        ]
+        annotation = _annotation(
+            "MPC-T02",
+            {
+                "intent_hint": None,
+                "positive_constraints": [],
+                "rejected_constraints": [],
+                "no_preference_attributes": [],
+                "override_attributes": [],
+                "semantic_terms": [],
+                "abstain": True,
+            },
+        )
+
+        report = evaluate_provisional_comparator(
+            [item],
+            [annotation],
+            CatalogVocabulary.empty(),
+        )
+
+        self.assertEqual(
+            report["applied_state_invariants"],
+            {
+                "positive_rejected_conflict_item_count": 1,
+                "positive_rejected_conflict_items": ["MPC-T02"],
+            },
+        )
+        self.assertEqual(
+            report["items"][0]["applied_state_positive_rejected_conflicts"],
+            ["color=black"],
+        )
+
     def test_cli_binds_valid_subset_and_input_hashes(self) -> None:
         items = load_jsonl(PACK / "items.jsonl")
         annotations = [
