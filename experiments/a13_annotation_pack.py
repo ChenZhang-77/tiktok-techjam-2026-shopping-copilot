@@ -205,11 +205,37 @@ def validate_annotation_pack(
             "annotation coverage/order must exactly match items.jsonl"
         )
 
+    return validate_annotation_subset(items, annotations)
+
+
+def validate_annotation_subset(
+    items: list[dict[str, Any]],
+    annotations: list[dict[str, Any]],
+) -> dict[str, object]:
+    """Validate annotation rows without claiming full-pack coverage."""
+
+    if not annotations:
+        raise AnnotationPackError("annotation subset must not be empty")
+    item_by_id: dict[str, dict[str, Any]] = {}
+    for item in items:
+        item_id = item.get("item_id")
+        if not isinstance(item_id, str):
+            raise AnnotationPackError("source item has invalid item_id")
+        if item_id in item_by_id:
+            raise AnnotationPackError(f"source items: duplicate item_id {item_id}")
+        item_by_id[item_id] = item
+
     annotator_ids: set[str] = set()
+    submitted_ids: set[str] = set()
     abstain_count = 0
     for index, row in enumerate(annotations, start=1):
-        item_id = expected_ids[index - 1]
-        _require_exact_fields(row, ANNOTATION_FIELDS, f"annotation {item_id}")
+        _require_exact_fields(row, ANNOTATION_FIELDS, f"annotation row {index}")
+        item_id = row["item_id"]
+        if not isinstance(item_id, str) or item_id not in item_by_id:
+            raise AnnotationPackError(f"annotation row {index}: unknown item_id")
+        if item_id in submitted_ids:
+            raise AnnotationPackError(f"annotation row {index}: duplicate item_id")
+        submitted_ids.add(item_id)
         annotator_id = row["annotator_id"]
         if (
             not isinstance(annotator_id, str)
@@ -232,6 +258,12 @@ def validate_annotation_pack(
         "annotation_count": len(annotations),
         "abstain_count": abstain_count,
     }
+
+
+def validate_annotation_label(item: dict[str, Any], label: object) -> None:
+    """Validate one label against one item without claiming pack coverage."""
+
+    _validate_label(label, item)
 
 
 def compare_annotation_sets(

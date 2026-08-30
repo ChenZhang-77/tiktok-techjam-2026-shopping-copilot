@@ -21,6 +21,7 @@ from experiments.a13_annotation_pack import (
     compare_annotation_sets,
     load_jsonl,
     validate_annotation_pack,
+    validate_annotation_subset,
     validate_items,
 )
 from starter.core.context_engine import (
@@ -146,6 +147,27 @@ class A13AnnotationPackTest(unittest.TestCase):
         self.assertEqual(summary["annotator_id"], "member_b")
         self.assertEqual(summary["annotation_count"], 60)
         self.assertEqual(summary["abstain_count"], 60)
+
+    def test_valid_subset_preserves_wrapper_validation_without_claiming_coverage(self) -> None:
+        annotations = _abstain_annotations(self.items[:2])
+
+        summary = validate_annotation_subset(self.items, annotations)
+
+        self.assertEqual(
+            summary,
+            {
+                "annotator_id": "member_b",
+                "annotation_count": 2,
+                "abstain_count": 2,
+            },
+        )
+
+    def test_subset_rejects_duplicate_item_ids(self) -> None:
+        annotations = _abstain_annotations(self.items[:2])
+        annotations[1]["item_id"] = annotations[0]["item_id"]
+
+        with self.assertRaisesRegex(AnnotationPackError, "duplicate item_id"):
+            validate_annotation_subset(self.items, annotations)
 
     def test_validator_accepts_multiword_use_case_no_preference(self) -> None:
         items = copy.deepcopy(self.items)

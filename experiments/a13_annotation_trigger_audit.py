@@ -32,7 +32,7 @@ def validate_runtime_trigger_assignments(
     assigned_counts: Counter[str] = Counter()
     mismatches: list[dict[str, object]] = []
     for item in items:
-        request = _runtime_request(item, vocabulary)
+        request = build_runtime_annotation_request(item, vocabulary)
         signals = detect_trigger_signals(request)
         observed_counts.update(signals)
         assigned = item["trigger_type"]
@@ -56,7 +56,7 @@ def validate_runtime_trigger_assignments(
     }
 
 
-def _runtime_request(
+def build_runtime_annotation_request(
     item: dict[str, Any],
     vocabulary: CatalogVocabulary,
 ) -> UnderstandingRequest:
