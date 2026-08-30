@@ -32,8 +32,9 @@ The recommended shape combines three design conclusions:
    fallback, rendering, and optional model handling from `Agent`;
 2. a guarded lexicographic cascade is the first deterministic policy, rather
    than a highly tunable global weighted formula;
-3. synthetic safe-policy improvement and an LLM advisor are optional internal
-   adapters, not requirements for the first Candidate.
+3. synthetic safe-policy improvement, an offline LLM teacher, and an online
+   LLM advisor are separate optional adapters, not requirements for the first
+   Candidate.
 
 ## Why the Earlier Approaches Failed
 
@@ -409,11 +410,30 @@ Primary behavior change: selection override in one supported bucket.
 - retain exact legacy fallback for missing/corrupt artifacts and OOD states;
 - do not combine with stop or LLM behavior.
 
-### A14-S3 - LLM Advisor Shadow
+### A14-S3T - Offline LLM Teacher Shadow or No-Go
+
+Primary behavior change: none. This slice is independent of the online advisor
+and does not authorize a runtime artifact.
+
+- open only if A14-C1 leaves a diagnosed catalog-feature normalization bucket;
+- freeze and hash the catalog phrase fixture before any provider call, with
+  predeclared item and character bounds;
+- deterministically reject ungrounded, duplicate, out-of-schema, or newly
+  invented concepts;
+- record validated coverage, invalid rate, repeatability, latency, tokens, and
+  cost against a deterministic normalization comparator;
+- retain at most offline evidence-generation tooling when its predeclared
+  coverage and reliability gates pass; otherwise record No-Go;
+- require a separately reviewed deterministic Shadow/Candidate before any
+  validated teacher artifact can affect runtime selection.
+
+### A14-S3 - Online LLM Advisor Shadow
 
 Primary behavior change: none.
 
 - call only on one predeclared ambiguity bucket;
+- receive only proposal IDs and bounded aggregate evidence, never raw feature
+  phrases or offline-teacher output;
 - record proposal legality, deterministic agreement, counterfactual regret,
   latency, tokens, cost, and fallback;
 - do not alter state, questions, or recommendations.
@@ -427,6 +447,8 @@ Primary behavior change: attribute choice inside the reviewed bucket.
 - require zero invalid decisions and exact deterministic fallback;
 - record No-Go when the advantage does not survive fixed folds or cost/reliability
   gates.
+- do not treat A14-S3T success as a gate for this Candidate; only the online
+  A14-S3 advisor Shadow can open A14-C3.
 
 ### A14-C4 - Ask/Stop Candidate
 

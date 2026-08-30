@@ -491,6 +491,7 @@ A14-0 turn audit and deep-Module parity       behavior unchanged
       -> A14-S1 deterministic selection Shadow behavior unchanged
           -> A14-C1 selection-only Candidate  first metric change
               -> A14-S2/C2 catalog-only safe-policy option
+              -> A14-S3T offline LLM teacher Shadow or No-Go
               -> A14-S3/C3 guarded LLM advisor or No-Go
               -> A14-C4 ask/stop Candidate last
 ```
@@ -516,6 +517,12 @@ phrases. Neither may stop, create attributes, mutate state, see Candidate IDs
 or evaluator data, or bypass deterministic fallback. LLM wording is primarily
 a real-UX/demo improvement because the local evaluator responds to
 `ask_attribute`, not prose quality.
+
+The offline teacher is the independent A14-S3T Shadow/No-Go slice: it has a
+frozen input fixture, validation/reliability/cost gates, and no direct runtime
+path. Only the separate online A14-S3 Shadow can open A14-C3. Any future use of
+a teacher artifact in selection requires its own deterministic
+Shadow/Candidate review.
 
 A14 planning and evidence-only preparation may occur while A13 annotation and
 review are pending. Do not activate A14 Candidate behavior until the active A13

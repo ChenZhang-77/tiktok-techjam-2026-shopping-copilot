@@ -562,7 +562,9 @@ A14 已完成重新设计，但尚未改变运行时。关键结论不是“再�
 selection Shadow，最后才开启只改变属性选择的 Candidate。缺失证据绝不当作零分。
 LLM 不拥有策略：离线 teacher 只能聚类冻结且 hash-bound 的 catalog feature 短语，
 并通过确定性验证；在线 advisor 不接收原始 feature 短语，只能基于有界汇总证据重排
-已合格的问题短名单。两者都不能决定 stop、修改状态或绕过确定性回退。完整总纲见
+已合格的问题短名单。离线 teacher 属于独立的 A14-S3T Shadow/No-Go，没有直接运行时
+路径；其产物若要影响选择，必须另开确定性 Shadow/Candidate。两者都不能决定 stop、
+修改状态或绕过确定性回退。完整总纲见
 `docs/question_policy_optimization_plan.md`。
 
 ## 证据入口

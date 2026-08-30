@@ -291,17 +291,20 @@ A14-0 turn audit and deep-Module parity
   -> A14-1 complete attribute-evidence status
       -> A14-S1 deterministic selection Shadow
           -> A14-C1 selection-only Candidate
-              -> optional catalog-only policy, LLM advisor, and stop slices
+              -> optional catalog-only policy
+              -> optional offline LLM teacher Shadow/No-Go
+              -> optional online LLM advisor and stop slices
 ```
 
 The first behavior Candidate preserves the current ask opportunity and changes
 only which legal attribute is selected. Unsupported evidence uses an explicit
 legacy fallback; missing evidence is never converted to zero Question Value.
-An optional LLM may later cluster grounded feature phrases or rerank an
-eligible shortlist in one reviewed bucket, but it cannot stop, create an
-attribute, mutate state, or bypass deterministic fallback. Full design,
-diagnostics, experiment gates, and alternatives are in
-`docs/question_policy_optimization_plan.md`.
+An optional offline LLM teacher may later cluster a frozen, hash-bound catalog
+phrase fixture, but it has no direct runtime path. A separate online advisor
+may only rerank an eligible shortlist from bounded aggregate evidence in one
+reviewed bucket. Neither can stop, create an attribute, mutate state, or bypass
+deterministic fallback. Full design, diagnostics, experiment gates, and
+alternatives are in `docs/question_policy_optimization_plan.md`.
 
 ## R0 Result
 

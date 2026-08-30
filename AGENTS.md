@@ -435,11 +435,14 @@ be answerable and actionable while preserving the ask opportunity. Any later
 stop rule must be a separate behavior slice with official metrics and a
 separately declared real-UX question-cost objective.
 
-An A14 LLM may only advise on an already eligible shortlist or cluster grounded
-feature phrases behind an internal adapter. It must not create attributes,
-decide state mutation, see Candidate IDs/evaluator data, bypass deterministic
-fallback, or run in the same metric experiment as active A13 or B10b model
-behavior.
+A14 separates two optional LLM adapters. An offline teacher may cluster only a
+frozen, hash-bound catalog phrase fixture, stays offline, and cannot authorize
+runtime behavior. An online advisor receives no raw feature phrases and may
+only rerank an already eligible shortlist from bounded aggregate evidence.
+Neither may create attributes, decide state mutation, see Candidate
+IDs/evaluator data, bypass deterministic fallback, or run in the same metric
+experiment as active A13 or B10b model behavior. A teacher artifact requires a
+separate deterministic Shadow/Candidate review before runtime use.
 
 Explicit current intent always wins over profile evidence.
 

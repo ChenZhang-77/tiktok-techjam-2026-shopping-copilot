@@ -670,8 +670,11 @@ Required order:
 4. A14-C1: selection-only Candidate with legacy fallback;
 5. optional catalog-only safe-policy Shadow/Candidate if a learnable bucket is
    diagnosed;
-6. optional LLM advisor Shadow/Candidate or No-Go in one ambiguity bucket;
-7. broader ask/stop Candidate only after selection is stable.
+6. optional A14-S3T offline LLM teacher Shadow or No-Go, with no direct runtime
+   path;
+7. optional online LLM advisor Shadow/Candidate or No-Go in one ambiguity
+   bucket;
+8. broader ask/stop Candidate only after selection is stable.
 
 Optional LLM work uses separate internal adapters. An offline teacher may
 cluster only a frozen, hash-bound set of grounded catalog feature phrases and
@@ -681,6 +684,11 @@ aggregate evidence. Neither may decide stop in its first Candidate, create an
 attribute, mutate state, see Candidate IDs or evaluator data, or bypass
 deterministic fallback. Question wording may improve real UX and the demo, but
 the local evaluator responds to `ask_attribute`, not prose quality.
+
+A14-S3T owns the teacher's frozen input, deterministic validation,
+reliability/cost gate, and offline-only disposition. It cannot open A14-C3;
+only the separate online A14-S3 advisor Shadow can do that. A teacher artifact
+needs a new deterministic Shadow/Candidate review before it can affect runtime.
 
 Development-only target data may score counterfactual legal actions offline;
 it must not enter runtime or training features. A later learned policy must use

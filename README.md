@@ -459,7 +459,9 @@ reusing the rejected A9 stop threshold or by giving an LLM control of the
 conversation. A14 first adds a hash-bound turn audit and a deep one-entry-point
 Question Policy Module, then proves complete attribute-evidence status, and
 only then tests a deterministic selection-only Candidate. Optional catalog-
-only policy learning and a guarded LLM advisor remain later, separate slices.
+only policy learning, an offline-only LLM teacher Shadow/No-Go, and a guarded
+online LLM advisor remain later, separate slices. The teacher has no direct
+runtime path.
 See
 [`docs/question_policy_optimization_plan.md`](docs/question_policy_optimization_plan.md).
 
