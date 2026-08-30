@@ -2,6 +2,7 @@
 from dataclasses import replace
 import argparse
 import hashlib
+from http.client import HTTPException
 import json
 from pathlib import Path
 import time
@@ -62,7 +63,7 @@ class BudgetedRanker:
         record = {"attempt": len(self.records) + 1,
             "request_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
             "prompt_tokens": 0, "completion_tokens": 0, "usage_known": False,
-            "cost_allowance_usd": unknown_allowance, "failure": None}
+            "cost_allowance_usd": unknown_allowance, "failure": "incomplete_attempt"}
         outcome = None
         try:
             outcome = self.backend.rank(request)
@@ -79,11 +80,12 @@ class BudgetedRanker:
             if outcome.finish_reason != "stop":
                 raise SemanticRankError("incomplete_response")
             validate_permutation(outcome.ordered_ids, tuple(i.opaque_id for i in request.items))
+            record["failure"] = None
             self.consecutive_errors = 0
-        except (SemanticRankError, ValueError, TypeError, AttributeError) as error:
+        except (SemanticRankError, ValueError, TypeError, AttributeError, HTTPException, OSError) as error:
             safe = {"no_key", "provider_error", "invalid_provider_json", "invalid_json_or_permutation",
                     "invalid_usage", "incomplete_response", "invalid_permutation"}
-            reason = str(error)
+            reason = "provider_error" if isinstance(error, (HTTPException, OSError)) else str(error)
             record["failure"] = reason if reason in safe or (reason.startswith("http_") and reason[5:].isdigit()) else "invalid_outcome"
             self.consecutive_errors += 1
             if record["failure"] in {"http_401", "http_403", "no_key"}:

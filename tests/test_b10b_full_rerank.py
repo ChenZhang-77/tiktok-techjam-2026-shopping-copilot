@@ -1,4 +1,5 @@
 import unittest
+from http.client import IncompleteRead
 from dataclasses import replace
 from unittest.mock import Mock
 
@@ -29,6 +30,19 @@ def request():
 
 
 class FullRerankTest(unittest.TestCase):
+    def test_truncated_transport_falls_back_and_trips_error_limit(self):
+        backend = Mock()
+        backend.rank.side_effect = IncompleteRead(b"partial")
+        ledger = BudgetedRanker(backend)
+        retriever = ProductReranker(BaseRetriever(), ledger)
+        for _ in range(4):
+            result = retriever.retrieve(request())
+            self.assertEqual([c.parent_asin for c in result.candidates], ["A", "B", "C", "D"])
+            self.assertTrue(result.diagnostics.fallback_used)
+        self.assertEqual(backend.rank.call_count, 3)
+        self.assertTrue(all(r["failure"] for r in ledger.records))
+        self.assertEqual(ledger.stop_reason, "consecutive_errors")
+
     def test_cost_auth_and_consecutive_errors_stop_calls(self):
         item_request = SemanticRankRequest("shoes", (), (SemanticRankItem("c0", "blue"),))
         for error, count in (("http_401", 1), ("provider_error", 3)):

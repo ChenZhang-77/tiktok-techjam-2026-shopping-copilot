@@ -38,6 +38,21 @@ read-only.
 
 ## Verified Behavior Checkpoint
 
+### Latest user order — reranking first, report, then semantic understanding
+
+[B10b-F1 full reranking](b10b_full_rerank_test.md) is the current selected work,
+ahead of the older A14 counterfactual next step. It compares actual default B9
+against isolated Flash Top-10 reranking on Development-160, without A13/A14
+behavior changes. Its runner and nine synthetic tests are implemented; full
+suite: **428 passed**. No runtime source or evaluator changed.
+
+The real execution request was blocked before process creation by safety review.
+Explicit approval is required to send bounded runtime queries, constraints and
+catalog text to DeepSeek's official API (estimated cap $3). No calls, new
+baseline, Candidate results or charges occurred in this attempt. Do not call
+this rejection evidence of model quality and do not bypass it. After approval,
+follow the frozen recipe and report reranking before beginning semantic testing.
+
 ### 2026-08-31 deadline override — read before historical phase blockers
 
 The coordinator now prioritizes competition score with one day remaining.
@@ -58,7 +73,7 @@ At clean pilot source `5a6b65b`, the B9 default baseline is TechnicalScore
 `0.766231`; the opt-in selector gives `0.767211`, with unchanged HitRate `0.925`,
 three improving folds and one regressing fold. Both default-route runs
 reproduce exactly. This is **retained pilot evidence, not a default switch**;
-the full S1 counterfactual check is still pending. Next: inspect the changed
+the full S1 counterfactual check is still pending. Deferred A14 next step: inspect the changed
 question sessions/fold-2 regression before deciding promotion, with no more
 AI-reference infrastructure work.
 
@@ -81,7 +96,7 @@ behavior-identical Question Policy Module and turn-audit slice:
 | Current A13 publication branch | `llm`, cut from reviewed A13 HEAD `bbb0075` |
 | A14-0 runtime source commit | `f594601`; exact visible-response parity to legacy `2e4108a` across 649 Development turns |
 | A14-1 runtime/audit source commit | `b238c68`; closed Question Policy diagnostics, retained fallback semantics, and ten closed-schema attribute-evidence records per turn with the same visible response |
-| Latest local full test suite (2026-08-31) | 419 passed after lightweight editor diagnostics and the isolated default-route selection pilot; default runtime remains unchanged/no-LLM |
+| Latest local full test suite (2026-08-31) | 428 passed including the isolated B10b-F1 runner; paid reranking test awaits external-data approval; default runtime remains unchanged/no-LLM |
 | Committed annotation bundle | `A13_annotation_pack_v1.zip`, SHA256 `8eb3379c730df8ee1a536b1ccfcb198bc456198ee280dea82c2100fc9cd0658b` |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |

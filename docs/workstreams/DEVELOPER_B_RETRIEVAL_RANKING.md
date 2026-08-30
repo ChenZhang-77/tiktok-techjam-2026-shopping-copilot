@@ -21,6 +21,10 @@ user explicitly requests it.
 
 ## Current integrated state
 
+- Latest selected work: [B10b-F1 full reranking](../b10b_full_rerank_test.md),
+  an isolated current-default comparator with guarded Flash Top-10 ordering.
+  Offline tests pass; real execution awaits explicit external-data approval.
+  Report this result before the separately requested semantic-understanding test.
 - Retained B9 route commit: `7f520ba`; optional B12 code commit: `82891c8`.
 - Retained default route: structured scoring, plus pinned local dense/RRF only
   behind the broad-Browsing gate.

@@ -17,6 +17,13 @@ available as an explicit, isolated performance experiment.
 
 ## Current Status
 
+**Latest requested order (2026-08-31):** complete
+[B10b-F1 product reranking](docs/b10b_full_rerank_test.md), report its measured
+effect, then test semantic understanding separately. The isolated runner passes
+428 offline tests, but the real run has not started: safety review requires
+explicit authorization to send bounded runtime query/catalog text to DeepSeek.
+There is no new reranking score yet. Default behavior remains unchanged.
+
 **2026-08-31 deadline route:** [lightweight AI review](docs/a13_light_review.md)
 is complete and retained only as an offline helper; it does not demonstrate
 competition gains. Full AI-silver construction and A13 runtime are deferred.

@@ -61,5 +61,28 @@ hash-bound results and small authoritative status/navigation updates.
 
 ## Result
 
-Pending. Stop after reporting this first workstream; semantic understanding
-remains a separate subsequent experiment.
+Pending external-data authorization, not a negative result. The 2026-08-31
+execution request was rejected by safety review before process creation:
+the coordinator must explicitly approve sending runtime shopping queries,
+up to 12 active constraints and up to 10 truncated catalog-evidence texts to
+`https://api.deepseek.com/chat/completions`, with the above $3 estimate cap.
+No provider calls, charges, baseline pass, or Candidate measurement occurred
+in this attempt. Do not bypass this approval gate.
+
+The isolated runner and nine synthetic regressions are implemented. Full
+offline suite: 428 passed. Standards review found a truncated-HTTP-response
+failure-accounting gap; a reproduced RED test now passes after catching
+transport exceptions at the paid boundary. Spec review found no other issue.
+No production/default changes or publication occurred.
+
+After explicit authorization and a clean source commit, run from repository root:
+
+```bash
+../shopping-copilot/.venv/bin/python -m experiments.b10b_full_rerank \
+  --execute --output experiments/runs/b10b-f1-20260831
+```
+
+Use a fresh empty output directory if this path already contains a previous
+attempt. Never repeat an uncertain paid run without checking its provider
+journal. Report the first workstream's result before semantic understanding;
+the latter remains a separate subsequent experiment.
