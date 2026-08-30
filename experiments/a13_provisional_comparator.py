@@ -23,6 +23,15 @@ from starter.core.semantic_understanding import UnderstandingRequest
 
 
 PROJECTION_VERSION = "deterministic_request_fields_v1"
+COMPARISON_FIELDS = (
+    "abstain",
+    "intent_hint",
+    "no_preference_attributes",
+    "override_attributes",
+    "positive_constraints",
+    "rejected_constraints",
+    "semantic_terms",
+)
 
 
 def _current_intent_hint(request: UnderstandingRequest) -> str | None:
@@ -106,6 +115,8 @@ def evaluate_provisional_comparator(
 
     rows: list[dict[str, object]] = []
     trigger_counts: dict[str, Counter[str]] = {}
+    field_exact_counts: Counter[str] = Counter()
+    invalid_reasons: Counter[str] = Counter()
     exact_count = 0
     invalid_count = 0
     for item, annotation in zip(items, annotations):
@@ -119,7 +130,11 @@ def evaluate_provisional_comparator(
         except AnnotationPackError as exc:
             prediction_status = "invalid"
             validation_error = str(exc)
+            _, separator, reason = validation_error.partition(": ")
+            invalid_reasons[reason if separator else validation_error] += 1
         exact = prediction_status == "valid" and prediction == expected
+        for field in COMPARISON_FIELDS:
+            field_exact_counts[field] += int(prediction[field] == expected[field])
         exact_count += int(exact)
         invalid_count += int(prediction_status == "invalid")
         trigger = str(item.get("trigger_type") or "")
@@ -159,6 +174,14 @@ def evaluate_provisional_comparator(
             trigger: dict(counts)
             for trigger, counts in sorted(trigger_counts.items())
         },
+        "field_exact": {
+            field: {
+                "count": field_exact_counts[field],
+                "rate": field_exact_counts[field] / item_count if item_count else 0.0,
+            }
+            for field in COMPARISON_FIELDS
+        },
+        "invalid_prediction_reasons": dict(sorted(invalid_reasons.items())),
         "items": rows,
     }
 

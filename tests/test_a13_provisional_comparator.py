@@ -129,6 +129,22 @@ class A13ProvisionalComparatorTest(unittest.TestCase):
                 },
             },
         )
+        self.assertEqual(
+            report["field_exact"],
+            {
+                "abstain": {"count": 1, "rate": 0.5},
+                "intent_hint": {"count": 1, "rate": 0.5},
+                "no_preference_attributes": {"count": 2, "rate": 1.0},
+                "override_attributes": {"count": 2, "rate": 1.0},
+                "positive_constraints": {"count": 1, "rate": 0.5},
+                "rejected_constraints": {"count": 1, "rate": 0.5},
+                "semantic_terms": {"count": 2, "rate": 1.0},
+            },
+        )
+        self.assertEqual(
+            report["invalid_prediction_reasons"],
+            {"positive/rejected conflict": 1},
+        )
         rows = {row["item_id"]: row for row in report["items"]}
         self.assertEqual(rows["MCS-T01"]["prediction_status"], "valid")
         self.assertTrue(rows["MCS-T01"]["exact_match"])
