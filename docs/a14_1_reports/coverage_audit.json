@@ -9,7 +9,7 @@
     "full_trace_storage": "docs/a14_1_reports/turn_audit.json",
     "question_trace_excludes_operational_latency": true
   },
-  "code_provenance": {"commit": "4b1c530", "worktree_clean": true},
+  "code_provenance": {"commit": "9d93765", "worktree_clean": true},
   "input_sha256": {
     "catalog": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
     "dataset": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579",
@@ -39,7 +39,7 @@
     "stop_count": 62,
     "policy_violation_count": 0,
     "unproductive_reply_count": 226,
-    "policy_latency_ms": {"count": 649, "mean": 9.556641, "p95": 15.289792, "max": 19.9535},
+    "policy_latency_ms": {"count": 649, "mean": 9.549304, "p95": 15.442333, "max": 21.441833},
     "attribute_evidence_status_counts": {
       "brand": {"unavailable": 649},
       "budget": {"unavailable": 649},
@@ -86,10 +86,10 @@
     "missing_data_behavior": "preserve the exact legacy action; never convert missing evidence to zero question value",
     "answerability": "canonical question templates; other uses the controlled open-text fallback",
     "actionability": "existing bounded/residual extraction only; no new parser, retriever, or model",
-    "per_turn_validation": "exact ten keys; non-empty source/lifecycle/range/answerability/actionability/eligibility/missing behavior; bounded numeric values; status-consistent comparability and missing-data semantics"
+    "per_turn_validation": "exact ten keys; closed attribute/source/status/family mappings; fixed lifecycle/range; attribute-specific answerability/actionability; closed and boolean-consistent eligibility; bounded numerics; available value_count >= 2; partial value_count = 1; status-consistent comparability and missing-data semantics"
   },
   "repeatability": {
-    "independent_clean_run_count": 2,
+    "independent_clean_run_count": 3,
     "semantic_question_trace_equal": true,
     "question_trace_sha256": "032d4c897f29b06efda53977341a1867cf562d621692039e97dedd2bdaa586ed",
     "operational_latency_differed_as_expected": true

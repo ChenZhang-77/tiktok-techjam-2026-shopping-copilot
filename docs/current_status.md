@@ -49,7 +49,7 @@ behavior-identical Question Policy Module and turn-audit slice:
 | B10a experiment branch | `b/b10a-constraint-preserving-crossencoder` |
 | Current A13 publication branch | `llm`, cut from reviewed A13 HEAD `bbb0075` |
 | A14-0 runtime source commit | `f594601`; exact visible-response parity to legacy `2e4108a` across 649 Development turns |
-| A14-1 runtime/audit source commit | `4b1c530`; ten validated attribute-evidence records per turn with a repeatable semantic trace and the same visible response |
+| A14-1 runtime/audit source commit | `9d93765`; ten closed-schema attribute-evidence records per turn with a repeatable semantic trace and the same visible response |
 | Latest local full test suite (2026-08-30) | 375 passed after A14-1 evidence binding; default runtime remains no-LLM |
 | Committed annotation bundle | `A13_annotation_pack_v1.zip`, SHA256 `2e47e49b91c3c916b92a02a14ff7f01d26a65b51e5cecc409b6b4ae66efafd1e` |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
@@ -319,7 +319,7 @@ response exceptions, invalid payloads, or fallbacks. The policy trace records
 587 asks, 62 stops, zero policy violations, and p95 local policy latency
 `4.653 ms`. See `docs/a14_0_question_policy_evidence.md`.
 
-A14-1 is now retained at final runtime/audit source commit `4b1c530`. All ten allowed
+A14-1 is now retained at final runtime/audit source commit `9d93765`. All ten allowed
 attributes have explicit evidence source, lifecycle, range, status,
 comparability, answerability/actionability, eligibility, and missing-data
 behavior. The fixed Development audit finds bounded comparable evidence for
