@@ -11,6 +11,11 @@ closed until both inputs validate, so there is no official disagreement report,
 reconciled gold fixture, provider authorization, A13-C1 decision, or A14-S1
 authorization from this intake.
 
+By explicit coordinator direction, the 34 individually valid Zhangchen rows
+are now retained as a provisional comparison subset rather than discarded.
+This lets joint review begin on 18 valid disagreements while the 26 invalid
+rows remain excluded. It does not change the gate conclusion below.
+
 Do not repair Zhangchen's original file in place and do not rename `codex` to a
 human annotator. Either action would erase provenance rather than satisfy the
 two-member independent-annotation requirement.
@@ -70,6 +75,35 @@ No chart is used because this is a fixed 60-row gate audit with five strata;
 the exact counts and repair identifiers are more useful than a distribution
 graphic.
 
+## The valid-34 subset is usable for provisional adjudication
+
+A coordinator-local artifact was generated without modifying either source
+annotation:
+
+`/Users/patryk/Documents/workspace/tiktoktechjam/a13_annotation_pack_v1/provisional_valid34_comparison.json`
+
+Its SHA256 is
+`94904faff2f844d0d9727fa52a85a8111b7b57acd0e15fe52cb7eff64490f612`.
+It retains the full context and both submitted labels for 16 agreements and 18
+disagreements, and separately records every excluded row and validator reason.
+It is deliberately stored outside the repository fixture package so provisional
+labels cannot be mistaken for frozen gold or become runtime/test hints.
+
+The included subset is highly unbalanced relative to the frozen protocol:
+
+| Trigger stratum | Required for final fixture | Included now |
+| --- | ---: | ---: |
+| `override_without_value` | 10 | 1 |
+| `mixed_polarity_clause` | 10 | 9 |
+| `low_confidence_residual_feature` | 20 | 4 |
+| `multi_clause_without_structure` | 10 | 10 |
+| `positive_rejected_attribute_conflict` | 10 | 10 |
+
+Therefore this artifact may be used to start adjudicating the 18 valid
+disagreements and to estimate where label definitions differ. It must not be
+used to estimate final trigger-level accuracy, choose a Candidate trigger,
+freeze `a13_ambiguity_v1.jsonl`, or authorize a provider.
+
 ## Scope and method
 
 The grain is one current-message annotation per fixed A13 item. Validation used
@@ -96,20 +130,23 @@ a preflight diagnostic and is explicitly not treated as official comparison.
 
 ## Required remediation and next gate
 
-1. Zhangchen should reopen the original annotation UI/file and correct the 26
+1. The team may immediately review the 18 disagreements in the provisional
+   valid-34 artifact; any decision remains provisional until human provenance
+   is resolved and the complete fixture validates.
+2. Zhangchen should reopen the original annotation UI/file and correct the 26
    listed rows using only `current_message` evidence. To preserve independence,
    provide the error class and item ID list, not the `codex` draft answers.
-2. Run the standalone `validate` command again and require
+3. Run the standalone `validate` command again and require
    `annotation_count: 60` with exit code 0.
-3. Resolve the provenance of `annotations.b.jsonl`. If it is an AI-authored
+4. Resolve the provenance of `annotations.b.jsonl`. If it is an AI-authored
    draft, a second team member must independently annotate all 60 items. If a
    human actually owns the judgments despite the ID, that person must review
    and explicitly attest the whole file; simply renaming the ID is insufficient.
-4. Only after two distinct human-owned files pass validation, run the official
+5. Only after two distinct human-owned files pass validation, run the official
    `compare` command and jointly adjudicate its disagreements.
-5. Freeze `experiments/fixtures/a13_ambiguity_v1.jsonl`, its schema/instructions,
+6. Freeze `experiments/fixtures/a13_ambiguity_v1.jsonl`, its schema/instructions,
    annotator/adjudicator provenance, and SHA256 only after that sign-off.
-6. Score the deterministic comparator before viewing any real LLM result. The
+7. Score the deterministic comparator before viewing any real LLM result. The
    later outcome is A13-C1 for one qualified trigger or an explicit No-Go.
 
 Until these steps are complete:

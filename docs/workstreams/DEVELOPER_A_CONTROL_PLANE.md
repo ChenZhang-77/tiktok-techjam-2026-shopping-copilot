@@ -618,6 +618,10 @@ the `codex` draft validates but lacks confirmed human-member provenance, while
 the Zhangchen submission has 26 invalid rows. Do not run the official compare,
 freeze gold, call a provider, or open A14-S1 until two human-owned files both
 validate and their disagreements are jointly adjudicated.
+The 34 individually valid Zhangchen rows may be used only through the
+coordinator-local provisional comparison described there: begin reviewing its
+18 disagreements, but do not treat its unbalanced trigger coverage as final
+evaluation evidence.
 Do not combine A13 semantic understanding with an ask/stop policy change.
 
 ## A14 - Question Policy Deepening

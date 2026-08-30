@@ -275,6 +275,16 @@ are recorded in `docs/a13_annotation_intake_review.md`. The fixture therefore
 remains unfrozen, real-provider work remains unauthorized, and A14-S1 remains
 blocked on the same A13 disposition.
 
+The coordinator subsequently authorized provisional use of the 34 individually
+valid Zhangchen rows while ignoring the 26 invalid rows. A local, untracked
+`provisional_valid34_comparison.json` now records 16 agreements, 18
+disagreements, the 26 exclusions, source hashes, and an explicit `not_gold`
+boundary. This subset can start human adjudication, but it has only 1/10 valid
+`override_without_value` and 4/20 valid `low_confidence_residual_feature` rows;
+it cannot satisfy fixture coverage, accuracy selection, provider, A13-C1, or
+A14-S1 gates. See `docs/a13_annotation_intake_review.md` for the artifact hash
+and exact permitted uses.
+
 A13 does not replace B10b-DS1. A13 interprets difficult user language before
 retrieval; B10b-DS1 reranks an existing Browsing Top-10 after retrieval. They
 must not be activated together in one metric experiment, and the default
