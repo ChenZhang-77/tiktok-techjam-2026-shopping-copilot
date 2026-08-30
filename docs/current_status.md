@@ -285,6 +285,13 @@ it cannot satisfy fixture coverage, accuracy selection, provider, A13-C1, or
 A14-S1 gates. See `docs/a13_annotation_intake_review.md` for the artifact hash
 and exact permitted uses.
 
+An AI-only adjudication draft now accompanies that local subset: 16 exact
+agreements were carried forward, 17 disagreements received a `codex`-label
+recommendation, and `LRF-011` received one synthesized recommendation. All 34
+draft labels pass row-level validation, but all 18 disagreements remain marked
+human-pending. The draft is only a review accelerator; it does not resolve
+human provenance, create gold, or authorize comparator/LLM selection claims.
+
 A13 does not replace B10b-DS1. A13 interprets difficult user language before
 retrieval; B10b-DS1 reranks an existing Browsing Top-10 after retrieval. They
 must not be activated together in one metric experiment, and the default

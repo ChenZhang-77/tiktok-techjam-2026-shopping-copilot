@@ -622,6 +622,9 @@ The 34 individually valid Zhangchen rows may be used only through the
 coordinator-local provisional comparison described there: begin reviewing its
 18 disagreements, but do not treat its unbalanced trigger coverage as final
 evaluation evidence.
+The adjacent AI adjudication suggestions may accelerate that review, but every
+disagreement remains human-pending and the suggested labels must not be copied
+into the committed fixture as gold without explicit human decisions.
 Do not combine A13 semantic understanding with an ask/stop policy change.
 
 ## A14 - Question Policy Deepening

@@ -104,6 +104,29 @@ disagreements and to estimate where label definitions differ. It must not be
 used to estimate final trigger-level accuracy, choose a Candidate trigger,
 freeze `a13_ambiguity_v1.jsonl`, or authorize a provider.
 
+## AI suggestions reduce review work but do not adjudicate it
+
+Two additional coordinator-local artifacts now prepare the valid-34 subset for
+human review:
+
+| Artifact | SHA256 |
+| --- | --- |
+| `provisional_valid34_ai_adjudication_suggestions.json` | `560f000ada6dfba284c64f4c45f81e8d85ba9cf43662a179a9f44e7fbe8abd5c` |
+| `provisional_valid34_ai_labels.jsonl` | `ed802888715962348c30f4f18c260a4bfc683b1336fa55c20ec1b3da7228618d` |
+
+Both live beside the returned annotation files. The suggestion record carries
+the 16 exact agreements, recommends the `codex` label for 17 disagreements,
+and proposes one synthesized resolution for `LRF-011`: feature `hides dust`
+with `hard=false`, preserving the minimal complete property from one submission
+and the weak “would be ideal” modality from the other. All 34 proposed labels
+individually pass the package's label validator.
+
+Every one of the 18 suggestions remains `human_status=pending`. These artifacts
+are an AI-authored review accelerator, not joint adjudication, annotator
+provenance, or gold. A human reviewer must accept, edit, or reject each pending
+suggestion before any provisional comparator score can be described as
+human-reviewed.
+
 ## Scope and method
 
 The grain is one current-message annotation per fixed A13 item. Validation used
@@ -131,8 +154,9 @@ a preflight diagnostic and is explicitly not treated as official comparison.
 ## Required remediation and next gate
 
 1. The team may immediately review the 18 disagreements in the provisional
-   valid-34 artifact; any decision remains provisional until human provenance
-   is resolved and the complete fixture validates.
+   valid-34 artifact, using the AI suggestions only as proposed resolutions;
+   any decision remains provisional until human provenance is resolved and the
+   complete fixture validates.
 2. Zhangchen should reopen the original annotation UI/file and correct the 26
    listed rows using only `current_message` evidence. To preserve independence,
    provide the error class and item ID list, not the `codex` draft answers.
