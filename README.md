@@ -23,7 +23,10 @@ effect, then test semantic understanding separately. The first full pass is
 complete: 412 successful real Flash requests, MRR `0.554521 -> 0.597225`,
 TechnicalScore `0.766231 -> 0.779043`, all four folds positive. Two sessions have
 cross-arm trace differences, so the strict parity gate fails: no repeat or
-default promotion. Semantic understanding is next and has not run.
+default promotion. The subsequent [A13-F1 semantic test](docs/a13_semantic_score_test.md)
+completed baseline + real Shadow on 160 sessions each: 67 API calls, zero API
+failures, but only 60/67 valid proposals (89.55%, below 95%). Candidate was not
+run; semantic score improvement is unproven. No default or packaging change.
 
 **2026-08-31 deadline route:** [lightweight AI review](docs/a13_light_review.md)
 is complete and retained only as an offline helper; it does not demonstrate

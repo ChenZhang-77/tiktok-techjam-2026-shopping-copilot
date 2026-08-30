@@ -10,7 +10,11 @@ For the latest requested order (2026-08-31), start with
 [bound results](b10b_full_rerank_result.json): the authorized full pass completed
 412 real API requests and improved score on all four folds, but two sessions
 have trace differences and the strict parity gate fails. No default switch or
-repeat pass. Reranking is reported first; semantic understanding is next/unrun.
+repeat pass. The subsequent [A13-F1 semantic test](a13_semantic_score_test.md)
+and [bound result](a13_semantic_score_result.json) are complete: 67 real calls,
+60 valid proposals, below the 95% gate. No Candidate was run and no semantic
+score benefit is claimed. Next recommendation: resolve paired-retrieval
+timing differences in B10b-F1 before another paid reranking comparison.
 Earlier deadline evidence remains in [A13 lightweight review](a13_light_review.md)
 and [A14 default-route selection pilot](a14_deadline_selection.md).
 The older multi-family A13 reference pipeline is deferred, not a prerequisite
@@ -71,6 +75,9 @@ definitions instead of creating local variants.
 
 ## Current experiment evidence
 
+- [a13_semantic_score_test.md](a13_semantic_score_test.md) and
+  [a13_semantic_score_result.json](a13_semantic_score_result.json) — real
+  baseline/Shadow comparison; rejected by validity gate before Candidate
 - [a13_light_review.md](a13_light_review.md) — completed 24-call synthetic
   Flash/Pro editor diagnostic; retained offline only, not a score claim
 - [a14_deadline_selection.md](a14_deadline_selection.md) — twice-reproduced

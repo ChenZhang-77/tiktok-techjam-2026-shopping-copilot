@@ -40,8 +40,8 @@ read-only.
 
 ### Latest user order — reranking first, report, then semantic understanding
 
-[B10b-F1 full reranking](b10b_full_rerank_test.md) is the current selected work,
-ahead of the older A14 counterfactual next step. It compares actual default B9
+[B10b-F1 full reranking](b10b_full_rerank_test.md) completed before the separate
+A13-F1 semantic test below, ahead of the older A14 counterfactual step. It compares actual default B9
 against isolated Flash Top-10 reranking on Development-160, without A13/A14
 behavior changes. After the initial approval block, the user explicitly
 authorized external data transfer. The full first pass ran at clean `3045691`:
@@ -55,9 +55,22 @@ Do not promote: the frozen membership/question parity gates fail in two
 sessions. Both arms have one local dense latency-budget fallback; the other
 158 matched sessions still show positive diagnostic lift, but cannot replace
 the full gate. No provider repeat occurred. Preserve the experiment as promising
-evidence and default unchanged. Semantic understanding is the requested next
-separate test, not yet run. Full offline suite: **429 passed**; runtime source,
-catalog, evaluator and shared contracts unchanged. No hidden-test claim.
+evidence and default unchanged.
+
+[A13-F1 semantic understanding](a13_semantic_score_test.md) has now completed
+at clean `29bef26`: baseline + real Shadow, 160 sessions / 649 turns each,
+exact behavior/session parity, 67 Flash calls, zero API/upstream failures,
+estimated cost `$0.03430944`, p95 1.816 s. Only 60/67 returns validate (89.55%):
+56 abstentions, four compatible proposals, seven local validation failures.
+The preset 95% gate fails, so **no Candidate or repeat ran**; equal Shadow
+scores are not evidence about Candidate efficacy. Default remains unchanged.
+See [bound results](a13_semantic_score_result.json). Full offline suite:
+**440 passed**; runtime source, catalog, evaluator and shared contracts unchanged.
+No hidden-test or independent semantic-accuracy claim.
+
+Recommended next score-first work, pending selection: diagnose and eliminate
+B10b-F1 paired-retrieval timing differences before authorizing another paid
+comparison. Do not loosen A13-F1's gate or restart the deferred AI-silver build.
 
 ### 2026-08-31 deadline override — read before historical phase blockers
 
@@ -102,7 +115,7 @@ behavior-identical Question Policy Module and turn-audit slice:
 | Current A13 publication branch | `llm`, cut from reviewed A13 HEAD `bbb0075` |
 | A14-0 runtime source commit | `f594601`; exact visible-response parity to legacy `2e4108a` across 649 Development turns |
 | A14-1 runtime/audit source commit | `b238c68`; closed Question Policy diagnostics, retained fallback semantics, and ten closed-schema attribute-evidence records per turn with the same visible response |
-| Latest local full test suite (2026-08-31) | 429 passed including B10b-F1 bound-evidence validation; real reranking pass complete but not promotion-ready; default runtime remains unchanged/no-LLM |
+| Latest local full test suite (2026-08-31) | 440 passed including B10b-F1 and A13-F1 bound evidence; semantic Shadow failed its validity gate, no Candidate; default remains unchanged/no-LLM |
 | Committed annotation bundle | `A13_annotation_pack_v1.zip`, SHA256 `8eb3379c730df8ee1a536b1ccfcb198bc456198ee280dea82c2100fc9cd0658b` |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |

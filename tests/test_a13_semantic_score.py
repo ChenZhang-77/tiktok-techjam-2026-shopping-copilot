@@ -1,6 +1,9 @@
 import unittest
 import io
 import json
+import hashlib
+from pathlib import Path
+from statistics import fmean
 from dataclasses import replace
 import time
 
@@ -31,6 +34,43 @@ def blocked_provider(connection, key, request):
 
 
 class SemanticScoreTest(unittest.TestCase):
+    def test_bound_result_recomputes_metrics_and_preserves_frozen_sources(self):
+        root = Path(__file__).resolve().parents[1]
+        evidence = json.loads((root / "docs/a13_semantic_score_result.json").read_text())
+        folds = json.loads((root / "docs/development_folds_v1.json").read_text())["folds"]
+        expected = set().union(*map(set, folds.values()))
+        for mode, rows in evidence["session_outcomes"].items():
+            self.assertEqual(len(rows), 160)
+            self.assertEqual({r["sample_id"] for r in rows}, expected)
+            groups = [(rows, evidence["arms"][mode])]
+            groups += [([r for r in rows if r["sample_id"] in members],
+                        evidence["arms"][mode]["fixed_folds"][fold]) for fold, members in folds.items()]
+            groups += [([r for r in rows if r["scenario_type"] == scenario], metrics)
+                       for scenario, metrics in evidence["arms"][mode]["scenario_metrics"].items()]
+            for sessions, reported in groups:
+                hr = round(fmean(r["hit"] for r in sessions), 6)
+                mrr = round(fmean(0 if r["best_rank"] is None else 1 / r["best_rank"] for r in sessions), 6)
+                mttc = round(fmean(r["first_hit_turn"] if r["hit"] else 11 for r in sessions), 6)
+                efficiency = round((11 - mttc) / 10, 6)
+                score = round(.5 * hr + .3 * mrr + .2 * efficiency, 6)
+                for key, value in (("hit_rate_at_10", hr), ("mrr", mrr), ("mttc", mttc),
+                                   ("efficiency", efficiency), ("recommended_technical_score", score)):
+                    self.assertEqual(reported[key], value)
+        for path, digest in evidence["provenance"]["source_sha256"].items():
+            self.assertEqual(hashlib.sha256((root / path).read_bytes()).hexdigest(), digest)
+        stats = evidence["arms"]["shadow"]["semantic_summary"]
+        self.assertAlmostEqual(stats["valid_rate"],
+            (stats["schema_valid"] - stats["merge_rejections"]) / stats["eligible_turns"])
+        self.assertFalse(evidence["comparisons"]["shadow"]["passes"])
+        self.assertEqual(set(evidence["arms"]), {"baseline", "shadow"})
+        self.assertEqual(evidence["decision"], "do_not_promote")
+        self.assertEqual(evidence["session_outcomes"]["baseline"], evidence["session_outcomes"]["shadow"])
+        self.assertFalse(evidence["runtime_default_changed"])
+        usage = evidence["independent_qa"]["known_usage"]
+        self.assertEqual(evidence["unknown_usage_calls"], 0)
+        self.assertEqual(evidence["total_cost_allowance_usd"],
+            round((usage["prompt_tokens"] * .44 + usage["completion_tokens"] * 1.32) / 1e6, 8))
+
     def test_slow_journal_records_final_deadline_disposition(self):
         class SlowJournal(io.StringIO):
             def flush(self): time.sleep(.02)

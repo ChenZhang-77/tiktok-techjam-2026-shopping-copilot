@@ -21,8 +21,15 @@ below. The authorized B10b-F1 first full pass is complete: score `+0.012812`,
 MRR `+0.042704`, all four folds positive, 412 successful real calls. Two sessions
 have cross-arm trace differences, so strict parity fails and no repeat/default
 promotion occurs. Preserve the positive result with its caveat; report it before
-the next semantic-understanding experiment. Any later reranking promotion needs
+the semantic-understanding experiment. Any later reranking promotion needs
 clean paired verification, not a relaxed gate or a selected 158-session score.
+
+The separate [A13-F1 semantic test](a13_semantic_score_test.md) is now complete:
+160 baseline + 160 real Shadow sessions, exact parity, 67 API calls; 60 valid
+returns (89.55%) miss the 95% gate. Candidate/repeat were not executed, so
+semantic score gain is unproven. Stop this recipe under the deadline. The
+recommended next step is resolving B10b-F1 paired-retrieval timing differences,
+then seeking authorization for a clean paired rerun; no post-hoc gate relaxation.
 
 The coordinator's one-day score-first instruction supersedes the older A13
 reference-build dependency map below. A13-LR0 is complete: retain only its
