@@ -50,7 +50,7 @@ behavior-identical Question Policy Module and turn-audit slice:
 | Current A13 publication branch | `llm`, cut from reviewed A13 HEAD `bbb0075` |
 | A14-0 runtime source commit | `f594601`; exact visible-response parity to legacy `2e4108a` across 649 Development turns |
 | A14-1 runtime/audit source commit | `b238c68`; closed Question Policy diagnostics, retained fallback semantics, and ten closed-schema attribute-evidence records per turn with the same visible response |
-| Latest local full test suite (2026-08-30) | 375 passed after A14-1 evidence binding; default runtime remains no-LLM |
+| Latest local full test suite (2026-08-30) | 379 passed after the provisional A13 comparator audit; default runtime remains no-LLM |
 | Committed annotation bundle | `A13_annotation_pack_v1.zip`, SHA256 `2e47e49b91c3c916b92a02a14ff7f01d26a65b51e5cecc409b6b4ae66efafd1e` |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |
@@ -291,6 +291,18 @@ recommendation, and `LRF-011` received one synthesized recommendation. All 34
 draft labels pass row-level validation, but all 18 disagreements remain marked
 human-pending. The draft is only a review accelerator; it does not resolve
 human provenance, create gold, or authorize comparator/LLM selection claims.
+
+A clean-commit (`c3e76ea`) deterministic dry-run against those 34 AI-provisional
+labels is now hash-bound in the same coordinator-local directory. It records
+13/34 complete-label exact matches and 16/34 invalid predictions: nine
+positive/rejected conflicts, six unnormalized values, and one closed-vocabulary
+violation. `MCS` is 10/10 exact while `PRC` is 0/10 with ten invalid outputs;
+positive-constraint field exact is only 15/34. These are failure-localization
+diagnostics, not accuracy evidence: the subset is unbalanced and its pending AI
+labels are not independent human gold. The next deterministic slice should
+therefore target polarity-conflict resolution and legal value projection before
+any LLM/provider experiment. Exact hashes and boundaries are in
+`docs/a13_annotation_intake_review.md`.
 
 A13 does not replace B10b-DS1. A13 interprets difficult user language before
 retrieval; B10b-DS1 reranks an existing Browsing Top-10 after retrieval. They

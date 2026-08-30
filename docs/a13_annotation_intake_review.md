@@ -128,6 +128,42 @@ provenance, or gold. A human reviewer must accept, edit, or reject each pending
 suggestion before any provisional comparator score can be described as
 human-reviewed.
 
+## Deterministic dry-run exposes contract failures
+
+The valid-34 AI draft was also used for one explicitly provisional, offline
+deterministic-parser dry-run. The report is coordinator-local:
+
+`/Users/patryk/Documents/workspace/tiktoktechjam/a13_annotation_pack_v1/provisional_valid34_deterministic_comparator.json`
+
+Its SHA256 is
+`27cba05a7caa15fa5639940d9a678a27c9b80ed988de0ffac9c74ce5f65cc1a6`.
+It was generated from clean commit `c3e76ea`, binds the items, provisional
+annotations, and catalog hashes, validates each prediction without repairing
+it, and makes no provider call.
+
+| Diagnostic | Valid-34 result |
+| --- | ---: |
+| Complete-label exact match | 13 / 34 (38.24%) |
+| Invalid deterministic predictions | 16 / 34 (47.06%) |
+| Positive-constraint field exact | 15 / 34 (44.12%) |
+| Rejected-constraint field exact | 23 / 34 (67.65%) |
+| Intent-hint field exact | 19 / 34 (55.88%) |
+| Abstain field exact | 24 / 34 (70.59%) |
+| No-preference / override / semantic-term field exact | 34 / 34 each |
+
+The 16 invalid outputs comprise nine positive/rejected conflicts, six
+unnormalized proposal values, and one value outside the closed vocabulary.
+Trigger-level exact counts are `OWV` 1/1, `MPC` 2/9, `LRF` 0/4, `MCS` 10/10,
+and `PRC` 0/10. This points first to polarity-conflict resolution and proposal
+normalization/validation, not to broad prompt or retrieval changes.
+
+These numbers are not an official accuracy result. The subset is unbalanced,
+18 labels are still human-pending, and 17 of those AI recommendations copied
+the `codex` draft, so the comparison is not independent of the implementation
+being diagnosed. Its permitted use is narrower: locate contract/failure
+classes, prepare adjudication, and predeclare the next deterministic test. It
+must not select an LLM trigger or satisfy A13-C1.
+
 ## Scope and method
 
 The grain is one current-message annotation per fixed A13 item. Validation used
@@ -171,8 +207,10 @@ a preflight diagnostic and is explicitly not treated as official comparison.
    `compare` command and jointly adjudicate its disagreements.
 6. Freeze `experiments/fixtures/a13_ambiguity_v1.jsonl`, its schema/instructions,
    annotator/adjudicator provenance, and SHA256 only after that sign-off.
-7. Score the deterministic comparator before viewing any real LLM result. The
-   later outcome is A13-C1 for one qualified trigger or an explicit No-Go.
+7. After the full human-owned fixture is frozen, score the deterministic
+   comparator using this predeclared projection. The valid-34 dry-run above is
+   diagnostic only. The later outcome is A13-C1 for one qualified trigger or
+   an explicit No-Go.
 
 Until these steps are complete:
 

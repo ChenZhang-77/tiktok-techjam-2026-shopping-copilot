@@ -66,7 +66,8 @@ definitions instead of creating local variants.
   foundation, exact behavior parity, and the pre-provider human-fixture gate
 - `a13_s0_reports/` — hash-bound disabled/no-key/fake Development parity reports
 - `a13_annotation_intake_review.md` — validation/provenance audit of the first
-  two returned annotation files, repair IDs, and the still-closed human gate
+  two returned annotation files, valid-34 AI review artifacts, offline
+  deterministic failure breakdown, repair IDs, and the still-closed human gate
 - `a14_0_question_policy_evidence.md` — retained deep Question Policy Module,
   exact 649-turn legacy parity, bounded audit, latency, and next gate
 - `a14_0_reports/` — hash-bound legacy/current turn traces, Development result,
