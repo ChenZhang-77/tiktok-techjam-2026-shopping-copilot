@@ -1,0 +1,39 @@
+{
+  "candidate": {
+    "role": "candidate",
+    "provider": "REPLACE_PROVIDER",
+    "family": "REPLACE_FAMILY",
+    "model_version": "REPLACE_MODEL_VERSION",
+    "prompt_sha256": "REPLACE_SHA256",
+    "config_sha256": "REPLACE_SHA256"
+  },
+  "generator": {
+    "role": "generator",
+    "provider": "REPLACE_PROVIDER",
+    "family": "REPLACE_FAMILY",
+    "model_version": "REPLACE_MODEL_VERSION",
+    "prompt_sha256": "REPLACE_SHA256",
+    "config_sha256": "REPLACE_SHA256"
+  },
+  "duplicate_auditor": {
+    "role": "duplicate_auditor",
+    "provider": "REPLACE_PROVIDER",
+    "family": "REPLACE_FAMILY",
+    "model_version": "REPLACE_MODEL_VERSION",
+    "prompt_sha256": "REPLACE_SHA256",
+    "config_sha256": "REPLACE_SHA256"
+  },
+  "labelers": [
+    {"role": "J1", "provider": "REPLACE_PROVIDER", "family": "REPLACE_FAMILY", "model_version": "REPLACE_MODEL_VERSION", "prompt_sha256": "REPLACE_SHA256", "config_sha256": "REPLACE_SHA256"},
+    {"role": "J2", "provider": "REPLACE_PROVIDER", "family": "REPLACE_FAMILY", "model_version": "REPLACE_MODEL_VERSION", "prompt_sha256": "REPLACE_SHA256", "config_sha256": "REPLACE_SHA256"},
+    {"role": "J3", "provider": "REPLACE_PROVIDER", "family": "REPLACE_FAMILY", "model_version": "REPLACE_MODEL_VERSION", "prompt_sha256": "REPLACE_SHA256", "config_sha256": "REPLACE_SHA256"}
+  ],
+  "adjudicator": {
+    "role": "adjudicator",
+    "provider": "REPLACE_PROVIDER",
+    "family": "REPLACE_FAMILY",
+    "model_version": "REPLACE_MODEL_VERSION",
+    "prompt_sha256": "REPLACE_SHA256",
+    "config_sha256": "REPLACE_SHA256"
+  }
+}

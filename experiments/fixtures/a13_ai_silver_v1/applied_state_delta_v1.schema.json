@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "applied_state_delta_v1.schema.json",
+  "title": "A13 Applied State Delta V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "intent_before",
+    "intent_after",
+    "active_constraints_added",
+    "active_constraints_deactivated",
+    "rejected_constraints_added",
+    "no_preference_attributes_added",
+    "no_preference_attributes_removed",
+    "override_attributes",
+    "stale_values_deactivated"
+  ],
+  "properties": {
+    "schema_version": {"const": "applied_state_delta_v1"},
+    "intent_before": {"type": ["string", "null"], "enum": ["buying", "browsing", null]},
+    "intent_after": {"type": ["string", "null"], "enum": ["buying", "browsing", null]},
+    "active_constraints_added": {"$ref": "#/$defs/constraints"},
+    "active_constraints_deactivated": {"$ref": "#/$defs/constraints"},
+    "rejected_constraints_added": {"$ref": "#/$defs/constraints"},
+    "no_preference_attributes_added": {"$ref": "#/$defs/attributes"},
+    "no_preference_attributes_removed": {"$ref": "#/$defs/attributes"},
+    "override_attributes": {"$ref": "#/$defs/attributes"},
+    "stale_values_deactivated": {"$ref": "#/$defs/constraints"}
+  },
+  "$defs": {
+    "attribute": {
+      "type": "string",
+      "enum": ["category", "material", "color", "size", "style", "brand", "budget", "feature", "use_case"]
+    },
+    "attributes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/attribute"}
+    },
+    "constraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attribute", "value"],
+      "properties": {
+        "attribute": {"$ref": "#/$defs/attribute"},
+        "value": {"type": "string", "minLength": 1}
+      }
+    },
+    "constraints": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/constraint"}
+    }
+  }
+}
+

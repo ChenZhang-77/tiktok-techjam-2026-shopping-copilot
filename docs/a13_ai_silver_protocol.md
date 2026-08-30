@@ -15,7 +15,11 @@ file or the valid-34 AI draft into reference truth.
 Current state:
 
 ```text
-protocol_status = planned_not_executed
+protocol_status = offline_tooling_passed_role_manifest_pending
+as0_tooling_frozen = true
+candidate_config_frozen = true
+role_manifest_frozen = false
+fresh_fixture_frozen = false
 ai_silver_frozen = false
 reference_builder_provider_authorized = false
 candidate_provider_authorized = false
@@ -82,9 +86,11 @@ already been inspected while selecting failure classes and the applied-state
 seam. They must not be reused in an eligible semantic gate, even if their labels
 are withheld from the judges.
 
-AS0 must freeze the Candidate prompt/config, comparator, fixture-generation
+AS0T has frozen the Candidate prompt/config, comparator, fixture-generation
 rubric, source policy, and duplicate-audit method/threshold before any new
-evaluation item is generated or inspected. AS1F then creates a fresh target-free,
+evaluation item is generated or inspected. AS0R must still replace the
+fail-closed role-manifest placeholders with exact independent identities and
+hashes. AS1F then creates a fresh target-free,
 trigger-balanced fixture that:
 
 - contains at least 60 new items overall;
@@ -119,8 +125,8 @@ disclosed in the final evidence record.
 
 ## Independent Automated Reference Roles
 
-Use three blind labeler roles, `J1`/`J2`/`J3`, plus a bounded adjudicator only
-when needed.
+Use one fresh-item generator, one semantic duplicate auditor, three blind
+labeler roles (`J1`/`J2`/`J3`), plus a bounded adjudicator only when needed.
 
 Required independence:
 
@@ -129,8 +135,12 @@ Required independence:
 - J1/J2/J3 must use three distinct model/version identities and three distinct
   model families, none belonging to the Candidate family; no family receives
   two votes;
+- the generator and duplicate auditor must not use the Candidate family; the
+  duplicate auditor sees only old/new item text and may return duplicate pairs,
+  never labels, model outputs, evaluator fields, or item edits;
 - the adjudicator must use a model/version distinct from every labeler and a
-  family outside the two labelers that formed the majority;
+  family outside all three labeler families, so one fixed adjudicator remains
+  independent for every possible majority pair;
 - labelers receive identical evidence and rubric but cannot see other labels;
 - model ID, provider, prompt hash, config, request/response hashes, latency,
   tokens, cost, retry status, and validator result are recorded;
@@ -258,18 +268,21 @@ An eligible Candidate additionally requires:
 
 ```text
 A13-S0 offline foundation complete
-  -> A13-AS0 protocol/comparator/candidate/generator freeze    no provider
-      -> explicit authorization for reference-builder provider calls
-          -> A13-AS1F fresh blind fixture generation and hash freeze
-              -> A13-AS1J blind AI-silver judging and adjudication
-                  -> A13-AS2 audit, repeat-build check, and hash freeze
-                      -> semantic review gate
-                          -> explicit authorization for candidate provider Shadow
-                              -> A13-S1 real-provider Shadow
-                                  -> A13-C1 or No-Go
+  -> A13-AS0T offline comparator/config/schema/tooling freeze  complete, no provider
+      -> A13-AS0R exact independent role-manifest freeze       pending, no provider
+          -> explicit authorization for reference-builder provider calls
+              -> A13-AS1F fresh blind fixture generation and hash freeze
+                  -> A13-AS1J blind AI-silver judging and adjudication
+                      -> A13-AS2 audit, repeat-build check, and hash freeze
+                          -> semantic review gate
+                              -> explicit authorization for candidate provider Shadow
+                                  -> A13-S1 real-provider Shadow
+                                      -> A13-C1 or No-Go
 ```
 
-AS0 is documentation/tooling work only. AS1F/AS1J/AS2 may call the independent
+AS0T/AS0R are documentation/tooling work only. The hash-bound AS0T evidence is
+[`a13_as0_offline_tooling_evidence.md`](a13_as0_offline_tooling_evidence.md).
+AS1F/AS1J/AS2 may call the independent
 fixture generator, judges, and adjudicator only after explicit
 reference-builder authorization and never through Agent runtime. Candidate
 provider access is a separate authorization after the frozen silver review.

@@ -35,8 +35,9 @@ definitions instead of creating local variants.
 - `../DeepSeek_LLM接入实验方案.md` — selected A13 feature plan; A13-1 is
   rejected/reverted and A13-S0 has offline-only Shadow plumbing, not provider
   behavior
-- `a13_ai_silver_protocol.md` — selected no-human reference route; planned but
-  not executed, with no current provider authorization
+- `a13_ai_silver_protocol.md` — selected no-human reference route; AS0 offline
+  tooling passed, exact independent role manifest still pending, and no current
+  provider authorization
 - `a_control_plane_handoff.md` — compatibility pointer for old A-side links
 - `b_retrieval_ranking_handoff.md` — compatibility pointer for old B-side links
 
@@ -71,7 +72,10 @@ definitions instead of creating local variants.
   foundation and exact behavior parity before any provider work
 - `a13_s0_reports/` — hash-bound disabled/no-key/fake Development parity reports
 - `a13_ai_silver_protocol.md` — planned AS0-AS1F-AS1J-AS2 reference-building protocol;
-  this is a plan, not completed evidence or frozen AI-silver
+  AS0 tooling is implemented, but the role manifest and AI-silver remain unfrozen
+- `a13_as0_offline_tooling_evidence.md` — hash-bound AS0 comparator, Candidate
+  config, schema, contamination, role-preflight, consensus, and KPI tooling;
+  blocks AS1F until the exact independent role manifest is frozen
 - `a13_annotation_intake_review.md` — validation/provenance audit of the first
   two returned annotation files, valid-34 AI review artifacts, offline
   deterministic failure breakdown, repair IDs, and their L1 historical boundary

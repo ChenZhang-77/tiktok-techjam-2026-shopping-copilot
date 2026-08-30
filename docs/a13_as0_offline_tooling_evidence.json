@@ -1,0 +1,79 @@
+{
+  "version": "a13-as0-offline-tooling-v1",
+  "experiment_id": "A13-AS0-offline-tooling",
+  "owner": "developer_a_control_plane",
+  "decision": "offline_tooling_passed",
+  "phase_status": "blocked_role_manifest",
+  "candidate_trigger": "low_confidence_residual_feature",
+  "candidate_config": {
+    "provider": "deepseek",
+    "requested_model": "deepseek-v4-flash",
+    "expected_model_version": "DeepSeek-V4-Flash-0731",
+    "thinking_mode": "disabled",
+    "temperature": 0,
+    "response_format": "json_object",
+    "timeout_ms": 2500,
+    "max_completion_tokens": 256,
+    "one_shot_scoring": true
+  },
+  "implemented_seams": [
+    "one source-neutral applied_state_delta_v1 projection through production SessionState semantics",
+    "canonical serializer and closed-schema validator",
+    "fail-closed generator, duplicate-auditor, three-labeler, adjudicator, and Candidate identity preflight",
+    "fresh-fixture trigger/accounting, target-key, exact/lexical duplicate, and semantic-audit coverage checks",
+    "target-free blind judge-input projection",
+    "3/3 and adjudicated 2/3 consensus with unresolved retention",
+    "fixed all-item denominator coverage, exact-agreement, delta, net-item, and repeat-stability metrics"
+  ],
+  "artifact_sha256": {
+    "README.md": "b54de0a4927dd5037a37d45ef30b0c7d54bf041be9685be3a1a95c302865475a",
+    "adjudicator_prompt_v1.md": "3e1cb99e2241d7520f16fa5757012c087599c5a1d54d7027d062ab3a204f5f59",
+    "applied_state_delta_v1.schema.json": "87511d778f177f35f9d00309a5ac7daea2b94565531528453e0220e9618ba506",
+    "as0_policy.json": "2521fddb75824fa62d0de12245c0f0be1e4cd5b9df4e7c338a2ef146002451ce",
+    "candidate_prompt_v1.md": "ada50758c9a22b1428ab2c3c19a510a3a4f94f0fe69a3fc42963d2c8a5656199",
+    "fresh_fixture_item.schema.json": "105d793487066042195be96b73e9e7d741502f4829cff1ad60f844df3c14b9df",
+    "generator_prompt_v1.md": "02f85a77e472a1fc9dd5bb6ca7d3f9fb1167ec1e613b55c3558c2ca8fc9579fa",
+    "judge_input.schema.json": "de58ef5e5327a031010d39d2c3102b9b0cc1c8f182cdff00a0d158f5e394a228",
+    "judge_prompt_v1.md": "0d43c6862ba682512b4b7bfa3802a11fa702b79c5a126f5c11d1e0f1aa501f9d",
+    "role_manifest.template.json": "c287e39b6c126cb9ec123faca06bc14362384c5c50e373ab37419d32856389cf",
+    "semantic_duplicate_audit_prompt_v1.md": "7f2187067484bccc5d5997e4b83fe99ac83d78e3c17cdda876ff41f914c37a29"
+  },
+  "code_sha256": {
+    "experiments/a13_ai_silver.py": "0127eb160f42a5529c967741ddd639796887eb77bc01cb69890b5d6fd8f86175",
+    "tests/test_a13_ai_silver.py": "1cb9a892047b1852fc3b3b52e718f364cb30e60411ef3618a024df6c5f09b130"
+  },
+  "tests": {
+    "focused_protocol_tests": 16,
+    "evidence_tests": 1,
+    "expected_full_suite_after_evidence": 397
+  },
+  "boundaries": {
+    "provider_calls": 0,
+    "reference_builder_provider_authorized": false,
+    "candidate_provider_authorized": false,
+    "a13_c1_authorized": false,
+    "role_manifest_frozen": false,
+    "fresh_fixture_frozen": false,
+    "ai_silver_frozen": false,
+    "runtime_changed": false,
+    "legacy_fixture_reused": false,
+    "legacy_labels_reused": false,
+    "shared_contract_changed": false,
+    "evaluator_changed": false,
+    "full_or_holdout_runs": 0
+  },
+  "blocker": {
+    "type": "independent_role_selection_and_authorization",
+    "required_before_as1f": [
+      "freeze exact generator and semantic duplicate-auditor identities",
+      "freeze three distinct non-Candidate labeler families and model versions",
+      "freeze one adjudicator family distinct from every labeler family",
+      "bind every prompt and config hash in a role manifest",
+      "obtain explicit reference-builder provider authorization"
+    ]
+  },
+  "external_sources_checked_2026_08_30": [
+    "https://api-docs.deepseek.com/quick_start/pricing",
+    "https://api-docs.deepseek.com/api/list-models/"
+  ]
+}

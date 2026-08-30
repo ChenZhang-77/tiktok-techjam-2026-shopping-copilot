@@ -82,8 +82,9 @@ Current Chen runtime source @ 0bd3375
   -> A13-0 complete at clean comparator b86a9e7
       -> A13-1 deterministic State / Override slice rejected and reverted
           -> A13-S0 offline Shadow foundation complete
-              -> A13-AS0 freeze comparator, Candidate, and fixture-generation rules
-                  -> explicitly authorize reference-builder provider calls
+              -> A13-AS0T offline tooling freeze                         complete
+                  -> A13-AS0R exact independent role-manifest freeze     pending
+                      -> explicitly authorize reference-builder provider calls
                       -> A13-AS1F fresh fixture generation and hash freeze
                           -> A13-AS1J/AS2 blind judging, audit, and freeze
                               -> A13 semantic review gate
@@ -119,9 +120,10 @@ The active no-human A13 reference route is defined separately in
 [`docs/a13_ai_silver_protocol.md`](a13_ai_silver_protocol.md): AI-silver may
 open a Candidate experiment, while fixed Development folds remain the primary
 runtime keep/revert evidence. Reference-builder and Candidate provider
-authorizations are separate gates. The exposed legacy 60 items remain
-development diagnostics; the semantic gate requires a fresh fixture generated
-only after the Candidate config is frozen.
+authorizations are separate gates. AS0 offline tooling is complete and
+hash-bound; AS0R exact independent role selection is the next gate. The exposed
+legacy 60 items remain development diagnostics; the semantic gate requires a
+fresh fixture generated only after the Candidate config is frozen.
 
 ## R0 - Development Failure Taxonomy
 
@@ -588,9 +590,10 @@ Required outcomes:
 ### If at least two development days remain
 
 A13-0 is complete, A13-1 is rejected/reverted, and the A13-S0 offline foundation
-passes parity against the restored `0.925` comparator. Complete A13-AS0 without
-provider access, including freezing Candidate and fresh-fixture generation
-rules; then, only with explicit reference-builder authorization, generate and
+passes parity against the restored `0.925` comparator. A13-AS0T offline tooling
+is complete. Finish A13-AS0R without provider access by binding the exact
+independent generator, duplicate auditor, three judges, and adjudicator; then,
+only with explicit reference-builder authorization, generate and
 freeze a new target-free fixture and its blind multi-model AI-silver reference
 before a separately authorized Candidate Shadow. Apply both the semantic gate
 and fixed Development-fold gate, then run A13-C1 or record No-Go. A14-0/A14-1

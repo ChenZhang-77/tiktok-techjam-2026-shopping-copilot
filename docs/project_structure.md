@@ -36,6 +36,7 @@ Root Markdown files have distinct roles:
 | `DATA_ATTRIBUTION.md` | Dataset source and use boundary |
 | `DeepSeek_LLM接入实验方案.md` | Authoritative A13 semantic-understanding spec and review gates |
 | `A13_annotation_pack_v1.zip` | Deterministic legacy annotation bundle; exposed development diagnostics, not semantic-gate data |
+| `experiments/fixtures/a13_ai_silver_v1/` | A13 AS0 schemas, prompt contracts, policy, and intentionally invalid role-manifest template; contains no evaluation items or provider output |
 
 ## Documentation Layers
 
@@ -49,7 +50,7 @@ Use the following order instead of reading `docs/` alphabetically:
 5. `a13_ai_silver_protocol.md` - active no-human A13 reference and KPI protocol
    when semantic understanding is selected.
 6. `workstreams/` - independently readable A-side and B-side instructions.
-7. `*_evidence.md` - one human decision record per recent experiment.
+7. `*_evidence.md` - one decision record per recent experiment or offline gate.
 8. `*_evidence.json` and `*_reports/` - machine-readable summaries and raw
    hash-bound evidence.
 9. `adr/` - durable architectural/evaluation decisions.

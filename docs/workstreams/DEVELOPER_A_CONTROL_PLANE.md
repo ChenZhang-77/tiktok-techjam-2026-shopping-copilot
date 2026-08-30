@@ -583,7 +583,7 @@ Do not run Full/Holdout.
 
 ## A13 - Guarded LLM Semantic Understanding
 
-**Status: A13-0 complete; A13-1 rejected and reverted; A13-S0 offline foundation passes parity; the no-human AI-silver route is planned but not executed, and provider work is gated.** The authoritative spec,
+**Status: A13-0 complete; A13-1 rejected and reverted; A13-S0 offline foundation passes parity; A13-AS0T offline tooling passes; exact independent roles and provider work remain gated.** The authoritative spec,
 phase order, interface, trigger conditions, safety invariants, latency/cost
 targets, and keep/revert gates are in
 [`DeepSeek_LLM接入实验方案.md`](../../DeepSeek_LLM接入实验方案.md).
@@ -598,11 +598,13 @@ is:
 A13-0 complete at clean comparator b86a9e7
   -> A13-1 deterministic State / Override slice rejected and reverted
       -> A13-S0 offline Shadow foundation complete
-          -> A13-AS0 freeze comparator, Candidate, and fixture-generation rules
-              -> A13-AS1F fresh fixture generation and hash freeze
-                  -> A13-AS1J/AS2 blind judging, audit, and freeze
-                      -> A13-S1 Candidate provider Shadow
-                          -> A13-C1 guarded activation or No-Go
+          -> A13-AS0T offline comparator/config/schema tooling complete
+              -> A13-AS0R exact independent role manifest pending
+                  -> explicit reference-builder authorization
+                      -> A13-AS1F fresh fixture generation and hash freeze
+                          -> A13-AS1J/AS2 blind judging, audit, and freeze
+                              -> A13-S1 Candidate provider Shadow
+                                  -> A13-C1 guarded activation or No-Go
 ```
 
 The LLM proposes a validated `UnderstandingDelta`; it never mutates
@@ -618,6 +620,8 @@ decision record is
 [`docs/a13_1_state_override_evidence.md`](../a13_1_state_override_evidence.md).
 The A13-S0 offline foundation record is
 [`docs/a13_s0_offline_evidence.md`](../a13_s0_offline_evidence.md).
+The A13-AS0T offline tooling record is
+[`docs/a13_as0_offline_tooling_evidence.md`](../a13_as0_offline_tooling_evidence.md).
 The teammate-facing legacy annotation package is
 [`experiments/fixtures/a13_annotation_pack_v1/README.md`](../../experiments/fixtures/a13_annotation_pack_v1/README.md).
 The reproducible teammate-facing ZIP committed on the `llm` publication branch
@@ -631,8 +635,9 @@ the `codex` draft validates but lacks confirmed human-member provenance, while
 the Zhangchen submission has 26 invalid rows. These files are now L1 historical
 diagnostics under the selected no-human route; neither may seed, tune, or judge
 the AI-silver reference.
-The legacy 60 item texts are also selection-exposed. A13-AS0 must freeze the
-Candidate and independent generation rules first; AS1F then builds and
+The legacy 60 item texts are also selection-exposed. A13-AS0T has frozen the
+Candidate and independent generation rules; AS0R must still bind exact
+independent model identities before AS1F builds and
 hash-freezes a fresh target-free fixture before blind judging.
 The 34 individually valid Zhangchen rows remain available only through the
 coordinator-local provisional comparison described there. They may explain

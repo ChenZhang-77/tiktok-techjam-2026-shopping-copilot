@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fresh_fixture_item.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["item_id", "trigger_type", "prior_state", "current_message", "source"],
+  "properties": {
+    "item_id": {"type": "string", "minLength": 1},
+    "trigger_type": {
+      "enum": [
+        "override_without_value",
+        "mixed_polarity_clause",
+        "low_confidence_residual_feature",
+        "multi_clause_without_structure",
+        "positive_rejected_attribute_conflict"
+      ]
+    },
+    "prior_state": {"$ref": "#/$defs/prior_state"},
+    "current_message": {"type": "string", "minLength": 1, "maxLength": 2000},
+    "source": {"const": "fresh_independent_expression"}
+  },
+  "$defs": {
+    "attribute": {
+      "type": "string",
+      "enum": ["category", "material", "color", "size", "style", "brand", "budget", "feature", "use_case"]
+    },
+    "constraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attribute", "value"],
+      "properties": {
+        "attribute": {"$ref": "#/$defs/attribute"},
+        "value": {"type": "string", "minLength": 1}
+      }
+    },
+    "prior_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["intent", "active_constraints", "rejected_constraints", "no_preference_attributes"],
+      "properties": {
+        "intent": {"type": ["string", "null"], "enum": ["buying", "browsing", null]},
+        "active_constraints": {"type": "array", "items": {"$ref": "#/$defs/constraint"}},
+        "rejected_constraints": {"type": "array", "items": {"$ref": "#/$defs/constraint"}},
+        "no_preference_attributes": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/attribute"}}
+      }
+    }
+  }
+}
+

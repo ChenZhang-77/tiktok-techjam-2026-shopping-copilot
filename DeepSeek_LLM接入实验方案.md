@@ -1,6 +1,6 @@
 # DeepSeek LLM 接入实验方案
 
-> 状态：A13-0 已完成；A13-1 已拒绝并回滚；A13-S0 离线基础通过 parity；无人工路线已选为 AI-silver，但协议尚未执行，judge/candidate provider 均未授权。
+> 状态：A13-0 已完成；A13-1 已拒绝并回滚；A13-S0 离线基础通过 parity；A13-AS0T 离线工具链已通过，精确独立角色清单待冻结，reference-builder/candidate provider 均未授权。
 >
 > 当前发布分支：llm（源实验分支：a/a13-llm-semantic-understanding）
 >
@@ -243,8 +243,10 @@ safe diagnostics、bounded vocabulary 与 Agent Shadow 注入已实现；disable
 fake-abstain 三条 Development-160 均保持 `0.925`，公共行为差异为 0。没有
 DeepSeek transport、key 读取或 API 调用。证据见
 [`docs/a13_s0_offline_evidence.md`](docs/a13_s0_offline_evidence.md)。协调者已选择
-不走人工标注；下一步改为 A13-AS0，先冻结 comparator、candidate config 和
-[`AI-silver 协议`](docs/a13_ai_silver_protocol.md)，仍不调用 provider。
+不走人工标注。A13-AS0T 已冻结 comparator、Candidate config、schemas/prompts、
+污染/独立性 preflight、共识与固定分母 KPI 工具，证据见
+[`docs/a13_as0_offline_tooling_evidence.md`](docs/a13_as0_offline_tooling_evidence.md)。
+下一步 A13-AS0R 只冻结精确独立角色清单，仍不调用 provider。
 已准备可直接分发的 `experiments/fixtures/a13_annotation_pack_v1/`：60 条
 无 gold items（五类可达语义 trigger 各 10 条，`low_confidence_residual_feature` 额外 10 条）、
 可双击离线标注页、更清晰的双击示例页、兼容模板、schema、validator 和
@@ -285,8 +287,10 @@ AI-silver reference 及判分协议必须在第一次 reference-builder API 运�
 - 样本来源可以是去标识化的规则失败表达和独立编写的边界表达，但不含 target
   ASIN、hit/miss、scenario label、未来 turn 或推荐结果；Candidate 不得生成题目，
   新题须对旧 60 条做 normalized exact duplicate 和近重复审计；
+- 独立 semantic duplicate auditor 只能看旧/新题目文本并输出重复对，不能看或生成
+  label、Candidate/deterministic 输出、evaluator 字段，也不能编辑题目；
 - J1/J2/J3 必须是三个不同 model/version、三个互异且均不同于 Candidate 的模型家族；
-  adjudicator 必须不同于全部 labeler，且不属于形成多数的两个家族。运行器请求前
+  adjudicator 必须不同于全部 labeler，且家族也不同于三个 labeler 家族。运行器请求前
   强制校验，失败即 No-Go；
 - 3/3 形成 unanimous reference；2/3 必须由 blind adjudicator 复核；三方分歧或
   仲裁失败保留为 unresolved，不得删除以提高 agreement；
@@ -432,7 +436,8 @@ A13_LLM_MAX_VOCAB_ITEMS=200
 | A13-0 | 主变更：`experiments/failure_taxonomy.py`、`tests/test_failure_taxonomy.py`；可复现证据：`tests/test_a13_0_baseline_evidence.py`、`docs/a13_0_baseline_evidence.{md,json}`、`docs/a13_0_reports/`；完成后同步 README、current status、roadmap 与 A-side workstream 导航/状态文档 |
 | A13-1 | 候选曾修改 `starter/core/state.py`、`starter/core/context_engine.py` 和 endpoint test，随后显式回滚；决定证据为 `docs/a13_1_state_override_evidence.{md,json}`、`docs/a13_1_reports/` 和 `tests/test_a13_1_state_override_evidence.py` |
 | A13-S0 | 离线基础已新增 `starter/core/semantic_understanding.py`、`experiments/a13_shadow.py`、`tests/test_semantic_understanding.py`，并仅为注入和 parity 修改 `starter/agent.py`、`tests/test_agent_smoke.py` |
-| A13-AS0 | 先实现/冻结 `applied_state_delta_v1` serializer、Candidate config、新题生成规则、AI-silver manifest、blind judge/adjudicator configs、独立性/污染检查和 synthetic tests；不调用 provider，不提交 provider raw output |
+| A13-AS0T | 已实现并 hash 绑定 `applied_state_delta_v1` serializer、Candidate config、新题生成规则、schemas/prompts、fail-closed role/污染检查、共识、固定分母 KPI 和 synthetic tests；未调用 provider |
+| A13-AS0R | 将 `role_manifest.template.json` 的占位符替换为精确独立 generator、duplicate auditor、J1/J2/J3、adjudicator model/version 与 prompt/config hashes；只做离线 preflight |
 | A13-AS1F/AS1J/AS2 | 经明确授权后才执行 reference-builder API：先生成并 hash-freeze 新 target-free fixture，再做 blind judging、bounded repair、共识/仲裁、Candidate-trigger 独立复跑；完成后新增 `docs/a13_ai_silver_evidence.{md,json}`，普通 raw provider material 留在 Git 外 |
 | A13-S1 | AI-silver gate 通过并再次获得明确授权后，才运行真实 Candidate provider Shadow；不改变公共行为 |
 | A13-C1 | 只在 S0 文件和必要的 state/integration tests 内激活已通过的单一触发类；决定完成后才新增 `docs/a13_c1_evidence.{md,json}` |
@@ -465,7 +470,9 @@ chen/chenzhang-77-baseline-setup @ 0bd3375
       -> A13-0
       -> A13-1
       -> A13-S0
-      -> A13-AS0 protocol/comparator/candidate/generator freeze
+      -> A13-AS0T offline tooling freeze complete
+      -> A13-AS0R exact independent role manifest pending
+      -> explicit reference-builder authorization
       -> A13-AS1F fresh fixture build and hash freeze
       -> A13-AS1J/AS2 blind AI-silver build and review
       -> A13-S1 candidate provider Shadow

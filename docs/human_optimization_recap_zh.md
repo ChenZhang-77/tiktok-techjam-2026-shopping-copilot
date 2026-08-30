@@ -546,10 +546,11 @@ TechnicalScore 增加 0.070391。其中证据最强、贡献最大的单步是�
 - B9 的增益很小，内存成本明显；
 - 当前好结果仍是 Development 数据，私有 800 条才是真正的外部泛化检验。
 
-**建议下一步：** A13-S0 离线 types、fake、validator、gate、fallback、diagnostics
-和 disabled/no-key/fake parity 已完成。协调者已选择不走人工标注，先完成 A13-AS0：
-冻结 applied-state comparator、Candidate config、新评测题生成规则、三个独立 blind
-judge 角色、仲裁与污染检查，但仍不调用 provider。旧 60 条已暴露，只保留作开发
+**建议下一步：** A13-S0 离线基础和 A13-AS0T 的 applied-state comparator、Candidate
+config、schema/prompt、污染检查、角色 preflight、共识与固定分母 KPI 工具均已完成并
+hash 绑定。下一步是 A13-AS0R：在不调用 provider 的前提下，冻结独立 generator、
+semantic duplicate auditor、三个 blind judge 和 adjudicator 的精确身份与配置哈希。
+旧 60 条已暴露，只保留作开发
 诊断；经单独授权后，reference-builder 先生成并冻结新 target-free fixture，再完成
 AI-silver 判断/复跑。它只负责筛选语义候选，固定 Development-160 四折仍负责最终
 keep/revert。reference-builder 和 Candidate provider 调用分开授权，Candidate 模型
@@ -586,6 +587,7 @@ LLM 不拥有策略：离线 teacher 只能聚类冻结且 hash-bound 的 catalo
 - A13-0：`docs/a13_0_baseline_evidence.md`
 - A13-1：`docs/a13_1_state_override_evidence.md`
 - A13-S0 离线基础：`docs/a13_s0_offline_evidence.md`
+- A13-AS0 离线工具链：`docs/a13_as0_offline_tooling_evidence.md`
 - A13 AI-silver 协议：`docs/a13_ai_silver_protocol.md`
 - AB1：`docs/ab1_route_semantics_evidence.md`
 - B8：`docs/b8_rejected_constraint_evidence.md`

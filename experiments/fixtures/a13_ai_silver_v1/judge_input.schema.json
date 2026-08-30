@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "judge_input.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["item_id", "prior_state", "current_message"],
+  "properties": {
+    "item_id": {"type": "string", "minLength": 1},
+    "prior_state": {"$ref": "fresh_fixture_item.schema.json#/$defs/prior_state"},
+    "current_message": {"type": "string", "minLength": 1, "maxLength": 2000}
+  }
+}
