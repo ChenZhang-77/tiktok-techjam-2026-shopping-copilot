@@ -18,7 +18,7 @@ from old reports.
    plan, review gates, branch boundary, and relationship to B-side DS1
 9. `a13_ai_silver_protocol.md` — active no-human A13 reference protocol,
    applied-state comparator, KPI hierarchy, contamination controls, and
-   separate judge/Candidate provider gates
+   separate reference-builder/Candidate provider gates
 
 `../AGENTS.md` is the sole authority for the R0 failure taxonomy and the
 offline-target/runtime boundary. `optimization_roadmap.md` is the sole authority
@@ -43,8 +43,8 @@ definitions instead of creating local variants.
 ## Delivery
 
 - `demo_and_submission_plan.md` — demo, report, video, packaging, and claim rules
-- `../A13_annotation_pack_v1.zip` — deterministic teammate-facing offline A13
-  annotation bundle committed on the `llm` publication branch
+- `../A13_annotation_pack_v1.zip` — deterministic legacy offline A13 annotation
+  bundle; its exposed items are development diagnostics, not semantic-gate data
 - `../submission/README.md` — final-package staging checklist
 - `../visualizer/README.md` — visual debugging and Agent/Evaluator view boundary
 
@@ -70,7 +70,7 @@ definitions instead of creating local variants.
 - `a13_s0_offline_evidence.md` — retained types/fake/validator/gate/fallback
   foundation and exact behavior parity before any provider work
 - `a13_s0_reports/` — hash-bound disabled/no-key/fake Development parity reports
-- `a13_ai_silver_protocol.md` — planned AS0-AS2 reference-building protocol;
+- `a13_ai_silver_protocol.md` — planned AS0-AS1F-AS1J-AS2 reference-building protocol;
   this is a plan, not completed evidence or frozen AI-silver
 - `a13_annotation_intake_review.md` — validation/provenance audit of the first
   two returned annotation files, valid-34 AI review artifacts, offline

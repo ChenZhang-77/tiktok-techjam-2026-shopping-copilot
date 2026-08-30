@@ -256,40 +256,47 @@ AI-pending 标签的 clean-commit 离线 deterministic dry-run 为 13/34 exact�
 16/34 raw-projection invalid，其中 9 条为正负约束冲突；但相同 evidence 经默认
 `SessionState` 应用后，34 条最终 active/rejected 同值冲突为 0。该结果只用于定位
 request/projection 边界，不是独立人工 gold 上的准确率，也不能开放真实 API 或
-选择 Candidate。下一步先预声明 comparator 比较 raw Shadow request 还是 applied
-state delta，不能按这 34 条哪种分数高来选；完整细节、hash 和偏差边界见
-`docs/a13_annotation_intake_review.md`。
+选择 Candidate。这个历史检查曾暴露 raw request 与 applied state 两种 seam；现行
+AS0 方案已在不按 valid-34 得分选优的前提下预声明后者为正式比较单位。完整细节、hash
+和偏差边界见 `docs/a13_annotation_intake_review.md`。
 
 现已在未看新 reference 输出前预声明：正式语义 comparator 使用
 `applied_state_delta_v1`，把 deterministic、candidate 与 AI-silver delta 分别应用到
 相同隔离 prior state；raw `UnderstandingDelta` exact 只作 trigger/request 诊断。
-现有两份返回标注、valid-34 draft、suggestions 和 comparator report 全部停留在 L1
-历史诊断层，不得成为 AI-silver labeler/adjudicator 的输入或 prompt 调优依据。
+现有 60 条题目、两份返回标注、valid-34 draft、suggestions 和 comparator report
+全部停留在 L0/L1 历史诊断层，不得进入 AI-silver 语义门、labeler/adjudicator
+输入或 prompt 调优。Candidate config、comparator 和新题生成规则必须先冻结，随后
+另建 Candidate 从未见过的 target-free、trigger-balanced 评测 fixture。
 
 - 先实现 types、fake、validator、gate、fallback 和 diagnostics；
 - disabled/no-key 路径逐 turn parity；
 - 真实 API 只产生 Shadow delta；
 - 不改变 state、query、Strategy、question 或 recommendations；
-- 在 judge API 前冻结 AI-silver manifest、`applied_state_delta_v1`、candidate config
-  及输入 SHA256；
+- 在 reference-builder API 前冻结 AI-silver manifest、`applied_state_delta_v1`、
+  candidate config、新题生成规则及其 prompt/config；
 - 用冻结的 AI-silver reference 比较规则与模型，不用 target ASIN 调 prompt；
 - 报告触发率、有效建议率、schema、fallback、延迟、token 和费用。
 
-AI-silver reference 及判分协议必须在第一次 judge API 运行前固定：
+AI-silver reference 及判分协议必须在第一次 reference-builder API 运行前固定：
 
-- 至少 60 条，不少于 10 条/当前 Agent 可达的预定义语义触发类型；
-  防御性不可达 invariant signal 只做单元测试。准备进入 Candidate 的单一触发类
-  至少 20 条；
+- 必须是 Candidate config 冻结后才生成的新题；旧 60 条不得复用。新 fixture
+  至少 60 条，不少于 10 条/当前 Agent 可达的预定义语义触发类型；防御性不可达
+  invariant signal 只做单元测试。准备进入 Candidate 的单一触发类至少 20 条；
 - 样本来源可以是去标识化的规则失败表达和独立编写的边界表达，但不含 target
-  ASIN、hit/miss、scenario label、未来 turn 或推荐结果；
-- 三个 blind labeler 角色中至少覆盖两个非 Candidate 模型家族；Candidate 模型/版本
-  不得参与 label 或 adjudication；
+  ASIN、hit/miss、scenario label、未来 turn 或推荐结果；Candidate 不得生成题目，
+  新题须对旧 60 条做 normalized exact duplicate 和近重复审计；
+- J1/J2/J3 必须是三个不同 model/version、三个互异且均不同于 Candidate 的模型家族；
+  adjudicator 必须不同于全部 labeler，且不属于形成多数的两个家族。运行器请求前
+  强制校验，失败即 No-Go；
 - 3/3 形成 unanimous reference；2/3 必须由 blind adjudicator 复核；三方分歧或
   仲裁失败保留为 unresolved，不得删除以提高 agreement；
 - 主语义指标为 `applied_state_delta_v1` exact agreement；`UnderstandingDelta` exact、
   字段级 agreement、abstain、invalid 和状态不变量只作诊断；
 - Candidate prompt/config 在 AS1 前冻结；看过 silver 输出后修改就使当前 silver
   对该版本 selection-exposed，必须重建 reference 或取消 semantic-gate claim；
+- 每个 trigger 的分母固定为其全部 frozen items；invalid/unresolved 不得移出
+  coverage、exact 或 stability 分母，在相应 exact/stability 分子中计 0。所有门均
+  同时报 numerator、denominator、percentage 和 invalid/unresolved count；
 - 详细角色、修复次数、coverage/stability、hash、成本和停止条件只由
   [`docs/a13_ai_silver_protocol.md`](docs/a13_ai_silver_protocol.md) 定义。
 
@@ -297,7 +304,7 @@ AI-silver reference 及判分协议必须在第一次 judge API 运行前固定�
 
 全部满足才允许进入 Candidate：
 
-1. AI-silver item/trigger accounting = 100%，accepted label validity = 100%；
+1. 新 fixture 的 item/trigger accounting = 100%，accepted label validity = 100%；
 2. canonical coverage overall >= 95%，Candidate trigger coverage = 100%，该 trigger
    独立复跑 applied-state exact stability >= 90%；
 3. candidate schema success >= 99%，fallback exactness = 100%；
@@ -425,8 +432,8 @@ A13_LLM_MAX_VOCAB_ITEMS=200
 | A13-0 | 主变更：`experiments/failure_taxonomy.py`、`tests/test_failure_taxonomy.py`；可复现证据：`tests/test_a13_0_baseline_evidence.py`、`docs/a13_0_baseline_evidence.{md,json}`、`docs/a13_0_reports/`；完成后同步 README、current status、roadmap 与 A-side workstream 导航/状态文档 |
 | A13-1 | 候选曾修改 `starter/core/state.py`、`starter/core/context_engine.py` 和 endpoint test，随后显式回滚；决定证据为 `docs/a13_1_state_override_evidence.{md,json}`、`docs/a13_1_reports/` 和 `tests/test_a13_1_state_override_evidence.py` |
 | A13-S0 | 离线基础已新增 `starter/core/semantic_understanding.py`、`experiments/a13_shadow.py`、`tests/test_semantic_understanding.py`，并仅为注入和 parity 修改 `starter/agent.py`、`tests/test_agent_smoke.py` |
-| A13-AS0 | 先实现/冻结 `applied_state_delta_v1` serializer、AI-silver manifest、blind judge/adjudicator configs、污染检查和 synthetic tests；不调用 provider，不提交 provider raw output |
-| A13-AS1/AS2 | 经明确授权后才执行 judge-only API、bounded repair、共识/仲裁、Candidate-trigger 独立复跑与 hash freeze；完成后新增 `docs/a13_ai_silver_evidence.{md,json}`，普通 raw provider material 留在 Git 外 |
+| A13-AS0 | 先实现/冻结 `applied_state_delta_v1` serializer、Candidate config、新题生成规则、AI-silver manifest、blind judge/adjudicator configs、独立性/污染检查和 synthetic tests；不调用 provider，不提交 provider raw output |
+| A13-AS1F/AS1J/AS2 | 经明确授权后才执行 reference-builder API：先生成并 hash-freeze 新 target-free fixture，再做 blind judging、bounded repair、共识/仲裁、Candidate-trigger 独立复跑；完成后新增 `docs/a13_ai_silver_evidence.{md,json}`，普通 raw provider material 留在 Git 外 |
 | A13-S1 | AI-silver gate 通过并再次获得明确授权后，才运行真实 Candidate provider Shadow；不改变公共行为 |
 | A13-C1 | 只在 S0 文件和必要的 state/integration tests 内激活已通过的单一触发类；决定完成后才新增 `docs/a13_c1_evidence.{md,json}` |
 
@@ -458,8 +465,9 @@ chen/chenzhang-77-baseline-setup @ 0bd3375
       -> A13-0
       -> A13-1
       -> A13-S0
-      -> A13-AS0 protocol/comparator freeze
-      -> A13-AS1/AS2 blind AI-silver build and review
+      -> A13-AS0 protocol/comparator/candidate/generator freeze
+      -> A13-AS1F fresh fixture build and hash freeze
+      -> A13-AS1J/AS2 blind AI-silver build and review
       -> A13-S1 candidate provider Shadow
       -> A13-C1 or No-Go
       -> llm publication branch for the reviewed offline checkpoint

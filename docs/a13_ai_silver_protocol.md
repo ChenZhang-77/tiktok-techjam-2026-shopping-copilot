@@ -17,7 +17,7 @@ Current state:
 ```text
 protocol_status = planned_not_executed
 ai_silver_frozen = false
-judge_provider_authorized = false
+reference_builder_provider_authorized = false
 candidate_provider_authorized = false
 A13_C1_authorized = false
 ```
@@ -40,7 +40,7 @@ the second.
 
 | Level | Evidence | Permitted claim |
 | --- | --- | --- |
-| `L0` | Unlabeled 60-item fixture | Annotation-ready; no semantic-quality claim |
+| `L0` | Exposed legacy 60-item fixture | Development diagnostic only; no semantic-quality claim |
 | `L1` | Single-source or exposed provisional labels, including valid-34 | Diagnostic only; not independent reference evidence |
 | `L2` | Frozen multi-model AI-silver under this protocol | Agreement with AI-silver; not accuracy against truth |
 | `L3` | L2 plus fixed Development-160/fold Candidate evidence | Evidence-backed keep/revert decision for this runtime |
@@ -76,21 +76,38 @@ valid-34 draft.
 
 ## Fixture and Contamination Boundary
 
-The existing 60 target-free items may be reused. Before an eligible Candidate:
+The existing 60 target-free items are permanently development diagnostics. The
+item text, trigger mix, 34 provisional labels, and comparator behavior have
+already been inspected while selecting failure classes and the applied-state
+seam. They must not be reused in an eligible semantic gate, even if their labels
+are withheld from the judges.
 
-- retain at least 10 items for every runtime-reachable trigger;
-- expand the one proposed Candidate trigger to at least 20 items;
-- keep `unexplained_intent_transition` unit-test-only because it is not
+AS0 must freeze the Candidate prompt/config, comparator, fixture-generation
+rubric, source policy, and duplicate-audit method/threshold before any new
+evaluation item is generated or inspected. AS1F then creates a fresh target-free,
+trigger-balanced fixture that:
+
+- contains at least 60 new items overall;
+- contains at least 10 new items for every runtime-reachable trigger;
+- contains at least 20 new items for the one proposed Candidate trigger;
+- keeps `unexplained_intent_transition` unit-test-only because it is not
   runtime-reachable with empty evidence;
-- freeze item order, item SHA256, schema, instructions, validator, comparator,
-  trigger counts, prompt/config versions, and candidate config;
-- keep target ASIN, hit/miss, scenario label, future turns, recommendations,
+- uses an independent non-Candidate generator and/or frozen deterministic
+  transformations of newly generated seed expressions; the Candidate
+  model/version may not author any item;
+- has no normalized-message exact duplicate or predeclared-threshold
+  lexical/semantic near-duplicate of the legacy 60; rejected generated items
+  remain accounted for in a pre-score duplicate audit;
+- freezes item order, item SHA256, schema, instructions, validator, comparator,
+  trigger counts, generator prompt/config, and Candidate config before judging;
+- keeps target ASIN, hit/miss, scenario label, future turns, recommendations,
   comparator output, candidate output, and internal trigger names out of judge
   inputs.
 
 The following artifacts are excluded from reference generation and prompt
 tuning:
 
+- `experiments/fixtures/a13_annotation_pack_v1/items.jsonl` and its ZIP copy;
 - `annotations.b.jsonl`;
 - `annotations.zhangchen (1).jsonl`;
 - `provisional_valid34_ai_labels.jsonl`;
@@ -106,17 +123,24 @@ when needed.
 
 Required independence:
 
-- the candidate model/version may not be J1, J2, J3, or adjudicator;
-- at least two distinct non-candidate model families must be represented across
-  J1/J2/J3;
+- the candidate model/version may not be the fixture generator, J1, J2, J3, or
+  adjudicator;
+- J1/J2/J3 must use three distinct model/version identities and three distinct
+  model families, none belonging to the Candidate family; no family receives
+  two votes;
+- the adjudicator must use a model/version distinct from every labeler and a
+  family outside the two labelers that formed the majority;
 - labelers receive identical evidence and rubric but cannot see other labels;
 - model ID, provider, prompt hash, config, request/response hashes, latency,
   tokens, cost, retry status, and validator result are recorded;
+- the runner verifies these identity/family constraints before any request and
+  fails closed if they are not met;
 - a hosted alias is recorded honestly and is not called deterministic.
 
-If only the candidate family is available, the run is `single_family_diagnostic`
-and cannot open A13-C1. The correct disposition is No-Go or acquiring an
-independent judge, not calling self-evaluation gold.
+If the required independent families are unavailable, the run is
+`insufficient_independence_diagnostic` and cannot open A13-C1. The correct
+disposition is No-Go or acquiring independent judges, not weakening the vote
+or calling self-evaluation gold.
 
 ### Bounded validation repair
 
@@ -143,8 +167,10 @@ not see model identities, vote counts, deterministic/candidate outputs, or
 Development targets.
 
 One independent repeat build is required for the proposed Candidate trigger.
-Its canonical applied-state labels must be at least 90% exact-stable. A changed
-label is retained in the stability report rather than overwritten.
+Its canonical applied-state labels must be at least 90% exact-stable under the
+fixed-denominator rule below. A changed, invalid, or unresolved repeat label is
+retained in the stability report and counts as non-stable rather than being
+overwritten or excluded.
 
 ## KPI Framework
 
@@ -167,6 +193,28 @@ AI-silver applied-state exact-agreement delta
 The Candidate must improve by at least 10 percentage points and at least five
 net exact items. Other evaluated triggers may not regress by more than five
 percentage points. This is an opening gate, not the final keep decision.
+
+### Frozen denominators
+
+For each trigger `T`, freeze `N_T` as the number of all fixture items assigned
+to that trigger. No formula may replace it with a canonical-only or valid-only
+denominator:
+
+```text
+reference_coverage(T) = canonical_reference_items(T) / N_T
+model_exact(T) = canonical items where model applied-state == reference / N_T
+semantic_delta(T) = candidate_exact_count(T) / N_T
+                    - deterministic_exact_count(T) / N_T
+net_exact_items(T) = candidate_exact_count(T) - deterministic_exact_count(T)
+repeat_stability(T) = items canonical in both builds with identical state / N_T
+```
+
+An invalid or unresolved reference contributes zero to the exact and stability
+numerators while remaining in `N_T`. An invalid Candidate/comparator projection
+also contributes zero to that model's exact numerator. Overall rates use the
+sum of all frozen trigger denominators. Reports must show numerator, denominator,
+percentage, and invalid/unresolved counts; the `>=10pp`, `>=5 net items`,
+`<=5pp` regression, coverage, and stability gates all use these formulas.
 
 ### Reference drivers
 
@@ -209,18 +257,20 @@ An eligible Candidate additionally requires:
 
 ```text
 A13-S0 offline foundation complete
-  -> A13-AS0 protocol/comparator/candidate-config freeze       no provider
-      -> explicit authorization for judge-only provider calls
-          -> A13-AS1 blind AI-silver generation and adjudication
-              -> A13-AS2 audit, repeat-build check, and hash freeze
-                  -> semantic review gate
-                      -> explicit authorization for candidate provider Shadow
-                          -> A13-S1 real-provider Shadow
-                              -> A13-C1 or No-Go
+  -> A13-AS0 protocol/comparator/candidate/generator freeze    no provider
+      -> explicit authorization for reference-builder provider calls
+          -> A13-AS1F fresh blind fixture generation and hash freeze
+              -> A13-AS1J blind AI-silver judging and adjudication
+                  -> A13-AS2 audit, repeat-build check, and hash freeze
+                      -> semantic review gate
+                          -> explicit authorization for candidate provider Shadow
+                              -> A13-S1 real-provider Shadow
+                                  -> A13-C1 or No-Go
 ```
 
-AS0 is documentation/tooling work only. AS1/AS2 may call external judge models
-only after explicit authorization and never through Agent runtime. Candidate
+AS0 is documentation/tooling work only. AS1F/AS1J/AS2 may call the independent
+fixture generator, judges, and adjudicator only after explicit
+reference-builder authorization and never through Agent runtime. Candidate
 provider access is a separate authorization after the frozen silver review.
 No phase authorizes A14-S1, B10b, a shared-contract change, or Full/Holdout use.
 
@@ -262,19 +312,22 @@ AS0 must define, but this planning change does not yet create:
 
 - `experiments/fixtures/a13_ai_silver_v1/` with target-free judge inputs;
 - a versioned `applied_state_delta_v1` schema and serializer;
-- three blind labeler configs and an adjudicator config;
+- a fresh-fixture generator/source config and legacy duplicate audit;
+- three blind labeler configs, an adjudicator config, and identity/family
+  enforcement;
 - a manifest binding model/prompt/config/input/validator/comparator hashes;
 - a runner that keeps raw provider material out of Git and emits normalized,
   hash-bound summaries;
 - synthetic tests for validation, consensus, disagreement retention,
   contamination rejection, comparator symmetry, and fallback;
-- `docs/a13_ai_silver_evidence.{md,json}` only after AS1/AS2 complete.
+- `docs/a13_ai_silver_evidence.{md,json}` only after AS1F/AS1J/AS2 complete.
 
 ## Stop Conditions
 
 Stop and record No-Go when any of the following holds:
 
-- no independent non-candidate judge family is available;
+- the fresh fixture or required independent non-Candidate families are
+  unavailable;
 - canonical coverage or repeat-build stability misses its gate;
 - reference generation sees candidate/comparator/evaluator output;
 - the Candidate misses the semantic advantage gate;

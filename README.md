@@ -33,8 +33,9 @@ double-click `开始标注.html`; the annotator does not need to edit JSONL or u
 terminal. All 60 boundary expressions have a validator-supported reading, and
 the page hides internal trigger metadata so independent annotators are not
 prompted toward an answer. The bundle contains unlabeled fixtures only and does
-not authorize a judge or Candidate provider run. Under the selected AI-silver
-route it supplies source items, not reference labels.
+not authorize a reference-builder or Candidate provider run. Under the selected AI-silver
+route its now-exposed items are development diagnostics only; the semantic gate
+requires a fresh fixture generated after the Candidate config is frozen.
 
 Verified Development-160 result for the retained bounded A11 plus B9
 conditional-dense default:
@@ -326,11 +327,13 @@ four fixed folds; see
 A13-S0 now has an offline-only typed/fake/validated Shadow foundation with exact
 Development behavior parity; see
 [`docs/a13_s0_offline_evidence.md`](docs/a13_s0_offline_evidence.md). There is
-still no DeepSeek transport, key read, or API call. A frozen two-member human
-ambiguity fixture is no longer the active route: A13-AS0 must first freeze the
-applied-state comparator, Candidate config, and blind multi-model AI-silver
-protocol without provider access. Judge-only and Candidate provider calls then
-require separate explicit authorization. AI-silver may open Candidate Shadow;
+still no DeepSeek transport, key read, or API call. The exposed two-member
+annotation attempt is no longer the active route: A13-AS0 must first freeze the
+applied-state comparator, Candidate config, fresh-fixture generation rules, and
+blind multi-model AI-silver protocol without provider access. Separately
+authorized reference-builder calls then create and judge a new target-free
+fixture; Candidate provider calls require a later authorization. AI-silver may
+open Candidate Shadow;
 only fixed Development folds may retain runtime behavior. Do not infer an A-side
 provider feature from the presence of the offline plumbing or planning docs.
 

@@ -17,7 +17,8 @@ Read, in order:
    - A: `docs/workstreams/DEVELOPER_A_CONTROL_PLANE.md`
    - B: `docs/workstreams/DEVELOPER_B_RETRIEVAL_RANKING.md`
 6. `docs/question_policy_optimization_plan.md` when the selected work is A14.
-7. `docs/a13_ai_silver_protocol.md` when the selected work is A13-AS0/AS1/AS2.
+7. `docs/a13_ai_silver_protocol.md` when the selected work is
+   A13-AS0/AS1F/AS1J/AS2.
 8. The files named by the selected experiment.
 
 At the beginning of the conversation, report:
@@ -252,10 +253,10 @@ without changing SessionState, Strategy, QueryPlan, clarification,
 recommendations, or public output. The coordinator has selected a no-human
 AI-silver route. Its authoritative protocol is
 [`docs/a13_ai_silver_protocol.md`](a13_ai_silver_protocol.md), but it is only
-planned: AI-silver is not frozen, judge/candidate provider calls are not
-authorized, and A13-C1 is not open. Candidate activation still requires exact
-fallback, bounded call rate/latency/cost, focused/full tests, and fixed
-Development-fold evidence.
+planned: AI-silver is not frozen, reference-builder/Candidate provider calls
+are not authorized, and A13-C1 is not open. Candidate activation still
+requires exact fallback, bounded call rate/latency/cost, focused/full tests,
+and fixed Development-fold evidence.
 
 A teammate-ready but unlabeled 60-item package now lives at
 `experiments/fixtures/a13_annotation_pack_v1/`; it includes the shared items,
@@ -276,9 +277,10 @@ provenance. The Zhangchen file covers 60/60 rows but has 26 validation failures,
 so the official comparison cannot yet run. No source annotation was rewritten;
 the exact failure classes, hashes, raw preflight agreement, and repair sequence
 are recorded in `docs/a13_annotation_intake_review.md`. Under the selected
-no-human route, both returned files remain L1 historical diagnostics and are
-excluded from AI-silver reference generation. Judge-provider work remains
-unauthorized, and A14-S1 remains blocked on the A13 disposition.
+no-human route, the legacy 60 items and both returned files remain L0/L1
+historical diagnostics and are excluded from the AI-silver semantic gate.
+Reference-builder provider work remains unauthorized, and A14-S1 remains
+blocked on the A13 disposition.
 
 The coordinator subsequently authorized provisional use of the 34 individually
 valid Zhangchen rows while ignoring the 26 invalid rows. A local, untracked
@@ -309,20 +311,22 @@ positive-constraint field exact is only 15/34. These are failure-localization
 diagnostics, not accuracy evidence: the subset is unbalanced and its pending AI
 labels are not independent human gold. Applied-state replay leaves zero
 active/rejected same-value conflicts, so the nine raw PRC conflicts do not prove
-that final runtime state is invalid. Before any parser or LLM/provider
-experiment, predeclare whether the official comparator measures raw Shadow
-request evidence or applied state delta; do not choose the projection by its
-score on this subset. Exact hashes and boundaries are in
+that final runtime state is invalid. This historical check exposed the raw
+Shadow versus applied-state seam; the AS0 protocol now predeclares the latter
+without selecting it by valid-34 score. Exact hashes and boundaries are in
 `docs/a13_annotation_intake_review.md`.
 
 A13-AS0 now predeclares `applied_state_delta_v1` as the primary semantic
 comparison unit: deterministic, Candidate, and AI-silver deltas are applied to
 the same isolated prior state. Raw `UnderstandingDelta` exact remains a trigger
-diagnostic. AS0 must also freeze the Candidate config and three blind judge
-roles before any reference output is viewed. AS1/AS2 require separate explicit
-authorization for judge-only provider calls; the Candidate model/version cannot
-label or adjudicate. AI-silver agreement may open Candidate Shadow, but only
-fixed Development-160/fold evidence may retain runtime behavior.
+diagnostic. AS0 must also freeze the Candidate config, fresh-fixture generation
+rules, and three independent blind judge roles before any new evaluation item
+or reference output is viewed. The exposed legacy 60 items cannot score the
+semantic gate. AS1F/AS1J/AS2 require separate explicit authorization for
+reference-builder provider calls; the Candidate model/version cannot generate,
+label, or adjudicate. AI-silver agreement uses fixed all-item denominators and
+may open Candidate Shadow, but only fixed Development-160/fold evidence may
+retain runtime behavior.
 
 A13 does not replace B10b-DS1. A13 interprets difficult user language before
 retrieval; B10b-DS1 reranks an existing Browsing Top-10 after retrieval. They
@@ -612,7 +616,8 @@ track in `docs/demo_and_submission_plan.md`.
 - A13-0 is complete, A13-1 is rejected/reverted, and the A13-S0 offline Shadow
   foundation passes parity. The no-human AI-silver protocol is planned but not
   executed; no frozen AI-silver or real semantic-quality evidence exists, and
-  judge/candidate provider calls remain unauthorized.
+  reference-builder/Candidate provider calls remain unauthorized. The exposed
+  legacy 60 items cannot score the semantic gate.
 - Profile ranking remains disabled at weight `0.0`; long-term profile value has
   not been demonstrated.
 - Candidate-aware clarification runs through the retained A14-0 deep Interface,

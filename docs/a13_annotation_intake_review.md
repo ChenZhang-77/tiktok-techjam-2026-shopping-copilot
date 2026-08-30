@@ -176,13 +176,12 @@ being diagnosed. Its permitted use is narrower: locate contract/failure
 classes, prepare adjudication, and predeclare the next deterministic test. It
 must not select an LLM trigger or satisfy A13-C1.
 
-Before changing the parser, the team must decide and document whether the
-official deterministic comparator represents raw pre-state Shadow evidence or
-the applied state delta. The former faithfully exposes why A13 is triggered;
-the latter better represents default runtime behavior. Optimizing either
-projection against these AI-pending labels would be circular, so this decision
-must be made before full human adjudication and must not be chosen by whichever
-version scores higher on the valid-34 subset.
+At this historical checkpoint, the raw pre-state Shadow versus applied-state
+comparator seam was still open. Optimizing either projection against these
+AI-pending labels would have been circular. The active
+[`A13 AI-silver protocol`](a13_ai_silver_protocol.md) now supersedes that open
+question by predeclaring `applied_state_delta_v1`, independent of which
+projection scores higher on valid-34.
 
 ## Scope and method
 
@@ -216,10 +215,12 @@ a preflight diagnostic and is explicitly not treated as official comparison.
 2. Keep the valid-34 results diagnostic only. They may motivate failure classes
    but may not seed, tune, adjudicate, or score AI-silver.
 3. Complete A13-AS0 without provider access: freeze `applied_state_delta_v1`,
-   fixture/validator/comparator hashes, blind labeler/adjudicator configs, and
-   the Candidate prompt/config before any new reference output is viewed.
-4. Obtain explicit authorization for judge-only provider calls, then execute
-   A13-AS1/AS2 under `docs/a13_ai_silver_protocol.md`.
+   the Candidate prompt/config, new-fixture source/generation rules,
+   validator/comparator hashes, and blind labeler/adjudicator configs before any
+   new evaluation item or reference output is viewed. The exposed legacy 60
+   items cannot score the semantic gate.
+4. Obtain explicit authorization for reference-builder provider calls, then
+   execute A13-AS1F/AS1J/AS2 under `docs/a13_ai_silver_protocol.md`.
 5. Open a separately authorized Candidate Shadow only if reference coverage,
    repeat-build stability, semantic advantage, validation, fallback, cost, and
    review gates pass. Fixed Development-160 folds still own keep/revert.
@@ -227,9 +228,9 @@ a preflight diagnostic and is explicitly not treated as official comparison.
 Until these steps are complete:
 
 ```text
-fixture_frozen = false
+fresh_fixture_frozen = false
 ai_silver_frozen = false
-judge_provider_authorized = false
+reference_builder_provider_authorized = false
 candidate_provider_authorized = false
 A14-S1_authorized = false
 ```

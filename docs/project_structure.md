@@ -35,7 +35,7 @@ Root Markdown files have distinct roles:
 | `CONTEXT.md` | Shared domain vocabulary |
 | `DATA_ATTRIBUTION.md` | Dataset source and use boundary |
 | `DeepSeek_LLM接入实验方案.md` | Authoritative A13 semantic-understanding spec and review gates |
-| `A13_annotation_pack_v1.zip` | Deterministic teammate-facing unlabeled annotation bundle committed only on the `llm` publication branch |
+| `A13_annotation_pack_v1.zip` | Deterministic legacy annotation bundle; exposed development diagnostics, not semantic-gate data |
 
 ## Documentation Layers
 

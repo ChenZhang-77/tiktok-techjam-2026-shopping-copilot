@@ -32,7 +32,7 @@ Browsing 条件式 dense/RRF** 之上，又加入三项 A 侧状态正确性修�
 | TechnicalScore | 0.765703 | 50% 命中率 + 30% 排名 + 20% 效率的总分 |
 
 这份结果来自 **Development-160**，不是未见过的最终测试集。当前仓库完整测试为
-**353/353 passed**；权威运行状态与最新验证命令以 `docs/current_status.md` 为准。
+**380/380 passed**；权威运行状态与最新验证命令以 `docs/current_status.md` 为准。
 本轮没有运行 Holdout-40 或 Full-200。
 
 ## 编号为什么不是连续的
@@ -548,10 +548,12 @@ TechnicalScore 增加 0.070391。其中证据最强、贡献最大的单步是�
 
 **建议下一步：** A13-S0 离线 types、fake、validator、gate、fallback、diagnostics
 和 disabled/no-key/fake parity 已完成。协调者已选择不走人工标注，先完成 A13-AS0：
-冻结 applied-state comparator、Candidate config、三个 blind judge 角色、仲裁与污染
-检查，但仍不调用 provider。经单独授权后生成/复跑 AI-silver；它只负责筛选语义
-候选，固定 Development-160 四折仍负责最终 keep/revert。judge 和 Candidate provider
-调用分开授权，Candidate 模型不得给自己标注或仲裁。详见
+冻结 applied-state comparator、Candidate config、新评测题生成规则、三个独立 blind
+judge 角色、仲裁与污染检查，但仍不调用 provider。旧 60 条已暴露，只保留作开发
+诊断；经单独授权后，reference-builder 先生成并冻结新 target-free fixture，再完成
+AI-silver 判断/复跑。它只负责筛选语义候选，固定 Development-160 四折仍负责最终
+keep/revert。reference-builder 和 Candidate provider 调用分开授权，Candidate 模型
+不得生成题目、给自己标注或仲裁。详见
 `docs/a13_ai_silver_protocol.md`。10 个 Question Policy miss 属于独立的 A14，不与
 A13 同时调参；B11、B12 和新的 reranker 同期冻结。
 
