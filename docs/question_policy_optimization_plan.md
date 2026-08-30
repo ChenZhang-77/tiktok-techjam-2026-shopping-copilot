@@ -13,7 +13,7 @@ Any A14 behavior-changing Candidate must remain separate from an active A13 or
 B10b LLM experiment so metric attribution stays meaningful.
 
 Current checkpoint: A14-0 is retained at `f594601`, and A14-1 is retained at
-`4f615f4`. All ten attributes now have explicit evidence source/status and
+final runtime/audit source `4b1c530`. All ten attributes now have explicit evidence source/status and
 missing-data behavior while all 649 fixed Development responses and fold
 metrics remain unchanged. Records are in
 `docs/a14_0_question_policy_evidence.md` and

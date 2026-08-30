@@ -69,7 +69,10 @@ correctly says `unavailable` and `preserve_legacy_action`.
 
 ## Exact behavior and metrics
 
-The clean A14-1 runtime source commit is `4f615f4`. Against the independent
+The clean final A14-1 runtime/audit source commit is `4b1c530`. The standard
+Development/fold reports were captured at clean behavior commit `4f615f4`;
+the final clean 649-turn audit at `4b1c530` independently reproduces their
+metrics and exact visible trace. Against the independent
 legacy visible trace captured at `2e4108a`:
 
 | Check | Result |
@@ -84,11 +87,13 @@ legacy visible trace captured at `2e4108a`:
 
 The visible-response trace remains
 `098afbdf9b1ce3c0813ccb311b90432837e8b3ac7f36ed78248fe2fef3a75146`.
-The A14-1 full Question Policy trace digest is
-`913e919a259947210144467c4ec0528cbaa50177bff49b29fe8017db6a13b1b2`.
-A14-0 retains the full legacy/current per-turn trace; A14-1 retains the new
-trace digest and complete coverage/eligibility summary rather than duplicating
-another large identifier-level trace.
+The A14-1 semantic Question Policy trace digest is
+`032d4c897f29b06efda53977341a1867cf562d621692039e97dedd2bdaa586ed`.
+It excludes only operational latency and reproduced exactly in two independent
+clean runs whose latency summaries differed. The complete bounded 649-turn,
+ten-attribute trace is retained at `docs/a14_1_reports/turn_audit.json`; the
+evidence test validates every field and derives the published status and
+eligibility counts from it.
 
 | Scope | HitRate@10 | MRR | MTTC | Efficiency | TechnicalScore |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -104,10 +109,10 @@ Full-200 or exposed-Holdout run was performed.
 
 ## Cost
 
-Question Policy compilation observed mean `9.737 ms`, p95 `15.685 ms`, and max
-`28.251 ms`. A14-0's separate local run observed mean `2.987 ms` and p95
-`4.653 ms`; the non-paired differences are about `+6.750 ms` mean and
-`+11.032 ms` p95. The A14-1 standard Development report observed overall
+Question Policy compilation observed mean `9.557 ms`, p95 `15.290 ms`, and max
+`19.954 ms`. A14-0's separate local run observed mean `2.987 ms` and p95
+`4.653 ms`; the non-paired differences are about `+6.570 ms` mean and
+`+10.637 ms` p95. The A14-1 standard Development report observed overall
 response mean `33.797 ms` and p95 `58.919 ms`.
 
 These local sequential timings are noisy and are not a paired causal estimate.
@@ -135,9 +140,12 @@ than rescan Candidate text.
 
 `docs/a14_1_attribute_evidence.json` records the decision, inputs, source
 snapshot, raw-report hashes, coverage, parity, metrics, folds, latency, and
-gate. `docs/a14_1_reports/coverage_audit.json` is the bounded audit summary;
-the adjacent Development/fold reports are standard evaluator outputs. The
-evidence test derives all published values from those files.
+gate. `docs/a14_1_reports/turn_audit.json` is the complete bounded per-turn
+evidence; `coverage_audit.json` is its retained summary; the adjacent
+Development/fold reports are standard evaluator outputs. The evidence test
+validates every per-turn field/range/semantic and derives all published values
+from those files. Historical source hashes are checked against their pinned Git
+blobs rather than the later live files.
 
 ```bash
 ../shopping-copilot/.venv/bin/python -m experiments.a14_turn_audit \

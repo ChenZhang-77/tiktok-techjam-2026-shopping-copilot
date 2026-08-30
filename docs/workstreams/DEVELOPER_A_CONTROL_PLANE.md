@@ -625,7 +625,7 @@ The retained A14-0 runtime source is `f594601`. Its independent clean legacy
 trace, 649-turn current audit, unchanged Development/fold metrics, zero policy
 violations, source/input hashes, and local policy latency are bound in
 [`docs/a14_0_question_policy_evidence.md`](../a14_0_question_policy_evidence.md).
-A14-1 is retained at `4f615f4`; its complete source/status matrix, exact
+A14-1 is retained at `4b1c530`; its complete per-turn source/status evidence, exact
 parity, fixed folds, latency, and missing-data disposition are in
 [`docs/a14_1_attribute_evidence.md`](../a14_1_attribute_evidence.md). Do not
 open A14-S1 or a Candidate while A13 remains undecided.

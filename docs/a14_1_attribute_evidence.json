@@ -5,7 +5,8 @@
   "provenance": {
     "baseline_visible_trace_commit": "2e4108a",
     "a14_0_commit": "f594601",
-    "runtime_source_commit": "4f615f4",
+    "runtime_source_commit": "4b1c530",
+    "standard_evaluation_report_commit": "4f615f4",
     "inputs": {
       "catalog": {"path": "data/catalog.jsonl", "sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67"},
       "dataset": {"path": "data/public_set.jsonl", "sha256": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579"},
@@ -16,12 +17,13 @@
       "splits": {"path": "evaluator/splits.py", "sha256": "36858b99678befd8e4740b6c31a9e33f429330be38e74d9ca3eb002916fc47a3"}
     },
     "runtime_source_hashes": {
-      "starter/core/question_policy.py": "793137c0559419f66de492ef55ef45ce6608998755e56ce19892a607722bcaca",
+      "starter/core/question_policy.py": "5580afdf499acaf6a4447342629946fbe48efe1f1430fe2363648840cb25a9d5",
       "starter/core/decision_evidence.py": "bc32c04aa9e2caba7ac0a471eaf638a60e162e6d5f8efcb42ceb78821e01fd71",
-      "experiments/a14_turn_audit.py": "36efc8f284dcf477c4df61cff1c32bac688ef2861e4b629e36007cd0f36e0c90"
+      "experiments/a14_turn_audit.py": "42246e1c6ddfd280e1cc08857a04f1c18566cc96d953097bb7117ec24340566f"
     },
     "run_artifacts": {
-      "coverage_audit": {"path": "docs/a14_1_reports/coverage_audit.json", "sha256": "bfd03b2cc627868d03bfffe8791f95d2d1bee98bb12ef4bcf2d327ab95e56088"},
+      "coverage_audit": {"path": "docs/a14_1_reports/coverage_audit.json", "sha256": "1da86c3d5505620be1daac939b37ab8fdeb01af10305218cd912538d4598a235"},
+      "turn_audit": {"path": "docs/a14_1_reports/turn_audit.json", "sha256": "9b371f5645978c3041090eca069c07305d7f075601bcc2026029c5fa7f7f7959"},
       "development": {"path": "docs/a14_1_reports/development.json", "sha256": "2a90f9a48081b4c4c8e641dd4b8c509c8782e7374d1b1825619dc303e01185e1"},
       "fold_1": {"path": "docs/a14_1_reports/fold_1.json", "sha256": "54f895e8c527b5088abb8fae2f99b65ed182f8822ee9cfc2503a2b394123f4ed"},
       "fold_2": {"path": "docs/a14_1_reports/fold_2.json", "sha256": "f69f3dcf442a81a96a53df46e3a9ee264ea604dd4310200104c0daf10e8329df"},
@@ -49,7 +51,7 @@
   },
   "visible_behavior_parity": {
     "visible_response_trace_sha256": "098afbdf9b1ce3c0813ccb311b90432837e8b3ac7f36ed78248fe2fef3a75146",
-    "question_trace_sha256": "913e919a259947210144467c4ec0528cbaa50177bff49b29fe8017db6a13b1b2",
+    "question_trace_sha256": "032d4c897f29b06efda53977341a1867cf562d621692039e97dedd2bdaa586ed",
     "compared_turns": 649,
     "exact": true,
     "all_mismatch_counts": 0,
@@ -66,7 +68,7 @@
     "respond_exceptions": 0,
     "invalid_response_payloads": 0,
     "reported_fallbacks": 0,
-    "policy_latency_ms": {"count": 649, "mean": 9.736823, "p95": 15.685167, "max": 28.250709}
+    "policy_latency_ms": {"count": 649, "mean": 9.556641, "p95": 15.289792, "max": 19.9535}
   },
   "folds": {
     "fold_1": {"sample_count": 40, "hit_rate_at_10": 0.925, "mrr": 0.485724, "mttc": 4.075, "efficiency": 0.6925, "technical_score": 0.746717},
