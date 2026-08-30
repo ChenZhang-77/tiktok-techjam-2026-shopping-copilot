@@ -46,8 +46,8 @@ deterministic State / Override candidate, leaving that runtime unchanged:
 | Optional B12 code/default-parity commit | `82891c8` |
 | B10a experiment branch | `b/b10a-constraint-preserving-crossencoder` |
 | Current A13 publication branch | `llm`, cut from reviewed A13 HEAD `bbb0075` |
-| Latest local full test suite (2026-08-30) | 349 passed after the double-click A13 annotation UI and clearer example guide; default runtime remains no-LLM |
-| Committed annotation bundle | `A13_annotation_pack_v1.zip`, SHA256 `bb2211f61bb8e09fd31570965cc0ddd534a13d29a94be76562a90a05e953388f` |
+| Latest local full test suite (2026-08-30) | 350 passed after replacing the ten one-word OWV prompts with natural incomplete-override requests; default runtime remains no-LLM |
+| Committed annotation bundle | `A13_annotation_pack_v1.zip`, SHA256 `a2803d1e8b2c5592ab5e326cd1ec981620e598f3f4a84166a37d50ea0d8f1e29` |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |
 

@@ -67,6 +67,23 @@ class A13AnnotationPackTest(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, rendered)
 
+    def test_override_without_value_items_are_natural_multiword_requests(self) -> None:
+        override_items = [
+            item
+            for item in self.items
+            if item["trigger_type"] == "override_without_value"
+        ]
+
+        self.assertEqual(len(override_items), 10)
+        for item in override_items:
+            with self.subTest(item_id=item["item_id"]):
+                words = re.findall(r"[A-Za-z0-9']+", item["current_message"])
+                self.assertGreaterEqual(
+                    len(words),
+                    5,
+                    f'{item["item_id"]} should be a natural request, not a cue word',
+                )
+
     def test_template_matches_every_item_but_is_intentionally_not_a_valid_submission(self) -> None:
         self.assertEqual(
             [row["item_id"] for row in self.template],
