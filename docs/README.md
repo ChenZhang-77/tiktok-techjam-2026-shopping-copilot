@@ -16,6 +16,9 @@ from old reports.
 7. `ablation_summary.md` — what was retained, rejected, and why
 8. `../DeepSeek_LLM接入实验方案.md` — authoritative A13 semantic-understanding
    plan, review gates, branch boundary, and relationship to B-side DS1
+9. `a13_ai_silver_protocol.md` — active no-human A13 reference protocol,
+   applied-state comparator, KPI hierarchy, contamination controls, and
+   separate judge/Candidate provider gates
 
 `../AGENTS.md` is the sole authority for the R0 failure taxonomy and the
 offline-target/runtime boundary. `optimization_roadmap.md` is the sole authority
@@ -32,6 +35,8 @@ definitions instead of creating local variants.
 - `../DeepSeek_LLM接入实验方案.md` — selected A13 feature plan; A13-1 is
   rejected/reverted and A13-S0 has offline-only Shadow plumbing, not provider
   behavior
+- `a13_ai_silver_protocol.md` — selected no-human reference route; planned but
+  not executed, with no current provider authorization
 - `a_control_plane_handoff.md` — compatibility pointer for old A-side links
 - `b_retrieval_ranking_handoff.md` — compatibility pointer for old B-side links
 
@@ -63,11 +68,13 @@ definitions instead of creating local variants.
 - `a13_1_reports/` — hash-bound candidate/revert Development, fold, and
   taxonomy reports used by the A13-1 evidence test
 - `a13_s0_offline_evidence.md` — retained types/fake/validator/gate/fallback
-  foundation, exact behavior parity, and the pre-provider human-fixture gate
+  foundation and exact behavior parity before any provider work
 - `a13_s0_reports/` — hash-bound disabled/no-key/fake Development parity reports
+- `a13_ai_silver_protocol.md` — planned AS0-AS2 reference-building protocol;
+  this is a plan, not completed evidence or frozen AI-silver
 - `a13_annotation_intake_review.md` — validation/provenance audit of the first
   two returned annotation files, valid-34 AI review artifacts, offline
-  deterministic failure breakdown, repair IDs, and the still-closed human gate
+  deterministic failure breakdown, repair IDs, and their L1 historical boundary
 - `a14_0_question_policy_evidence.md` — retained deep Question Policy Module,
   exact 649-turn legacy parity, bounded audit, latency, and next gate
 - `a14_0_reports/` — hash-bound legacy/current turn traces, Development result,

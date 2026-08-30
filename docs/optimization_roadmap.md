@@ -82,9 +82,13 @@ Current Chen runtime source @ 0bd3375
   -> A13-0 complete at clean comparator b86a9e7
       -> A13-1 deterministic State / Override slice rejected and reverted
           -> A13-S0 offline Shadow foundation complete
-              -> freeze two-member ambiguity fixture before any real API
-              -> A13 review gate
-                  -> A13-C1 guarded activation or No-Go
+              -> A13-AS0 freeze applied-state comparator and AI-silver protocol
+                  -> explicitly authorize judge-only provider calls
+                      -> A13-AS1/AS2 blind AI-silver build, audit, and freeze
+                          -> A13 semantic review gate
+                              -> explicitly authorize Candidate provider Shadow
+                                  -> A13-S1 real-provider Shadow
+                                      -> A13-C1 guarded activation or No-Go
 
 Current runtime and frozen evidence
   -> A14-0 turn audit and deep-Module parity             retained @ f594601
@@ -110,6 +114,11 @@ evidence coverage. This is the pre-gate limit: A14 Shadow/Candidate behavior
 must wait for the A13 disposition and must not be activated in the same metric
 experiment as A13 or B10b. The authoritative A14 plan is
 [`docs/question_policy_optimization_plan.md`](question_policy_optimization_plan.md).
+The active no-human A13 reference route is defined separately in
+[`docs/a13_ai_silver_protocol.md`](a13_ai_silver_protocol.md): AI-silver may
+open a Candidate experiment, while fixed Development folds remain the primary
+runtime keep/revert evidence. Judge and Candidate provider authorizations are
+separate gates.
 
 ## R0 - Development Failure Taxonomy
 
@@ -531,10 +540,10 @@ path. Only the separate online A14-S3 Shadow can open A14-C3. Any future use of
 a teacher artifact in selection requires its own deterministic
 Shadow/Candidate review.
 
-A14 planning and evidence-only preparation may occur while A13 annotation and
-review are pending. Do not activate A14 Candidate behavior until the active A13
-experiment has reached its review decision, and never attribute simultaneous
-A13/B10b/A14 model changes to one metric result.
+A14 planning and evidence-only preparation may occur while the A13 AI-silver
+reference build and review are pending. Do not activate A14 Candidate behavior
+until the active A13 experiment has reached its review decision, and never
+attribute simultaneous A13/B10b/A14 model changes to one metric result.
 
 ## R4 - Integrated Selection and Freeze
 
@@ -576,13 +585,15 @@ Required outcomes:
 ### If at least two development days remain
 
 A13-0 is complete, A13-1 is rejected/reverted, and the A13-S0 offline foundation
-passes parity against the restored `0.925` comparator. Freeze and reconcile the
-two-member ambiguity fixture before any real API run, apply the reviewed gate,
-and either run A13-C1 or record No-Go. A14-0/A14-1 design, audit, and parity work
-may proceed without changing behavior; after the A13 review decision, open
-A14-S1/C1 as a separate experiment. Optimize attribute selection before any
-broad stop rule or online LLM Candidate. Stop behavior work early enough to
-complete R4 and regenerate the P0 package in R5.
+passes parity against the restored `0.925` comparator. Complete A13-AS0 without
+provider access; then, only with explicit authorization, build and freeze the
+blind multi-model AI-silver reference before a separately authorized Candidate
+Shadow. Apply both the semantic gate and fixed Development-fold gate, then run
+A13-C1 or record No-Go. A14-0/A14-1 design, audit, and parity work may proceed
+without changing behavior; after the A13 review decision, open A14-S1/C1 as a
+separate experiment. Optimize attribute selection before any broad stop rule or
+online LLM Candidate. Stop behavior work early enough to complete R4 and
+regenerate the P0 package in R5.
 
 ### If submission is imminent
 

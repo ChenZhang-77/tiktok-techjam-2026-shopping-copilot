@@ -17,7 +17,8 @@ Read, in order:
    - A: `docs/workstreams/DEVELOPER_A_CONTROL_PLANE.md`
    - B: `docs/workstreams/DEVELOPER_B_RETRIEVAL_RANKING.md`
 6. `docs/question_policy_optimization_plan.md` when the selected work is A14.
-7. The files named by the selected experiment.
+7. `docs/a13_ai_silver_protocol.md` when the selected work is A13-AS0/AS1/AS2.
+8. The files named by the selected experiment.
 
 At the beginning of the conversation, report:
 
@@ -248,17 +249,20 @@ key read has been made for A13.
 
 The offline Shadow foundation records a validated fake `UnderstandingDelta`
 without changing SessionState, Strategy, QueryPlan, clarification,
-recommendations, or public output. Before any provider run, the team must freeze
-the 60+ item ambiguity fixture through two-member independent annotation and
-reconciliation. Candidate activation still requires exact fallback, bounded
-call rate/latency/cost, focused/full tests, and fixed Development-fold evidence.
+recommendations, or public output. The coordinator has selected a no-human
+AI-silver route. Its authoritative protocol is
+[`docs/a13_ai_silver_protocol.md`](a13_ai_silver_protocol.md), but it is only
+planned: AI-silver is not frozen, judge/candidate provider calls are not
+authorized, and A13-C1 is not open. Candidate activation still requires exact
+fallback, bounded call rate/latency/cost, focused/full tests, and fixed
+Development-fold evidence.
 
 A teammate-ready but unlabeled 60-item package now lives at
 `experiments/fixtures/a13_annotation_pack_v1/`; it includes the shared items,
 generated double-click offline annotation UI, a clearer double-click example
 guide, blank per-annotator template, schema, standalone validator, and a
 post-submission disagreement comparison command. Its status is annotation-ready,
-not reconciled or gold-frozen, so it grants no provider authorization. All five
+not gold or AI-silver-frozen, so it grants no provider authorization. All five
 runtime-reachable semantic strata are replayed against the bound catalog during
 the build; the defensive but Agent-unreachable intent-transition invariant stays
 unit-test-only rather than being represented by fabricated empty evidence.
@@ -271,26 +275,30 @@ file passes 60/60 validation but does not establish a second member's human
 provenance. The Zhangchen file covers 60/60 rows but has 26 validation failures,
 so the official comparison cannot yet run. No source annotation was rewritten;
 the exact failure classes, hashes, raw preflight agreement, and repair sequence
-are recorded in `docs/a13_annotation_intake_review.md`. The fixture therefore
-remains unfrozen, real-provider work remains unauthorized, and A14-S1 remains
-blocked on the same A13 disposition.
+are recorded in `docs/a13_annotation_intake_review.md`. Under the selected
+no-human route, both returned files remain L1 historical diagnostics and are
+excluded from AI-silver reference generation. Judge-provider work remains
+unauthorized, and A14-S1 remains blocked on the A13 disposition.
 
 The coordinator subsequently authorized provisional use of the 34 individually
 valid Zhangchen rows while ignoring the 26 invalid rows. A local, untracked
 `provisional_valid34_comparison.json` now records 16 agreements, 18
 disagreements, the 26 exclusions, source hashes, and an explicit `not_gold`
-boundary. This subset can start human adjudication, but it has only 1/10 valid
+boundary. It has only 1/10 valid
 `override_without_value` and 4/20 valid `low_confidence_residual_feature` rows;
-it cannot satisfy fixture coverage, accuracy selection, provider, A13-C1, or
-A14-S1 gates. See `docs/a13_annotation_intake_review.md` for the artifact hash
-and exact permitted uses.
+it cannot satisfy reference coverage, semantic selection, provider, A13-C1, or
+A14-S1 gates. It may remain a diagnostic but cannot be copied into or used to
+tune the new AI-silver reference. See `docs/a13_annotation_intake_review.md`
+for the artifact hash and exact permitted uses.
 
 An AI-only adjudication draft now accompanies that local subset: 16 exact
 agreements were carried forward, 17 disagreements received a `codex`-label
 recommendation, and `LRF-011` received one synthesized recommendation. All 34
 draft labels pass row-level validation, but all 18 disagreements remain marked
 human-pending. The draft is only a review accelerator; it does not resolve
-human provenance, create gold, or authorize comparator/LLM selection claims.
+semantic truth, create gold/AI-silver, or authorize comparator/LLM selection
+claims. The no-human route supersedes further human adjudication as the active
+next step without upgrading these old labels.
 
 A clean-commit (`c556231`) deterministic dry-run against those 34 AI-provisional
 labels is now hash-bound in the same coordinator-local directory. It records
@@ -306,6 +314,15 @@ experiment, predeclare whether the official comparator measures raw Shadow
 request evidence or applied state delta; do not choose the projection by its
 score on this subset. Exact hashes and boundaries are in
 `docs/a13_annotation_intake_review.md`.
+
+A13-AS0 now predeclares `applied_state_delta_v1` as the primary semantic
+comparison unit: deterministic, Candidate, and AI-silver deltas are applied to
+the same isolated prior state. Raw `UnderstandingDelta` exact remains a trigger
+diagnostic. AS0 must also freeze the Candidate config and three blind judge
+roles before any reference output is viewed. AS1/AS2 require separate explicit
+authorization for judge-only provider calls; the Candidate model/version cannot
+label or adjudicate. AI-silver agreement may open Candidate Shadow, but only
+fixed Development-160/fold evidence may retain runtime behavior.
 
 A13 does not replace B10b-DS1. A13 interprets difficult user language before
 retrieval; B10b-DS1 reranks an existing Browsing Top-10 after retrieval. They
@@ -371,7 +388,7 @@ exactly unchanged; see `docs/a14_1_attribute_evidence.md`.
 
 This reaches the farthest safe automatic boundary while A13 remains open.
 A14-S1, A14-C1, LLM teacher/advisor work, and ask/stop changes remain blocked
-until A13's human-fixture review has a recorded disposition.
+until A13's AI-silver review has a recorded disposition.
 
 ## R0 Result
 
@@ -571,7 +588,8 @@ track in `docs/demo_and_submission_plan.md`.
 | `docs/a11_extraction_scope_evidence.md` | Retained bounded extraction scope, rejected expansions, folds, and remaining risks |
 | `docs/a13_0_baseline_evidence.md` | Current 0.925 comparator, hashes, folds, and refreshed target-free taxonomy |
 | `docs/a13_1_state_override_evidence.md` | Rejected-and-reverted deterministic state-reset candidate, folds, and restored comparator |
-| `docs/a13_s0_offline_evidence.md` | Retained offline Shadow foundation, Development parity, and pre-provider fixture gate |
+| `docs/a13_s0_offline_evidence.md` | Retained offline Shadow foundation, Development parity, and the historical pre-provider gate at that checkpoint |
+| `docs/a13_ai_silver_protocol.md` | Active no-human A13 reference protocol, comparator seam, KPI hierarchy, contamination controls, and provider boundaries |
 | `docs/b9_conditional_dense_evidence.md` | Retained Browsing-only dense gate, quality, route truth, cost, and folds |
 | `docs/b10a_constraint_rerank_evidence.md` | Rejected constraint-preserving CrossEncoder variants |
 | `docs/b11_prerequisite_evidence.md` | B11 prerequisite failure and no-start decision |
@@ -592,8 +610,9 @@ track in `docs/demo_and_submission_plan.md`.
 - B10b-DS1/DS2 are implemented opt-in LLM semantic-ranker experiments with
   provisional remote measurements; neither is retained in the default runtime.
 - A13-0 is complete, A13-1 is rejected/reverted, and the A13-S0 offline Shadow
-  foundation passes parity. Provider transport, frozen human gold, and real
-  semantic-quality evidence are not implemented.
+  foundation passes parity. The no-human AI-silver protocol is planned but not
+  executed; no frozen AI-silver or real semantic-quality evidence exists, and
+  judge/candidate provider calls remain unauthorized.
 - Profile ranking remains disabled at weight `0.0`; long-term profile value has
   not been demonstrated.
 - Candidate-aware clarification runs through the retained A14-0 deep Interface,

@@ -24,6 +24,8 @@ language Chinese walkthrough from A1/B1 through the current result, read
 [`docs/human_optimization_recap_zh.md`](docs/human_optimization_recap_zh.md).
 The reviewed A-side DeepSeek plan, gates, and branch boundary are in
 [`DeepSeek_LLM接入实验方案.md`](DeepSeek_LLM接入实验方案.md).
+The selected no-human reference route and its evidence hierarchy are in
+[`docs/a13_ai_silver_protocol.md`](docs/a13_ai_silver_protocol.md).
 
 The teammate-ready offline annotation bundle is committed at
 [`A13_annotation_pack_v1.zip`](A13_annotation_pack_v1.zip). Unzip it and
@@ -31,7 +33,8 @@ double-click `开始标注.html`; the annotator does not need to edit JSONL or u
 terminal. All 60 boundary expressions have a validator-supported reading, and
 the page hides internal trigger metadata so independent annotators are not
 prompted toward an answer. The bundle contains unlabeled fixtures only and does
-not authorize a DeepSeek/provider run.
+not authorize a judge or Candidate provider run. Under the selected AI-silver
+route it supplies source items, not reference labels.
 
 Verified Development-160 result for the retained bounded A11 plus B9
 conditional-dense default:
@@ -324,14 +327,17 @@ A13-S0 now has an offline-only typed/fake/validated Shadow foundation with exact
 Development behavior parity; see
 [`docs/a13_s0_offline_evidence.md`](docs/a13_s0_offline_evidence.md). There is
 still no DeepSeek transport, key read, or API call. A frozen two-member human
-ambiguity fixture and Shadow review are required before provider testing, and
-Candidate review is required before any state or metric change. Do not infer an
-A-side provider feature from the presence of the offline plumbing.
+ambiguity fixture is no longer the active route: A13-AS0 must first freeze the
+applied-state comparator, Candidate config, and blind multi-model AI-silver
+protocol without provider access. Judge-only and Candidate provider calls then
+require separate explicit authorization. AI-silver may open Candidate Shadow;
+only fixed Development folds may retain runtime behavior. Do not infer an A-side
+provider feature from the presence of the offline plumbing or planning docs.
 
-For independent human annotation, use the committed
-[`A13_annotation_pack_v1.zip`](A13_annotation_pack_v1.zip). It embeds the same
-60 runtime-gate-bound unlabeled items as the source fixture and is not gold or
-model output.
+The committed [`A13_annotation_pack_v1.zip`](A13_annotation_pack_v1.zip)
+embeds the same
+60 runtime-gate-bound unlabeled items as the source fixture, retains the legacy
+offline annotation UI, and is not gold, AI-silver, or model output.
 
 ## Named Experiments and Visualizer
 

@@ -547,10 +547,13 @@ TechnicalScore 增加 0.070391。其中证据最强、贡献最大的单步是�
 - 当前好结果仍是 Development 数据，私有 800 条才是真正的外部泛化检验。
 
 **建议下一步：** A13-S0 离线 types、fake、validator、gate、fallback、diagnostics
-和 disabled/no-key/fake parity 已完成。现在由两名成员独立标注不少于 60 条人工
-歧义集、共同复核并冻结 hash；完成此前不运行真实 API。通过 Shadow review gate
-后才做 A13-C1 单一触发类候选激活。10 个 Question Policy miss 属于独立的 A14，
-不与 A13 同时调参；B11、B12 和新的 reranker 同期冻结。
+和 disabled/no-key/fake parity 已完成。协调者已选择不走人工标注，先完成 A13-AS0：
+冻结 applied-state comparator、Candidate config、三个 blind judge 角色、仲裁与污染
+检查，但仍不调用 provider。经单独授权后生成/复跑 AI-silver；它只负责筛选语义
+候选，固定 Development-160 四折仍负责最终 keep/revert。judge 和 Candidate provider
+调用分开授权，Candidate 模型不得给自己标注或仲裁。详见
+`docs/a13_ai_silver_protocol.md`。10 个 Question Policy miss 属于独立的 A14，不与
+A13 同时调参；B11、B12 和新的 reranker 同期冻结。
 
 A14 已完成重新设计，但尚未改变运行时。关键结论不是“再调一个少问问题的阈值”：
 本地 evaluator 会先给当前推荐打分，再根据 `ask_attribute` 生成下一轮回复；没问具体
@@ -581,6 +584,7 @@ LLM 不拥有策略：离线 teacher 只能聚类冻结且 hash-bound 的 catalo
 - A13-0：`docs/a13_0_baseline_evidence.md`
 - A13-1：`docs/a13_1_state_override_evidence.md`
 - A13-S0 离线基础：`docs/a13_s0_offline_evidence.md`
+- A13 AI-silver 协议：`docs/a13_ai_silver_protocol.md`
 - AB1：`docs/ab1_route_semantics_evidence.md`
 - B8：`docs/b8_rejected_constraint_evidence.md`
 - B9：`docs/b9_conditional_dense_evidence.md`

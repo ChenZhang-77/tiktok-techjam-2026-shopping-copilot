@@ -26,18 +26,20 @@ Read, in order:
 4. this document
 5. [`DeepSeek_LLM接入实验方案.md`](../../DeepSeek_LLM接入实验方案.md) when the
    selected experiment is A13
-6. [`docs/question_policy_optimization_plan.md`](../question_policy_optimization_plan.md)
+6. [`docs/a13_ai_silver_protocol.md`](../a13_ai_silver_protocol.md) when the
+   selected experiment is A13-AS0/AS1/AS2
+7. [`docs/question_policy_optimization_plan.md`](../question_policy_optimization_plan.md)
    when the selected experiment is A14
-7. `starter/agent.py`
-8. `starter/core/state.py`
-9. `starter/core/context_engine.py`
-10. `starter/core/planner.py`
-11. `starter/core/query_builder.py`
-12. `starter/core/clarification.py`
-13. `starter/core/decision_evidence.py` when the selected experiment is A14
-14. `starter/core/response_guard.py`
-15. `starter/contracts.py`
-16. the focused tests named by the selected experiment
+8. `starter/agent.py`
+9. `starter/core/state.py`
+10. `starter/core/context_engine.py`
+11. `starter/core/planner.py`
+12. `starter/core/query_builder.py`
+13. `starter/core/clarification.py`
+14. `starter/core/decision_evidence.py` when the selected experiment is A14
+15. `starter/core/response_guard.py`
+16. `starter/contracts.py`
+17. the focused tests named by the selected experiment
 
 Then report:
 
@@ -217,13 +219,17 @@ Current 0bd3375 baseline
   -> A13-0 current baseline and R0 binding complete
       -> A13-1 deterministic State / Override slice rejected and reverted
           -> A13-S0 offline Shadow foundation complete
-              -> freeze and reconcile the two-member ambiguity fixture
-              -> A13-C1 guarded activation or No-Go
-                  -> A14-0 turn audit and deep-Module parity
-                      -> A14-1 complete attribute-evidence status
-                          -> A14-S1 deterministic selection Shadow
-                              -> A14-C1 selection-only Candidate
-                                  -> optional synthetic/LLM/stop slices
+              -> A13-AS0 comparator/AI-silver protocol freeze
+                  -> A13-AS1/AS2 blind AI-silver build and review
+                      -> A13-S1 Candidate provider Shadow
+                          -> A13-C1 guarded activation or No-Go
+
+A13 disposition
+  -> A14-0 turn audit and deep-Module parity
+      -> A14-1 complete attribute-evidence status
+          -> A14-S1 deterministic selection Shadow
+              -> A14-C1 selection-only Candidate
+                  -> optional synthetic/LLM/stop slices
 ```
 
 AB1 passed at `a676855`; its shared diagnostics preserve the A-owned Strategy
@@ -576,10 +582,13 @@ Do not run Full/Holdout.
 
 ## A13 - Guarded LLM Semantic Understanding
 
-**Status: A13-0 complete; A13-1 rejected and reverted; A13-S0 offline foundation passes parity; provider work is gated.** The authoritative spec,
+**Status: A13-0 complete; A13-1 rejected and reverted; A13-S0 offline foundation passes parity; the no-human AI-silver route is planned but not executed, and provider work is gated.** The authoritative spec,
 phase order, interface, trigger conditions, safety invariants, latency/cost
 targets, and keep/revert gates are in
 [`DeepSeek_LLM接入实验方案.md`](../../DeepSeek_LLM接入实验方案.md).
+The reference-building protocol, comparator seam, KPI hierarchy, contamination
+controls, and separate judge/Candidate authorizations are in
+[`docs/a13_ai_silver_protocol.md`](../a13_ai_silver_protocol.md).
 
 A13 is not permission to replace the deterministic parser. The required order
 is:
@@ -588,9 +597,10 @@ is:
 A13-0 complete at clean comparator b86a9e7
   -> A13-1 deterministic State / Override slice rejected and reverted
       -> A13-S0 offline Shadow foundation complete
-          -> freeze and reconcile the two-member ambiguity fixture
-          -> review gate
-              -> A13-C1 guarded activation or No-Go
+          -> A13-AS0 freeze applied-state comparator and AI-silver protocol
+              -> A13-AS1/AS2 blind AI-silver build, audit, and freeze
+                  -> A13-S1 Candidate provider Shadow
+                      -> A13-C1 guarded activation or No-Go
 ```
 
 The LLM proposes a validated `UnderstandingDelta`; it never mutates
@@ -615,25 +625,24 @@ authorize provider work.
 The first returned-file intake is audited in
 [`docs/a13_annotation_intake_review.md`](../a13_annotation_intake_review.md):
 the `codex` draft validates but lacks confirmed human-member provenance, while
-the Zhangchen submission has 26 invalid rows. Do not run the official compare,
-freeze gold, call a provider, or open A14-S1 until two human-owned files both
-validate and their disagreements are jointly adjudicated.
-The 34 individually valid Zhangchen rows may be used only through the
-coordinator-local provisional comparison described there: begin reviewing its
-18 disagreements, but do not treat its unbalanced trigger coverage as final
-evaluation evidence.
-The adjacent AI adjudication suggestions may accelerate that review, but every
-disagreement remains human-pending and the suggested labels must not be copied
-into the committed fixture as gold without explicit human decisions.
+the Zhangchen submission has 26 invalid rows. These files are now L1 historical
+diagnostics under the selected no-human route; neither may seed, tune, or judge
+the AI-silver reference.
+The 34 individually valid Zhangchen rows remain available only through the
+coordinator-local provisional comparison described there. They may explain
+historical failure classes but may not seed, tune, or score AI-silver work.
+The adjacent AI adjudication suggestions remain exposed, non-independent L1
+diagnostics. They must not be copied into the committed fixture or shown to
+blind labelers/adjudicators.
 The clean offline valid-34 deterministic dry-run is diagnostic only: 13/34
 complete-label exact and 16/34 invalid predictions, dominated by nine
 positive/rejected conflicts in the raw request projection. Applied-state replay
 has zero surviving active/rejected same-value conflicts, so do not treat those
-nine as final-state bugs. The next bounded investigation is to predeclare the
-comparator seam (raw Shadow request versus applied state delta), independent of
-which scores better on the AI-pending subset. This does not satisfy the
-human-fixture or A13-C1 gate. See the same intake review for the report hash,
-field breakdown, and circularity warning.
+nine as final-state bugs. A13-AS0 now predeclares `applied_state_delta_v1` as
+the primary comparator and raw Shadow request exact as diagnostic only,
+independent of which scores better on the AI-pending subset. This does not
+satisfy the AI-silver or A13-C1 gate. See the same intake review for the report
+hash, field breakdown, and circularity warning.
 Do not combine A13 semantic understanding with an ask/stop policy change.
 
 ## A14 - Question Policy Deepening

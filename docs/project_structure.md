@@ -46,12 +46,14 @@ Use the following order instead of reading `docs/` alphabetically:
 3. `optimization_roadmap.md` - dependency order and experiment gates.
 4. `question_policy_optimization_plan.md` - authoritative A14 design and
    experiment plan when Question Policy is selected.
-5. `workstreams/` - independently readable A-side and B-side instructions.
-6. `*_evidence.md` - one human decision record per recent experiment.
-7. `*_evidence.json` and `*_reports/` - machine-readable summaries and raw
+5. `a13_ai_silver_protocol.md` - active no-human A13 reference and KPI protocol
+   when semantic understanding is selected.
+6. `workstreams/` - independently readable A-side and B-side instructions.
+7. `*_evidence.md` - one human decision record per recent experiment.
+8. `*_evidence.json` and `*_reports/` - machine-readable summaries and raw
    hash-bound evidence.
-8. `adr/` - durable architectural/evaluation decisions.
-9. `archive/` - completed planning artifacts that are useful for history but
+9. `adr/` - durable architectural/evaluation decisions.
+10. `archive/` - completed planning artifacts that are useful for history but
    are not active work.
 
 The root `docs/README.md` is the navigation index for these layers.

@@ -2,7 +2,14 @@
 
 ## Technical summary
 
-The A13 human-fixture gate remains closed. The returned `annotations.b.jsonl`
+The earlier A13 human-fixture gate remains closed. It is no longer the active
+route: the coordinator selected the no-human
+[`AI-silver protocol`](a13_ai_silver_protocol.md). This document remains the
+authoritative historical intake audit, and every returned/provisional artifact
+below is L1 diagnostic evidence excluded from AI-silver label generation,
+adjudication, prompt tuning, and scoring.
+
+The returned `annotations.b.jsonl`
 passes the standalone validator with all 60 rows, but its sole `annotator_id`
 is `codex`, so it is not evidence of a second team member's independent human
 annotation. The returned `annotations.zhangchen (1).jsonl` covers all 60 rows
@@ -201,43 +208,38 @@ diagnostic pass then invoked the same label validator for every Zhangchen row
 to enumerate all failing item IDs. Raw exact agreement was calculated only as
 a preflight diagnostic and is explicitly not treated as official comparison.
 
-## Required remediation and next gate
+## Active disposition and next gate
 
-1. The team may immediately review the 18 disagreements in the provisional
-   valid-34 artifact, using the AI suggestions only as proposed resolutions;
-   any decision remains provisional until human provenance is resolved and the
-   complete fixture validates.
-2. Zhangchen should reopen the original annotation UI/file and correct the 26
-   listed rows using only `current_message` evidence. To preserve independence,
-   provide the error class and item ID list, not the `codex` draft answers.
-3. Run the standalone `validate` command again and require
-   `annotation_count: 60` with exit code 0.
-4. Resolve the provenance of `annotations.b.jsonl`. If it is an AI-authored
-   draft, a second team member must independently annotate all 60 items. If a
-   human actually owns the judgments despite the ID, that person must review
-   and explicitly attest the whole file; simply renaming the ID is insufficient.
-5. Only after two distinct human-owned files pass validation, run the official
-   `compare` command and jointly adjudicate its disagreements.
-6. Freeze `experiments/fixtures/a13_ambiguity_v1.jsonl`, its schema/instructions,
-   annotator/adjudicator provenance, and SHA256 only after that sign-off.
-7. After the full human-owned fixture is frozen, score the deterministic
-   comparator using this predeclared projection. The valid-34 dry-run above is
-   diagnostic only. The later outcome is A13-C1 for one qualified trigger or
-   an explicit No-Go.
+1. Preserve both returned files and every provisional artifact unchanged for
+   provenance. Correcting the 26 rows or resolving human ownership is optional
+   historical cleanup, not an A13 blocker under the selected route.
+2. Keep the valid-34 results diagnostic only. They may motivate failure classes
+   but may not seed, tune, adjudicate, or score AI-silver.
+3. Complete A13-AS0 without provider access: freeze `applied_state_delta_v1`,
+   fixture/validator/comparator hashes, blind labeler/adjudicator configs, and
+   the Candidate prompt/config before any new reference output is viewed.
+4. Obtain explicit authorization for judge-only provider calls, then execute
+   A13-AS1/AS2 under `docs/a13_ai_silver_protocol.md`.
+5. Open a separately authorized Candidate Shadow only if reference coverage,
+   repeat-build stability, semantic advantage, validation, fallback, cost, and
+   review gates pass. Fixed Development-160 folds still own keep/revert.
 
 Until these steps are complete:
 
 ```text
 fixture_frozen = false
-real_api_authorized = false
+ai_silver_frozen = false
+judge_provider_authorized = false
+candidate_provider_authorized = false
 A14-S1_authorized = false
 ```
 
 ## Limitations and open question
 
 This review establishes schema/evidence validity and provenance gaps; it does
-not adjudicate which valid-but-different label is semantically correct. The
-remaining decision-relevant question is whether `annotations.b.jsonl` represents
-a human's independently reviewed judgments or the earlier Codex-generated
-draft. Human ownership must be resolved before the file can count toward the
-two-member gate.
+not adjudicate which valid-but-different label is semantically correct. Human
+ownership of `annotations.b.jsonl` remains unresolved, but it is no longer a
+decision blocker because the file cannot count toward AI-silver regardless of
+who owns it. The remaining decision-relevant risks are automated-reference
+independence, stability, circular evaluation, provider cost, and downstream
+generalization.
