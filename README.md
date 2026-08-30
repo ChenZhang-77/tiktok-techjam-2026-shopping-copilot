@@ -207,74 +207,18 @@ Run the actual default B9 Development-160 audit after preparing local dense asse
 
 Do not use `--split full` or `--split holdout` for optimization.
 
-### Optional DeepSeek API setup
+### Optional LLM Plan Two
 
-Historical DS1/DS2 setup below is not the verified F2 recipe. API work is
-optional Plan Two only; see [current disposition](docs/current_status.md).
+The default Agent does not read a key or call a hosted model. Plan Two uses only
+the exact verified B10b-F2 Top-10 recipe on the llm branch, with explicit
+activation, budget/token accounting and deterministic pre-rerank fallback.
+See the llm branch's [F2 protocol/evidence](https://github.com/ChenZhang-77/tiktok-techjam-2026-shopping-copilot/blob/7f0dc6c07b0cc2375a82c50ff47e5ee98652f0b6/docs/b10b_paired_verification.md). Do not substitute this checkout's old DS1/DS2 scripts or provisional results for F2.
 
+No additional paid calls are part of the release task. Keep keys in ignored
+local configuration, never in source, reports or logs. The exposed 40-session
+public subset must not be used for tuning or described as a fresh generalization check.
 
-The default deterministic experiment does not require an API key. For the
-optional LLM shadow/reranking experiments, create a local credentials file:
-
-```bash
-cp .env.example .env.local
-```
-
-Open `.env.local` and set `DEEPSEEK_API_KEY` to your own key. The named
-experiment launcher loads this file automatically. `.env.local` is ignored by
-Git and must never be committed.
-
-Friends should create their own local file and use their own key. Never copy
-someone else's `.env.local`:
-
-```bash
-cp .env.example .env.local
-# edit .env.local and set DEEPSEEK_API_KEY=...
-```
-
-Run a small DeepSeek Shadow pass. It records the model ranking but never changes
-the recommendations returned by the Agent:
-
-```bash
-.venv/bin/python -m experiments.deepseek_shadow --limit 5
-```
-
-The report is written to `/private/tmp/` by default. Use `--limit 160` only
-after the small run passes its fallback, latency, token, and cost checks.
-
-Run DS1 as an isolated performance experiment. It reranks only Browsing
-Top-10; the normal Agent path remains unchanged:
-
-```bash
-.venv/bin/python -m experiments.deepseek_ds1 --limit 5
-```
-
-For the full Development-160 DS1 experiment:
-
-```bash
-.venv/bin/python -m experiments.deepseek_ds1 \
-  --split development --limit 160 \
-  --output /private/tmp/tiktok-techjam-deepseek-ds1-development.json
-```
-
-The 40-session holdout is for one final generalization check only and must not
-be used for tuning:
-
-```bash
-.venv/bin/python -m experiments.deepseek_ds1 \
-  --split holdout --limit 40 \
-  --output /private/tmp/tiktok-techjam-deepseek-ds1-holdout.json
-```
-
-DS1 only reranks the existing Browsing Top-10. It improved the current
-Development-160 median TechnicalScore from `0.765703` to `0.780991`, with
-HitRate@10, MTTC, and Efficiency unchanged. Three full runs and all four
-Development folds were checked. The 40-session holdout comparison also showed
-MRR `0.428562 -> 0.491448` and TechnicalScore `0.743069 -> 0.761934`.
-
-DS2 Top-20 was tested but rejected: it showed metric gains, yet had 9 fallbacks
-out of 371 calls (`2.43%`), above the predeclared `2%` reliability gate. Do not
-enable DS2 in the default runtime.
+Semantic understanding is inactive. All incomplete experiments and their reopening conditions are listed in [final plan](docs/final_release_plan.md).
 
 ## Named Experiments and Visualizer
 
@@ -349,7 +293,7 @@ reopen work. All freeze/recovery decisions are in [final release plan](docs/fina
 
 ## Reliability and Cost
 
-Retained B9 Development-160 evidence:
+Historical B9 checkpoint cost evidence (not a new Chen/llm latency benchmark):
 
 | Measure | Value |
 | --- | ---: |
@@ -378,8 +322,7 @@ hard filters, duplicate/invalid ASINs, and Candidate Pool shortages.
   alternatives remain unproven without independent hash-bound evidence.
 - Profile ranking is disabled at weight 0.0.
 - B9 closes the literal Browsing-dense route only for its narrow gate; global
-  dense remains rejected. DeepSeek DS1 is validated only as an opt-in isolated
-  experiment and is not part of the default runtime yet.
+  dense remains rejected. Only the llm branch's B10b-F2 has the newer paired verification; neither it nor older DS1/DS2 is active in the default.
 - B9 adds about 1.5 seconds of initialization and about 546 MB of observed peak
   RSS for a small rank/turn gain with no additional hits.
 - Long-term profile value has not been demonstrated; profile ranking remains

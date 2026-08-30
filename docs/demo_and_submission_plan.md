@@ -29,11 +29,11 @@ Do not claim that every turn uses dense retrieval, RRF, or semantic reranking.
 B9 runs pinned local dense plus weighted RRF only behind its broad-Browsing
 gate; global variants were rejected.
 
-The retained runtime now has literal Browsing-dense execution only for B9's
-narrow gate. Do not expand that into a global hybrid claim or an LLM semantic-
-ranking claim. CrossEncoder reranking is measured and globally rejected; an
-actual LLM reranking is verified only as optional Plan Two on the llm branch, not this default. Profile ranking is
-likewise disabled at weight 0.0.
+The default executes dense only behind B9's narrow gate; this is not a global
+hybrid or default LLM-ranking claim. CrossEncoder variants remain rejected.
+B10b-F2 is verified only as optional Plan Two on llm. A13-F1 has real Shadow
+evidence but failed the validity gate before Candidate; it is inactive, not an
+unimplemented idea and not a proven score improvement. Profile weight stays zero.
 
 ## Evidence available now
 
@@ -54,10 +54,10 @@ limit. Choose exact session IDs only after verifying that each visibly
 demonstrates its intended behavior.
 
 1. **Straight buying intent** — show a narrow request, current state, the actual
-   clarification behavior, and relevant Top 10 results. Claim “no wasted
-   question” only after A9 is retained and the chosen case verifies it.
+   clarification behavior, and relevant Top 10 results. Do not claim “no wasted
+   question”: A9 was rejected and no broad stop rule is retained.
 2. **Broad browsing intent** — show how the current clarification changes the
-   candidate set. Describe it as “high-value” only after AB0/A9 evidence exists.
+   candidate set. Describe only the observed question effect, not an unverified optimal policy.
 3. **Intent override** — show an earlier preference being replaced without
    contaminating the new query.
 4. **No-preference / boundary case** — show the system dropping the correct
