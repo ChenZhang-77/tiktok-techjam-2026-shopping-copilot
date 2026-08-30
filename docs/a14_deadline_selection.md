@@ -43,6 +43,18 @@ before default activation. No Full/Holdout, evaluator changes or target rules.
 
 ## Result
 
-Pending. Expected files: isolated `experiments/a14_deadline_selection.py`,
+Review correction before interpreting the pilot: the first run at `eb5214f`
+used the earlier A14 audit's explicit HybridRetriever (structured-only), not
+the current default B9 ConditionalDenseRetriever. It also exposed a missing
+aggregate-fold score in the reporting helper. Both paired evaluations finished
+and their raw session results were saved, but final fold summary failed.
+Those results are exploratory only and cannot authorize default retention.
+The corrected run uses default B9 configuration with the existing pinned local
+model/vector cache, plus a plain-policy baseline to prove visible Shadow
+parity. No selector parameters change. Record real route executions/fallbacks
+and next-answer active-attribute/no-preference proxies; these are not calibrated
+answerability or full counterfactual regret.
+
+Corrected result pending. Expected files: isolated `experiments/a14_deadline_selection.py`,
 synthetic seam tests, this evidence record and current navigation. No production
 source changes are planned for the pilot.

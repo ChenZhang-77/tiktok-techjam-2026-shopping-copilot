@@ -52,8 +52,15 @@ class SelectionPolicy:
                 if alternatives:
                     proposed = max(alternatives, key=lambda a: (evidence[a]["rank_weighted_split"], evidence[a]["candidate_coverage"]))
         self.last_latency_ms = round((time.perf_counter() - started) * 1000, 6)
-        self.records.append({"turn": turn, "baseline": baseline, "proposed": proposed,
-                             "changed": proposed != baseline, "latency_ms": self.last_latency_ms})
+        self.records.append({"session_id": state.session_id, "turn": turn,
+            "baseline": baseline, "proposed": proposed,
+            "selected": proposed if self.candidate else baseline,
+            "eligible": diagnostics["eligible_attributes"],
+            "active_attributes": sorted(active),
+            "no_preference_attributes": sorted(state.no_preference_attributes),
+            "evidence": {a: {k: r[k] for k in ("status", "candidate_coverage", "rank_weighted_split")}
+                         for a, r in diagnostics["attribute_evidence"].items()},
+            "changed": proposed != baseline, "latency_ms": self.last_latency_ms})
         if not self.candidate or proposed == baseline:
             return outcome
         decision = replace(outcome.decision, attribute=proposed,
@@ -66,10 +73,13 @@ def _sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def _scored(sessions):
+def score_sessions(sessions):
     from evaluator.local_evaluator import metric_summary
     from experiments.evaluation_reporting import add_scenario_scores
     result = metric_summary(sessions)
+    efficiency = max(0.0, min(1.0, (11.0 - result["mttc"]) / 10.0)) if result["mttc"] is not None else 0.0
+    result["efficiency"] = round(efficiency, 6)
+    result["recommended_technical_score"] = round(0.5 * result["hit_rate_at_10"] + 0.3 * result["mrr"] + 0.2 * efficiency, 6)
     result["scenario_metrics"] = {s: metric_summary([r for r in sessions if r["scenario_type"] == s])
                                   for s in sorted({r["scenario_type"] for r in sessions})}
     return add_scenario_scores(result)
@@ -81,10 +91,12 @@ def main():
     from experiments.development_folds import validate_development_fold_manifest
     from experiments.evaluation_reporting import AgentObserver, code_provenance
     from starter.agent import Agent
-    from starter.retrieval import HybridRetriever, StructuredConfig
+    from starter.retrieval import ConditionalDenseRetriever, DenseConfig
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--dense-cache", type=Path, default=DenseConfig().cache_dir)
+    parser.add_argument("--model-cache", type=Path, default=DenseConfig().model_cache_dir)
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     if any(args.output.iterdir()):
@@ -103,27 +115,58 @@ def main():
                   "fold_method": "fixed partition of independent session results; no fitted models"}
     ids, categories, products = catalog_index(paths["catalog"])
     reports = {}
-    for mode in ("shadow", "candidate"):
+    class TracedAgent(Agent):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.trace = []
+
+        def respond(self, session_id, user_message, turn, top_k):
+            response = super().respond(session_id, user_message, turn, top_k)
+            visible = {k: response.get(k) for k in ("message", "ask_attribute", "recommendations")}
+            self.trace.append(hashlib.sha256(json.dumps(visible, sort_keys=True).encode()).hexdigest())
+            return response
+
+    for mode in ("baseline", "shadow", "candidate"):
         started = time.perf_counter()
-        retriever = HybridRetriever(paths["catalog"], structured_config=StructuredConfig(enabled=True))
+        retriever = ConditionalDenseRetriever.from_catalog(paths["catalog"],
+            dense_config=DenseConfig(cache_dir=args.dense_cache, model_cache_dir=args.model_cache))
         policy = SelectionPolicy(candidate=mode == "candidate")
-        agent = Agent(paths["catalog"], retriever=retriever)
-        agent.question_policy = policy
+        agent = TracedAgent(paths["catalog"], retriever=retriever)
+        if mode != "baseline":
+            agent.question_policy = policy
         observer = AgentObserver(agent, catalog_ids=ids)
         try:
             report = evaluate(observer, development, ids, categories, products)
         finally:
             retriever.close()
-        report.update(_scored(report["sessions"]))
+        report.update(score_sessions(report["sessions"]))
+        next_answers = {"observed_replies": 0, "new_active_attribute": 0, "no_preference": 0}
+        violations = 0
+        previous = {}
+        for record in policy.records:
+            attribute = record["selected"]
+            if attribute is not None and (attribute not in record["eligible"] or record["turn"] >= 10):
+                violations += 1
+            prior = previous.get(record["session_id"])
+            if prior and prior["selected"] is not None:
+                next_answers["observed_replies"] += 1
+                next_answers["new_active_attribute"] += int(prior["selected"] in set(record["active_attributes"]) - set(prior["active_attributes"]))
+                next_answers["no_preference"] += int(prior["selected"] in set(record["no_preference_attributes"]) - set(prior["no_preference_attributes"]))
+            previous[record["session_id"]] = record
         report.update(provenance=provenance, observed_run_counts=observer.counts(),
                       timing=observer.timing(), elapsed_seconds=time.perf_counter() - started,
+                      retrieval_diagnostics=observer.retrieval_diagnostics(),
+                      retrieval_configuration=retriever.configuration_snapshot(),
+                      dense_configuration=retriever.dense_configuration(),
+                      visible_trace_sha256=hashlib.sha256(json.dumps(agent.trace).encode()).hexdigest(),
+                      question_legality_violations=violations, answer_proxy=next_answers,
                       policy_records=policy.records,
                       changed_questions=sum(r["changed"] for r in policy.records),
-                      fixed_folds={name: _scored([r for r in report["sessions"] if r["sample_id"] in set(members)])
+                      fixed_folds={name: score_sessions([r for r in report["sessions"] if r["sample_id"] in set(members)])
                                    for name, members in folds["folds"].items()})
         reports[mode] = report
         (args.output / (mode + ".json")).write_text(json.dumps(report, indent=2) + "\n")
-        print(json.dumps({"mode": mode, **_scored(report["sessions"]), "changed_questions": report["changed_questions"],
+        print(json.dumps({"mode": mode, **score_sessions(report["sessions"]), "changed_questions": report["changed_questions"],
                           "observed": observer.counts()}), flush=True)
     before, after = reports["shadow"], reports["candidate"]
     baseline_by_id = {r["sample_id"]: r for r in before["sessions"]}
@@ -131,7 +174,8 @@ def main():
         "fold_deltas": {f: round(after["fixed_folds"][f]["recommended_technical_score"] - before["fixed_folds"][f]["recommended_technical_score"], 6) for f in folds["folds"]},
         "gained": [r["sample_id"] for r in after["sessions"] if r["hit"] and not baseline_by_id[r["sample_id"]]["hit"]],
         "lost": [r["sample_id"] for r in after["sessions"] if not r["hit"] and baseline_by_id[r["sample_id"]]["hit"]],
-        "runtime_default_changed": False}
+        "runtime_default_changed": False,
+        "shadow_visible_parity": reports["baseline"]["visible_trace_sha256"] == before["visible_trace_sha256"]}
     (args.output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     print(json.dumps(summary), flush=True)
 

@@ -1,11 +1,20 @@
 import unittest
 
-from experiments.a14_deadline_selection import SelectionPolicy
+from experiments.a14_deadline_selection import SelectionPolicy, score_sessions
 from starter.contracts import Candidate, RetrievalDiagnostics, RetrievalResult
 from starter.core.state import SessionState
 
 
 class DeadlineSelectionTest(unittest.TestCase):
+    def test_fold_score_uses_official_formula_including_misses(self):
+        scored = score_sessions([
+            {"hit": True, "reciprocal_rank": 1.0, "first_hit_turn": 1, "scenario_type": "buying"},
+            {"hit": False, "reciprocal_rank": 0.0, "first_hit_turn": None, "scenario_type": "buying"},
+        ])
+        self.assertEqual(scored["recommended_technical_score"], 0.5)
+        self.assertEqual(scored["mttc"], 6.0)
+        self.assertEqual(scored["efficiency"], 0.5)
+
     def test_shadow_preserves_legacy_and_candidate_uses_covered_split(self):
         state = SessionState(session_id="synthetic", user_profile={})
         state.intent = "buying"
