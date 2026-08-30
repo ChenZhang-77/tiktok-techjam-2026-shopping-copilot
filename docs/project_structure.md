@@ -44,12 +44,14 @@ Use the following order instead of reading `docs/` alphabetically:
 1. `current_status.md` - authoritative current checkpoint.
 2. `human_optimization_recap_zh.md` - plain-language history and metric guide.
 3. `optimization_roadmap.md` - dependency order and experiment gates.
-4. `workstreams/` - independently readable A-side and B-side instructions.
-5. `*_evidence.md` - one human decision record per recent experiment.
-6. `*_evidence.json` and `*_reports/` - machine-readable summaries and raw
+4. `question_policy_optimization_plan.md` - authoritative A14 design and
+   experiment plan when Question Policy is selected.
+5. `workstreams/` - independently readable A-side and B-side instructions.
+6. `*_evidence.md` - one human decision record per recent experiment.
+7. `*_evidence.json` and `*_reports/` - machine-readable summaries and raw
    hash-bound evidence.
-7. `adr/` - durable architectural/evaluation decisions.
-8. `archive/` - completed planning artifacts that are useful for history but
+8. `adr/` - durable architectural/evaluation decisions.
+9. `archive/` - completed planning artifacts that are useful for history but
    are not active work.
 
 The root `docs/README.md` is the navigation index for these layers.
@@ -116,7 +118,7 @@ before its recorded hash or contents change.
 
 | Change | Location |
 | --- | --- |
-| Dialogue state, extraction, planning, clarification | `starter/core/` and A-side tests |
+| Dialogue state, extraction, planning, clarification | `starter/core/` and A-side tests; A14 follows `docs/question_policy_optimization_plan.md` |
 | Retrieval, fusion, ranking, cache behavior | `starter/retrieval/`, `starter/ranking/`, and B-side tests |
 | Shared public types | `starter/contracts.py` plus coordinated contract tests |
 | Offline analysis or evaluation reporting | `experiments/` |

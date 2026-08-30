@@ -85,9 +85,13 @@ Current Chen runtime source @ 0bd3375
               -> freeze two-member ambiguity fixture before any real API
               -> A13 review gate
                   -> A13-C1 guarded activation or No-Go
-                      -> A14 Question Policy as a separate experiment
-                          -> R4 integrated freeze
-                              -> R5 delivery and rehearsal
+                      -> A14-0 turn audit and deep-Module parity
+                          -> A14-1 complete attribute-evidence coverage
+                              -> A14-S1 deterministic selection Shadow
+                                  -> A14-C1 selection-only Candidate
+                                      -> optional synthetic/LLM/stop slices
+                                          -> R4 integrated freeze
+                                              -> R5 delivery and rehearsal
 ```
 
 B9's A8 and AB1 blockers are complete, and B9 is retained. B10a has been
@@ -95,7 +99,11 @@ measured and rejected. B10b-DS1/DS2 code and provisional remote measurements
 exist, but neither is retained and complete reports are not yet hash-bound.
 The selected next route is A13, whose authoritative plan is
 [`DeepSeek_LLM接入实验方案.md`](../DeepSeek_LLM接入实验方案.md). B11 and B12
-remain prerequisite-gated.
+remain prerequisite-gated. A14 design, evidence planning, and zero-behavior
+audit preparation may proceed before the A13 review gate closes, but A14
+Candidate behavior must not be activated in the same metric experiment as A13
+or B10b. The authoritative A14 plan is
+[`docs/question_policy_optimization_plan.md`](question_policy_optimization_plan.md).
 
 ## R0 - Development Failure Taxonomy
 
@@ -222,6 +230,13 @@ The Agent should continue to return valid recommendations when asking. Do not
 start this rule until AB0 proves every retained input exists at the decision
 point and has deterministic missing-data behavior.
 
+The evaluator scores current recommendations before producing the next reply;
+after a miss, `ask_attribute=None` yields no new product preference. A14
+therefore does not begin by reviving this broad stop hypothesis. It first
+audits turns and improves attribute selection while preserving the current ask
+opportunity. A broader stop rule is a later, separately measured slice. See
+`docs/question_policy_optimization_plan.md`.
+
 ### A10a - Candidate question value
 
 **Status: rejected and reverted.** The candidate at `304a3d6` preserved
@@ -238,6 +253,12 @@ Problem: `feature` is normally selected before candidate partition evidence.
 
 Hypothesis: ranking questions by expected candidate reduction will improve MTTC
 without losing useful preference evidence.
+
+The A14 redesign treats missing, partial, uncalibrated, and degraded attribute
+evidence as different states. It does not compare an uncovered attribute with
+a positive numeric partition score as though missing meant zero. The first
+behavior Candidate uses a guarded selection cascade and an explicit legacy
+fallback; it does not combine selection, stop, LLM, or profile changes.
 
 ### A10b - Internal QueryPlan
 
@@ -439,6 +460,60 @@ Run only after the diagnostics loop exists. Clear Buying can be shallower and
 more precise; ambiguous Browsing may go deeper; over-general pools should stop
 expanding and return control to A for clarification.
 
+## R3A - A14 Question Policy
+
+The authoritative design, Interface, evidence model, optional LLM role,
+diagnostics, and keep/revert gates are in
+[`docs/question_policy_optimization_plan.md`](question_policy_optimization_plan.md).
+
+The earlier A9 and A10a regressions rule out two shortcuts:
+
+- do not make a broad concentration/stability stop gate the first hypothesis;
+- do not compare partial attribute partitions as though missing evidence were
+  zero Question Value.
+
+A14 deepens clarification into one A-owned `Question Policy` Module. `Agent`
+calls one Interface after retrieval and before `response_guard`; the Module
+hides `DecisionEvidence` construction, eligibility, evidence status, selection,
+fallback, rendering, diagnostics, and optional advisor handling. It does not
+change the shared A/B retrieval seam.
+
+Required order:
+
+```text
+A14-0 turn audit and deep-Module parity       behavior unchanged
+  -> A14-1 complete attribute-evidence status behavior unchanged
+      -> A14-S1 deterministic selection Shadow behavior unchanged
+          -> A14-C1 selection-only Candidate  first metric change
+              -> A14-S2/C2 catalog-only safe-policy option
+              -> A14-S3/C3 guarded LLM advisor or No-Go
+              -> A14-C4 ask/stop Candidate last
+```
+
+The first Candidate preserves the baseline ask opportunity and changes only
+which legal attribute is asked. It uses a guarded lexicographic cascade with
+legacy fallback for unsupported or incomparable evidence. Rank-weighted
+Candidate separation and likely answer actionability matter more than raw
+full-pool vocabulary diversity.
+
+Development-only offline analysis may enumerate legal questions and score
+counterfactual branches with target data, but target information remains
+strictly outside runtime and training features. If a learned selector is later
+justified, fit only a compact frozen artifact from catalog-derived synthetic
+trajectories and use Development solely for fixed-fold Candidate selection.
+
+An optional LLM is an internal advisor, not the policy owner. It may cluster
+grounded feature phrases or rerank an eligible deterministic shortlist in one
+predeclared ambiguity bucket. It cannot stop, create attributes, mutate state,
+see Candidate IDs or evaluator data, or bypass deterministic fallback. LLM
+wording is primarily a real-UX/demo improvement because the local evaluator
+responds to `ask_attribute`, not prose quality.
+
+A14 planning and evidence-only preparation may occur while A13 annotation and
+review are pending. Do not activate A14 Candidate behavior until the active A13
+experiment has reached its review decision, and never attribute simultaneous
+A13/B10b/A14 model changes to one metric result.
+
 ## R4 - Integrated Selection and Freeze
 
 For each retained A or B slice:
@@ -481,9 +556,11 @@ Required outcomes:
 A13-0 is complete, A13-1 is rejected/reverted, and the A13-S0 offline foundation
 passes parity against the restored `0.925` comparator. Freeze and reconcile the
 two-member ambiguity fixture before any real API run, apply the reviewed gate,
-and either run A13-C1 or record No-Go. Only then open A14 Question Policy as a
-separate experiment. Stop behavior work early enough to complete R4 and
-regenerate the P0 package in R5.
+and either run A13-C1 or record No-Go. A14-0/A14-1 design, audit, and parity work
+may proceed without changing behavior; after the A13 review decision, open
+A14-S1/C1 as a separate experiment. Optimize attribute selection before any
+broad stop rule or online LLM Candidate. Stop behavior work early enough to
+complete R4 and regenerate the P0 package in R5.
 
 ### If submission is imminent
 

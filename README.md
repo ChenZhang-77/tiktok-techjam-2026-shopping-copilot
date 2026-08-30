@@ -196,6 +196,8 @@ A13_annotation_pack_v1.zip  teammate-ready offline A13 annotation bundle
 data/                       public sessions and ignored frozen catalog download
 docs/README.md              documentation navigation index
 docs/project_structure.md   detailed ownership and file-placement rules
+docs/question_policy_optimization_plan.md
+                            authoritative A14 Question Policy plan
 docs/workstreams/           standalone A-side and B-side routes
 docs/*_reports/             raw hash-bound experiment reports
 docs/archive/               completed planning artifacts, not active backlog
@@ -452,6 +454,15 @@ was recorded and its fold gain is concentrated. See
 leakage boundary; [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md)
 owns the complete order.
 
+The reviewed next Question Policy direction is A14. It does not begin by
+reusing the rejected A9 stop threshold or by giving an LLM control of the
+conversation. A14 first adds a hash-bound turn audit and a deep one-entry-point
+Question Policy Module, then proves complete attribute-evidence status, and
+only then tests a deterministic selection-only Candidate. Optional catalog-
+only policy learning and a guarded LLM advisor remain later, separate slices.
+See
+[`docs/question_policy_optimization_plan.md`](docs/question_policy_optimization_plan.md).
+
 ## Reliability and Cost
 
 Retained B9 Development-160 evidence:
@@ -478,7 +489,8 @@ hard filters, duplicate/invalid ASINs, and Candidate Pool shortages.
   not a calibrated probability. B12's A-owned bounded-depth experiment is
   disabled by default; two primary State / Override misses remain.
 - Clarification remains priority-biased and does not yet have a complete
-  should-ask uncertainty gate.
+  should-ask uncertainty gate. A14 has a reviewed plan, but no A14 behavior or
+  evidence artifact is retained yet.
 - The hash-bound A13-0 audit of the `0.925` checkpoint assigns the 12 misses to
   Question Policy (10) and State / Override (2), with no primary Extraction or
   Retrieval / Ranking miss. It is Development evidence, not sealed validation.

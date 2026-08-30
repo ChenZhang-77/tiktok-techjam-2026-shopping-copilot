@@ -10,9 +10,11 @@ from old reports.
 3. `human_optimization_recap_zh.md` — plain-language Chinese timeline from
    A1/B1, metric explanations, decisions, and current interpretation
 4. `optimization_roadmap.md` — dependency-ordered whole-project route
-5. `project_structure.md` — directory responsibilities and file-placement rules
-6. `ablation_summary.md` — what was retained, rejected, and why
-7. `../DeepSeek_LLM接入实验方案.md` — authoritative A13 semantic-understanding
+5. `question_policy_optimization_plan.md` — authoritative A14 Question Policy
+   Module, evidence, alternatives, LLM role, and experiment gates
+6. `project_structure.md` — directory responsibilities and file-placement rules
+7. `ablation_summary.md` — what was retained, rejected, and why
+8. `../DeepSeek_LLM接入实验方案.md` — authoritative A13 semantic-understanding
    plan, review gates, branch boundary, and relationship to B-side DS1
 
 `../AGENTS.md` is the sole authority for the R0 failure taxonomy and the
@@ -24,6 +26,9 @@ definitions instead of creating local variants.
 
 - `workstreams/DEVELOPER_A_CONTROL_PLANE.md` — A-side dialogue/state route
 - `workstreams/DEVELOPER_B_RETRIEVAL_RANKING.md` — B-side retrieval/ranking route
+- `question_policy_optimization_plan.md` — selected A14 deep-Module design;
+  planning/parity work may precede the A13 decision, but Candidate behavior
+  remains a separate experiment
 - `../DeepSeek_LLM接入实验方案.md` — selected A13 feature plan; A13-1 is
   rejected/reverted and A13-S0 has offline-only Shadow plumbing, not provider
   behavior

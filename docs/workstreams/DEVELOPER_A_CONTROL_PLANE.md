@@ -26,15 +26,18 @@ Read, in order:
 4. this document
 5. [`DeepSeek_LLM接入实验方案.md`](../../DeepSeek_LLM接入实验方案.md) when the
    selected experiment is A13
-6. `starter/agent.py`
-7. `starter/core/state.py`
-8. `starter/core/context_engine.py`
-9. `starter/core/planner.py`
-10. `starter/core/query_builder.py`
-11. `starter/core/clarification.py`
-12. `starter/core/response_guard.py`
-13. `starter/contracts.py`
-14. the focused tests named by the selected experiment
+6. [`docs/question_policy_optimization_plan.md`](../question_policy_optimization_plan.md)
+   when the selected experiment is A14
+7. `starter/agent.py`
+8. `starter/core/state.py`
+9. `starter/core/context_engine.py`
+10. `starter/core/planner.py`
+11. `starter/core/query_builder.py`
+12. `starter/core/clarification.py`
+13. `starter/core/decision_evidence.py` when the selected experiment is A14
+14. `starter/core/response_guard.py`
+15. `starter/contracts.py`
+16. the focused tests named by the selected experiment
 
 Then report:
 
@@ -86,9 +89,11 @@ complete. Chen's later A-side corrections define the selected A13 comparator;
 read `../current_status.md` for its current metrics and audit caveats.
 
 The planning-only refresh assigns the remaining misses to Question Policy and
-State / Override, not Extraction or Intent / Routing. The selected next feature
-is A13: first bind the current baseline, then diagnose the deterministic
-override slice, then run DeepSeek semantic understanding in Shadow mode.
+State / Override, not Extraction or Intent / Routing. A13 remains gated before
+provider activation. A14 planning and evidence-only preparation are now
+reviewed and may proceed without changing behavior; A14 Candidate behavior must
+remain separate from an active A13/B10b metric experiment. The authoritative
+A14 total plan is `docs/question_policy_optimization_plan.md`.
 The retained A8 confidence is an A-owned ordinal stability signal with
 `low`/`medium`/`high` diagnostic bands, not a calibrated probability or B-side
 gate.
@@ -164,11 +169,20 @@ constraint can move a previously specific Buying session back to Browsing.
 The current policy normally asks whenever an attribute is available. It does
 not first decide whether recommendations are sufficiently concentrated.
 
+The rejected A9 result shows that a broad concentration/stability stop gate is
+not the right first follow-up under the current evaluator. A14 first audits
+turns and improves attribute selection while preserving the ask opportunity;
+product-oriented stopping is a later, separately measured slice.
+
 ### 3. `feature` is selected before candidate partition evidence
 
 Candidate-aware scoring exists, but `feature` is normally preferred before the
 candidate-value calculation. This can overfit the public simulator's high
 feature availability.
+
+The earlier A10a candidate also proved that partial partition maps cannot rank
+all allowed attributes: unavailable feature/size/brand/budget/other evidence
+must not be interpreted as zero Question Value.
 
 ### 4. Rule and scope limitations
 
@@ -205,13 +219,22 @@ Current 0bd3375 baseline
           -> A13-S0 offline Shadow foundation complete
               -> freeze and reconcile the two-member ambiguity fixture
               -> A13-C1 guarded activation or No-Go
-                  -> A14 Question Policy as a separate experiment
+                  -> A14-0 turn audit and deep-Module parity
+                      -> A14-1 complete attribute-evidence status
+                          -> A14-S1 deterministic selection Shadow
+                              -> A14-C1 selection-only Candidate
+                                  -> optional synthetic/LLM/stop slices
 ```
 
 AB1 passed at `a676855`; its shared diagnostics preserve the A-owned Strategy
 request while exposing B-owned execution and fallback. A12 remains deferred
 with `profile_weight=0.0`. A13 does not change the shared RetrievalRequest or
 route-weight semantics in its first stages.
+
+A14 design and zero-behavior audit preparation do not require provider access
+or a shared contract change. Do not activate an A14 Candidate before the active
+A13 review decision, and do not combine A14 selection, stop, LLM, profile,
+query, or retrieval changes in one experiment.
 
 ## A8 - Stateful Intent Persistence
 
@@ -590,6 +613,91 @@ is [`A13_annotation_pack_v1.zip`](../../A13_annotation_pack_v1.zip).
 It is ready for independent annotation but is not reconciled gold and does not
 authorize provider work.
 Do not combine A13 semantic understanding with an ask/stop policy change.
+
+## A14 - Question Policy Deepening
+
+**Status: design reviewed; no A14 runtime behavior or retained evidence yet.**
+The authoritative plan is
+[`docs/question_policy_optimization_plan.md`](../question_policy_optimization_plan.md).
+
+The recommended Module has one runtime Interface:
+
+```text
+QuestionPolicy.decide(
+  state,
+  current RetrievalResult,
+  turn/top_k,
+  response fallback status,
+) -> QuestionPolicyOutcome
+```
+
+It is called after retrieval and before `response_guard`. It is read-only and
+hides same-snapshot Decision Evidence construction, eligible attributes,
+per-attribute availability/comparability, guarded selection, legacy fallback,
+question rendering, diagnostics, and optional advisor handling. `Agent` remains
+responsible only for attaching the returned question; guarded response
+recording remains responsible for adding the attribute to state.
+
+The first behavior Candidate must change only attribute selection. It preserves
+the baseline ask opportunity because the local evaluator scores current
+recommendations before generating a reply and no-ask produces no new product
+preference after a miss. Initial stop remains limited to final turn, no eligible
+attribute, or explicitly non-actionable legal choices.
+
+The deterministic policy begins with a lexicographic cascade:
+
+```text
+eligibility
+  -> evidence health/comparability
+  -> likely answerability
+  -> actionability in the current extraction/state/query pipeline
+  -> rank-weighted Candidate split
+  -> intent fit
+  -> legacy priority fallback
+```
+
+Do not reduce this to a single globally comparable score until calibration is
+proven. Missing, partial, uncalibrated, and degraded evidence are different
+states. Numeric evidence from one attribute family cannot automatically defeat
+an uncovered legacy attribute.
+
+Required order:
+
+1. A14-0: turn audit plus deep-Module parity, no behavior change;
+2. A14-1: explicit evidence status for all ten allowed attributes, no behavior
+   change;
+3. A14-S1: deterministic selection Shadow and offline counterfactual audit;
+4. A14-C1: selection-only Candidate with legacy fallback;
+5. optional catalog-only safe-policy Shadow/Candidate if a learnable bucket is
+   diagnosed;
+6. optional LLM advisor Shadow/Candidate or No-Go in one ambiguity bucket;
+7. broader ask/stop Candidate only after selection is stable.
+
+An optional LLM is an internal adapter. It may cluster grounded open-feature
+phrases or rerank an already eligible shortlist. It cannot decide stop in its
+first Candidate, create an attribute, mutate state, see Candidate IDs or
+evaluator data, or bypass deterministic fallback. Question wording may improve
+real UX and the demo, but the local evaluator responds to `ask_attribute`, not
+prose quality.
+
+Development-only target data may score counterfactual legal actions offline;
+it must not enter runtime or training features. A later learned policy must use
+catalog-derived synthetic trajectories, ship only a small validated artifact,
+and fall back to the legacy action on missing, corrupt, or out-of-distribution
+inputs. Development remains selection-only and Full/Holdout remain untouched.
+
+### Likely implementation files after approval
+
+- `starter/core/question_policy.py`;
+- `starter/core/clarification.py` as a compatibility wrapper or legacy adapter;
+- `starter/core/decision_evidence.py` deepened into or consumed by the Module;
+- `starter/agent.py` wiring;
+- focused Question Policy, Agent, response-guard, leakage, and turn-audit tests;
+- `experiments/` and `docs/a14_*` evidence only for the selected slice.
+
+Do not change `starter/contracts.py`, B retrieval/ranking implementation, the
+evaluator, catalog, public labels, or submission package in A14-0/C1 without a
+separately approved blocker.
 
 ## Handoff to Developer B
 

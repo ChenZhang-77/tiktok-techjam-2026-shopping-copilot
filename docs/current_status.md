@@ -16,7 +16,8 @@ Read, in order:
 5. One workstream document:
    - A: `docs/workstreams/DEVELOPER_A_CONTROL_PLANE.md`
    - B: `docs/workstreams/DEVELOPER_B_RETRIEVAL_RANKING.md`
-6. The files named by the selected experiment.
+6. `docs/question_policy_optimization_plan.md` when the selected work is A14.
+7. The files named by the selected experiment.
 
 At the beginning of the conversation, report:
 
@@ -215,6 +216,13 @@ The authoritative A13 plan is
 [`DeepSeek_LLM接入实验方案.md`](../DeepSeek_LLM接入实验方案.md). It does not claim
 provider activation, real-model evidence, or retained LLM runtime behavior.
 
+A14 planning is now reviewed and documented in
+[`docs/question_policy_optimization_plan.md`](question_policy_optimization_plan.md).
+Evidence-only audit, Interface, and parity preparation may proceed while A13 is
+gated, but an A14 behavior Candidate must remain separate from A13/B10b metric
+activation. The first recommended Candidate changes attribute selection only;
+it does not revive a broad should-stop rule or let an LLM control the policy.
+
 ## Current A13 Decision
 
 `a/a13-llm-semantic-understanding` starts from Chen baseline `0bd3375`.
@@ -259,6 +267,41 @@ A13 does not replace B10b-DS1. A13 interprets difficult user language before
 retrieval; B10b-DS1 reranks an existing Browsing Top-10 after retrieval. They
 must not be activated together in one metric experiment, and the default
 runtime remains no-LLM.
+
+## Current A14 Decision
+
+The reviewed Question Policy direction is not another hand-tuned should-ask
+threshold. The evaluator scores recommendations before generating its next
+reply, and a no-ask miss yields no new product preference; A9 therefore gives
+no basis for making broad early stopping the first A14 hypothesis. A10a also
+showed that partial Candidate partition evidence cannot be compared globally
+when feature, size, brand, budget, and other are uncovered.
+
+A14 will deepen clarification into one A-owned `Question Policy` Module called
+once after retrieval and before `response_guard`. The Module owns the same-
+snapshot Decision Evidence, eligibility, per-attribute evidence status,
+selection cascade, fallback, rendering, diagnostics, and optional advisor
+handling. It does not change `RetrievalRequest`, `RetrievalResult`, Strategy
+weights, B route semantics, or state mutation ordering.
+
+The reviewed order is:
+
+```text
+A14-0 turn audit and deep-Module parity
+  -> A14-1 complete attribute-evidence status
+      -> A14-S1 deterministic selection Shadow
+          -> A14-C1 selection-only Candidate
+              -> optional catalog-only policy, LLM advisor, and stop slices
+```
+
+The first behavior Candidate preserves the current ask opportunity and changes
+only which legal attribute is selected. Unsupported evidence uses an explicit
+legacy fallback; missing evidence is never converted to zero Question Value.
+An optional LLM may later cluster grounded feature phrases or rerank an
+eligible shortlist in one reviewed bucket, but it cannot stop, create an
+attribute, mutate state, or bypass deterministic fallback. Full design,
+diagnostics, experiment gates, and alternatives are in
+`docs/question_policy_optimization_plan.md`.
 
 ## R0 Result
 
@@ -447,6 +490,7 @@ track in `docs/demo_and_submission_plan.md`.
 | `docs/current_status.md` | Current verified state and next decision |
 | `docs/project_structure.md` | Directory responsibilities, evidence layout, and archive policy |
 | `docs/optimization_roadmap.md` | Project-wide optimization sequence and gates |
+| `docs/question_policy_optimization_plan.md` | Authoritative A14 Question Policy Module, evidence, LLM role, and experiment slices |
 | `DeepSeek_LLM接入实验方案.md` | Reviewed A13 semantic-understanding plan, gates, and branch boundary |
 | `docs/r0_development_failure_taxonomy.md` | Clean Development-160 failure audit and next-experiment evidence |
 | `docs/a8_stateful_intent_evidence.md` | Stateful intent keep/reject evidence and tradeoff boundary |
@@ -483,7 +527,8 @@ track in `docs/demo_and_submission_plan.md`.
 - Profile ranking remains disabled at weight `0.0`; long-term profile value has
   not been demonstrated.
 - Candidate-aware clarification exists, but a complete should-ask gate has not
-  yet been retained.
+  yet been retained. A14 now has a reviewed total plan, but no A14 runtime
+  behavior or evidence artifact has been implemented.
 
 These are explicit gaps, not implied capabilities. If an experiment is rejected
 again, preserve the measured result and disclose the literal coverage gap.

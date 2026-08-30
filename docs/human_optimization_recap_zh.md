@@ -551,6 +551,18 @@ TechnicalScore 增加 0.070391。其中证据最强、贡献最大的单步是�
 后才做 A13-C1 单一触发类候选激活。10 个 Question Policy miss 属于独立的 A14，
 不与 A13 同时调参；B11、B12 和新的 reranker 同期冻结。
 
+A14 已完成重新设计，但尚未改变运行时。关键结论不是“再调一个少问问题的阈值”：
+本地 evaluator 会先给当前推荐打分，再根据 `ask_attribute` 生成下一轮回复；没问具体
+属性只会得到无信息回复。因此 A14 首先优化“问哪个”，保留现有 ask opportunity，
+等属性选择稳定后才单独测试“是否提前停止”。
+
+推荐顺序是：先做逐轮 audit 和深 Question Policy Module 的行为等价封装；再为全部
+允许属性建立 available/partial/unavailable/degraded 等显式证据状态；然后做确定性
+selection Shadow，最后才开启只改变属性选择的 Candidate。缺失证据绝不当作零分。
+LLM 只作为内部 advisor，用于开放 feature 聚类或难分候选问题重排；它不能决定
+stop、修改状态或绕过确定性回退。完整总纲见
+`docs/question_policy_optimization_plan.md`。
+
 ## 证据入口
 
 - 当前唯一状态源：`docs/current_status.md`
@@ -571,9 +583,10 @@ TechnicalScore 增加 0.070391。其中证据最强、贡献最大的单步是�
 - B10b：`experiments/deepseek_ds1.py`、`experiments/deepseek_ds2.py` 和 README
   的复现命令；完整远程运行报告目前只在 `/private/tmp`，尚未形成 tracked evidence
 - A13：`DeepSeek_LLM接入实验方案.md`
+- A14：`docs/question_policy_optimization_plan.md`
 - B10a：`docs/b10a_constraint_rerank_evidence.md`
 - B11：`docs/b11_prerequisite_evidence.md`
 - B12：`docs/b12_adaptive_depth_evidence.md`
 
-最后更新：2026-08-29。任何运行时代码变化后，都应重新跑 Development-160 和
+最后更新：2026-08-30。任何运行时代码变化后，都应重新跑 Development-160 和
 四个固定 fold，再更新本文；文档提交本身不会改变指标。

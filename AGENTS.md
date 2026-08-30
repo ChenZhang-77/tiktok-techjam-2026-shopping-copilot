@@ -197,6 +197,14 @@ coverage for those attributes. Revisit A10a only if AB1 coordinates missing B
 semantics plus an explicit fallback for uncovered attributes. A10b was the
 historical next step and is now complete.
 
+The reviewed successor is A14, defined in
+`docs/question_policy_optimization_plan.md`. A14 first deepens clarification
+behind one A-owned Interface, binds a turn audit, and makes missing, partial,
+uncalibrated, and degraded evidence explicit. Its first behavior Candidate
+changes only which eligible attribute is asked while preserving the current
+ask opportunity. Broad stop, optional LLM, profile, query, and retrieval
+changes remain separate experiments.
+
 A10b Internal QueryPlan is retained at `9560344`. It is A-owned and separates
 category/hard/soft/semantic/residual/excluded evidence, but renders only the
 existing single `RetrievalRequest.query`; the shared schema is unchanged.
@@ -416,8 +424,22 @@ When the user has no preference:
 
 Clarification normally returns current valid recommendations and at most one
 useful question together. A fixed public-simulator question order is not an
-acceptable final policy. The next policy must first decide whether to ask, then
-select an attribute from candidate partition evidence.
+acceptable final policy. The Question Policy must return one coherent ask/stop
+and attribute decision. Establish eligible-question evidence and selection
+quality before introducing a broader stop rule.
+
+Because the local evaluator scores current recommendations before producing the
+next reply and no-ask yields no new preference after a miss, do not tune A14 as
+a generic "ask less" feature. First prove which eligible question is likely to
+be answerable and actionable while preserving the ask opportunity. Any later
+stop rule must be a separate behavior slice with official metrics and a
+separately declared real-UX question-cost objective.
+
+An A14 LLM may only advise on an already eligible shortlist or cluster grounded
+feature phrases behind an internal adapter. It must not create attributes,
+decide state mutation, see Candidate IDs/evaluator data, bypass deterministic
+fallback, or run in the same metric experiment as active A13 or B10b model
+behavior.
 
 Explicit current intent always wins over profile evidence.
 
