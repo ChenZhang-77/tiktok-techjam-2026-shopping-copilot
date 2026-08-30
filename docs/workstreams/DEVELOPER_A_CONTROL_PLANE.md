@@ -612,6 +612,12 @@ The reproducible teammate-facing ZIP committed on the `llm` publication branch
 is [`A13_annotation_pack_v1.zip`](../../A13_annotation_pack_v1.zip).
 It is ready for independent annotation but is not reconciled gold and does not
 authorize provider work.
+The first returned-file intake is audited in
+[`docs/a13_annotation_intake_review.md`](../a13_annotation_intake_review.md):
+the `codex` draft validates but lacks confirmed human-member provenance, while
+the Zhangchen submission has 26 invalid rows. Do not run the official compare,
+freeze gold, call a provider, or open A14-S1 until two human-owned files both
+validate and their disagreements are jointly adjudicated.
 Do not combine A13 semantic understanding with an ask/stop policy change.
 
 ## A14 - Question Policy Deepening

@@ -266,6 +266,15 @@ The exact teammate-facing build is committed at repository root as
 [`A13_annotation_pack_v1.zip`](../A13_annotation_pack_v1.zip), with the bound
 SHA256 recorded in the checkpoint table above.
 
+Two returned annotation files were preflighted on 2026-08-30. The `codex`
+file passes 60/60 validation but does not establish a second member's human
+provenance. The Zhangchen file covers 60/60 rows but has 26 validation failures,
+so the official comparison cannot yet run. No source annotation was rewritten;
+the exact failure classes, hashes, raw preflight agreement, and repair sequence
+are recorded in `docs/a13_annotation_intake_review.md`. The fixture therefore
+remains unfrozen, real-provider work remains unauthorized, and A14-S1 remains
+blocked on the same A13 disposition.
+
 A13 does not replace B10b-DS1. A13 interprets difficult user language before
 retrieval; B10b-DS1 reranks an existing Browsing Top-10 after retrieval. They
 must not be activated together in one metric experiment, and the default
