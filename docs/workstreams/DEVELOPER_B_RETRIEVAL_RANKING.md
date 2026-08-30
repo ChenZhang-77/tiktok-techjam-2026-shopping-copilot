@@ -1,5 +1,10 @@
 # Developer B — Retrieval and Ranking Optimization Route
 
+> Release freeze (2026-08-31): [final plan](../final_release_plan.md) and
+> [current status](../current_status.md) supersede historical “next steps” below.
+> No automatic A13/A14/model/parameter work. This branch's only current track is
+> source validation, documentation/publication, then separately verified packaging.
+
 This is the standalone execution brief for a new Codex conversation working on
 the B side. It describes the next optimization stage, not the historical build
 sequence. Do not start implementation until the user asks for code changes.

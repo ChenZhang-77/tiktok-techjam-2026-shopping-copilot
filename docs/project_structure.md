@@ -1,5 +1,12 @@
 # Project Structure and File Placement
 
+## Release disposition
+
+Read [final release plan](final_release_plan.md) and [branch inventory](branch_inventory.md)
+first. Unfinished experiments are frozen in place. Hash-bound files, caches,
+annotations and Git checkpoints are preserved; there is no active annotation
+or AI-silver build queue. `submission/` is staging, not a completed package.
+
 ## Verdict
 
 The repository is not structurally chaotic. Runtime code, evaluation code,

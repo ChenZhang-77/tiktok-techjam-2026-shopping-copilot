@@ -17,54 +17,22 @@ available as an explicit, isolated performance experiment.
 
 ## Current Status
 
-The verified integrated checkout and next optimization decision are documented
-in [`docs/current_status.md`](docs/current_status.md). The project-wide route is
-[`docs/optimization_roadmap.md`](docs/optimization_roadmap.md). For a plain-
-language Chinese walkthrough from A1/B1 through the current result, read
-[`docs/human_optimization_recap_zh.md`](docs/human_optimization_recap_zh.md).
+Plan One is the Chen local/no-external-LLM runtime, published to `yuqing`.
+Plan Two is the explicit optional F2 product reranker on `llm`; both branches
+still default to local behavior. A13 semantic understanding and A14 selector
+experiments are frozen, not enabled.
 
-Verified Development-160 result for the retained bounded A11 plus B9
-conditional-dense default:
+The [final release plan](docs/final_release_plan.md) defines the two paths,
+[branch inventory](docs/branch_inventory.md) identifies frozen work, and
+[current status](docs/current_status.md) owns all current metrics and caveats.
+The new same-protocol [Development-160 comparison](docs/release_comparison.md)
+selects Chen: score `0.766231` versus original P0 `0.722074`, HR `0.925`
+versus `0.8625`. This is the default B9 route, not the older structured-only
+`0.765703` checkpoint. It is not a private/holdout result.
 
-| Metric | Result |
-| --- | ---: |
-| HitRate@10 | 0.86250 |
-| MRR | 0.547329 |
-| MTTC | 4.66875 |
-| Efficiency | 0.633125 |
-| TechnicalScore | 0.722074 |
-
-Latest local A-side state-correction checkpoint (Development-160 only):
-
-| Metric | Result |
-| --- | ---: |
-| HitRate@10 | 0.925000 |
-| MRR | 0.552760 |
-| MTTC | 4.13125 |
-| Efficiency | 0.686875 |
-| TechnicalScore | 0.765703 |
-
-This checkpoint fixes negation scope, prevents low-confidence fallback text
-from revoking `no-preference`, and aligns the offline taxonomy with the shared
-no-preference detector. It preserves the existing A/B runtime interface and
-does not add an LLM. It was run only on Development-160 with zero response
-exceptions, invalid payloads, and fallbacks. It is not a holdout result and
-does not claim that any single fix caused the full metric change without a
-separate ablation.
-
-Historical Full-200 public snapshot:
-
-| Metric | Result |
-| --- | ---: |
-| HitRate@10 | 0.765000 |
-| MRR | 0.517355 |
-| MTTC | 5.375000 |
-| TechnicalScore | 0.650207 |
-
-The Full-200 result is not a sealed validation result. The public holdout had
-already been exposed, so later work must be selected only with fixed
-Development-160 cross-validation. The organizer's private 800 sessions remain
-the external generalization test.
+The stronger LLM evidence and exact F2 runner belong to the llm branch, not this checkout's older DS1/DS2 scripts.
+The independent submission package, cold-start portability and final video
+remain delivery work; old P0 packaging must be regenerated for the selected source.
 
 ## Problem Framing
 
@@ -144,7 +112,7 @@ concentrated in fold 4.
 
 ## What the Ablations Showed
 
-Development-160:
+Historical Development-160 ablations on their recorded comparators (not the current Chen default):
 
 | Variant | HitRate@10 | MRR | TechnicalScore | Decision |
 | --- | ---: | ---: | ---: | --- |
@@ -206,7 +174,7 @@ Requirements:
 Clone and enter the repository:
 
 ```bash
-git clone https://github.com/ChenZhang-77/tiktok-techjam-2026-shopping-copilot.git
+git clone --branch yuqing https://github.com/ChenZhang-77/tiktok-techjam-2026-shopping-copilot.git
 cd tiktok-techjam-2026-shopping-copilot
 python3 --version
 ```
@@ -230,17 +198,20 @@ to its deterministic standard-library structured path:
 python3 -m unittest discover -s tests -v
 ```
 
-Run an ordinary Development-160 evaluation:
+Run the actual default B9 Development-160 audit after preparing local dense assets:
 
 ```bash
-.venv/bin/python -m experiments.evaluation_reporting \
-  --split development --structured-filter \
-  --output /private/tmp/shopping-copilot-development.json
+.venv/bin/python -m experiments.release_default_audit \
+  --output /private/tmp/shopping-copilot-development-new.json
 ```
 
 Do not use `--split full` or `--split holdout` for optimization.
 
 ### Optional DeepSeek API setup
+
+Historical DS1/DS2 setup below is not the verified F2 recipe. API work is
+optional Plan Two only; see [current disposition](docs/current_status.md).
+
 
 The default deterministic experiment does not require an API key. For the
 optional LLM shadow/reranking experiments, create a local credentials file:
@@ -307,6 +278,10 @@ enable DS2 in the default runtime.
 
 ## Named Experiments and Visualizer
 
+Historical experiment commands below are reference-only. The active release
+route and frozen experiment list are in [final release plan](docs/final_release_plan.md).
+
+
 For an isolated named development run:
 
 ```bash
@@ -367,63 +342,10 @@ failures return the exact structured order.
 
 ## Current Optimization Route
 
-R0 is complete: the corrected clean Development-160 audit classified 25 of 38
-misses as Intent / Strategy Routing, seven as State / Override, and six as
-Extraction, while the target entered the retained lexical pool in 145 of 160
-sessions. See
-[`docs/r0_development_failure_taxonomy.md`](docs/r0_development_failure_taxonomy.md).
-The retained A8 module now persists a complete cross-turn `IntentAssessment`.
-Development-160 HitRate stayed `0.7625`, MRR rose by `0.002823`, Buying improved
-in three of four folds, and Browsing did not regress; the overall score was
-effectively neutral and Intent Override regressed slightly. See
-[`docs/a8_stateful_intent_evidence.md`](docs/a8_stateful_intent_evidence.md).
-AB0 now makes a compact full-pool `DecisionEvidence` available before
-clarification with exact 160-session / 818-turn dialogue parity and no shared
-contract change. See
-[`docs/ab0_decision_evidence.md`](docs/ab0_decision_evidence.md). The
-tested A9 should-ask gate was rejected and reverted after HitRate fell to
-`0.7500` and MTTC rose to `5.43125`.
-See [`docs/a9_should_ask_evidence.md`](docs/a9_should_ask_evidence.md). The
-A10a full-pool question-value candidate was also rejected and reverted after
-HitRate fell to `0.75625`, MRR to `0.520012`, and MTTC rose to `5.3625`; current
-partition evidence is incomplete across allowed attributes. See
-[`docs/a10a_question_value_evidence.md`](docs/a10a_question_value_evidence.md).
-A10b now retains an A-internal `QueryPlan` that separates positive roles,
-residual text, and excluded values while continuing to send B the same single
-query string. Development-160 metrics and all session outcomes are unchanged.
-See [`docs/a10b_query_plan_evidence.md`](docs/a10b_query_plan_evidence.md).
-A11 now retains bounded catalog-derived multi-word category extraction,
-clause-scoped positive/negative/no-preference evidence, and numeric/hyphen
-disambiguation. Review fixes also keep comma-delimited negative/no-preference
-lists scoped, prevent catalog phrases from crossing punctuation, and bind
-injected retrievers to their actual catalog. Development-160 improved to HR
-`0.8625`, MRR `0.545568`, MTTC `4.675`, and technical score `0.721420`; all four
-fixed folds improved. The combined broad candidate was rejected, while its
-individual components remain unproven without independent evidence. Boundary
-quality remains a disclosed risk. See
-[`docs/a11_extraction_scope_evidence.md`](docs/a11_extraction_scope_evidence.md).
-AB1 retained exact Development/fold/session parity while making requested and
-executed Routes truthful. See
-[`docs/ab1_route_semantics_evidence.md`](docs/ab1_route_semantics_evidence.md).
-B8's exact, confidence-aware penalty passed targeted tests but was reverted
-because all 726 Development turns carried zero rejected constraints. See
-[`docs/b8_rejected_constraint_evidence.md`](docs/b8_rejected_constraint_evidence.md).
-B9 now retains the Browsing-first conditional dense Route at `7f520ba`; see
-[`docs/b9_conditional_dense_evidence.md`](docs/b9_conditional_dense_evidence.md).
-B10a is rejected as a runtime default while its reproducible experiment remains
-available; see
-[`docs/b10a_constraint_rerank_evidence.md`](docs/b10a_constraint_rerank_evidence.md).
-B10b is not justified without new R0 evidence. The refreshed B11 audit found
-zero retrieval/ranking primary misses and 157/160 retained-depth lexical
-recall, so B11 was not started. B12 remains an explicit exploratory option at
-`82891c8`; it is disabled by default because no contemporaneous selection gate
-was recorded and its fold gain is concentrated. Its favorable candidate
-metrics are reported as an experiment, not the default; see
-[`docs/b11_prerequisite_evidence.md`](docs/b11_prerequisite_evidence.md) and
-[`docs/b12_adaptive_depth_evidence.md`](docs/b12_adaptive_depth_evidence.md).
-`AGENTS.md` owns the taxonomy and
-leakage boundary; [`docs/optimization_roadmap.md`](docs/optimization_roadmap.md)
-owns the complete order.
+New behavior work is frozen. Follow [release roadmap](docs/optimization_roadmap.md):
+source verification, documentation/review, authorized branch publication, then
+fresh-source packaging and demo. Historical experiment “next steps” do not
+reopen work. All freeze/recovery decisions are in [final release plan](docs/final_release_plan.md).
 
 ## Reliability and Cost
 

@@ -5,18 +5,16 @@ from old reports.
 
 ## Start here
 
-1. `../AGENTS.md` — operating rules for Codex and contributors
-2. `current_status.md` — authoritative current checkpoint, evidence, and risks
-3. `human_optimization_recap_zh.md` — plain-language Chinese timeline from
-   A1/B1, metric explanations, decisions, and current interpretation
-4. `optimization_roadmap.md` — dependency-ordered whole-project route
-5. `project_structure.md` — directory responsibilities and file-placement rules
-6. `ablation_summary.md` — what was retained, rejected, and why
+1. [Current status](current_status.md) — verified current behavior, metrics and gaps.
+2. [Final release plan](final_release_plan.md) — Plan One/Two and all freeze decisions.
+3. [Release comparison](release_comparison.md) — same-protocol branch selection and review.
+4. [Branch inventory](branch_inventory.md) — historical sources and recovery points.
+5. [Release roadmap](optimization_roadmap.md) — delivery order, not an experiment queue.
+6. [Project structure](project_structure.md) — stable file placement and evidence rules.
+7. [Operating contract](../AGENTS.md) — safety, ownership and evaluation boundaries.
 
-`../AGENTS.md` is the sole authority for the R0 failure taxonomy and the
-offline-target/runtime boundary. `optimization_roadmap.md` is the sole authority
-for dependency order. Workstream and experiment documents must reference those
-definitions instead of creating local variants.
+Older A13/A14 design and experiment documents below remain useful references.
+They do not authorize resuming frozen work or override current status.
 
 ## Workstream execution
 

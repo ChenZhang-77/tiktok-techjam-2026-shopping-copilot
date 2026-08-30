@@ -1,5 +1,10 @@
 # Submission Packaging Workspace
 
+> Release freeze: this checkout has staging instructions only, not a completed
+> independent package. The old P0 package at `aaa7e45` uses the older runtime;
+> regenerate it from the selected source before submission. See
+> [final release plan](../docs/final_release_plan.md).
+
 This directory is a staging area, not proof that the final competition package
 is complete. Follow `../docs/demo_and_submission_plan.md` for the full delivery
 route and `../docs/current_status.md` for verified claims.

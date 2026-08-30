@@ -32,28 +32,20 @@ gate; global variants were rejected.
 The retained runtime now has literal Browsing-dense execution only for B9's
 narrow gate. Do not expand that into a global hybrid claim or an LLM semantic-
 ranking claim. CrossEncoder reranking is measured and globally rejected; an
-actual LLM ranker has not been implemented or measured. Profile ranking is
+actual LLM reranking is verified only as optional Plan Two on the llm branch, not this default. Profile ranking is
 likewise disabled at weight 0.0.
 
 ## Evidence available now
 
-- Retained B9 route commit: `7f520ba`; optional B12 code commit: `82891c8`.
-- Current full test suite: `287/287` passing.
-- Default Development-160: HitRate@10 `0.8625`, MRR `0.547329`, MTTC
-  `4.66875`, TechnicalScore `0.722074`.
-- B9 route: dense/fusion executed 102 times; all four folds non-regressing;
-  startup about `3.58 s`, peak RSS about `1.109 GB`.
-- B10a: Top-3 and Top-5 anchored CrossEncoder candidates rejected; the default
-  remains B9 and no LLM-ranking claim is allowed.
-- B11: not started because the current R0 refresh finds zero retrieval/ranking
-  primary misses; do not claim a lexical-recall refinement.
-- B12: exploratory and disabled by default; favorable aggregate result, but no
-  contemporaneous gate and a gain concentrated in fold 4.
-- Historical full-200 run: HitRate@10 `0.765`, MRR `0.517355`, MTTC `5.375`,
-  TechnicalScore `0.650207`.
+Use [current status](current_status.md) for measured default metrics and LLM
+cost/latency caveats; use [release comparison](release_comparison.md) for source
+selection and tests. Do not reuse the old P0/B12 default score as Chen's score,
+or describe old DS1 evidence as the verified F2 recipe.
 
-The full-200 run is non-confirmatory because those public sessions have already
-been exposed. Say “historical public result,” not “unseen holdout validation.”
+The old P0 independent package/report/video drafts remain frozen at `aaa7e45`.
+Neither selected branch currently contains a regenerated independent package.
+Reuse requires source synchronization and fresh-directory tests. Final video,
+team contributions and submission metadata are not marked complete here.
 
 ## Four-case demo script
 
