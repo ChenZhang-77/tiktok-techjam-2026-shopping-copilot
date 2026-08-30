@@ -93,6 +93,19 @@ A14_ELIGIBILITY_STATUSES = {
     "not_in_legacy_priority",
 }
 A14_COMPARABILITY_FAMILY = "bounded_candidate_vocabulary_v1"
+A14_QUESTION_POLICY_FIELDS = {
+    "policy_version",
+    "mode",
+    "eligible_attributes",
+    "baseline_action",
+    "baseline_attribute",
+    "reason_code",
+    "evidence_status",
+    "attribute_evidence",
+    "fallback_used",
+    "fallback_reason",
+    "latency_ms",
+}
 
 
 def _sha256_bytes(value: bytes) -> str:
@@ -175,6 +188,14 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
                 "policy_version"
             ):
                 raise ValueError("A14-0 requires Question Policy diagnostics on every turn")
+            unknown_policy_fields = (
+                set(question_policy) - A14_QUESTION_POLICY_FIELDS
+            )
+            if unknown_policy_fields:
+                raise ValueError(
+                    "Question Policy diagnostics contain unknown fields: "
+                    + ", ".join(sorted(str(field) for field in unknown_policy_fields))
+                )
             outcome = _answer_outcome(
                 source_turn,
                 previous_ask_attribute=previous_ask_attribute,
@@ -209,6 +230,10 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
                     raw_record = raw_attribute_evidence[evidence_attribute]
                     if not isinstance(raw_record, dict):
                         raise ValueError("attribute evidence records must be objects")
+                    if set(raw_record) != set(A14_ATTRIBUTE_DIAGNOSTIC_FIELDS):
+                        raise ValueError(
+                            "attribute evidence records must use the exact closed schema"
+                        )
                     if raw_record.get("attribute") != evidence_attribute:
                         raise ValueError("attribute evidence key and record must agree")
                     status = str(raw_record.get("status") or "")

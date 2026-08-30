@@ -164,6 +164,28 @@ class A14TurnAuditTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             build_turn_audit(invalid_available_gate)
 
+        invalid_record_field = copy.deepcopy(source)
+        invalid_record_field["sessions"][0]["turns"][0]["question_policy"][
+            "attribute_evidence"
+        ]["material"]["candidate_text"] = "SHOULD_BE_REJECTED"
+        with self.assertRaises(ValueError):
+            build_turn_audit(invalid_record_field)
+
+        for field in (
+            "candidate_text",
+            "candidate_ids",
+            "target_asin",
+            "evaluator_label",
+            "unknown_field",
+        ):
+            invalid_policy_field = copy.deepcopy(source)
+            invalid_policy_field["sessions"][0]["turns"][0][
+                "question_policy"
+            ][field] = "SHOULD_BE_REJECTED"
+            with self.subTest(policy_field=field):
+                with self.assertRaises(ValueError):
+                    build_turn_audit(invalid_policy_field)
+
     def test_builds_a_target_free_question_trace_with_answer_outcomes(self) -> None:
         source = {
             "version": "r0-v3",
