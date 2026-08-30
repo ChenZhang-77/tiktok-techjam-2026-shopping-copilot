@@ -1,5 +1,4 @@
 """Deadline semantic experiment; production Agent and evaluator remain unchanged."""
-from dataclasses import replace
 import copy
 import hashlib
 import json
@@ -15,6 +14,11 @@ from starter.core.semantic_understanding import (
     validate_understanding_delta,
 )
 from experiments.a13_light_review import PROMPT, NoRedirect
+
+
+def _check_deadline(request):
+    if request.deadline_monotonic_ms is not None and time.monotonic() * 1000 >= request.deadline_monotonic_ms:
+        raise SemanticUnderstandingError("deadline_exceeded")
 
 
 def provider_input(request):
@@ -152,6 +156,7 @@ class TrialInterpreter:
                 self.stop_reason = "time_budget"
             if self.stop_reason:
                 raise SemanticUnderstandingError(self.stop_reason)
+            _check_deadline(request)
             called = True
             self.attempts += 1
             result = self.backend.infer(request)
@@ -169,9 +174,10 @@ class TrialInterpreter:
             indifferent = set(request.no_preference_attributes) | set(request.deterministic_no_preference_attributes)
             if any(c.attribute in indifferent or (c.attribute, c.value) in forbidden for c in delta.positive_constraints):
                 raise SemanticUnderstandingError("state_conflict")
+            _check_deadline(request)
         except Exception as error:
             allowed = SAFE_FALLBACK_REASONS | {"disabled", "no_key", "input_too_large", "call_budget",
-                "cost_budget", "time_budget", "consecutive_errors", "authorization_failure", "unsupported_scope"}
+                "cost_budget", "time_budget", "consecutive_errors", "authorization_failure", "unsupported_scope", "journal_failure"}
             value = str(error)
             reason = value if value in allowed or (value.startswith("http_") and value[5:].isdigit()) else "backend_error"
             delta = None
@@ -188,7 +194,6 @@ class TrialInterpreter:
         outcome = UnderstandingOutcome(delta, signals, reason, called, elapsed,
             result.prompt_tokens if known else 0, result.completion_tokens if known else 0,
             result.provider_model if known else None)
-        self.last = (request, outcome)
         record = {**outcome.to_diagnostics(), "usage_known": known,
                   "cost_allowance_usd": cost, "request_sha256": request_hash}
         if known:
@@ -196,10 +201,21 @@ class TrialInterpreter:
             record["provider_request_id"] = str(result.provider_request_id or "")[:160]
         self.records.append(record)
         if self.journal:
-            self.journal.write(json.dumps(record) + "\n")
-            self.journal.flush()
+            try:
+                self.journal.write(json.dumps(record) + "\n")
+                self.journal.flush()
+            except Exception:
+                self.stop_reason = "journal_failure"
+                raise SemanticUnderstandingError("journal_failure") from None
             if self.attempts and self.attempts % 10 == 0:
                 print(json.dumps({"semantic_attempts": self.attempts, "cost_usd": round(self.total_cost, 6)}), flush=True)
+        if delta is not None:
+            try:
+                _check_deadline(request)
+            except SemanticUnderstandingError:
+                outcome = UnderstandingOutcome(None, signals, "deadline_exceeded", called, elapsed,
+                    outcome.prompt_tokens, outcome.completion_tokens, outcome.provider_model)
+        self.last = (request, outcome)
         return outcome
 
 
@@ -268,6 +284,7 @@ class TrialAgent(Agent):
                     candidate_state.apply_user_context(constraints=merged[0], override=kwargs["override"],
                         rejected_constraints=merged[1], no_preference_attributes=merged[2])
                     state_effect = baseline_state != candidate_state
+                _check_deadline(request)
                 if self.candidate and compatible:
                     positive, negative, indifferent = merged
                     applied = (positive, negative, indifferent) != (kwargs["constraints"], kwargs["rejected_constraints"], kwargs["no_preference_attributes"])

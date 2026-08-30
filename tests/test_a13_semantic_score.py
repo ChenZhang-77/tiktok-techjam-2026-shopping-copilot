@@ -29,6 +29,40 @@ def blocked_provider(connection, key, request):
 
 
 class SemanticScoreTest(unittest.TestCase):
+    def test_journal_failure_cannot_apply_a_prepared_proposal(self):
+        class BrokenJournal:
+            def write(self, text):
+                raise OSError("synthetic log failure")
+        backend = FakeSemanticBackend(BackendResult(proposal(), prompt_tokens=100, completion_tokens=50))
+        interpreter = TrialInterpreter(backend, journal=BrokenJournal())
+        agent = TrialAgent(retriever=FixtureRetriever(), semantic_interpreter=interpreter, candidate=True)
+        baseline = TrialAgent(retriever=FixtureRetriever())
+        for a in (agent, baseline): a.reset("synthetic", {})
+        message = "I need something with arch support"
+        actual, expected = agent.respond("synthetic", message, 1, 2), baseline.respond("synthetic", message, 1, 2)
+        actual.pop("usage"); expected.pop("usage")
+        self.assertEqual(actual, expected)
+        self.assertFalse(agent.records[-1]["applied"])
+        self.assertEqual(interpreter.stop_reason, "journal_failure")
+
+    def test_expired_and_late_proposals_never_return_a_delta(self):
+        class SlowBackend(FakeSemanticBackend):
+            def infer(self, request):
+                time.sleep(.02)
+                return super().infer(request)
+        request = UnderstandingRequest("arch support", 1, deterministic_constraints=(
+            ConstraintEvidence("feature", "arch support", confidence=.35),))
+        for late in (False, True):
+            backend_type = SlowBackend if late else FakeSemanticBackend
+            backend = backend_type(BackendResult(proposal(), prompt_tokens=100, completion_tokens=50))
+            interpreter = TrialInterpreter(backend)
+            bounded = replace(request, deadline_monotonic_ms=time.monotonic() * 1000 + (5 if late else -1))
+            outcome = interpreter.interpret(bounded)
+            self.assertIsNone(outcome.delta)
+            self.assertEqual(outcome.fallback_reason, "deadline_exceeded")
+            self.assertEqual(backend.calls, int(late))
+            self.assertEqual(outcome.prompt_tokens, 100 if late else 0)
+
     def test_budget_and_repeated_provider_errors_stop_future_calls(self):
         request = UnderstandingRequest("arch support", 1, deterministic_constraints=(
             ConstraintEvidence("feature", "arch support", confidence=.35),))
