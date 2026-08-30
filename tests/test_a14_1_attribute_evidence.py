@@ -40,6 +40,11 @@ ELIGIBILITY_STATUSES = {
     "final_turn", "policy_state_invalid", "asked", "no_preference",
     "satisfied", "eligible", "not_in_legacy_priority",
 }
+FALLBACK_REASONS = {
+    "invalid_retrieval_evidence",
+    "legacy_policy_error",
+    "attribute_evidence_error",
+}
 LIFECYCLE = "current_turn_full_pool"
 VALUE_RANGE = (
     "coverage_and_split_float_0_1;value_count_int_gte_0;"
@@ -113,6 +118,11 @@ class A141AttributeEvidenceTest(unittest.TestCase):
         for session in self.turn_audit["sessions"]:
             for turn in session["turns"]:
                 turn_count += 1
+                self.assertIsInstance(turn["fallback_used"], bool)
+                if turn["fallback_used"]:
+                    self.assertIn(turn["fallback_reason"], FALLBACK_REASONS)
+                else:
+                    self.assertIsNone(turn["fallback_reason"])
                 records = turn["attribute_evidence"]
                 self.assertEqual(set(records), ATTRIBUTES)
                 eligible_attributes = set(turn["eligible_attributes"])
@@ -192,6 +202,8 @@ class A141AttributeEvidenceTest(unittest.TestCase):
                     derived_status[attribute][item["status"]] += 1
                     derived_eligibility[attribute][item["eligibility_status"]] += 1
         self.assertEqual(turn_count, 649)
+        self.assertEqual(self.turn_audit["summary"]["fallback_count"], 0)
+        self.assertEqual(self.turn_audit["summary"]["fallback_reasons"], {})
         self.assertEqual(
             {key: dict(sorted(value.items())) for key, value in derived_status.items()},
             status_counts,

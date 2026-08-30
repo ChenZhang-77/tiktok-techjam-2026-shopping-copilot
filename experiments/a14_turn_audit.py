@@ -106,6 +106,11 @@ A14_QUESTION_POLICY_FIELDS = {
     "fallback_reason",
     "latency_ms",
 }
+A14_FALLBACK_REASONS = {
+    "invalid_retrieval_evidence",
+    "legacy_policy_error",
+    "attribute_evidence_error",
+}
 
 
 def _sha256_bytes(value: bytes) -> str:
@@ -168,6 +173,7 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
     action_counts: Counter[str] = Counter()
     attribute_counts: Counter[str] = Counter()
     evidence_statuses: Counter[str] = Counter()
+    fallback_reasons: Counter[str] = Counter()
     answer_outcomes: Counter[str] = Counter()
     policy_violation_count = 0
     unproductive_reply_count = 0
@@ -196,6 +202,22 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
                     "Question Policy diagnostics contain unknown fields: "
                     + ", ".join(sorted(str(field) for field in unknown_policy_fields))
                 )
+            has_fallback_used = "fallback_used" in question_policy
+            has_fallback_reason = "fallback_reason" in question_policy
+            if has_fallback_used != has_fallback_reason:
+                raise ValueError(
+                    "Question Policy fallback fields must be present together"
+                )
+            fallback_used = False
+            fallback_reason: str | None = None
+            if has_fallback_used:
+                if question_policy["fallback_used"] is not True:
+                    raise ValueError("Question Policy fallback_used must be true")
+                raw_fallback_reason = question_policy["fallback_reason"]
+                if raw_fallback_reason not in A14_FALLBACK_REASONS:
+                    raise ValueError("Question Policy fallback_reason is not allowed")
+                fallback_used = True
+                fallback_reason = str(raw_fallback_reason)
             outcome = _answer_outcome(
                 source_turn,
                 previous_ask_attribute=previous_ask_attribute,
@@ -402,6 +424,8 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
                 "ask_attribute": ask_attribute,
                 "reason_code": str(question_policy.get("reason_code") or ""),
                 "evidence_status": evidence_status,
+                "fallback_used": fallback_used,
+                "fallback_reason": fallback_reason,
                 "answer_outcome": outcome,
                 "unproductive_reply": unproductive_reply,
                 "latency_ms": latency_ms,
@@ -420,6 +444,8 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
             if baseline_attribute is not None:
                 attribute_counts[baseline_attribute] += 1
             evidence_statuses[evidence_status] += 1
+            if fallback_reason is not None:
+                fallback_reasons[fallback_reason] += 1
             answer_outcomes[outcome] += 1
             policy_violation_count += len(policy_flags)
             unproductive_reply_count += int(unproductive_reply)
@@ -494,6 +520,8 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
             "stop_count": action_counts["stop"],
             "attribute_counts": dict(sorted(attribute_counts.items())),
             "evidence_statuses": dict(sorted(evidence_statuses.items())),
+            "fallback_count": sum(fallback_reasons.values()),
+            "fallback_reasons": dict(sorted(fallback_reasons.items())),
             "answer_outcomes": dict(sorted(answer_outcomes.items())),
             "unproductive_reply_count": unproductive_reply_count,
             "policy_violation_count": policy_violation_count,

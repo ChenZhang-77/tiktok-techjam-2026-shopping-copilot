@@ -118,6 +118,38 @@ class A14TurnAuditTest(unittest.TestCase):
             audit["question_trace_sha256"],
         )
 
+        changed_fallback = copy.deepcopy(source)
+        changed_fallback["sessions"][0]["turns"][0]["question_policy"].update(
+            {
+                "fallback_used": True,
+                "fallback_reason": "invalid_retrieval_evidence",
+            }
+        )
+        fallback_audit = build_turn_audit(changed_fallback)
+        fallback_turn = fallback_audit["sessions"][0]["turns"][0]
+        self.assertTrue(fallback_turn["fallback_used"])
+        self.assertEqual(
+            fallback_turn["fallback_reason"], "invalid_retrieval_evidence"
+        )
+        self.assertNotEqual(
+            fallback_audit["question_trace_sha256"],
+            audit["question_trace_sha256"],
+        )
+
+        for fallback_fields in (
+            {"fallback_used": True},
+            {"fallback_reason": "invalid_retrieval_evidence"},
+            {"fallback_used": False, "fallback_reason": "invalid_retrieval_evidence"},
+            {"fallback_used": True, "fallback_reason": "nonsense"},
+        ):
+            invalid_fallback = copy.deepcopy(source)
+            invalid_fallback["sessions"][0]["turns"][0]["question_policy"].update(
+                fallback_fields
+            )
+            with self.subTest(fallback_fields=fallback_fields):
+                with self.assertRaises(ValueError):
+                    build_turn_audit(invalid_fallback)
+
         for field, invalid_value in (
             ("source", ""),
             ("lifecycle", ""),
