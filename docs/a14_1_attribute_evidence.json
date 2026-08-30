@@ -1,0 +1,79 @@
+{
+  "version": "a14-1-attribute-evidence-v1",
+  "decision": "keep",
+  "summary": "Retain complete ten-attribute evidence records while preserving the exact legacy Question Policy action.",
+  "provenance": {
+    "baseline_visible_trace_commit": "2e4108a",
+    "a14_0_commit": "f594601",
+    "runtime_source_commit": "4f615f4",
+    "inputs": {
+      "catalog": {"path": "data/catalog.jsonl", "sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67"},
+      "dataset": {"path": "data/public_set.jsonl", "sha256": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579"},
+      "public_split": {"path": "docs/public_split_v1.json", "sha256": "98171487d3416ff97989e98aeca145b87df74337c5edbe7c908dd80afc538c50"},
+      "development_folds": {"path": "docs/development_folds_v1.json", "sha256": "d9219a4be4533c4f99156197d03e19e6512ce57b262944a201f8605244ccd78d"},
+      "evaluation_config": {"path": "docs/evaluation_config.json", "sha256": "8ee0c899ddc68d521754cf9d2f239a8bc09851fb37c5872567160c30d431aa53"},
+      "local_evaluator": {"path": "evaluator/local_evaluator.py", "sha256": "c21e10a6e772c4824d85f513f0d7d53d23942d20ec9eb3853ff49119317ef96f"},
+      "splits": {"path": "evaluator/splits.py", "sha256": "36858b99678befd8e4740b6c31a9e33f429330be38e74d9ca3eb002916fc47a3"}
+    },
+    "runtime_source_hashes": {
+      "starter/core/question_policy.py": "793137c0559419f66de492ef55ef45ce6608998755e56ce19892a607722bcaca",
+      "starter/core/decision_evidence.py": "bc32c04aa9e2caba7ac0a471eaf638a60e162e6d5f8efcb42ceb78821e01fd71",
+      "experiments/a14_turn_audit.py": "36efc8f284dcf477c4df61cff1c32bac688ef2861e4b629e36007cd0f36e0c90"
+    },
+    "run_artifacts": {
+      "coverage_audit": {"path": "docs/a14_1_reports/coverage_audit.json", "sha256": "bfd03b2cc627868d03bfffe8791f95d2d1bee98bb12ef4bcf2d327ab95e56088"},
+      "development": {"path": "docs/a14_1_reports/development.json", "sha256": "2a90f9a48081b4c4c8e641dd4b8c509c8782e7374d1b1825619dc303e01185e1"},
+      "fold_1": {"path": "docs/a14_1_reports/fold_1.json", "sha256": "54f895e8c527b5088abb8fae2f99b65ed182f8822ee9cfc2503a2b394123f4ed"},
+      "fold_2": {"path": "docs/a14_1_reports/fold_2.json", "sha256": "f69f3dcf442a81a96a53df46e3a9ee264ea604dd4310200104c0daf10e8329df"},
+      "fold_3": {"path": "docs/a14_1_reports/fold_3.json", "sha256": "ad4e235da2246818851c5ed953ab9db4d5c30b58130ee88f53bdf18e7bd91c74"},
+      "fold_4": {"path": "docs/a14_1_reports/fold_4.json", "sha256": "7405b457181d291860e04d8c0e7d32e7d2ef0be9595b0c7f870b1e553d91360b"}
+    }
+  },
+  "boundaries": {
+    "visible_behavior_changed": false,
+    "selection_behavior_changed": false,
+    "shared_contract_changed": false,
+    "route_weight_semantics_changed": false,
+    "state_mutation_order_changed": false,
+    "llm_calls": 0,
+    "full_or_holdout_runs": 0
+  },
+  "coverage": {
+    "attribute_count": 10,
+    "turn_count": 649,
+    "available": ["category", "material", "color", "style", "use_case"],
+    "uncalibrated": ["feature"],
+    "unavailable": ["size", "brand", "budget"],
+    "not_applicable": ["other"],
+    "degraded_or_partial_fixture_coverage": "covered by focused tests; neither state occurred in the clean Development run"
+  },
+  "visible_behavior_parity": {
+    "visible_response_trace_sha256": "098afbdf9b1ce3c0813ccb311b90432837e8b3ac7f36ed78248fe2fef3a75146",
+    "question_trace_sha256": "913e919a259947210144467c4ec0528cbaa50177bff49b29fe8017db6a13b1b2",
+    "compared_turns": 649,
+    "exact": true,
+    "all_mismatch_counts": 0,
+    "policy_violation_count": 0
+  },
+  "development_160": {
+    "sample_count": 160,
+    "response_count": 649,
+    "hit_rate_at_10": 0.925,
+    "mrr": 0.55276,
+    "mttc": 4.13125,
+    "efficiency": 0.686875,
+    "technical_score": 0.765703,
+    "respond_exceptions": 0,
+    "invalid_response_payloads": 0,
+    "reported_fallbacks": 0,
+    "policy_latency_ms": {"count": 649, "mean": 9.736823, "p95": 15.685167, "max": 28.250709}
+  },
+  "folds": {
+    "fold_1": {"sample_count": 40, "hit_rate_at_10": 0.925, "mrr": 0.485724, "mttc": 4.075, "efficiency": 0.6925, "technical_score": 0.746717},
+    "fold_2": {"sample_count": 40, "hit_rate_at_10": 0.9, "mrr": 0.624504, "mttc": 4.575, "efficiency": 0.6425, "technical_score": 0.765851},
+    "fold_3": {"sample_count": 40, "hit_rate_at_10": 0.95, "mrr": 0.595585, "mttc": 3.65, "efficiency": 0.735, "technical_score": 0.800675},
+    "fold_4": {"sample_count": 40, "hit_rate_at_10": 0.925, "mrr": 0.505228, "mttc": 4.225, "efficiency": 0.6775, "technical_score": 0.749568}
+  },
+  "next_gate": "Wait for the A13 human-fixture review disposition before A14-S1. No A14 Candidate or LLM work is authorized.",
+  "tests": {"focused": "39 passed", "full_suite": "375 passed"}
+}

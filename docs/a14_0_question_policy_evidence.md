@@ -8,6 +8,10 @@ turn audit binds the policy's Development-160 behavior. This slice changes no
 recommendation, question, metric, shared retrieval contract, or state mutation
 order.
 
+Subsequent status: the behavior-neutral A14-1 coverage slice is now retained;
+see `docs/a14_1_attribute_evidence.md`. Its completion does not open A14-S1
+before the A13 review disposition.
+
 A14-1 is the next allowed behavior-neutral slice. A14-S1 and every A14
 Candidate remain blocked until the A13 human-fixture review has a recorded
 disposition.

@@ -69,6 +69,10 @@ definitions instead of creating local variants.
   exact 649-turn legacy parity, bounded audit, latency, and next gate
 - `a14_0_reports/` — hash-bound legacy/current turn traces, Development result,
   and four fixed-fold reports used by the A14-0 evidence test
+- `a14_1_attribute_evidence.md` — retained ten-attribute source/status matrix,
+  exact legacy parity, bounded latency, and the A13-dependent stop gate
+- `a14_1_reports/` — hash-bound coverage summary plus Development and four-fold
+  reports used by the A14-1 evidence test
 - `a8_stateful_intent_evidence.md` — retained persistent intent assessment
 - `ab0_decision_evidence.md` — complete A-side decision-evidence inventory
 - `a9_should_ask_evidence.md` — rejected should-ask candidate

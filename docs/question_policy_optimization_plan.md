@@ -12,12 +12,13 @@ Planning and evidence-only work may begin before the A13 review gate closes.
 Any A14 behavior-changing Candidate must remain separate from an active A13 or
 B10b LLM experiment so metric attribution stays meaningful.
 
-Current checkpoint: A14-0 is retained at runtime source commit `f594601` with
-exact legacy-visible parity across all 649 fixed Development turns, unchanged
-Development/fold metrics, zero policy violations, and a hash-bound evidence
-record in `docs/a14_0_question_policy_evidence.md`. A14-1 is the next allowed
-behavior-neutral slice; A14-S1 and all Candidate behavior still wait for the
-A13 review disposition.
+Current checkpoint: A14-0 is retained at `f594601`, and A14-1 is retained at
+`4f615f4`. All ten attributes now have explicit evidence source/status and
+missing-data behavior while all 649 fixed Development responses and fold
+metrics remain unchanged. Records are in
+`docs/a14_0_question_policy_evidence.md` and
+`docs/a14_1_attribute_evidence.md`. A14-S1 and all Candidate behavior still
+wait for the A13 review disposition.
 
 ## Executive Decision
 
@@ -373,6 +374,12 @@ incremental latency.
 ### A14-1 - Attribute Evidence Coverage
 
 Primary behavior change: none.
+
+**Retained on 2026-08-30.** Ten explicit records distinguish bounded available
+evidence, uncalibrated feature text, unavailable field-tagged size/brand/budget
+evidence, and the controlled `other` fallback. Exact visible and metric parity,
+coverage counts, latency, and gates are bound in
+`docs/a14_1_attribute_evidence.md`.
 
 - produce explicit status for all ten allowed attributes;
 - prove source, lifecycle, range, comparability, and missing-data behavior;

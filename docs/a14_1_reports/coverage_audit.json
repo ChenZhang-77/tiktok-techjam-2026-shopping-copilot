@@ -1,0 +1,89 @@
+{
+  "version": "a14-1-attribute-coverage-audit-v1",
+  "scope": "fixed Development-160 target-free attribute evidence summary",
+  "protocol": {
+    "full_or_holdout_used": false,
+    "candidate_ids_or_text_recorded": false,
+    "private_product_identifiers_recorded": false,
+    "behavior_parity_status": "verified_exact",
+    "full_trace_storage": "digest_only; A14-0 retains the full legacy/current trace"
+  },
+  "code_provenance": {"commit": "4f615f4", "worktree_clean": true},
+  "input_sha256": {
+    "catalog": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
+    "dataset": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579",
+    "development_folds": "d9219a4be4533c4f99156197d03e19e6512ce57b262944a201f8605244ccd78d",
+    "evaluation_config": "8ee0c899ddc68d521754cf9d2f239a8bc09851fb37c5872567160c30d431aa53",
+    "local_evaluator": "c21e10a6e772c4824d85f513f0d7d53d23942d20ec9eb3853ff49119317ef96f",
+    "public_split": "98171487d3416ff97989e98aeca145b87df74337c5edbe7c908dd80afc538c50",
+    "splits": "36858b99678befd8e4740b6c31a9e33f429330be38e74d9ca3eb002916fc47a3"
+  },
+  "question_trace_sha256": "913e919a259947210144467c4ec0528cbaa50177bff49b29fe8017db6a13b1b2",
+  "visible_response_trace_sha256": "098afbdf9b1ce3c0813ccb311b90432837e8b3ac7f36ed78248fe2fef3a75146",
+  "parity": {
+    "exact": true,
+    "compared_turns": 649,
+    "session_shape_mismatches": 0,
+    "turn_shape_mismatches": 0,
+    "message_mismatches": 0,
+    "recommendation_mismatches": 0,
+    "ask_attribute_mismatches": 0,
+    "input_hashes_match": true,
+    "metric_parity": true
+  },
+  "summary": {
+    "session_count": 160,
+    "turn_count": 649,
+    "ask_count": 587,
+    "stop_count": 62,
+    "policy_violation_count": 0,
+    "unproductive_reply_count": 226,
+    "policy_latency_ms": {"count": 649, "mean": 9.736823, "p95": 15.685167, "max": 28.250709},
+    "attribute_evidence_status_counts": {
+      "brand": {"unavailable": 649},
+      "budget": {"unavailable": 649},
+      "category": {"available": 649},
+      "color": {"available": 649},
+      "feature": {"uncalibrated": 649},
+      "material": {"available": 649},
+      "other": {"not_applicable": 649},
+      "size": {"unavailable": 649},
+      "style": {"available": 649},
+      "use_case": {"available": 649}
+    },
+    "attribute_eligibility_counts": {
+      "brand": {"asked": 15, "eligible": 234, "final_turn": 12, "not_in_legacy_priority": 386, "satisfied": 2},
+      "budget": {"eligible": 236, "final_turn": 12, "not_in_legacy_priority": 401},
+      "category": {"final_turn": 12, "not_in_legacy_priority": 263, "satisfied": 374},
+      "color": {"asked": 199, "eligible": 428, "final_turn": 12, "satisfied": 10},
+      "feature": {"asked": 356, "eligible": 132, "final_turn": 12, "satisfied": 149},
+      "material": {"asked": 164, "eligible": 200, "final_turn": 12, "satisfied": 273},
+      "other": {"asked": 71, "eligible": 566, "final_turn": 12},
+      "size": {"asked": 122, "eligible": 514, "final_turn": 12, "satisfied": 1},
+      "style": {"asked": 270, "eligible": 316, "final_turn": 12, "satisfied": 51},
+      "use_case": {"asked": 236, "eligible": 280, "final_turn": 12, "satisfied": 121}
+    }
+  },
+  "attribute_source_matrix": {
+    "category": {"source": "candidate_evidence_text_bounded_vocabulary", "status": "available", "comparability_family": "bounded_candidate_vocabulary_v1"},
+    "material": {"source": "candidate_evidence_text_bounded_vocabulary", "status": "available", "comparability_family": "bounded_candidate_vocabulary_v1"},
+    "color": {"source": "candidate_evidence_text_bounded_vocabulary", "status": "available", "comparability_family": "bounded_candidate_vocabulary_v1"},
+    "style": {"source": "candidate_evidence_text_bounded_vocabulary", "status": "available", "comparability_family": "bounded_candidate_vocabulary_v1"},
+    "use_case": {"source": "candidate_evidence_text_bounded_vocabulary", "status": "available", "comparability_family": "bounded_candidate_vocabulary_v1"},
+    "feature": {"source": "candidate_evidence_text_unstructured", "status": "uncalibrated", "comparability_family": null},
+    "size": {"source": "candidate_field_tags_absent", "status": "unavailable", "comparability_family": null},
+    "brand": {"source": "candidate_field_tags_absent", "status": "unavailable", "comparability_family": null},
+    "budget": {"source": "candidate_field_tags_absent", "status": "unavailable", "comparability_family": null},
+    "other": {"source": "controlled_legacy_fallback", "status": "not_applicable", "comparability_family": null}
+  },
+  "field_contract": {
+    "lifecycle": "current_turn_full_pool",
+    "numeric_range": "candidate_coverage and rank_weighted_split are null or float 0..1; value_count is null or integer >= 0",
+    "available_gate": "at least two covered candidates and at least two bounded values",
+    "partial_gate": "at least one bounded value but available gate not met",
+    "degraded_gate": "retrieval, route, pool consistency, top-k depth, or response fallback degraded",
+    "missing_data_behavior": "preserve the exact legacy action; never convert missing evidence to zero question value",
+    "answerability": "canonical question templates; other uses the controlled open-text fallback",
+    "actionability": "existing bounded/residual extraction only; no new parser, retriever, or model"
+  }
+}

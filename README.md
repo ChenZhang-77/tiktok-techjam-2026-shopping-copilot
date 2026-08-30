@@ -456,16 +456,17 @@ owns the complete order.
 
 The reviewed next Question Policy direction is A14. It does not begin by
 reusing the rejected A9 stop threshold or by giving an LLM control of the
-conversation. A14-0 now retains a hash-bound 649-turn audit and a deep
-one-entry-point Question Policy Module with exact legacy-visible parity.
-A14-1 must next prove complete attribute-evidence status without changing the
-returned action; only then may a deterministic selection-only Candidate be
-considered after the A13 review gate. Optional catalog-
+conversation. A14-0 retains a hash-bound 649-turn audit and a deep
+one-entry-point Question Policy Module; A14-1 retains complete explicit
+ten-attribute evidence. Both preserve exact legacy-visible behavior. The next
+deterministic selection Shadow/Candidate must wait for the A13 review gate.
+Optional catalog-
 only policy learning, an offline-only LLM teacher Shadow/No-Go, and a guarded
 online LLM advisor remain later, separate slices. The teacher has no direct
 runtime path.
 See
-[`docs/a14_0_question_policy_evidence.md`](docs/a14_0_question_policy_evidence.md)
+[`docs/a14_0_question_policy_evidence.md`](docs/a14_0_question_policy_evidence.md),
+[`docs/a14_1_attribute_evidence.md`](docs/a14_1_attribute_evidence.md),
 and [`docs/question_policy_optimization_plan.md`](docs/question_policy_optimization_plan.md).
 
 ## Reliability and Cost
@@ -493,10 +494,10 @@ hard filters, duplicate/invalid ASINs, and Candidate Pool shortages.
 - Stateful intent is retained, but confidence remains an ordinal A-side signal,
   not a calibrated probability. B12's A-owned bounded-depth experiment is
   disabled by default; two primary State / Override misses remain.
-- Clarification remains priority-biased and does not yet have complete
-  ten-attribute comparable evidence or a should-ask uncertainty gate. A14-0's
-  deep Module and parity audit are retained, but selection behavior is still
-  the legacy policy.
+- Clarification remains priority-biased. A14-1 explicitly shows that feature
+  is uncalibrated, size/brand/budget Candidate evidence is unavailable, and
+  `other` is not comparable; a deterministic selector and should-ask gate are
+  not retained. Selection behavior is still the legacy policy.
 - The hash-bound A13-0 audit of the `0.925` checkpoint assigns the 12 misses to
   Question Policy (10) and State / Override (2), with no primary Extraction or
   Retrieval / Ranking miss. It is Development evidence, not sealed validation.

@@ -616,8 +616,8 @@ Do not combine A13 semantic understanding with an ask/stop policy change.
 
 ## A14 - Question Policy Deepening
 
-**Status: A14-0 retained with exact legacy-visible parity; A14-1 is the next
-behavior-neutral slice.**
+**Status: A14-0 and A14-1 retained with exact legacy-visible parity; wait for
+the A13 review disposition before A14-S1.**
 The authoritative plan is
 [`docs/question_policy_optimization_plan.md`](../question_policy_optimization_plan.md).
 
@@ -625,8 +625,10 @@ The retained A14-0 runtime source is `f594601`. Its independent clean legacy
 trace, 649-turn current audit, unchanged Development/fold metrics, zero policy
 violations, source/input hashes, and local policy latency are bound in
 [`docs/a14_0_question_policy_evidence.md`](../a14_0_question_policy_evidence.md).
-Do not reopen the one-entry-point seam during A14-1; deepen its internal
-attribute evidence while preserving the legacy action and response exactly.
+A14-1 is retained at `4f615f4`; its complete source/status matrix, exact
+parity, fixed folds, latency, and missing-data disposition are in
+[`docs/a14_1_attribute_evidence.md`](../a14_1_attribute_evidence.md). Do not
+open A14-S1 or a Candidate while A13 remains undecided.
 
 The recommended Module has one runtime Interface:
 
@@ -672,17 +674,18 @@ an uncovered legacy attribute.
 Required order:
 
 1. A14-0: retained turn audit plus deep-Module parity, no behavior change;
-2. A14-1: next; explicit evidence status for all ten allowed attributes, no behavior
-   change;
-3. A14-S1: deterministic selection Shadow and offline counterfactual audit;
-4. A14-C1: selection-only Candidate with legacy fallback;
-5. optional catalog-only safe-policy Shadow/Candidate if a learnable bucket is
+2. A14-1: retained explicit evidence status for all ten allowed attributes, no
+   behavior change;
+3. wait for A13 review disposition;
+4. A14-S1: deterministic selection Shadow and offline counterfactual audit;
+5. A14-C1: selection-only Candidate with legacy fallback;
+6. optional catalog-only safe-policy Shadow/Candidate if a learnable bucket is
    diagnosed;
-6. optional A14-S3T offline LLM teacher Shadow or No-Go, with no direct runtime
+7. optional A14-S3T offline LLM teacher Shadow or No-Go, with no direct runtime
    path;
-7. optional online LLM advisor Shadow/Candidate or No-Go in one ambiguity
+8. optional online LLM advisor Shadow/Candidate or No-Go in one ambiguity
    bucket;
-8. broader ask/stop Candidate only after selection is stable.
+9. broader ask/stop Candidate only after selection is stable.
 
 Optional LLM work uses separate internal adapters. An offline teacher may
 cluster only a frozen, hash-bound set of grounded catalog feature phrases and

@@ -88,7 +88,7 @@ Current Chen runtime source @ 0bd3375
 
 Current runtime and frozen evidence
   -> A14-0 turn audit and deep-Module parity             retained @ f594601
-      -> A14-1 complete attribute-evidence coverage      next; behavior neutral
+      -> A14-1 complete attribute-evidence coverage      retained @ 4f615f4
           -> wait for the A13 review disposition
               -> A14-S1 deterministic selection Shadow
                   -> A14-C1 selection-only Candidate
@@ -104,10 +104,10 @@ measured and rejected. B10b-DS1/DS2 code and provisional remote measurements
 exist, but neither is retained and complete reports are not yet hash-bound.
 The selected next route is A13, whose authoritative plan is
 [`DeepSeek_LLM接入实验方案.md`](../DeepSeek_LLM接入实验方案.md). B11 and B12
-remain prerequisite-gated. A14-0 is retained with exact legacy-visible parity
-and a hash-bound 649-turn audit. A14-1 may proceed before the A13 review gate
-closes because it is behavior-neutral, but A14 Shadow/Candidate behavior must
-wait for the A13 disposition and must not be activated in the same metric
+remain prerequisite-gated. A14-0 and A14-1 are retained with exact
+legacy-visible parity, a hash-bound 649-turn audit, and explicit ten-attribute
+evidence coverage. This is the pre-gate limit: A14 Shadow/Candidate behavior
+must wait for the A13 disposition and must not be activated in the same metric
 experiment as A13 or B10b. The authoritative A14 plan is
 [`docs/question_policy_optimization_plan.md`](question_policy_optimization_plan.md).
 
@@ -497,10 +497,11 @@ A14-0 turn audit and deep-Module parity       behavior unchanged
               -> A14-C4 ask/stop Candidate last
 ```
 
-A14-0 is retained at runtime source commit `f594601`; its legacy comparator,
-turn trace, Development/fold parity, latency, boundaries, and evidence test are
-recorded in `docs/a14_0_question_policy_evidence.md`. A14-1 is the active
-smallest slice and may not change the returned policy action.
+A14-0 is retained at runtime source commit `f594601`; A14-1 is retained at
+`4f615f4`. Their comparator, turn/coverage audits, Development/fold parity,
+latency, boundaries, and evidence tests are recorded in
+`docs/a14_0_question_policy_evidence.md` and
+`docs/a14_1_attribute_evidence.md`. Wait at the A13 review gate before A14-S1.
 
 The first Candidate preserves the baseline ask opportunity and changes only
 which legal attribute is asked. It uses a guarded lexicographic cascade with

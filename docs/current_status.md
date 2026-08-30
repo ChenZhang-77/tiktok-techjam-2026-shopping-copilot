@@ -49,7 +49,8 @@ behavior-identical Question Policy Module and turn-audit slice:
 | B10a experiment branch | `b/b10a-constraint-preserving-crossencoder` |
 | Current A13 publication branch | `llm`, cut from reviewed A13 HEAD `bbb0075` |
 | A14-0 runtime source commit | `f594601`; exact visible-response parity to legacy `2e4108a` across 649 Development turns |
-| Latest local full test suite (2026-08-30) | 365 passed after A14-0 evidence binding; default runtime remains no-LLM |
+| A14-1 runtime source commit | `4f615f4`; ten explicit attribute-evidence records per turn with the same visible-response trace |
+| Latest local full test suite (2026-08-30) | 375 passed after A14-1 evidence binding; default runtime remains no-LLM |
 | Committed annotation bundle | `A13_annotation_pack_v1.zip`, SHA256 `2e47e49b91c3c916b92a02a14ff7f01d26a65b51e5cecc409b6b4ae66efafd1e` |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |
@@ -318,10 +319,18 @@ response exceptions, invalid payloads, or fallbacks. The policy trace records
 587 asks, 62 stops, zero policy violations, and p95 local policy latency
 `4.653 ms`. See `docs/a14_0_question_policy_evidence.md`.
 
-The next allowed slice is A14-1 complete attribute-evidence coverage. It must
-remain behavior-neutral. A14-S1, A14-C1, LLM teacher/advisor work, and ask/stop
-changes remain blocked until A13's human-fixture review has a recorded
-disposition.
+A14-1 is now retained at runtime source commit `4f615f4`. All ten allowed
+attributes have explicit evidence source, lifecycle, range, status,
+comparability, answerability/actionability, eligibility, and missing-data
+behavior. The fixed Development audit finds bounded comparable evidence for
+category/material/color/style/use_case, uncalibrated feature text, unavailable
+field-tagged size/brand/budget evidence, and a not-applicable `other`
+partition. The 649-turn visible trace and all Development/fold metrics remain
+exactly unchanged; see `docs/a14_1_attribute_evidence.md`.
+
+This reaches the farthest safe automatic boundary while A13 remains open.
+A14-S1, A14-C1, LLM teacher/advisor work, and ask/stop changes remain blocked
+until A13's human-fixture review has a recorded disposition.
 
 ## R0 Result
 
@@ -546,10 +555,10 @@ track in `docs/demo_and_submission_plan.md`.
   semantic-quality evidence are not implemented.
 - Profile ranking remains disabled at weight `0.0`; long-term profile value has
   not been demonstrated.
-- Candidate-aware clarification now runs through the retained A14-0 deep
-  Question Policy Interface with exact legacy behavior and a hash-bound turn
-  audit. Complete ten-attribute evidence, deterministic selection Shadow, and
-  a should-ask gate have not yet been retained.
+- Candidate-aware clarification runs through the retained A14-0 deep Interface,
+  and A14-1 retains complete explicit ten-attribute evidence with exact legacy
+  behavior. Deterministic selection Shadow and a should-ask gate have not yet
+  been retained and are blocked on the A13 disposition.
 
 These are explicit gaps, not implied capabilities. If an experiment is rejected
 again, preserve the measured result and disclose the literal coverage gap.

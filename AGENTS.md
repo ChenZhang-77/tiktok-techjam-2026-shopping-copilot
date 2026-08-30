@@ -197,12 +197,12 @@ semantics plus an explicit fallback for uncovered attributes. A10b was the
 historical next step and is now complete.
 
 The reviewed successor is A14, defined in
-`docs/question_policy_optimization_plan.md`. A14-0 is retained: clarification
-now runs behind one total A-owned `QuestionPolicy` Interface with exact
-legacy-visible parity and a hash-bound turn audit. A14-1 must next make missing,
-partial, uncalibrated, and degraded per-attribute evidence explicit without
-changing behavior. The first later Candidate changes only which eligible
-attribute is asked while preserving the current ask opportunity. Broad stop,
+`docs/question_policy_optimization_plan.md`. A14-0 and A14-1 are retained:
+clarification runs behind one total A-owned `QuestionPolicy` Interface with
+exact legacy-visible parity, a hash-bound turn audit, and explicit evidence
+status for all ten attributes. The first later Candidate changes only which
+eligible attribute is asked while preserving the current ask opportunity, but
+A14-S1 and Candidate behavior wait for the A13 review disposition. Broad stop,
 optional LLM, profile, query, and retrieval changes remain separate
 experiments.
 
