@@ -54,6 +54,14 @@ corrected default-route comparison may inform retention. No production source,
 shared contract, evaluator, catalog, or default LLM setting has changed.
 For the next action and measured disposition, read that pilot record first.
 
+At clean pilot source `5a6b65b`, the B9 default baseline is TechnicalScore
+`0.766231`; the opt-in selector gives `0.767211`, with unchanged HitRate `0.925`,
+three improving folds and one regressing fold. Both default-route runs
+reproduce exactly. This is **retained pilot evidence, not a default switch**;
+the full S1 counterfactual check is still pending. Next: inspect the changed
+question sessions/fold-2 regression before deciding promotion, with no more
+AI-reference infrastructure work.
+
 The existing `0.925 / 0.765703` A13/A14 reports used explicit structured
 retrieval injection. They remain valid for that comparator; do not silently
 describe them as a new measurement of active B9 default routing. A corrected
@@ -73,7 +81,7 @@ behavior-identical Question Policy Module and turn-audit slice:
 | Current A13 publication branch | `llm`, cut from reviewed A13 HEAD `bbb0075` |
 | A14-0 runtime source commit | `f594601`; exact visible-response parity to legacy `2e4108a` across 649 Development turns |
 | A14-1 runtime/audit source commit | `b238c68`; closed Question Policy diagnostics, retained fallback semantics, and ten closed-schema attribute-evidence records per turn with the same visible response |
-| Latest local full test suite (2026-08-30) | 409 passed after reviewed A13-AS0 core contracts and AS0R manifest preparation; default runtime remains no-LLM |
+| Latest local full test suite (2026-08-31) | 419 passed after lightweight editor diagnostics and the isolated default-route selection pilot; default runtime remains unchanged/no-LLM |
 | Committed annotation bundle | `A13_annotation_pack_v1.zip`, SHA256 `8eb3379c730df8ee1a536b1ccfcb198bc456198ee280dea82c2100fc9cd0658b` |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |

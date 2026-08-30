@@ -66,6 +66,13 @@ definitions instead of creating local variants.
 
 ## Current experiment evidence
 
+- [a13_light_review.md](a13_light_review.md) — completed 24-call synthetic
+  Flash/Pro editor diagnostic; retained offline only, not a score claim
+- [a14_deadline_selection.md](a14_deadline_selection.md) — twice-reproduced
+  default-route score pilot, fold-2 risk, explicit not-default decision
+- [a14_deadline_selection_result.json](a14_deadline_selection_result.json) —
+  recomputable sessions/folds and changed-question evidence for that pilot
+
 - `r0_development_failure_taxonomy.md` — canonical Development miss diagnosis
 - `a13_0_baseline_evidence.md` — current 0.925 comparator, hashes, fixed folds,
   and refreshed target-free taxonomy

@@ -20,8 +20,9 @@ available as an explicit, isolated performance experiment.
 **2026-08-31 deadline route:** [lightweight AI review](docs/a13_light_review.md)
 is complete and retained only as an offline helper; it does not demonstrate
 competition gains. Full AI-silver construction and A13 runtime are deferred.
-The separate [A14 selection pilot](docs/a14_deadline_selection.md) now tests
-score impact against the actual default route. Production defaults are unchanged.
+The separate [A14 selection pilot](docs/a14_deadline_selection.md) reproduced
+a small score gain against the actual default route, with one regressing fold;
+it remains opt-in pending its final counterfactual audit. Production defaults are unchanged.
 This deadline disposition supersedes the older pending-A13 sequence below.
 
 The verified integrated checkout and next optimization decision are documented

@@ -1,4 +1,7 @@
 import unittest
+import hashlib
+import json
+from pathlib import Path
 
 from experiments.a14_deadline_selection import SelectionPolicy, score_sessions
 from starter.contracts import Candidate, RetrievalDiagnostics, RetrievalResult
@@ -7,6 +10,24 @@ from starter.core.question_policy import QuestionPolicy
 
 
 class DeadlineSelectionTest(unittest.TestCase):
+    def test_bound_evidence_recomputes_all_metrics_and_current_sources(self):
+        root = Path(__file__).resolve().parents[1]
+        evidence = json.loads((root / "docs/a14_deadline_selection_result.json").read_text())
+        folds = json.loads((root / "docs/development_folds_v1.json").read_text())["folds"]
+        for mode, sessions in evidence["session_outcomes"].items():
+            self.assertEqual(len(sessions), 160)
+            for key, value in score_sessions(sessions).items():
+                self.assertEqual(evidence["arms"][mode][key], value)
+            for fold, members in folds.items():
+                self.assertEqual(evidence["arms"][mode]["fixed_folds"][fold],
+                    score_sessions([s for s in sessions if s["sample_id"] in members]))
+        for path, digest in evidence["runtime_and_evaluator_sha256"].items():
+            self.assertEqual(hashlib.sha256((root / path).read_bytes()).hexdigest(), digest)
+        self.assertEqual(hashlib.sha256((root / "experiments/a14_deadline_selection.py").read_bytes()).hexdigest(),
+                         evidence["summary"]["provenance"]["source_sha256"])
+        self.assertTrue(evidence["summary"]["shadow_visible_parity"])
+        self.assertFalse(evidence["summary"]["runtime_default_changed"])
+
     def test_malformed_state_preserves_guarded_legacy_stop(self):
         state = SessionState(session_id="synthetic", user_profile={})
         state.active_constraints = [None]

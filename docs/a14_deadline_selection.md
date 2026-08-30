@@ -55,6 +55,74 @@ parity. No selector parameters change. Record real route executions/fallbacks
 and next-answer active-attribute/no-preference proxies; these are not calibrated
 answerability or full counterfactual regret.
 
-Corrected result pending. Expected files: isolated `experiments/a14_deadline_selection.py`,
-synthetic seam tests, this evidence record and current navigation. No production
-source changes are planned for the pilot.
+Corrected default-route run at `b77d835`, repeated at repaired source `5a6b65b`:
+
+| Metric | Default / Shadow | Selection Candidate |
+| --- | ---: | ---: |
+| HitRate@10 | 0.925000 | 0.925000 |
+| MRR | 0.554521 | 0.554869 |
+| MTTC | 4.131250 | 4.087500 |
+| Efficiency | 0.686875 | 0.691250 |
+| TechnicalScore | 0.766231 | 0.767211 |
+
+Score delta is **+0.000980**, not the larger structured-only exploratory gain.
+Fixed-fold score deltas are `+0.001500, -0.000500, +0.002000, +0.000917`.
+No session hit was gained or lost. Scenario score deltas are Boundary
+`+0.005000`, Browsing `+0.000885`, Buying `+0.000312`, and Intent Override
+`+0.001667`. The aggregate is positive but small, and fold 2 regresses.
+
+Baseline and Shadow match visible responses exactly. Baseline, Shadow and
+Candidate reproduce their complete session outcomes, scenario/fold metrics,
+and visible trace hashes in the second run. Dense/fusion actually execute;
+the pinned model is `all-MiniLM-L6-v2` revision
+`1110a243fdf4706b3f48f1d95db1a4f5529b4d41`, with compatible existing vectors.
+Both arms use the same default B9 gate and weights. Cache paths are supplied
+explicitly because this checkout lacks its own generated model/vector files.
+
+The Candidate changes 24 of 642 question decisions (Shadow proposes changes
+on 23 of 649 baseline turns). It has zero observed response exceptions,
+invalid payloads, fallbacks, and question-eligibility/final-turn violations.
+Observed next replies fall from 458 to 451; new-active-attribute replies remain
+156, while new-no-preference replies fall from 236 to 229. This supports fewer
+unproductive questions, but is a proxy, not calibrated answerability or a
+complete counterfactual causal audit. Same-snapshot evidence and subsequent
+attribute/no-preference state are retained for all 24 changed decisions.
+
+Second-run response p95 is 59.26 ms baseline versus 58.94 ms Candidate. This
+single-host timing does not establish a latency improvement; no extra model
+or retrieval call is introduced. Peak process-tree memory was not measured.
+
+Decision: **retain the opt-in pilot for follow-up, keep production default
+unchanged**. The numeric pilot gate passes, but the full S1 all-legal-question
+counterfactual/regret check is not complete. No online LLM, shared-contract,
+evaluator, ranking, state, or question-template change was retained. No
+Full/Holdout or private-set result is claimed.
+
+Next smallest score-first step: audit the changed-question sessions and fold-2
+regression with the existing offline counterfactual seam, then decide whether
+the small benefit warrants promoting this exact selector. Do not tune a new
+threshold or restart AI-silver infrastructure. If that audit cannot justify
+promotion within the deadline, preserve default and move to remaining delivery
+work. This is an explicit review boundary, not an assertion of default gains.
+
+Bound evidence: [a14_deadline_selection_result.json](a14_deadline_selection_result.json)
+contains all baseline/Candidate session outcomes, fixed folds, same-snapshot
+changed-question audit, source/input/evaluator hashes, route configuration,
+cost/timing boundaries, and repeatability checks. Full temporary reports are
+not required to recompute the published session/fold metrics.
+
+Reproduce from repository root using the project's Python environment and
+existing pinned cache locations (no downloads or provider key required):
+
+```bash
+python -m experiments.a14_deadline_selection \
+  --dense-cache PATH_TO_EXISTING_MINILM_VECTORS \
+  --model-cache PATH_TO_EXISTING_HUGGINGFACE_HUB \
+  --output PATH_TO_NEW_EMPTY_REPORT_DIRECTORY
+python -m unittest discover -s tests -q
+```
+
+Automatic review: Standards and Spec findings were fixed and re-reviewed with
+no open findings. The malformed-state guard and aggregate fold score have
+synthetic regression tests. Final full suite: 419 tests passed; updated Markdown
+links and `git diff --check` pass. Production source files remain unchanged.
