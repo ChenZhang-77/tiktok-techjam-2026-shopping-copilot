@@ -1,0 +1,91 @@
+{
+  "version": "a14-0-question-policy-evidence-v1",
+  "decision": "keep",
+  "summary": "Retain the deep QuestionPolicy module and target-free turn audit with exact legacy-visible behavior parity.",
+  "provenance": {
+    "starting_commit": "2e4108a",
+    "runtime_source_commit": "f594601",
+    "inputs": {
+      "catalog": {"path": "data/catalog.jsonl", "sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67"},
+      "dataset": {"path": "data/public_set.jsonl", "sha256": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579"},
+      "public_split": {"path": "docs/public_split_v1.json", "sha256": "98171487d3416ff97989e98aeca145b87df74337c5edbe7c908dd80afc538c50"},
+      "development_folds": {"path": "docs/development_folds_v1.json", "sha256": "d9219a4be4533c4f99156197d03e19e6512ce57b262944a201f8605244ccd78d"},
+      "evaluation_config": {"path": "docs/evaluation_config.json", "sha256": "8ee0c899ddc68d521754cf9d2f239a8bc09851fb37c5872567160c30d431aa53"},
+      "local_evaluator": {"path": "evaluator/local_evaluator.py", "sha256": "c21e10a6e772c4824d85f513f0d7d53d23942d20ec9eb3853ff49119317ef96f"},
+      "splits": {"path": "evaluator/splits.py", "sha256": "36858b99678befd8e4740b6c31a9e33f429330be38e74d9ca3eb002916fc47a3"}
+    },
+    "runtime_sources": {
+      "question_policy": {"path": "starter/core/question_policy.py", "sha256": "40eeaff64f98800a264fa795154c26a62af1fe9d21e62d33017a56a003944a8c"},
+      "agent": {"path": "starter/agent.py", "sha256": "aa9b580ce662929892724accd153bb35d5b774f8c9dd4097e23aa12fdca2ce27"},
+      "clarification": {"path": "starter/core/clarification.py", "sha256": "e2aab1c15202190776e4891a83b24c8f9bd6b335dca62ea9aa4140254ba1a623"},
+      "turn_audit": {"path": "experiments/a14_turn_audit.py", "sha256": "0620d4575107c4b2fccf26aff1913cfa678cd61b32f88ebdf35929fb41cf458f"}
+    },
+    "run_artifacts": {
+      "legacy_visible_trace": {"path": "docs/a14_0_reports/legacy_visible_trace.json", "sha256": "c4cbaeab96ec2fe066cdd28e15000323abae745d707aaff5f890c6a92fdae1c2"},
+      "turn_audit": {"path": "docs/a14_0_reports/turn_audit.json", "sha256": "8bf739121707dcf9357ccca5d75b520a37bc7f9ba0d642680f124b2b6ef79e64"},
+      "development": {"path": "docs/a14_0_reports/development.json", "sha256": "170141a34c36d6db7002adbdb6ef758481287b9bd814a541c7b7726dace9fc11"},
+      "fold_1": {"path": "docs/a14_0_reports/fold_1.json", "sha256": "98e26f2adb1c3af1b93e60fc1665c79bc14bc2c44f78d4b2adc46145f914ea3d"},
+      "fold_2": {"path": "docs/a14_0_reports/fold_2.json", "sha256": "e129c2da526a3952ae9b70200ebd5489b8d10a43175e2033f1b414c05edef9c3"},
+      "fold_3": {"path": "docs/a14_0_reports/fold_3.json", "sha256": "befa48fe877da1d49df14b0bd14fe8009e603b8f607f867e9cb64947875dcc1b"},
+      "fold_4": {"path": "docs/a14_0_reports/fold_4.json", "sha256": "019a04cb3875487b00ec20812da3875dce4cf9da41ea9fd96726720b2fa0b473"}
+    }
+  },
+  "boundaries": {
+    "runtime_behavior_changed": false,
+    "shared_contract_changed": false,
+    "route_weight_semantics_changed": false,
+    "state_mutation_order_changed": false,
+    "llm_calls": 0,
+    "full_or_holdout_runs": 0,
+    "candidate_ids_or_text_recorded": false,
+    "private_product_identifiers_recorded": false
+  },
+  "visible_behavior_parity": {
+    "legacy_commit": "2e4108a",
+    "current_commit": "f594601",
+    "session_count": 160,
+    "turn_count": 649,
+    "visible_response_trace_sha256": "098afbdf9b1ce3c0813ccb311b90432837e8b3ac7f36ed78248fe2fef3a75146",
+    "exact": true,
+    "session_shape_mismatches": 0,
+    "turn_shape_mismatches": 0,
+    "ask_attribute_mismatches": 0,
+    "message_mismatches": 0,
+    "recommendation_mismatches": 0,
+    "input_hashes_match": true,
+    "metric_parity": true
+  },
+  "turn_audit": {
+    "question_trace_sha256": "7bb6c838ccfd9e2820ce26cb1c5b852610c4413a381b51752cc911fc857584de",
+    "ask_count": 587,
+    "stop_count": 62,
+    "unproductive_reply_count": 226,
+    "policy_violation_count": 0,
+    "evidence_statuses": {"available": 649},
+    "answer_outcomes": {"new_active_evidence": 155, "no_preference": 234, "not_applicable": 191, "other_response": 69},
+    "policy_latency_ms": {"count": 649, "mean": 2.987056, "p95": 4.65275, "max": 5.876167}
+  },
+  "development_160": {
+    "sample_count": 160,
+    "response_count": 649,
+    "hit_rate_at_10": 0.925,
+    "mrr": 0.55276,
+    "mttc": 4.13125,
+    "efficiency": 0.686875,
+    "technical_score": 0.765703,
+    "respond_exceptions": 0,
+    "invalid_response_payloads": 0,
+    "reported_fallbacks": 0
+  },
+  "folds": {
+    "fold_1": {"sample_count": 40, "hit_rate_at_10": 0.925, "mrr": 0.485724, "mttc": 4.075, "efficiency": 0.6925, "technical_score": 0.746717},
+    "fold_2": {"sample_count": 40, "hit_rate_at_10": 0.9, "mrr": 0.624504, "mttc": 4.575, "efficiency": 0.6425, "technical_score": 0.765851},
+    "fold_3": {"sample_count": 40, "hit_rate_at_10": 0.95, "mrr": 0.595585, "mttc": 3.65, "efficiency": 0.735, "technical_score": 0.800675},
+    "fold_4": {"sample_count": 40, "hit_rate_at_10": 0.925, "mrr": 0.505228, "mttc": 4.225, "efficiency": 0.6775, "technical_score": 0.749568}
+  },
+  "next_allowed_slice": "A14-1 attribute evidence coverage; still behavior-neutral. A14-S1 and all Candidate behavior remain gated on the A13 review disposition.",
+  "tests": {
+    "focused": "34 passed",
+    "full_suite": "365 passed"
+  }
+}

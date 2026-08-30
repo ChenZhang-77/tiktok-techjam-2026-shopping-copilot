@@ -65,6 +65,10 @@ definitions instead of creating local variants.
 - `a13_s0_offline_evidence.md` — retained types/fake/validator/gate/fallback
   foundation, exact behavior parity, and the pre-provider human-fixture gate
 - `a13_s0_reports/` — hash-bound disabled/no-key/fake Development parity reports
+- `a14_0_question_policy_evidence.md` — retained deep Question Policy Module,
+  exact 649-turn legacy parity, bounded audit, latency, and next gate
+- `a14_0_reports/` — hash-bound legacy/current turn traces, Development result,
+  and four fixed-fold reports used by the A14-0 evidence test
 - `a8_stateful_intent_evidence.md` — retained persistent intent assessment
 - `ab0_decision_evidence.md` — complete A-side decision-evidence inventory
 - `a9_should_ask_evidence.md` — rejected should-ask candidate

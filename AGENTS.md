@@ -169,8 +169,7 @@ message
   -> guarded structured filter and relaxation/fill
   -> B9 broad-Browsing gate -> pinned local dense retrieval + weighted RRF
      (otherwise exact structured order)
-  -> A-side DecisionEvidence summary
-  -> clarification
+  -> A-side QuestionPolicy (same-snapshot DecisionEvidence + clarification)
   -> response guard
 ```
 
@@ -198,12 +197,14 @@ semantics plus an explicit fallback for uncovered attributes. A10b was the
 historical next step and is now complete.
 
 The reviewed successor is A14, defined in
-`docs/question_policy_optimization_plan.md`. A14 first deepens clarification
-behind one A-owned Interface, binds a turn audit, and makes missing, partial,
-uncalibrated, and degraded evidence explicit. Its first behavior Candidate
-changes only which eligible attribute is asked while preserving the current
-ask opportunity. Broad stop, optional LLM, profile, query, and retrieval
-changes remain separate experiments.
+`docs/question_policy_optimization_plan.md`. A14-0 is retained: clarification
+now runs behind one total A-owned `QuestionPolicy` Interface with exact
+legacy-visible parity and a hash-bound turn audit. A14-1 must next make missing,
+partial, uncalibrated, and degraded per-attribute evidence explicit without
+changing behavior. The first later Candidate changes only which eligible
+attribute is asked while preserving the current ask opportunity. Broad stop,
+optional LLM, profile, query, and retrieval changes remain separate
+experiments.
 
 A10b Internal QueryPlan is retained at `9560344`. It is A-owned and separates
 category/hard/soft/semantic/residual/excluded evidence, but renders only the

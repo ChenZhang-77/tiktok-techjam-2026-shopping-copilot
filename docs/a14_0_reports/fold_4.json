@@ -1,0 +1,497 @@
+{
+  "sample_count": 40,
+  "hit_rate_at_10": 0.925,
+  "mrr": 0.505228,
+  "mttc": 4.225,
+  "efficiency": 0.6775,
+  "recommended_technical_score": 0.749568,
+  "reported_token_usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  },
+  "scenario_metrics": {
+    "boundary": {
+      "sample_count": 2,
+      "hit_rate_at_10": 1.0,
+      "mrr": 0.571429,
+      "mttc": 5.5,
+      "efficiency": 0.55,
+      "recommended_technical_score": 0.781429
+    },
+    "browsing": {
+      "sample_count": 16,
+      "hit_rate_at_10": 0.9375,
+      "mrr": 0.531944,
+      "mttc": 4.1875,
+      "efficiency": 0.68125,
+      "recommended_technical_score": 0.764583
+    },
+    "buying": {
+      "sample_count": 16,
+      "hit_rate_at_10": 0.9375,
+      "mrr": 0.506052,
+      "mttc": 3.75,
+      "efficiency": 0.725,
+      "recommended_technical_score": 0.765566
+    },
+    "intent_override": {
+      "sample_count": 6,
+      "hit_rate_at_10": 0.833333,
+      "mrr": 0.409722,
+      "mttc": 5.166667,
+      "efficiency": 0.583333,
+      "recommended_technical_score": 0.65625
+    }
+  },
+  "sessions": [
+    {
+      "sample_id": "public_0002",
+      "scenario_type": "intent_override",
+      "hit": false,
+      "first_hit_turn": null,
+      "best_rank": null,
+      "reciprocal_rank": 0.0
+    },
+    {
+      "sample_id": "public_0005",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 4,
+      "reciprocal_rank": 0.25
+    },
+    {
+      "sample_id": "public_0006",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 7,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0013",
+      "scenario_type": "intent_override",
+      "hit": true,
+      "first_hit_turn": 4,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0016",
+      "scenario_type": "browsing",
+      "hit": false,
+      "first_hit_turn": null,
+      "best_rank": null,
+      "reciprocal_rank": 0.0
+    },
+    {
+      "sample_id": "public_0018",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 7,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0024",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 3,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0031",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 7,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0055",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 3,
+      "reciprocal_rank": 0.3333333333333333
+    },
+    {
+      "sample_id": "public_0058",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 3,
+      "best_rank": 4,
+      "reciprocal_rank": 0.25
+    },
+    {
+      "sample_id": "public_0062",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 3,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0063",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 3,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0074",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 8,
+      "reciprocal_rank": 0.125
+    },
+    {
+      "sample_id": "public_0075",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 7,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0080",
+      "scenario_type": "intent_override",
+      "hit": true,
+      "first_hit_turn": 4,
+      "best_rank": 2,
+      "reciprocal_rank": 0.5
+    },
+    {
+      "sample_id": "public_0086",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0097",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 7,
+      "reciprocal_rank": 0.14285714285714285
+    },
+    {
+      "sample_id": "public_0101",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 3,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0102",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0108",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 10,
+      "reciprocal_rank": 0.1
+    },
+    {
+      "sample_id": "public_0110",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 4,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0112",
+      "scenario_type": "boundary",
+      "hit": true,
+      "first_hit_turn": 3,
+      "best_rank": 7,
+      "reciprocal_rank": 0.14285714285714285
+    },
+    {
+      "sample_id": "public_0115",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 6,
+      "reciprocal_rank": 0.16666666666666666
+    },
+    {
+      "sample_id": "public_0117",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0130",
+      "scenario_type": "intent_override",
+      "hit": true,
+      "first_hit_turn": 3,
+      "best_rank": 2,
+      "reciprocal_rank": 0.5
+    },
+    {
+      "sample_id": "public_0134",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 1,
+      "best_rank": 4,
+      "reciprocal_rank": 0.25
+    },
+    {
+      "sample_id": "public_0143",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 1,
+      "best_rank": 9,
+      "reciprocal_rank": 0.1111111111111111
+    },
+    {
+      "sample_id": "public_0149",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 2,
+      "reciprocal_rank": 0.5
+    },
+    {
+      "sample_id": "public_0157",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0162",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 6,
+      "best_rank": 9,
+      "reciprocal_rank": 0.1111111111111111
+    },
+    {
+      "sample_id": "public_0171",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 3,
+      "best_rank": 7,
+      "reciprocal_rank": 0.14285714285714285
+    },
+    {
+      "sample_id": "public_0174",
+      "scenario_type": "buying",
+      "hit": false,
+      "first_hit_turn": null,
+      "best_rank": null,
+      "reciprocal_rank": 0.0
+    },
+    {
+      "sample_id": "public_0175",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 3,
+      "best_rank": 8,
+      "reciprocal_rank": 0.125
+    },
+    {
+      "sample_id": "public_0178",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 5,
+      "best_rank": 10,
+      "reciprocal_rank": 0.1
+    },
+    {
+      "sample_id": "public_0183",
+      "scenario_type": "intent_override",
+      "hit": true,
+      "first_hit_turn": 5,
+      "best_rank": 3,
+      "reciprocal_rank": 0.3333333333333333
+    },
+    {
+      "sample_id": "public_0184",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 5,
+      "best_rank": 5,
+      "reciprocal_rank": 0.2
+    },
+    {
+      "sample_id": "public_0187",
+      "scenario_type": "boundary",
+      "hit": true,
+      "first_hit_turn": 8,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "sample_id": "public_0189",
+      "scenario_type": "buying",
+      "hit": true,
+      "first_hit_turn": 5,
+      "best_rank": 2,
+      "reciprocal_rank": 0.5
+    },
+    {
+      "sample_id": "public_0195",
+      "scenario_type": "browsing",
+      "hit": true,
+      "first_hit_turn": 7,
+      "best_rank": 5,
+      "reciprocal_rank": 0.2
+    },
+    {
+      "sample_id": "public_0198",
+      "scenario_type": "intent_override",
+      "hit": true,
+      "first_hit_turn": 4,
+      "best_rank": 8,
+      "reciprocal_rank": 0.125
+    }
+  ],
+  "code_provenance": {
+    "commit": "f594601",
+    "worktree_clean": true
+  },
+  "observed_run_counts": {
+    "respond_exceptions": 0,
+    "invalid_response_payloads": 0,
+    "reported_fallbacks": 0,
+    "internal_fallbacks": 0,
+    "internal_fallbacks_note": "B1 Agent diagnostics expose fallback_used at the public boundary."
+  },
+  "retrieval_diagnostics": {
+    "route_candidate_counts": {
+      "lexical": {
+        "response_count": 166,
+        "total": 15720,
+        "mean": 94.698795,
+        "min": 60,
+        "max": 120
+      },
+      "structured": {
+        "response_count": 166,
+        "total": 15720,
+        "mean": 94.698795,
+        "min": 60,
+        "max": 120
+      }
+    },
+    "route_overlap_counts": {
+      "lexical|structured": {
+        "response_count": 166,
+        "total": 15720,
+        "mean": 94.698795,
+        "min": 60,
+        "max": 120
+      }
+    },
+    "route_failure_counts": {},
+    "requested_route_counts": {
+      "lexical": 166,
+      "structured": 166,
+      "dense": 100
+    },
+    "executed_route_counts": {
+      "lexical": 166,
+      "structured": 166
+    },
+    "requested_not_executed_route_counts": {
+      "dense": 100
+    },
+    "fallback_route_counts": {},
+    "route_semantics_unreported_responses": 0,
+    "structured_filter_applied_responses": 58,
+    "relaxed_constraint_responses": 1,
+    "filtered_pool_step_count": 92,
+    "cache_state_counts": {
+      "lexical_index:memory_ready": 166,
+      "structured_evidence:memory_ready": 166
+    },
+    "rerank_pool_size": null
+  },
+  "timing": {
+    "initialization_ms": 2178.438042,
+    "evaluation_wall_ms": 5411.118041,
+    "responses": {
+      "response_count": 166,
+      "total_ms": 5380.35026,
+      "mean_ms": 32.411749,
+      "p50_ms": 29.812209,
+      "p95_ms": 60.986417,
+      "max_ms": 171.264208
+    },
+    "retrieval": {
+      "latency": {
+        "response_count": 166,
+        "total_ms": 4603.475457,
+        "mean_ms": 27.73178,
+        "p50_ms": 25.363375,
+        "p95_ms": 54.924792,
+        "max_ms": 138.09375
+      },
+      "lexical_latency": {
+        "response_count": 166,
+        "total_ms": 2337.450448,
+        "mean_ms": 14.081027,
+        "p50_ms": 13.114708,
+        "p95_ms": 25.393625,
+        "max_ms": 116.770166
+      },
+      "constraint_rerank_latency": {
+        "response_count": 166,
+        "total_ms": 1247.427082,
+        "mean_ms": 7.514621,
+        "p50_ms": 5.725292,
+        "p95_ms": 17.703292,
+        "max_ms": 96.506958
+      },
+      "structured_filter_latency": {
+        "response_count": 166,
+        "total_ms": 96.507252,
+        "mean_ms": 0.581369,
+        "p50_ms": 0.00025,
+        "p95_ms": 2.713125,
+        "max_ms": 3.611833
+      }
+    }
+  },
+  "resources": {
+    "peak_rss_bytes": 549568512,
+    "peak_rss_kind": "process_peak_rss"
+  },
+  "evaluation": {
+    "dataset": "data/public_set.jsonl",
+    "split": "development",
+    "split_manifest": "docs/public_split_v1.json",
+    "split_version": "public-split-v1",
+    "development_fold": "fold_4",
+    "development_fold_manifest": "docs/development_folds_v1.json",
+    "development_fold_version": "development-folds-v1",
+    "retrieval_mode": "structured",
+    "structured_filter": true,
+    "adaptive_depth_enabled": false,
+    "fusion_rrf_k": null,
+    "conditional_dense_configuration": null,
+    "reranker_configuration": null,
+    "dense_configuration": null,
+    "fallback_configuration": null
+  }
+}

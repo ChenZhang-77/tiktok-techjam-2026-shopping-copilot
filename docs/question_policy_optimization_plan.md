@@ -12,6 +12,13 @@ Planning and evidence-only work may begin before the A13 review gate closes.
 Any A14 behavior-changing Candidate must remain separate from an active A13 or
 B10b LLM experiment so metric attribution stays meaningful.
 
+Current checkpoint: A14-0 is retained at runtime source commit `f594601` with
+exact legacy-visible parity across all 649 fixed Development turns, unchanged
+Development/fold metrics, zero policy violations, and a hash-bound evidence
+record in `docs/a14_0_question_policy_evidence.md`. A14-1 is the next allowed
+behavior-neutral slice; A14-S1 and all Candidate behavior still wait for the
+A13 review disposition.
+
 ## Executive Decision
 
 A14 will not begin by tuning another broad should-ask threshold or by letting
@@ -348,6 +355,10 @@ decision.
 ### A14-0 - Turn Audit and Module Parity
 
 Primary behavior change: none.
+
+**Retained on 2026-08-30.** The Module, clean legacy comparator, target-free
+turn audit, source/input hashes, Development/fold parity, latency, and review
+fixes are bound by `docs/a14_0_question_policy_evidence.md`.
 
 - retain per-turn eligible attributes, baseline action, reason, answer outcome,
   and safe evidence statuses;

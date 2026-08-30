@@ -87,8 +87,8 @@ Current Chen runtime source @ 0bd3375
                   -> A13-C1 guarded activation or No-Go
 
 Current runtime and frozen evidence
-  -> A14-0 turn audit and deep-Module parity             may run before A13 gate
-      -> A14-1 complete attribute-evidence coverage      may run before A13 gate
+  -> A14-0 turn audit and deep-Module parity             retained @ f594601
+      -> A14-1 complete attribute-evidence coverage      next; behavior neutral
           -> wait for the A13 review disposition
               -> A14-S1 deterministic selection Shadow
                   -> A14-C1 selection-only Candidate
@@ -104,10 +104,11 @@ measured and rejected. B10b-DS1/DS2 code and provisional remote measurements
 exist, but neither is retained and complete reports are not yet hash-bound.
 The selected next route is A13, whose authoritative plan is
 [`DeepSeek_LLM接入实验方案.md`](../DeepSeek_LLM接入实验方案.md). B11 and B12
-remain prerequisite-gated. A14 design, evidence planning, and zero-behavior
-audit preparation may proceed before the A13 review gate closes, but A14
-Candidate behavior must not be activated in the same metric experiment as A13
-or B10b. The authoritative A14 plan is
+remain prerequisite-gated. A14-0 is retained with exact legacy-visible parity
+and a hash-bound 649-turn audit. A14-1 may proceed before the A13 review gate
+closes because it is behavior-neutral, but A14 Shadow/Candidate behavior must
+wait for the A13 disposition and must not be activated in the same metric
+experiment as A13 or B10b. The authoritative A14 plan is
 [`docs/question_policy_optimization_plan.md`](question_policy_optimization_plan.md).
 
 ## R0 - Development Failure Taxonomy
@@ -495,6 +496,11 @@ A14-0 turn audit and deep-Module parity       behavior unchanged
               -> A14-S3/C3 guarded LLM advisor or No-Go
               -> A14-C4 ask/stop Candidate last
 ```
+
+A14-0 is retained at runtime source commit `f594601`; its legacy comparator,
+turn trace, Development/fold parity, latency, boundaries, and evidence test are
+recorded in `docs/a14_0_question_policy_evidence.md`. A14-1 is the active
+smallest slice and may not change the returned policy action.
 
 The first Candidate preserves the baseline ask opportunity and changes only
 which legal attribute is asked. It uses a guarded lexicographic cascade with

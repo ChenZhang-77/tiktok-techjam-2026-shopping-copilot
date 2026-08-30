@@ -616,9 +616,17 @@ Do not combine A13 semantic understanding with an ask/stop policy change.
 
 ## A14 - Question Policy Deepening
 
-**Status: design reviewed; no A14 runtime behavior or retained evidence yet.**
+**Status: A14-0 retained with exact legacy-visible parity; A14-1 is the next
+behavior-neutral slice.**
 The authoritative plan is
 [`docs/question_policy_optimization_plan.md`](../question_policy_optimization_plan.md).
+
+The retained A14-0 runtime source is `f594601`. Its independent clean legacy
+trace, 649-turn current audit, unchanged Development/fold metrics, zero policy
+violations, source/input hashes, and local policy latency are bound in
+[`docs/a14_0_question_policy_evidence.md`](../a14_0_question_policy_evidence.md).
+Do not reopen the one-entry-point seam during A14-1; deepen its internal
+attribute evidence while preserving the legacy action and response exactly.
 
 The recommended Module has one runtime Interface:
 
@@ -663,8 +671,8 @@ an uncovered legacy attribute.
 
 Required order:
 
-1. A14-0: turn audit plus deep-Module parity, no behavior change;
-2. A14-1: explicit evidence status for all ten allowed attributes, no behavior
+1. A14-0: retained turn audit plus deep-Module parity, no behavior change;
+2. A14-1: next; explicit evidence status for all ten allowed attributes, no behavior
    change;
 3. A14-S1: deterministic selection Shadow and offline counterfactual audit;
 4. A14-C1: selection-only Candidate with legacy fallback;

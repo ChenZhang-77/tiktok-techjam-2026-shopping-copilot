@@ -38,7 +38,8 @@ read-only.
 
 The retained B12 checkpoint was verified on 2026-08-28. A13-0 bound the current
 baseline and refreshed taxonomy on 2026-08-29. A13-1 then tested and rejected a
-deterministic State / Override candidate, leaving that runtime unchanged:
+deterministic State / Override candidate. A14-0 was retained on 2026-08-30 as a
+behavior-identical Question Policy Module and turn-audit slice:
 
 | Item | Value |
 | --- | --- |
@@ -47,7 +48,8 @@ deterministic State / Override candidate, leaving that runtime unchanged:
 | Optional B12 code/default-parity commit | `82891c8` |
 | B10a experiment branch | `b/b10a-constraint-preserving-crossencoder` |
 | Current A13 publication branch | `llm`, cut from reviewed A13 HEAD `bbb0075` |
-| Latest local full test suite (2026-08-30) | 353 passed after auditing and rewriting all 60 annotation items, hiding trigger metadata from annotators, and fixing multiword no-preference validation; default runtime remains no-LLM |
+| A14-0 runtime source commit | `f594601`; exact visible-response parity to legacy `2e4108a` across 649 Development turns |
+| Latest local full test suite (2026-08-30) | 365 passed after A14-0 evidence binding; default runtime remains no-LLM |
 | Committed annotation bundle | `A13_annotation_pack_v1.zip`, SHA256 `2e47e49b91c3c916b92a02a14ff7f01d26a65b51e5cecc409b6b4ae66efafd1e` |
 | Catalog | 50,000 unique products, local generated file ignored by Git |
 | Default runtime | B9 gated dense/RRF; B12 adaptive depth is explicit opt-in only |
@@ -306,6 +308,21 @@ reviewed bucket. Neither can stop, create an attribute, mutate state, or bypass
 deterministic fallback. Full design, diagnostics, experiment gates, and
 alternatives are in `docs/question_policy_optimization_plan.md`.
 
+A14-0 is now retained at runtime source commit `f594601`. The clean legacy
+comparator at `2e4108a` and current implementation produced exactly the same
+649 Development-turn public messages, `ask_attribute` values, and
+recommendation lists; their common visible-response trace SHA256 is
+`098afbdf9b1ce3c0813ccb311b90432837e8b3ac7f36ed78248fe2fef3a75146`.
+Development and all four fixed folds reproduce the existing metrics, with zero
+response exceptions, invalid payloads, or fallbacks. The policy trace records
+587 asks, 62 stops, zero policy violations, and p95 local policy latency
+`4.653 ms`. See `docs/a14_0_question_policy_evidence.md`.
+
+The next allowed slice is A14-1 complete attribute-evidence coverage. It must
+remain behavior-neutral. A14-S1, A14-C1, LLM teacher/advisor work, and ask/stop
+changes remain blocked until A13's human-fixture review has a recorded
+disposition.
+
 ## R0 Result
 
 R0 is complete at clean code commit `0b9bc74`. The Development-160 baseline
@@ -529,9 +546,10 @@ track in `docs/demo_and_submission_plan.md`.
   semantic-quality evidence are not implemented.
 - Profile ranking remains disabled at weight `0.0`; long-term profile value has
   not been demonstrated.
-- Candidate-aware clarification exists, but a complete should-ask gate has not
-  yet been retained. A14 now has a reviewed total plan, but no A14 runtime
-  behavior or evidence artifact has been implemented.
+- Candidate-aware clarification now runs through the retained A14-0 deep
+  Question Policy Interface with exact legacy behavior and a hash-bound turn
+  audit. Complete ten-attribute evidence, deterministic selection Shadow, and
+  a should-ask gate have not yet been retained.
 
 These are explicit gaps, not implied capabilities. If an experiment is rejected
 again, preserve the measured result and disclose the literal coverage gap.

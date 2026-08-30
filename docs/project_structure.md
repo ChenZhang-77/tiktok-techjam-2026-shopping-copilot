@@ -118,7 +118,7 @@ before its recorded hash or contents change.
 
 | Change | Location |
 | --- | --- |
-| Dialogue state, extraction, planning, clarification | `starter/core/` and A-side tests; A14 follows `docs/question_policy_optimization_plan.md` |
+| Dialogue state, extraction, planning, clarification | `starter/core/` and A-side tests; retained A14 policy seam is `starter/core/question_policy.py` and later slices follow `docs/question_policy_optimization_plan.md` |
 | Retrieval, fusion, ranking, cache behavior | `starter/retrieval/`, `starter/ranking/`, and B-side tests |
 | Shared public types | `starter/contracts.py` plus coordinated contract tests |
 | Offline analysis or evaluation reporting | `experiments/` |
