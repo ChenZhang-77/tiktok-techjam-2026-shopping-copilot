@@ -638,27 +638,28 @@ class AgentSmokeTest(unittest.TestCase):
                 "Here are the closest matches I found. "
                 "Which specific feature matters most to you?",
             )
+            policy = response["diagnostics"]["question_policy"]
+            self.assertEqual(policy["policy_version"], "a14-1-attribute-evidence-v1")
+            self.assertEqual(policy["mode"], "legacy_action_attribute_evidence")
             self.assertEqual(
-                response["diagnostics"]["question_policy"],
-                {
-                    "policy_version": "a14-0-legacy-parity-v1",
-                    "mode": "legacy_parity",
-                    "eligible_attributes": [
-                        "feature",
-                        "color",
-                        "size",
-                        "style",
-                        "use_case",
-                        "brand",
-                        "budget",
-                        "other",
-                    ],
-                    "baseline_action": "ask",
-                    "baseline_attribute": "feature",
-                    "reason_code": "legacy_ask",
-                    "evidence_status": "degraded",
-                },
+                policy["eligible_attributes"],
+                [
+                    "feature",
+                    "color",
+                    "size",
+                    "style",
+                    "use_case",
+                    "brand",
+                    "budget",
+                    "other",
+                ],
             )
+            self.assertEqual(policy["baseline_action"], "ask")
+            self.assertEqual(policy["baseline_attribute"], "feature")
+            self.assertEqual(policy["reason_code"], "legacy_ask")
+            self.assertEqual(policy["evidence_status"], "degraded")
+            self.assertEqual(len(policy["attribute_evidence"]), 10)
+            self.assertTrue(policy["attribute_evidence"]["feature"]["eligible"])
 
     def test_agent_records_isolated_session_history(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

@@ -181,6 +181,7 @@ def build_decision_evidence(
     turn: int,
     top_k: int,
     response_fallback_used: bool = False,
+    attribute_partition_scores: dict[str, float] | None = None,
 ) -> DecisionEvidence:
     """Summarize full retrieval evidence without exposing Candidate IDs/text."""
 
@@ -269,7 +270,11 @@ def build_decision_evidence(
         score_margin_usable=score_usable,
         constraint_coverage=coverage,
         constraint_coverage_status=coverage_status,
-        attribute_partition_scores=candidate_attribute_scores(candidate_texts),
+        attribute_partition_scores=(
+            dict(attribute_partition_scores)
+            if attribute_partition_scores is not None
+            else candidate_attribute_scores(candidate_texts)
+        ),
         evidence_candidate_count=evidence_count,
         relaxation_used=bool(
             diagnostics.relaxed_constraints

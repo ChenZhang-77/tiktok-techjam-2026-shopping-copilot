@@ -11,6 +11,75 @@ from experiments.a14_turn_audit import (
 
 
 class A14TurnAuditTest(unittest.TestCase):
+    def test_summarizes_complete_a14_1_attribute_evidence_without_raw_text(self) -> None:
+        attributes = (
+            "category", "material", "color", "size", "style", "brand",
+            "budget", "feature", "use_case", "other",
+        )
+        records = {
+            attribute: {
+                "attribute": attribute,
+                "status": "available" if attribute == "material" else "unavailable",
+                "source": "bounded_fixture",
+                "lifecycle": "current_turn_full_pool",
+                "value_range": "bounded",
+                "candidate_coverage": 0.5 if attribute == "material" else None,
+                "value_count": 2 if attribute == "material" else None,
+                "rank_weighted_split": 0.25 if attribute == "material" else None,
+                "answerability_status": "canonical_question",
+                "actionability_status": "bounded_extractor",
+                "comparability_family": (
+                    "bounded_candidate_vocabulary_v1"
+                    if attribute == "material"
+                    else None
+                ),
+                "eligible": attribute == "material",
+                "eligibility_status": (
+                    "eligible" if attribute == "material" else "not_in_legacy_priority"
+                ),
+                "missing_data_behavior": "preserve_legacy_action",
+            }
+            for attribute in attributes
+        }
+        source = {
+            "sessions": [{
+                "sample_id": "public_0001",
+                "turns": [{
+                    "turn": 1,
+                    "ask_attribute": "material",
+                    "question_policy_flags": [],
+                    "question_policy": {
+                        "policy_version": "a14-1-attribute-evidence-v1",
+                        "mode": "legacy_action_attribute_evidence",
+                        "eligible_attributes": ["material"],
+                        "baseline_action": "ask",
+                        "baseline_attribute": "material",
+                        "reason_code": "legacy_ask",
+                        "evidence_status": "available",
+                        "latency_ms": 0.1,
+                        "attribute_evidence": records,
+                    },
+                    "message_sha256": "message",
+                    "recommendations_sha256": "recommendations",
+                    "visible_response_sha256": "visible",
+                }],
+            }],
+        }
+
+        audit = build_turn_audit(source)
+
+        turn_records = audit["sessions"][0]["turns"][0]["attribute_evidence"]
+        self.assertEqual(set(turn_records), set(attributes))
+        self.assertEqual(
+            audit["summary"]["attribute_evidence_status_counts"]["material"],
+            {"available": 1},
+        )
+        self.assertEqual(
+            audit["summary"]["attribute_eligibility_counts"]["material"],
+            {"eligible": 1},
+        )
+        self.assertNotIn("candidate_text", str(audit).lower())
+
     def test_builds_a_target_free_question_trace_with_answer_outcomes(self) -> None:
         source = {
             "version": "r0-v3",

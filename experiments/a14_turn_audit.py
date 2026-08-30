@@ -8,6 +8,44 @@ from pathlib import Path
 from typing import Any
 
 
+A14_ATTRIBUTES = (
+    "category",
+    "material",
+    "color",
+    "size",
+    "style",
+    "brand",
+    "budget",
+    "feature",
+    "use_case",
+    "other",
+)
+A14_ATTRIBUTE_STATUSES = {
+    "available",
+    "partial",
+    "unavailable",
+    "uncalibrated",
+    "degraded",
+    "not_applicable",
+}
+A14_ATTRIBUTE_DIAGNOSTIC_FIELDS = (
+    "attribute",
+    "status",
+    "source",
+    "lifecycle",
+    "value_range",
+    "candidate_coverage",
+    "value_count",
+    "rank_weighted_split",
+    "answerability_status",
+    "actionability_status",
+    "comparability_family",
+    "eligible",
+    "eligibility_status",
+    "missing_data_behavior",
+)
+
+
 def _sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
@@ -72,6 +110,12 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
     policy_violation_count = 0
     unproductive_reply_count = 0
     policy_latencies_ms: list[float] = []
+    attribute_status_counts = {
+        attribute: Counter() for attribute in A14_ATTRIBUTES
+    }
+    attribute_eligibility_counts = {
+        attribute: Counter() for attribute in A14_ATTRIBUTES
+    }
 
     for source_session in source.get("sessions", []):
         previous_ask_attribute: str | None = None
@@ -105,6 +149,35 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
             policy_flags = sorted(
                 str(flag) for flag in source_turn.get("question_policy_flags", [])
             )
+            raw_attribute_evidence = question_policy.get("attribute_evidence")
+            attribute_evidence: dict[str, dict[str, object]] = {}
+            if isinstance(raw_attribute_evidence, dict):
+                if set(raw_attribute_evidence) != set(A14_ATTRIBUTES):
+                    raise ValueError(
+                        "A14-1 requires evidence for exactly all ten attributes"
+                    )
+                for evidence_attribute in A14_ATTRIBUTES:
+                    raw_record = raw_attribute_evidence[evidence_attribute]
+                    if not isinstance(raw_record, dict):
+                        raise ValueError("attribute evidence records must be objects")
+                    if raw_record.get("attribute") != evidence_attribute:
+                        raise ValueError("attribute evidence key and record must agree")
+                    status = str(raw_record.get("status") or "")
+                    if status not in A14_ATTRIBUTE_STATUSES:
+                        raise ValueError("attribute evidence status is not allowed")
+                    record = {
+                        field: raw_record.get(field)
+                        for field in A14_ATTRIBUTE_DIAGNOSTIC_FIELDS
+                    }
+                    attribute_evidence[evidence_attribute] = record
+                    attribute_status_counts[evidence_attribute][status] += 1
+                    attribute_eligibility_counts[evidence_attribute][
+                        str(raw_record.get("eligibility_status") or "")
+                    ] += 1
+            elif str(question_policy.get("policy_version") or "").startswith(
+                "a14-1-"
+            ):
+                raise ValueError("A14-1 diagnostics require attribute evidence")
             unproductive_reply = source_turn.get("unproductive_reply") is True
             turn = {
                 "turn": int(source_turn["turn"]),
@@ -130,6 +203,7 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
                     source_turn.get("visible_response_sha256") or ""
                 ),
                 "policy_flags": policy_flags,
+                "attribute_evidence": attribute_evidence,
             }
             turns.append(turn)
             action_counts[action] += 1
@@ -199,6 +273,16 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
             "unproductive_reply_count": unproductive_reply_count,
             "policy_violation_count": policy_violation_count,
             "policy_latency_ms": _latency_summary(policy_latencies_ms),
+            "attribute_evidence_status_counts": {
+                attribute: dict(sorted(counts.items()))
+                for attribute, counts in attribute_status_counts.items()
+                if counts
+            },
+            "attribute_eligibility_counts": {
+                attribute: dict(sorted(counts.items()))
+                for attribute, counts in attribute_eligibility_counts.items()
+                if counts
+            },
         },
         "sessions": sessions,
     }
