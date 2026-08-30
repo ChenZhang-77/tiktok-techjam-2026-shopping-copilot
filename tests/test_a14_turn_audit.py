@@ -37,7 +37,11 @@ class A14TurnAuditTest(unittest.TestCase):
                 "eligibility_status": (
                     "eligible" if attribute == "material" else "not_in_legacy_priority"
                 ),
-                "missing_data_behavior": "preserve_legacy_action",
+                "missing_data_behavior": (
+                    "comparable_within_family"
+                    if attribute == "material"
+                    else "preserve_legacy_action"
+                ),
             }
             for attribute in attributes
         }
@@ -79,6 +83,38 @@ class A14TurnAuditTest(unittest.TestCase):
             {"eligible": 1},
         )
         self.assertNotIn("candidate_text", str(audit).lower())
+
+        changed_latency = copy.deepcopy(source)
+        changed_latency["sessions"][0]["turns"][0]["question_policy"][
+            "latency_ms"
+        ] = 999.0
+        self.assertEqual(
+            build_turn_audit(changed_latency)["question_trace_sha256"],
+            audit["question_trace_sha256"],
+        )
+
+        for field, invalid_value in (
+            ("source", ""),
+            ("lifecycle", ""),
+            ("value_range", ""),
+            ("candidate_coverage", 1.1),
+            ("value_count", -1),
+            ("missing_data_behavior", ""),
+        ):
+            invalid = copy.deepcopy(source)
+            invalid["sessions"][0]["turns"][0]["question_policy"][
+                "attribute_evidence"
+            ]["material"][field] = invalid_value
+            with self.subTest(field=field):
+                with self.assertRaises(ValueError):
+                    build_turn_audit(invalid)
+
+        invalid_eligibility = copy.deepcopy(source)
+        invalid_eligibility["sessions"][0]["turns"][0]["question_policy"][
+            "attribute_evidence"
+        ]["material"]["eligible"] = False
+        with self.assertRaises(ValueError):
+            build_turn_audit(invalid_eligibility)
 
     def test_builds_a_target_free_question_trace_with_answer_outcomes(self) -> None:
         source = {

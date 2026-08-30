@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 import unittest
 
 
@@ -28,12 +29,17 @@ class A140QuestionPolicyEvidenceTest(unittest.TestCase):
                     hashlib.sha256((ROOT / path).read_bytes()).hexdigest(),
                     item["sha256"],
                 )
-        # Runtime source hashes describe the historical f594601 snapshot. Later
-        # behavior-neutral A14 slices may evolve those files; the clean report
-        # provenance below binds the snapshot without freezing live sources.
+        source_commit = provenance["runtime_source_commit"]
         for item in provenance["runtime_sources"].values():
             self.assertFalse(Path(item["path"]).is_absolute())
-            self.assertEqual(len(item["sha256"]), 64)
+            historical_bytes = subprocess.check_output(
+                ["git", "show", f"{source_commit}:{item['path']}"],
+                cwd=ROOT,
+            )
+            self.assertEqual(
+                hashlib.sha256(historical_bytes).hexdigest(),
+                item["sha256"],
+            )
 
     def test_legacy_and_current_visible_traces_are_exactly_equal(self) -> None:
         artifacts = self.record["provenance"]["run_artifacts"]

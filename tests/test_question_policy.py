@@ -101,6 +101,9 @@ class QuestionPolicyTest(unittest.TestCase):
 
         evidence = outcome.diagnostics["attribute_evidence"]
         self.assertEqual(evidence["material"]["status"], "degraded")
+        self.assertEqual(evidence["size"]["status"], "unavailable")
+        self.assertEqual(evidence["brand"]["status"], "unavailable")
+        self.assertEqual(evidence["budget"]["status"], "unavailable")
         self.assertEqual(evidence["feature"]["eligibility_status"], "asked")
         self.assertEqual(evidence["color"]["eligibility_status"], "no_preference")
         self.assertFalse(evidence["feature"]["eligible"])

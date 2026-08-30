@@ -201,6 +201,11 @@ def build_attribute_question_evidence(
                     if value_count > 0
                     else "unavailable"
                 )
+                if status == "unavailable":
+                    coverage = None
+                    value_count = None
+                    rank_weighted_split = None
+                    comparability_family = None
         elif attribute == "feature":
             source = "candidate_evidence_text_unstructured"
             status = (
@@ -213,12 +218,7 @@ def build_attribute_question_evidence(
             )
         elif attribute in UNTAGGED_CANDIDATE_ATTRIBUTES:
             source = "candidate_field_tags_absent"
-            status = (
-                "degraded"
-                if decision_evidence.source_status == "available"
-                and decision_evidence.degraded
-                else "unavailable"
-            )
+            status = "unavailable"
         else:
             source = "controlled_legacy_fallback"
             status = "not_applicable"

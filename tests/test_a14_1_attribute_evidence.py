@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 import unittest
 
 
@@ -37,9 +38,14 @@ class A141AttributeEvidenceTest(unittest.TestCase):
             self.audit["code_provenance"],
             {"commit": "4f615f4", "worktree_clean": True},
         )
+        source_commit = self.record["provenance"]["runtime_source_commit"]
         for path, digest in self.record["provenance"]["runtime_source_hashes"].items():
             self.assertFalse(Path(path).is_absolute())
-            self.assertEqual(len(digest), 64)
+            historical_bytes = subprocess.check_output(
+                ["git", "show", f"{source_commit}:{path}"],
+                cwd=ROOT,
+            )
+            self.assertEqual(hashlib.sha256(historical_bytes).hexdigest(), digest)
 
     def test_all_ten_attributes_have_explicit_source_and_observed_status(self) -> None:
         matrix = self.audit["attribute_source_matrix"]

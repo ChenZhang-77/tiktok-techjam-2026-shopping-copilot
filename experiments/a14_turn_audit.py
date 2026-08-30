@@ -4,6 +4,7 @@ import argparse
 from collections import Counter
 import hashlib
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -165,6 +166,89 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
                     status = str(raw_record.get("status") or "")
                     if status not in A14_ATTRIBUTE_STATUSES:
                         raise ValueError("attribute evidence status is not allowed")
+                    for field in (
+                        "source",
+                        "lifecycle",
+                        "value_range",
+                        "answerability_status",
+                        "actionability_status",
+                        "eligibility_status",
+                        "missing_data_behavior",
+                    ):
+                        if not isinstance(raw_record.get(field), str) or not str(
+                            raw_record[field]
+                        ).strip():
+                            raise ValueError(
+                                f"attribute evidence {field} must be non-empty"
+                            )
+                    eligible_value = raw_record.get("eligible")
+                    if not isinstance(eligible_value, bool):
+                        raise ValueError("attribute evidence eligible must be boolean")
+                    expected_eligible = evidence_attribute in {
+                        str(item)
+                        for item in question_policy.get("eligible_attributes", [])
+                    }
+                    if eligible_value != expected_eligible:
+                        raise ValueError(
+                            "attribute evidence eligibility must match policy eligibility"
+                        )
+                    coverage = raw_record.get("candidate_coverage")
+                    split = raw_record.get("rank_weighted_split")
+                    for field, value in (
+                        ("candidate_coverage", coverage),
+                        ("rank_weighted_split", split),
+                    ):
+                        if value is not None and (
+                            isinstance(value, bool)
+                            or not isinstance(value, (int, float))
+                            or not math.isfinite(value)
+                            or not 0 <= value <= 1
+                        ):
+                            raise ValueError(
+                                f"attribute evidence {field} must be null or 0..1"
+                            )
+                    value_count = raw_record.get("value_count")
+                    if value_count is not None and (
+                        isinstance(value_count, bool)
+                        or not isinstance(value_count, int)
+                        or value_count < 0
+                    ):
+                        raise ValueError(
+                            "attribute evidence value_count must be null or >= 0"
+                        )
+                    family = raw_record.get("comparability_family")
+                    if family is not None and (
+                        not isinstance(family, str) or not family.strip()
+                    ):
+                        raise ValueError(
+                            "comparability_family must be null or non-empty"
+                        )
+                    numeric_values = (coverage, value_count, split)
+                    if status in {"available", "partial"}:
+                        if family is None or any(value is None for value in numeric_values):
+                            raise ValueError(
+                                "comparable evidence requires family and numeric values"
+                            )
+                    elif family is not None or any(
+                        value is not None for value in numeric_values
+                    ):
+                        raise ValueError(
+                            "non-comparable evidence must not publish numeric values"
+                        )
+                    expected_missing_behavior = (
+                        "comparable_within_family"
+                        if status == "available"
+                        else "controlled_legacy_fallback"
+                        if status == "not_applicable"
+                        else "preserve_legacy_action"
+                    )
+                    if (
+                        raw_record.get("missing_data_behavior")
+                        != expected_missing_behavior
+                    ):
+                        raise ValueError(
+                            "attribute evidence missing-data behavior is inconsistent"
+                        )
                     record = {
                         field: raw_record.get(field)
                         for field in A14_ATTRIBUTE_DIAGNOSTIC_FIELDS
@@ -224,8 +308,22 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
             }
         )
 
+    semantic_sessions = [
+        {
+            **session,
+            "turns": [
+                {
+                    key: value
+                    for key, value in turn.items()
+                    if key != "latency_ms"
+                }
+                for turn in session["turns"]
+            ],
+        }
+        for session in sessions
+    ]
     canonical_trace = json.dumps(
-        sessions,
+        semantic_sessions,
         sort_keys=True,
         separators=(",", ":"),
         ensure_ascii=False,
@@ -254,6 +352,7 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
             "candidate_ids_or_text_recorded": False,
             "private_product_identifiers_recorded": False,
             "behavior_parity_status": "unverified_without_baseline",
+            "question_trace_excludes_operational_latency": True,
         },
         "code_provenance": dict(source.get("code_provenance") or {}),
         "fold_manifest_version": source.get("fold_manifest_version"),
