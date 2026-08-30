@@ -113,8 +113,9 @@ tuning:
 - `provisional_valid34_ai_labels.jsonl`;
 - the valid-34 comparison, suggestions, and comparator report.
 
-They remain L1 historical diagnostics. Their existence and prior exposure must
-be disclosed in the final evidence record.
+The legacy item text remains L0; returned and provisional labels remain L1.
+All are historical diagnostics. Their existence and prior exposure must be
+disclosed in the final evidence record.
 
 ## Independent Automated Reference Roles
 
