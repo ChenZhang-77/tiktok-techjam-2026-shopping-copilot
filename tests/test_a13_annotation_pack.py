@@ -536,6 +536,11 @@ class A13AnnotationPackTest(unittest.TestCase):
             summary = build_annotation_bundle(ROOT, output)
             self.assertEqual(summary["item_count"], 60)
             self.assertTrue(output.is_file())
+            self.assertEqual(
+                output.read_bytes(),
+                (ROOT / "A13_annotation_pack_v1.zip").read_bytes(),
+                "the committed teammate bundle must match the deterministic builder",
+            )
 
             with zipfile.ZipFile(output) as archive:
                 members = set(archive.namelist())
