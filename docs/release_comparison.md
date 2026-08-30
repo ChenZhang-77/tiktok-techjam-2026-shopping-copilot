@@ -101,8 +101,24 @@ Before organization: P0 **294**, Chen **297**, llm **443** tests passed.
 After organization: P0 **294**, Chen **302**, llm **448** tests pass.
 Tests recompute metrics/folds, verify active-source and artifact hashes,
 and cover synthetic score/miss accounting. Local Markdown links: P0 28,
-Chen 53, llm 112 checked, zero missing targets. Independent Standards/Spec
-review is pending before push; it is not inferred from passing tests.
+Chen 53, llm 109 checked, zero missing targets.
+
+### Standards
+
+PASS, zero remaining findings. Two initial P2 documentation findings were
+corrected: stale exposed-holdout instructions and outdated A13 provider/status
+claims. Independent recheck passed after llm `1190a68` / Chen `672055a`.
+
+### Spec
+
+PASS, zero remaining findings. The same two documentation gaps are closed;
+branch selection, fixed-population evidence, freeze scope, no-default-change
+and package-not-ready boundaries were independently checked.
+
+Review scope: llm `7f0dc6c..1190a68`, Chen `0bd3375..672055a`, P0
+`aaa7e45..24570f2`. This records release-diff review, not a claim of a new full
+security audit of every historical commit. Pattern/forbidden-path scanning of
+newly publishable Git blobs found no potential keys or forbidden data/cache paths.
 
 Source publication is independent of competition-package readiness. The P0
 package's tests pass for P0 only; selected branch `submission/` is still staging.

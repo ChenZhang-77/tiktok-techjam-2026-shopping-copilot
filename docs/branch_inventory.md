@@ -39,6 +39,10 @@ Origin: `ChenZhang-77/tiktok-techjam-2026-shopping-copilot`.
 These are pre-push facts, not live aliases. Use `git ls-remote --heads origin`
 to inspect current publication tips. Only llm and yuqing are authorized targets.
 
+P0 and some historical checkpoints are local-only. A fresh remote clone may
+not contain those commits; the recovery commands below require this preserved
+shared local repository. Publishing llm/yuqing does not publish an archival P0 ref.
+
 ## What is preserved
 
 No branch, catalog, embedding/model cache, annotation file or raw run is deleted.
@@ -61,4 +65,3 @@ git show aaa7e45:submission/PROVENANCE.md
 
 Do not restore those files over current guidance merely to resume an obsolete
 next-step instruction. See [final release plan](final_release_plan.md).
-
