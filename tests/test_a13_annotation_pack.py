@@ -37,6 +37,31 @@ ROOT = Path(__file__).resolve().parents[1]
 PACK = ROOT / "experiments/fixtures/a13_annotation_pack_v1"
 
 
+def _abstain_annotations(
+    items: list[dict],
+    *,
+    annotator_id: str = "member_b",
+) -> list[dict]:
+    return [
+        {
+            "item_id": item["item_id"],
+            "annotator_id": annotator_id,
+            "confidence": "high",
+            "label": {
+                "intent_hint": None,
+                "positive_constraints": [],
+                "rejected_constraints": [],
+                "no_preference_attributes": [],
+                "override_attributes": [],
+                "semantic_terms": [],
+                "abstain": True,
+            },
+            "notes": "",
+        }
+        for item in items
+    ]
+
+
 class A13AnnotationPackTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -121,6 +146,159 @@ class A13AnnotationPackTest(unittest.TestCase):
         self.assertEqual(summary["annotator_id"], "member_b")
         self.assertEqual(summary["annotation_count"], 60)
         self.assertEqual(summary["abstain_count"], 60)
+
+    def test_validator_accepts_multiword_use_case_no_preference(self) -> None:
+        items = copy.deepcopy(self.items)
+        items[0]["current_message"] = "Any use case is fine; show me some ideas."
+        items[0]["prior_state"] = {
+            "intent": None,
+            "active_constraints": [],
+            "rejected_constraints": [],
+            "no_preference_attributes": [],
+        }
+        annotations = _abstain_annotations(items)
+        annotations[0]["label"] = {
+            "intent_hint": "browsing",
+            "positive_constraints": [],
+            "rejected_constraints": [],
+            "no_preference_attributes": ["use_case"],
+            "override_attributes": [],
+            "semantic_terms": [],
+            "abstain": False,
+        }
+
+        summary = validate_annotation_pack(items, annotations)
+
+        self.assertEqual(summary["annotation_count"], 60)
+
+    def test_validator_supports_closed_vocabulary_mixed_polarity_examples(self) -> None:
+        items = copy.deepcopy(self.items)
+        synthetic_messages = (
+            "Any color is fine, but it must be wool.",
+            "I need a coat, but avoid gothic styles.",
+            "I need shoes, but no suede and any brand is fine.",
+        )
+        for item, message in zip(items, synthetic_messages):
+            item["current_message"] = message
+            item["prior_state"] = {
+                "intent": None,
+                "active_constraints": [],
+                "rejected_constraints": [],
+                "no_preference_attributes": [],
+            }
+        annotations = _abstain_annotations(items)
+        labels = (
+            {
+                "intent_hint": "buying",
+                "positive_constraints": [
+                    {
+                        "attribute": "material",
+                        "value": "wool",
+                        "evidence_span": "wool",
+                        "hard": True,
+                    }
+                ],
+                "rejected_constraints": [],
+                "no_preference_attributes": ["color"],
+                "override_attributes": [],
+                "semantic_terms": [],
+                "abstain": False,
+            },
+            {
+                "intent_hint": "buying",
+                "positive_constraints": [
+                    {
+                        "attribute": "category",
+                        "value": "coat",
+                        "evidence_span": "coat",
+                        "hard": True,
+                    }
+                ],
+                "rejected_constraints": [
+                    {
+                        "attribute": "style",
+                        "value": "gothic",
+                        "evidence_span": "gothic",
+                    }
+                ],
+                "no_preference_attributes": [],
+                "override_attributes": [],
+                "semantic_terms": [],
+                "abstain": False,
+            },
+            {
+                "intent_hint": "buying",
+                "positive_constraints": [
+                    {
+                        "attribute": "category",
+                        "value": "shoes",
+                        "evidence_span": "shoes",
+                        "hard": True,
+                    }
+                ],
+                "rejected_constraints": [
+                    {
+                        "attribute": "material",
+                        "value": "suede",
+                        "evidence_span": "suede",
+                    }
+                ],
+                "no_preference_attributes": ["brand"],
+                "override_attributes": [],
+                "semantic_terms": [],
+                "abstain": False,
+            },
+        )
+        for index, label in enumerate(labels):
+            annotations[index]["label"] = label
+
+        summary = validate_annotation_pack(items, annotations)
+
+        self.assertEqual(summary["annotation_count"], 60)
+
+    def test_boundary_items_are_lexically_diverse_and_avoid_bad_templates(self) -> None:
+        messages = {
+            item["item_id"]: item["current_message"]
+            for item in self.items
+        }
+        remaining_messages = list(messages.values())[10:]
+        self.assertEqual(len(remaining_messages), len(set(remaining_messages)))
+        self.assertTrue(
+            all(
+                len(re.findall(r"[A-Za-z0-9']+", message)) >= 5
+                for message in remaining_messages
+            )
+        )
+        rendered = "\n".join(remaining_messages).lower()
+        for banned in (
+            "formal styles",
+            "no mesh",
+            "although,",
+            "any use case is fine",
+        ):
+            self.assertNotIn(banned, rendered)
+
+        residual_messages = [
+            item["current_message"].lower()
+            for item in self.items
+            if item["trigger_type"] == "low_confidence_residual_feature"
+        ]
+        self.assertLessEqual(
+            sum("something" in message for message in residual_messages),
+            2,
+        )
+
+        conflict_messages = [
+            item["current_message"].lower()
+            for item in self.items
+            if item["trigger_type"] == "positive_rejected_attribute_conflict"
+        ]
+        connectors = {
+            connector
+            for connector in (";", "although", "but", "except", "however", "while", "yet")
+            if any(connector in message for message in conflict_messages)
+        }
+        self.assertGreaterEqual(len(connectors), 5)
 
     def test_every_declared_stratum_is_reproduced_by_the_runtime_gate(self) -> None:
         summary = validate_runtime_trigger_assignments(
@@ -283,15 +461,15 @@ class A13AnnotationPackTest(unittest.TestCase):
             "positive_constraints": [
                 {
                     "attribute": "feature",
-                    "value": "packable",
-                    "evidence_span": "packable",
+                    "value": "packability",
+                    "evidence_span": "Packability",
                     "hard": False,
                 }
             ],
             "rejected_constraints": [],
             "no_preference_attributes": [],
             "override_attributes": [],
-            "semantic_terms": ["packable"],
+            "semantic_terms": ["packability"],
             "abstain": False,
         }
         with self.assertRaisesRegex(AnnotationPackError, "duplicates structured"):
@@ -392,8 +570,14 @@ class A13AnnotationPackTest(unittest.TestCase):
             self.assertIn("localStorage", page)
             self.assertIn("downloadAnnotations", page)
             self.assertIn("下载 JSONL", page)
+            self.assertRegex(
+                page,
+                r'const STORAGE_KEY = "a13-annotation-pack-v1-draft-[0-9a-f]{12}";',
+            )
             self.assertNotIn("fetch(", page)
             self.assertNotIn("https://", page)
+            self.assertNotIn("触发原因", page)
+            self.assertNotIn('id="trigger"', page)
 
     def test_built_zip_contains_clear_double_click_annotation_examples(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -413,6 +597,8 @@ class A13AnnotationPackTest(unittest.TestCase):
                 "同一个值既要又不要：必须 abstain",
                 "evidence_span 与 value 的区别",
                 "feature 与 semantic_terms 的边界",
+                "最小完整属性短语",
+                "触发类型不会显示",
                 "为什么这样标",
                 "不要这样标",
             ):

@@ -70,7 +70,7 @@
   <main class="layout">
     <aside class="side"><h2>题目导航</h2><div id="jump" class="jump"></div></aside>
     <section class="card">
-      <div class="meta"><span id="counter"></span><span id="trigger"></span></div>
+      <div class="meta"><span id="counter"></span></div>
       <div id="message" class="message"></div>
       <details><summary>查看本轮之前的状态</summary><pre id="prior"></pre></details>
 
@@ -106,7 +106,7 @@
     "use strict";
     const ITEMS = JSON.parse(document.getElementById("a13-items").textContent);
     const ATTRIBUTES = ["category","material","color","size","style","brand","budget","feature","use_case"];
-    const STORAGE_KEY = "a13-annotation-pack-v1-draft";
+    const STORAGE_KEY = "a13-annotation-pack-v1-draft-__A13_ITEMS_SHA256__";
     const $ = id => document.getElementById(id);
     const esc = value => String(value ?? "").replace(/[&<>\"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
     const blankLabel = () => ({intent_hint:null,positive_constraints:[],rejected_constraints:[],no_preference_attributes:[],override_attributes:[],semantic_terms:[],abstain:null});
@@ -150,7 +150,6 @@
       const item = ITEMS[index], row = rows[index], label = row.label || blankLabel();
       $("annotator").value = row.annotator_id || rows.find(entry => entry.annotator_id)?.annotator_id || "";
       $("counter").textContent = `${item.item_id} · 第 ${index+1} / ${ITEMS.length} 条`;
-      $("trigger").textContent = `触发原因：${item.trigger_type}`;
       $("message").textContent = item.current_message;
       $("prior").textContent = JSON.stringify(item.prior_state, null, 2);
       $("confidence").value = row.confidence || "";

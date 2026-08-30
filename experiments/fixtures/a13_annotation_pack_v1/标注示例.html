@@ -40,6 +40,7 @@
       <li>如果能得到一组完整、无矛盾、可逐字举证的变化，选择“可以标注”。</li>
       <li>如果替换指令缺少新值，或同一个值既被要求又被排除，选择 <code>abstain=true</code>。</li>
       <li>最后检查：每个 value/evidence 是否来自当前消息，hard 是否符合语气。</li>
+      <li>内部触发类型不会显示，也不能把 trigger 当作答案提示。</li>
     </ol>
   </section>
 
@@ -172,7 +173,7 @@
     <h2>示例 8｜feature 与 semantic_terms 的边界</h2>
     <p><strong>A. 明确的商品性质或行为 → feature</strong></p>
     <div class="context"><div class="box"><strong>Prior state</strong><br><code>intent=browsing</code></div><div class="box"><strong>Current message</strong><br>Show me something quiet when it moves.</div></div>
-    <p class="why"><strong>为什么这样标：</strong><code>quiet when it moves</code> 明确描述商品本身的行为，open feature 可以安全承载完整短语。</p>
+    <p class="why"><strong>为什么这样标：</strong><code>quiet when it moves</code> 明确描述商品本身的行为，open feature 可以安全承载完整短语。value 应采用<strong>最小完整属性短语</strong>：去掉 <code>Show me something</code> 这类请求框架，但保留让 quiet 含义完整的 <code>when it moves</code>。</p>
     <pre>{
   "intent_hint": "browsing",
   "positive_constraints": [
@@ -187,7 +188,7 @@
     <p><strong>B. 不描述商品属性的检索上下文 → semantic_terms</strong></p>
     <div class="context"><div class="box"><strong>Prior state</strong><br>无</div><div class="box"><strong>Current message</strong><br>Show me ideas for a graduation gift.</div></div>
     <p class="why"><strong>为什么这样标：</strong><code>graduation gift</code> 是购物背景，不是商品性质，而且不属于当前 closed use_case vocabulary，因此保留为上下文短语。</p>
-    <p class="dont"><strong>不要这样标：</strong>不要把商品性质放入 semantic_terms，也不要把同一短语同时写入 constraint 和 semantic_terms。</p>
+    <p class="dont"><strong>不要这样标：</strong>不要把商品性质放入 semantic_terms，也不要把 <code>quiet when it moves</code> 机械拆成 feature <code>quiet</code> 与 semantic term <code>when it moves</code>；同一短语也不能同时写入两处。</p>
     <pre>{
   "intent_hint": "browsing",
   "positive_constraints": [],

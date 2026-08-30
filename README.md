@@ -28,8 +28,10 @@ The reviewed A-side DeepSeek plan, gates, and branch boundary are in
 The teammate-ready offline annotation bundle is committed at
 [`A13_annotation_pack_v1.zip`](A13_annotation_pack_v1.zip). Unzip it and
 double-click `开始标注.html`; the annotator does not need to edit JSONL or use a
-terminal. The bundle contains unlabeled fixtures only and does not authorize a
-DeepSeek/provider run.
+terminal. All 60 boundary expressions have a validator-supported reading, and
+the page hides internal trigger metadata so independent annotators are not
+prompted toward an answer. The bundle contains unlabeled fixtures only and does
+not authorize a DeepSeek/provider run.
 
 Verified Development-160 result for the retained bounded A11 plus B9
 conditional-dense default:

@@ -125,7 +125,8 @@ ID_PREFIX = {
 TOKEN_RE = re.compile(r"[a-z0-9]+", re.I)
 NO_PREFERENCE_RE = re.compile(
     r"\b(?:no preference|don't care|do not care|doesn't matter|does not matter|"
-    r"any\s+\w+\s+(?:is\s+)?(?:fine|okay|ok|works))\b",
+    r"any\s+(?:category|material|color|size|style|brand|budget|feature|"
+    r"use[ _]case|other)\s+(?:is\s+)?(?:fine|okay|ok|works))\b",
     re.I,
 )
 OVERRIDE_RE = re.compile(

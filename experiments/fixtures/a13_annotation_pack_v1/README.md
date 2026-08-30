@@ -42,7 +42,8 @@ vocabulary 以 `validate_annotations.py` 的结果为准。
 
 - `prior_state`：本轮之前已经确认的意图与约束；
 - `current_message`：本轮唯一可以提供新 evidence span 的文本；
-- `trigger_type`：为什么规则系统认为这条值得进入 Shadow 检查；它不是答案。
+- `trigger_type`：协调者用于分层和 runtime parity 检查的内部元数据，不是答案。
+  为避免提示标注结论，双击标注页不会显示触发类型；标注者也不应在独立标注阶段查看或按它猜答案。
   每条已用固定 catalog 和当前 runtime gate 复算，构建器在任何分层不匹配时会直接失败；
 - `source`：这些条目都是独立编写的边界表达。
 
@@ -85,6 +86,8 @@ vocabulary 以 `validate_annotations.py` 的结果为准。
 - `attribute` 只能是：`category`、`material`、`color`、`size`、`style`、
   `brand`、`budget`、`feature`、`use_case`。
 - `value` 使用小写、去标点后的规范化短语。
+- open `feature` 使用能独立表达商品性质的最小完整属性短语：去掉 `I need`、
+  `show me`、`would be ideal` 等请求框架，但保留改变含义所必需的否定词、修饰词和补语。
 - `category/material/color/size/style/use_case` 还必须属于包内 validator
   与 runtime parity test 绑定的 closed vocabulary；`brand/budget/feature` 依赖
   当前消息的逐字 evidence。
@@ -116,7 +119,8 @@ vocabulary 以 `validate_annotations.py` 的结果为准。
 上下文短语。必须逐字出现在当前消息中。明确的商品性质或行为（如
 `quiet when it moves`）优先标为 open `feature`；活动背景等无法进入 closed
 `use_case` vocabulary 的上下文（如 `graduation gift`）才进入 `semantic_terms`。
-不要重复已经写入 positive/rejected 的 value。
+只有当活动、对象或场合短语可以脱离商品性质独立用于检索时才拆为 semantic term；
+不要为了缩短 feature 而机械拆句，也不要重复已经写入 positive/rejected 的 value。
 
 ### `abstain`
 

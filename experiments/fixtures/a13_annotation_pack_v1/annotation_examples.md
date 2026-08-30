@@ -10,6 +10,7 @@
 3. 能得到完整、无矛盾、逐字可举证的变化时，才设置 `abstain=false`。
 4. 替换指令没有新值，或同一个 attribute/value 既要又不要时，设置
    `abstain=true`，其余 label 字段全部为空。
+5. 标注工具故意隐藏内部 `trigger_type`；触发类型不会显示，也不能作为答案依据。
 
 ## 最容易混淆的三种情况
 
@@ -46,8 +47,12 @@
 
 - 明确描述商品性质或行为时，优先使用 open `feature`。例如
   `quiet when it moves` 标为 feature，而不是 semantic term。
+- feature 的 value 采用最小完整属性短语：去掉 `I need`、`show me`、
+  `would be ideal` 等请求框架，但保留否定词和使性质完整的补语。
 - `semantic_terms` 只保留不描述商品属性、又无法进入 closed vocabulary 的检索
   上下文。例如 `graduation gift` 可以作为 semantic term。
+- 只有活动、对象或场合能脱离商品性质独立检索时才拆出 semantic term；不要把
+  `quiet when it moves` 机械拆成 feature `quiet` 加 semantic term `when it moves`。
 - 同一短语不得同时出现在 positive/rejected constraint 和 `semantic_terms`。
 
 完整 JSON label 与更多边界示例请打开 `标注示例.html`。

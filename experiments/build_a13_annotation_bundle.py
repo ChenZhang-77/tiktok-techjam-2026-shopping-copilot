@@ -49,13 +49,19 @@ def build_annotation_bundle(
         bundle.mkdir()
         for filename in PACK_FILES:
             shutil.copy2(source / filename, bundle / filename)
-        annotation_page = (source / ANNOTATION_PAGE_TEMPLATE).read_text(
-            encoding="utf-8"
-        ).replace(
-            "__A13_ITEMS_JSON__",
-            json.dumps(items, ensure_ascii=False, separators=(",", ":"))
-            .replace("<", "\\u003c")
-            .replace(">", "\\u003e"),
+        embedded_items = json.dumps(
+            items,
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ).replace("<", "\\u003c").replace(">", "\\u003e")
+        item_revision = hashlib.sha256(
+            embedded_items.encode("utf-8")
+        ).hexdigest()[:12]
+        annotation_page = (
+            (source / ANNOTATION_PAGE_TEMPLATE)
+            .read_text(encoding="utf-8")
+            .replace("__A13_ITEMS_JSON__", embedded_items)
+            .replace("__A13_ITEMS_SHA256__", item_revision)
         )
         (bundle / ANNOTATION_PAGE_NAME).write_text(
             annotation_page,
