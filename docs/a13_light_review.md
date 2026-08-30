@@ -45,5 +45,29 @@ DeepSeek-V4-Pro-0813; response-reported model identity is retained separately.
 
 ## Result
 
-Pending execution. Missing credentials or service failure are inconclusive,
-not evidence that AI review is ineffective.
+Completed at frozen diagnostic source `8d9d532`: Flash 8/12, Pro-edited 10/12,
+24/24 schema-valid outputs, two corrections and zero regressions. The two
+corrections restored an omitted color and an omitted rejected use case. Both
+models incorrectly retained rejection of a replaced old preference in two
+cases. The shared applied-state projection does not compare hard/soft flags;
+10/12 is not full runtime-state equivalence or real-user accuracy.
+
+All twelve Flash drafts were valid JSON; the later malformed-draft safety fix
+therefore does not change this run. Response models report `deepseek-v4-flash`
+and `deepseek-v4-pro`, not independently verified dated model snapshots.
+
+The network-enabled run used 24 requests, took 34.02 seconds, and cost an
+estimated $0.018091 at conservative peak/cache-miss rates. One initial sandbox
+attempt failed before any response (0.02 seconds); its outcome was inconclusive,
+not an additional model trial or a model-quality failure. No provider retries
+or new calls were made for code-review fixes.
+
+Decision: retain the editor only as cheap offline investigative tooling. The
+synthetic editor gate passes, but competition gain remains **unproven**.
+Defer A13 runtime and the multi-family pipeline for the deadline; this is not
+an A13-C1 semantic-gate pass. Continue the separate
+[A14 score-first pilot](a14_deadline_selection.md). Production is still no-LLM.
+
+Full synthetic response evidence: [a13_light_review_result.json](a13_light_review_result.json).
+Missing credentials or service failure on a future run are inconclusive, not
+evidence that AI review is ineffective.

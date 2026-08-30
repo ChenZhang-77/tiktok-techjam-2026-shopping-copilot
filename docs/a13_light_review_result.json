@@ -1,0 +1,1885 @@
+{
+  "experiment": "A13-LR0",
+  "source_sha256": "11e1fee9f137eeebe28a91aac7d3bdfff7c4c7072a8a4d7ac64e2d1af3ac6b29",
+  "fixture_sha256": "fcc3dc0c5405126f2d0c2075b62ac8ae02fddf0b8cda200d6f3fd2e223729026",
+  "prompt_sha256": "0a55291dc87351b7e936e91daa2ffcdcff0afb5b86c7f073bd07187c9dda8817",
+  "expected_pairs": 12,
+  "records": [
+    {
+      "case_index": 0,
+      "case": {
+        "message": "Please use cotton material.",
+        "prior": {
+          "intent": "buying",
+          "active_constraints": [],
+          "rejected_constraints": [],
+          "no_preference_attributes": []
+        },
+        "override": false,
+        "expected": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "material",
+              "value": "cotton",
+              "evidence_span": "cotton",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [],
+          "no_preference_attributes": [],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        }
+      },
+      "flash": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "material",
+              "value": "cotton",
+              "evidence_span": "cotton",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [],
+          "no_preference_attributes": [],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-flash",
+        "request_sha256": "40e71efe662a3492140a16899fe9868cb39910ed8249c6f04fdbbdd4db0c2d9b",
+        "response_sha256": "22a140f3d8abc95145884adee97f53857d028c40515f6b51f0699374bc32d63e",
+        "finish_reason": "stop",
+        "prompt_tokens": 398,
+        "completion_tokens": 68,
+        "latency_ms": 699.64,
+        "score": {
+          "valid": true,
+          "exact": true,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "material",
+                "value": "cotton"
+              }
+            ],
+            "active_constraints_deactivated": [],
+            "rejected_constraints_added": [],
+            "no_preference_attributes_added": [],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [],
+            "stale_values_deactivated": []
+          }
+        }
+      },
+      "pro": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "material",
+              "value": "cotton",
+              "evidence_span": "cotton",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [],
+          "no_preference_attributes": [],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-pro",
+        "request_sha256": "e63e363c4fa21942533d75ca19e272bdfd574cc192b80ba4fe0976ca938dd0ca",
+        "response_sha256": "981b9863c5381b8539ac38e05e296075c10ac1da05e586ba89838b1a6346e0ef",
+        "finish_reason": "stop",
+        "prompt_tokens": 534,
+        "completion_tokens": 95,
+        "latency_ms": 1724.61,
+        "score": {
+          "valid": true,
+          "exact": true,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "material",
+                "value": "cotton"
+              }
+            ],
+            "active_constraints_deactivated": [],
+            "rejected_constraints_added": [],
+            "no_preference_attributes_added": [],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [],
+            "stale_values_deactivated": []
+          }
+        }
+      }
+    },
+    {
+      "case_index": 1,
+      "case": {
+        "message": "Use blue, not red.",
+        "prior": {
+          "intent": "buying",
+          "active_constraints": [],
+          "rejected_constraints": [],
+          "no_preference_attributes": []
+        },
+        "override": false,
+        "expected": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "color",
+              "value": "blue",
+              "evidence_span": "blue",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [
+            {
+              "attribute": "color",
+              "value": "red",
+              "evidence_span": "red"
+            }
+          ],
+          "no_preference_attributes": [],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        }
+      },
+      "flash": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "color",
+              "value": "blue",
+              "evidence_span": "blue",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [
+            {
+              "attribute": "color",
+              "value": "red",
+              "evidence_span": "red"
+            }
+          ],
+          "no_preference_attributes": [],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-flash",
+        "request_sha256": "cc03c2165c3b68eafd74733ae057d30db35230a0baababb5de87f6f27d8a5a1a",
+        "response_sha256": "2d7176253e3453fada8173c3fcb7caa4da97d1e2ba09e68587c8791bb83bd19c",
+        "finish_reason": "stop",
+        "prompt_tokens": 399,
+        "completion_tokens": 80,
+        "latency_ms": 1286.74,
+        "score": {
+          "valid": true,
+          "exact": true,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "color",
+                "value": "blue"
+              }
+            ],
+            "active_constraints_deactivated": [],
+            "rejected_constraints_added": [
+              {
+                "attribute": "color",
+                "value": "red"
+              }
+            ],
+            "no_preference_attributes_added": [],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [],
+            "stale_values_deactivated": []
+          }
+        }
+      },
+      "pro": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "color",
+              "value": "blue",
+              "evidence_span": "blue",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [
+            {
+              "attribute": "color",
+              "value": "red",
+              "evidence_span": "red"
+            }
+          ],
+          "no_preference_attributes": [],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-pro",
+        "request_sha256": "1b956241dd6b1b6d6d6b3b28053581dc21c8983a22d8ecde3f64aab9cd4adf6c",
+        "response_sha256": "e0e5ba520af245e61ee4214bb736a91ca55b0b0ee6d26cf90a3929822478c8bb",
+        "finish_reason": "stop",
+        "prompt_tokens": 554,
+        "completion_tokens": 122,
+        "latency_ms": 2130.99,
+        "score": {
+          "valid": true,
+          "exact": true,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "color",
+                "value": "blue"
+              }
+            ],
+            "active_constraints_deactivated": [],
+            "rejected_constraints_added": [
+              {
+                "attribute": "color",
+                "value": "red"
+              }
+            ],
+            "no_preference_attributes_added": [],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [],
+            "stale_values_deactivated": []
+          }
+        }
+      }
+    },
+    {
+      "case_index": 2,
+      "case": {
+        "message": "I want cotton but not leather; black is fine.",
+        "prior": {
+          "intent": "buying",
+          "active_constraints": [],
+          "rejected_constraints": [],
+          "no_preference_attributes": []
+        },
+        "override": false,
+        "expected": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "material",
+              "value": "cotton",
+              "evidence_span": "cotton",
+              "hard": true
+            },
+            {
+              "attribute": "color",
+              "value": "black",
+              "evidence_span": "black",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [
+            {
+              "attribute": "material",
+              "value": "leather",
+              "evidence_span": "leather"
+            }
+          ],
+          "no_preference_attributes": [],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        }
+      },
+      "flash": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "material",
+              "value": "cotton",
+              "evidence_span": "cotton",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [
+            {
+              "attribute": "material",
+              "value": "leather",
+              "evidence_span": "leather"
+            }
+          ],
+          "no_preference_attributes": [],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-flash",
+        "request_sha256": "b027281df398c850bcc53fe0d5c5acc987116ec5aca97317a947151b472c790d",
+        "response_sha256": "cd1d5e1e359eea954d9355958c68587c50bb7958ade2a3a57af7ea99a7af66b5",
+        "finish_reason": "stop",
+        "prompt_tokens": 404,
+        "completion_tokens": 84,
+        "latency_ms": 766.09,
+        "score": {
+          "valid": true,
+          "exact": false,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "material",
+                "value": "cotton"
+              }
+            ],
+            "active_constraints_deactivated": [],
+            "rejected_constraints_added": [
+              {
+                "attribute": "material",
+                "value": "leather"
+              }
+            ],
+            "no_preference_attributes_added": [],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [],
+            "stale_values_deactivated": []
+          }
+        }
+      },
+      "pro": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "material",
+              "value": "cotton",
+              "evidence_span": "cotton",
+              "hard": true
+            },
+            {
+              "attribute": "color",
+              "value": "black",
+              "evidence_span": "black",
+              "hard": false
+            }
+          ],
+          "rejected_constraints": [
+            {
+              "attribute": "material",
+              "value": "leather",
+              "evidence_span": "leather"
+            }
+          ],
+          "no_preference_attributes": [],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-pro",
+        "request_sha256": "0889ca13c6e06fc08cee35511884e8685db48295beaec38d372998aa85e0f697",
+        "response_sha256": "d07d0537282931f9df88fc887c231be4167cbe7cd2ed3e9da1ce438fdd8dfe9e",
+        "finish_reason": "stop",
+        "prompt_tokens": 563,
+        "completion_tokens": 159,
+        "latency_ms": 2636.17,
+        "score": {
+          "valid": true,
+          "exact": true,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "color",
+                "value": "black"
+              },
+              {
+                "attribute": "material",
+                "value": "cotton"
+              }
+            ],
+            "active_constraints_deactivated": [],
+            "rejected_constraints_added": [
+              {
+                "attribute": "material",
+                "value": "leather"
+              }
+            ],
+            "no_preference_attributes_added": [],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [],
+            "stale_values_deactivated": []
+          }
+        }
+      }
+    },
+    {
+      "case_index": 3,
+      "case": {
+        "message": "No preference for color; use cotton.",
+        "prior": {
+          "intent": "buying",
+          "active_constraints": [],
+          "rejected_constraints": [],
+          "no_preference_attributes": []
+        },
+        "override": false,
+        "expected": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "material",
+              "value": "cotton",
+              "evidence_span": "cotton",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [],
+          "no_preference_attributes": [
+            "color"
+          ],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        }
+      },
+      "flash": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "material",
+              "value": "cotton",
+              "evidence_span": "cotton",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [],
+          "no_preference_attributes": [
+            "color"
+          ],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-flash",
+        "request_sha256": "4df40b1a6e038fd1404d7032dcb640b9ccaac749199cd6356d490817b9e483ec",
+        "response_sha256": "9faa28e1073d788fa9c54e1d0dd0cd43e4737977fbbba04ccad3fa22b653ac85",
+        "finish_reason": "stop",
+        "prompt_tokens": 401,
+        "completion_tokens": 70,
+        "latency_ms": 1169.48,
+        "score": {
+          "valid": true,
+          "exact": true,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "material",
+                "value": "cotton"
+              }
+            ],
+            "active_constraints_deactivated": [],
+            "rejected_constraints_added": [],
+            "no_preference_attributes_added": [
+              "color"
+            ],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [],
+            "stale_values_deactivated": []
+          }
+        }
+      },
+      "pro": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "material",
+              "value": "cotton",
+              "evidence_span": "cotton",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [],
+          "no_preference_attributes": [
+            "color"
+          ],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-pro",
+        "request_sha256": "09017a950af81eba85b3dbff431490842c67ce95fc615bee084382ef9d290b89",
+        "response_sha256": "9dfd4e83d95ea6760c0cffe7455c8b2be3a9eccf620b5cee0d7972fd985013c9",
+        "finish_reason": "stop",
+        "prompt_tokens": 539,
+        "completion_tokens": 101,
+        "latency_ms": 1736.07,
+        "score": {
+          "valid": true,
+          "exact": true,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "material",
+                "value": "cotton"
+              }
+            ],
+            "active_constraints_deactivated": [],
+            "rejected_constraints_added": [],
+            "no_preference_attributes_added": [
+              "color"
+            ],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [],
+            "stale_values_deactivated": []
+          }
+        }
+      }
+    },
+    {
+      "case_index": 4,
+      "case": {
+        "message": "I don't care about material; I want blue.",
+        "prior": {
+          "intent": "buying",
+          "active_constraints": [
+            {
+              "attribute": "material",
+              "value": "leather"
+            }
+          ],
+          "rejected_constraints": [],
+          "no_preference_attributes": []
+        },
+        "override": false,
+        "expected": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "color",
+              "value": "blue",
+              "evidence_span": "blue",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [],
+          "no_preference_attributes": [
+            "material"
+          ],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        }
+      },
+      "flash": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "color",
+              "value": "blue",
+              "evidence_span": "blue",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [],
+          "no_preference_attributes": [
+            "material"
+          ],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-flash",
+        "request_sha256": "d71440053fb0a8d83d4d29396a385cc865eed395ee14b298208a9b0e741f11de",
+        "response_sha256": "9a3e36494236d8773a3ae23d5916d4e303ae0c09a2c7b02727adb77a4db5ee81",
+        "finish_reason": "stop",
+        "prompt_tokens": 418,
+        "completion_tokens": 68,
+        "latency_ms": 1052.4,
+        "score": {
+          "valid": true,
+          "exact": true,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "color",
+                "value": "blue"
+              }
+            ],
+            "active_constraints_deactivated": [
+              {
+                "attribute": "material",
+                "value": "leather"
+              }
+            ],
+            "rejected_constraints_added": [
+              {
+                "attribute": "material",
+                "value": "leather"
+              }
+            ],
+            "no_preference_attributes_added": [
+              "material"
+            ],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [],
+            "stale_values_deactivated": []
+          }
+        }
+      },
+      "pro": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "color",
+              "value": "blue",
+              "evidence_span": "blue",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [],
+          "no_preference_attributes": [
+            "material"
+          ],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-pro",
+        "request_sha256": "892be8336160a26b4e241758e3195f4d219dd91fdc3bbe8f9a9a15eb4207fd8e",
+        "response_sha256": "c13bd0539cbecd6017bb24ab39cd5d2dff50edaee760ffc8431044c02476cce8",
+        "finish_reason": "stop",
+        "prompt_tokens": 554,
+        "completion_tokens": 99,
+        "latency_ms": 1712.39,
+        "score": {
+          "valid": true,
+          "exact": true,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "color",
+                "value": "blue"
+              }
+            ],
+            "active_constraints_deactivated": [
+              {
+                "attribute": "material",
+                "value": "leather"
+              }
+            ],
+            "rejected_constraints_added": [
+              {
+                "attribute": "material",
+                "value": "leather"
+              }
+            ],
+            "no_preference_attributes_added": [
+              "material"
+            ],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [],
+            "stale_values_deactivated": []
+          }
+        }
+      }
+    },
+    {
+      "case_index": 5,
+      "case": {
+        "message": "Actually, replace blue with red.",
+        "prior": {
+          "intent": "buying",
+          "active_constraints": [
+            {
+              "attribute": "color",
+              "value": "blue"
+            }
+          ],
+          "rejected_constraints": [],
+          "no_preference_attributes": []
+        },
+        "override": true,
+        "expected": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "color",
+              "value": "red",
+              "evidence_span": "red",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [],
+          "no_preference_attributes": [],
+          "override_attributes": [
+            "color"
+          ],
+          "semantic_terms": [],
+          "abstain": false
+        }
+      },
+      "flash": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "color",
+              "value": "red",
+              "evidence_span": "red",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [
+            {
+              "attribute": "color",
+              "value": "blue",
+              "evidence_span": "blue"
+            }
+          ],
+          "no_preference_attributes": [],
+          "override_attributes": [
+            "color"
+          ],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-flash",
+        "request_sha256": "998d762b435a3d3da377a60132df3525550544f2be027c63ea37cfaeb8eae771",
+        "response_sha256": "c4e0c3932363e5762b843129d12a4b631d60366a0c809ad25c1f1340608cd3e6",
+        "finish_reason": "stop",
+        "prompt_tokens": 413,
+        "completion_tokens": 82,
+        "latency_ms": 788.61,
+        "score": {
+          "valid": true,
+          "exact": false,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "color",
+                "value": "red"
+              }
+            ],
+            "active_constraints_deactivated": [
+              {
+                "attribute": "color",
+                "value": "blue"
+              }
+            ],
+            "rejected_constraints_added": [
+              {
+                "attribute": "color",
+                "value": "blue"
+              }
+            ],
+            "no_preference_attributes_added": [],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [
+              "color"
+            ],
+            "stale_values_deactivated": [
+              {
+                "attribute": "color",
+                "value": "blue"
+              }
+            ]
+          }
+        }
+      },
+      "pro": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "color",
+              "value": "red",
+              "evidence_span": "red",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [
+            {
+              "attribute": "color",
+              "value": "blue",
+              "evidence_span": "blue"
+            }
+          ],
+          "no_preference_attributes": [],
+          "override_attributes": [
+            "color"
+          ],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-pro",
+        "request_sha256": "7df267336fc631093f050bcd48b2e3aace094846c4ef2c0928613dde32b88c92",
+        "response_sha256": "09244d9518cd5bf40a74fb7360a1a131cd19546ce0735c10a6c8a0855dd3bb65",
+        "finish_reason": "stop",
+        "prompt_tokens": 570,
+        "completion_tokens": 124,
+        "latency_ms": 1463.93,
+        "score": {
+          "valid": true,
+          "exact": false,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "color",
+                "value": "red"
+              }
+            ],
+            "active_constraints_deactivated": [
+              {
+                "attribute": "color",
+                "value": "blue"
+              }
+            ],
+            "rejected_constraints_added": [
+              {
+                "attribute": "color",
+                "value": "blue"
+              }
+            ],
+            "no_preference_attributes_added": [],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [
+              "color"
+            ],
+            "stale_values_deactivated": [
+              {
+                "attribute": "color",
+                "value": "blue"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case_index": 6,
+      "case": {
+        "message": "Actually, replace leather with cotton; keep black.",
+        "prior": {
+          "intent": "buying",
+          "active_constraints": [
+            {
+              "attribute": "material",
+              "value": "leather"
+            },
+            {
+              "attribute": "color",
+              "value": "black"
+            }
+          ],
+          "rejected_constraints": [],
+          "no_preference_attributes": []
+        },
+        "override": true,
+        "expected": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "material",
+              "value": "cotton",
+              "evidence_span": "cotton",
+              "hard": true
+            },
+            {
+              "attribute": "color",
+              "value": "black",
+              "evidence_span": "black",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [],
+          "no_preference_attributes": [],
+          "override_attributes": [
+            "material"
+          ],
+          "semantic_terms": [],
+          "abstain": false
+        }
+      },
+      "flash": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "material",
+              "value": "cotton",
+              "evidence_span": "cotton",
+              "hard": true
+            },
+            {
+              "attribute": "color",
+              "value": "black",
+              "evidence_span": "black",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [
+            {
+              "attribute": "material",
+              "value": "leather",
+              "evidence_span": "leather"
+            }
+          ],
+          "no_preference_attributes": [],
+          "override_attributes": [
+            "material"
+          ],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-flash",
+        "request_sha256": "2cfb1df23327b9fad4c68edf32ec7512736013765a209ee7f82d713901b5e9c4",
+        "response_sha256": "e1d829aa45bfa5e11318494cb8846f2e7ec1a626c0d3b433783dd4da86c76cc3",
+        "finish_reason": "stop",
+        "prompt_tokens": 429,
+        "completion_tokens": 104,
+        "latency_ms": 1285.78,
+        "score": {
+          "valid": true,
+          "exact": false,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "material",
+                "value": "cotton"
+              }
+            ],
+            "active_constraints_deactivated": [
+              {
+                "attribute": "material",
+                "value": "leather"
+              }
+            ],
+            "rejected_constraints_added": [
+              {
+                "attribute": "material",
+                "value": "leather"
+              }
+            ],
+            "no_preference_attributes_added": [],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [
+              "material"
+            ],
+            "stale_values_deactivated": [
+              {
+                "attribute": "material",
+                "value": "leather"
+              }
+            ]
+          }
+        }
+      },
+      "pro": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "material",
+              "value": "cotton",
+              "evidence_span": "cotton",
+              "hard": true
+            },
+            {
+              "attribute": "color",
+              "value": "black",
+              "evidence_span": "black",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [
+            {
+              "attribute": "material",
+              "value": "leather",
+              "evidence_span": "leather"
+            }
+          ],
+          "no_preference_attributes": [],
+          "override_attributes": [
+            "material"
+          ],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-pro",
+        "request_sha256": "1ed3045da36e1c103e2cdeadd0ac2b5e21d74b06aef2915358b63eef481d3c89",
+        "response_sha256": "dda628c9c00abd9c5d948406f4396d7094b16612b5393375c335873d52bf3cfc",
+        "finish_reason": "stop",
+        "prompt_tokens": 615,
+        "completion_tokens": 161,
+        "latency_ms": 2170.29,
+        "score": {
+          "valid": true,
+          "exact": false,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "material",
+                "value": "cotton"
+              }
+            ],
+            "active_constraints_deactivated": [
+              {
+                "attribute": "material",
+                "value": "leather"
+              }
+            ],
+            "rejected_constraints_added": [
+              {
+                "attribute": "material",
+                "value": "leather"
+              }
+            ],
+            "no_preference_attributes_added": [],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [
+              "material"
+            ],
+            "stale_values_deactivated": [
+              {
+                "attribute": "material",
+                "value": "leather"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case_index": 7,
+      "case": {
+        "message": "Not leather or polyester; cotton please.",
+        "prior": {
+          "intent": "buying",
+          "active_constraints": [],
+          "rejected_constraints": [],
+          "no_preference_attributes": []
+        },
+        "override": false,
+        "expected": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "material",
+              "value": "cotton",
+              "evidence_span": "cotton",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [
+            {
+              "attribute": "material",
+              "value": "leather",
+              "evidence_span": "leather"
+            },
+            {
+              "attribute": "material",
+              "value": "polyester",
+              "evidence_span": "polyester"
+            }
+          ],
+          "no_preference_attributes": [],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        }
+      },
+      "flash": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "material",
+              "value": "cotton",
+              "evidence_span": "cotton",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [
+            {
+              "attribute": "material",
+              "value": "leather",
+              "evidence_span": "leather"
+            },
+            {
+              "attribute": "material",
+              "value": "polyester",
+              "evidence_span": "polyester"
+            }
+          ],
+          "no_preference_attributes": [],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-flash",
+        "request_sha256": "2853091d2a048e05f12fd0bf9ebd488fa5c8fe71c72bb8c1c101e9daef378961",
+        "response_sha256": "63e82f2b0fd7a1c8ef07f62f8bfcd30b29027d8921055f7edda0ea882753d616",
+        "finish_reason": "stop",
+        "prompt_tokens": 401,
+        "completion_tokens": 101,
+        "latency_ms": 1058.86,
+        "score": {
+          "valid": true,
+          "exact": true,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "material",
+                "value": "cotton"
+              }
+            ],
+            "active_constraints_deactivated": [],
+            "rejected_constraints_added": [
+              {
+                "attribute": "material",
+                "value": "leather"
+              },
+              {
+                "attribute": "material",
+                "value": "polyester"
+              }
+            ],
+            "no_preference_attributes_added": [],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [],
+            "stale_values_deactivated": []
+          }
+        }
+      },
+      "pro": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "material",
+              "value": "cotton",
+              "evidence_span": "cotton",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [
+            {
+              "attribute": "material",
+              "value": "leather",
+              "evidence_span": "leather"
+            },
+            {
+              "attribute": "material",
+              "value": "polyester",
+              "evidence_span": "polyester"
+            }
+          ],
+          "no_preference_attributes": [],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-pro",
+        "request_sha256": "00d7390a7aa19649cc5bb0e15dc94d18f0451dd4c8c4a248f2ee0fb977273056",
+        "response_sha256": "b9030fa6d45a46b02fa5f6360dc18da1a99a72f4f19e5b6944a226e3efbb8e33",
+        "finish_reason": "stop",
+        "prompt_tokens": 582,
+        "completion_tokens": 155,
+        "latency_ms": 1775.52,
+        "score": {
+          "valid": true,
+          "exact": true,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "material",
+                "value": "cotton"
+              }
+            ],
+            "active_constraints_deactivated": [],
+            "rejected_constraints_added": [
+              {
+                "attribute": "material",
+                "value": "leather"
+              },
+              {
+                "attribute": "material",
+                "value": "polyester"
+              }
+            ],
+            "no_preference_attributes_added": [],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [],
+            "stale_values_deactivated": []
+          }
+        }
+      }
+    },
+    {
+      "case_index": 8,
+      "case": {
+        "message": "For hiking, not commuting; casual style please.",
+        "prior": {
+          "intent": "buying",
+          "active_constraints": [],
+          "rejected_constraints": [],
+          "no_preference_attributes": []
+        },
+        "override": false,
+        "expected": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "use_case",
+              "value": "hiking",
+              "evidence_span": "hiking",
+              "hard": true
+            },
+            {
+              "attribute": "style",
+              "value": "casual",
+              "evidence_span": "casual",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [
+            {
+              "attribute": "use_case",
+              "value": "commuting",
+              "evidence_span": "commuting"
+            }
+          ],
+          "no_preference_attributes": [],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        }
+      },
+      "flash": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "use_case",
+              "value": "hiking",
+              "evidence_span": "hiking",
+              "hard": true
+            },
+            {
+              "attribute": "style",
+              "value": "casual",
+              "evidence_span": "casual",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [],
+          "no_preference_attributes": [],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-flash",
+        "request_sha256": "0e0104c0facb9fb3ef0046736159ed422d140285cf78179c1200a6b3c7d468ba",
+        "response_sha256": "22843cb7d79b144a3f63dc9e377c863bb3159a4a6828b7a8155a85f572c1731d",
+        "finish_reason": "stop",
+        "prompt_tokens": 403,
+        "completion_tokens": 89,
+        "latency_ms": 889.45,
+        "score": {
+          "valid": true,
+          "exact": false,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "style",
+                "value": "casual"
+              },
+              {
+                "attribute": "use_case",
+                "value": "hiking"
+              }
+            ],
+            "active_constraints_deactivated": [],
+            "rejected_constraints_added": [],
+            "no_preference_attributes_added": [],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [],
+            "stale_values_deactivated": []
+          }
+        }
+      },
+      "pro": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "use_case",
+              "value": "hiking",
+              "evidence_span": "hiking",
+              "hard": true
+            },
+            {
+              "attribute": "style",
+              "value": "casual",
+              "evidence_span": "casual",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [
+            {
+              "attribute": "use_case",
+              "value": "commuting",
+              "evidence_span": "commuting"
+            }
+          ],
+          "no_preference_attributes": [],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-pro",
+        "request_sha256": "cdb852c79e5c95878740a5fa41c74c89692037669fdd5c2895bb9da4a235e119",
+        "response_sha256": "6667bccffe47d95c386ccfab9ce920e86d36deee919de4b74e9e579b8e2f408c",
+        "finish_reason": "stop",
+        "prompt_tokens": 567,
+        "completion_tokens": 163,
+        "latency_ms": 2125.75,
+        "score": {
+          "valid": true,
+          "exact": true,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "style",
+                "value": "casual"
+              },
+              {
+                "attribute": "use_case",
+                "value": "hiking"
+              }
+            ],
+            "active_constraints_deactivated": [],
+            "rejected_constraints_added": [
+              {
+                "attribute": "use_case",
+                "value": "commuting"
+              }
+            ],
+            "no_preference_attributes_added": [],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [],
+            "stale_values_deactivated": []
+          }
+        }
+      }
+    },
+    {
+      "case_index": 9,
+      "case": {
+        "message": "Actually, replace shirts with shoes.",
+        "prior": {
+          "intent": "buying",
+          "active_constraints": [
+            {
+              "attribute": "category",
+              "value": "shirts"
+            },
+            {
+              "attribute": "material",
+              "value": "cotton"
+            }
+          ],
+          "rejected_constraints": [],
+          "no_preference_attributes": []
+        },
+        "override": true,
+        "expected": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "category",
+              "value": "shoes",
+              "evidence_span": "shoes",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [],
+          "no_preference_attributes": [],
+          "override_attributes": [
+            "category"
+          ],
+          "semantic_terms": [],
+          "abstain": false
+        }
+      },
+      "flash": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "category",
+              "value": "shoes",
+              "evidence_span": "shoes",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [],
+          "no_preference_attributes": [],
+          "override_attributes": [
+            "category"
+          ],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-flash",
+        "request_sha256": "d09f5da5516e42397a637d61d608d3ed0de8f1d4f5b26f0038e8f9d41bc17677",
+        "response_sha256": "83ba9246e9414239b896a57ee1c4d5a7c1eb459e2e8f4c74db02ea1e9eedc178",
+        "finish_reason": "stop",
+        "prompt_tokens": 427,
+        "completion_tokens": 70,
+        "latency_ms": 796.73,
+        "score": {
+          "valid": true,
+          "exact": true,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "category",
+                "value": "shoes"
+              }
+            ],
+            "active_constraints_deactivated": [
+              {
+                "attribute": "category",
+                "value": "shirts"
+              },
+              {
+                "attribute": "material",
+                "value": "cotton"
+              }
+            ],
+            "rejected_constraints_added": [],
+            "no_preference_attributes_added": [],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [
+              "category"
+            ],
+            "stale_values_deactivated": [
+              {
+                "attribute": "category",
+                "value": "shirts"
+              },
+              {
+                "attribute": "material",
+                "value": "cotton"
+              }
+            ]
+          }
+        }
+      },
+      "pro": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "category",
+              "value": "shoes",
+              "evidence_span": "shoes",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [],
+          "no_preference_attributes": [],
+          "override_attributes": [
+            "category"
+          ],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-pro",
+        "request_sha256": "c5f26644f77accef1482beaebb18daa7494f9b7ec05b38bafa31f791953c0c67",
+        "response_sha256": "82244284963ff41a81654df80a1909a311b5ba9294f921b5e971414bfe7176a2",
+        "finish_reason": "stop",
+        "prompt_tokens": 565,
+        "completion_tokens": 97,
+        "latency_ms": 1571.96,
+        "score": {
+          "valid": true,
+          "exact": true,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "category",
+                "value": "shoes"
+              }
+            ],
+            "active_constraints_deactivated": [
+              {
+                "attribute": "category",
+                "value": "shirts"
+              },
+              {
+                "attribute": "material",
+                "value": "cotton"
+              }
+            ],
+            "rejected_constraints_added": [],
+            "no_preference_attributes_added": [],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [
+              "category"
+            ],
+            "stale_values_deactivated": [
+              {
+                "attribute": "category",
+                "value": "shirts"
+              },
+              {
+                "attribute": "material",
+                "value": "cotton"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case_index": 10,
+      "case": {
+        "message": "Small size, not large; no preference for color.",
+        "prior": {
+          "intent": "buying",
+          "active_constraints": [],
+          "rejected_constraints": [],
+          "no_preference_attributes": []
+        },
+        "override": false,
+        "expected": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "size",
+              "value": "small",
+              "evidence_span": "small",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [
+            {
+              "attribute": "size",
+              "value": "large",
+              "evidence_span": "large"
+            }
+          ],
+          "no_preference_attributes": [
+            "color"
+          ],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        }
+      },
+      "flash": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "size",
+              "value": "small",
+              "evidence_span": "Small size",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [
+            {
+              "attribute": "size",
+              "value": "large",
+              "evidence_span": "not large"
+            }
+          ],
+          "no_preference_attributes": [
+            "color"
+          ],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-flash",
+        "request_sha256": "99fff703ad9b8f2e5df94994556a24170e914a8b26bf1f9b39616b421e5d8288",
+        "response_sha256": "5373729bb18584f247a15020907600ce45f10ed807b1677dcfe1840d3b5a80a2",
+        "finish_reason": "stop",
+        "prompt_tokens": 404,
+        "completion_tokens": 84,
+        "latency_ms": 1109.54,
+        "score": {
+          "valid": true,
+          "exact": true,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "size",
+                "value": "small"
+              }
+            ],
+            "active_constraints_deactivated": [],
+            "rejected_constraints_added": [
+              {
+                "attribute": "size",
+                "value": "large"
+              }
+            ],
+            "no_preference_attributes_added": [
+              "color"
+            ],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [],
+            "stale_values_deactivated": []
+          }
+        }
+      },
+      "pro": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [
+            {
+              "attribute": "size",
+              "value": "small",
+              "evidence_span": "Small size",
+              "hard": true
+            }
+          ],
+          "rejected_constraints": [
+            {
+              "attribute": "size",
+              "value": "large",
+              "evidence_span": "not large"
+            }
+          ],
+          "no_preference_attributes": [
+            "color"
+          ],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": false
+        },
+        "model": "deepseek-v4-pro",
+        "request_sha256": "ae4157ee38aabeb1692ff9ccbd99d67836179047d72da4e26467743fa9fba22a",
+        "response_sha256": "d516ff8fcbc4c5966dd763d14a79e692787defcab3053255a4605a39a443feba",
+        "finish_reason": "stop",
+        "prompt_tokens": 563,
+        "completion_tokens": 130,
+        "latency_ms": 1928.43,
+        "score": {
+          "valid": true,
+          "exact": true,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [
+              {
+                "attribute": "size",
+                "value": "small"
+              }
+            ],
+            "active_constraints_deactivated": [],
+            "rejected_constraints_added": [
+              {
+                "attribute": "size",
+                "value": "large"
+              }
+            ],
+            "no_preference_attributes_added": [
+              "color"
+            ],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [],
+            "stale_values_deactivated": []
+          }
+        }
+      }
+    },
+    {
+      "case_index": 11,
+      "case": {
+        "message": "Thanks, I'll think about it.",
+        "prior": {
+          "intent": "buying",
+          "active_constraints": [
+            {
+              "attribute": "color",
+              "value": "black"
+            }
+          ],
+          "rejected_constraints": [],
+          "no_preference_attributes": []
+        },
+        "override": false,
+        "expected": {
+          "intent_hint": null,
+          "positive_constraints": [],
+          "rejected_constraints": [],
+          "no_preference_attributes": [],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": true
+        }
+      },
+      "flash": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [],
+          "rejected_constraints": [],
+          "no_preference_attributes": [],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": true
+        },
+        "model": "deepseek-v4-flash",
+        "request_sha256": "40aaa703453e3c7fc46c36a1cc63276c052e20cb435c55e08033226fe9fcc3fe",
+        "response_sha256": "608d7dadbba434c0f2b40ade75879dd58f2b7cf99a3844f45cecd9f6a9fd9230",
+        "finish_reason": "stop",
+        "prompt_tokens": 414,
+        "completion_tokens": 48,
+        "latency_ms": 813.52,
+        "score": {
+          "valid": true,
+          "exact": true,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [],
+            "active_constraints_deactivated": [],
+            "rejected_constraints_added": [],
+            "no_preference_attributes_added": [],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [],
+            "stale_values_deactivated": []
+          }
+        }
+      },
+      "pro": {
+        "payload": {
+          "intent_hint": null,
+          "positive_constraints": [],
+          "rejected_constraints": [],
+          "no_preference_attributes": [],
+          "override_attributes": [],
+          "semantic_terms": [],
+          "abstain": true
+        },
+        "model": "deepseek-v4-pro",
+        "request_sha256": "8edc56bc0118ac96e94be1583b3cee2b90472677febf90eca980a3d096b30c6b",
+        "response_sha256": "198d08a6367f9ef593d0d7dd0b479161c45ee3da4f665acb294bf5f381ca9d97",
+        "finish_reason": "stop",
+        "prompt_tokens": 522,
+        "completion_tokens": 58,
+        "latency_ms": 1298.24,
+        "score": {
+          "valid": true,
+          "exact": true,
+          "applied": {
+            "schema_version": "applied_state_delta_v1",
+            "intent_before": "buying",
+            "intent_after": "buying",
+            "active_constraints_added": [],
+            "active_constraints_deactivated": [],
+            "rejected_constraints_added": [],
+            "no_preference_attributes_added": [],
+            "no_preference_attributes_removed": [],
+            "override_attributes": [],
+            "stale_values_deactivated": []
+          }
+        }
+      }
+    }
+  ],
+  "attempted_calls": 24,
+  "status": "completed",
+  "evidence_level": "synthetic_same_family_diagnostic_not_gold",
+  "completed_pairs": 12,
+  "corrected": 2,
+  "regressed": 0,
+  "estimated_peak_usd": 0.018091,
+  "elapsed_seconds": 34.02,
+  "editor_gate_passed": true,
+  "competition_score_gain_demonstrated": false
+}

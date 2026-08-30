@@ -130,7 +130,7 @@ def _call(model, inputs, key):
     except (TypeError, ValueError):
         payload = None
     usage = data.get("usage", {})
-    return {"payload": payload, "model": data.get("model"),
+    return {"payload": payload, "draft_text": content, "model": data.get("model"),
             "request_sha256": _sha(body), "response_sha256": hashlib.sha256(raw).hexdigest(),
             "finish_reason": data["choices"][0].get("finish_reason"),
             "prompt_tokens": int(usage.get("prompt_tokens", 0)),
@@ -162,6 +162,9 @@ def main():
               "fixture_sha256": _sha(cases()), "prompt_sha256": _sha([PROMPT, REVIEW]),
               "expected_pairs": 12, "records": records, "attempted_calls": 0,
               "status": "completed", "evidence_level": "synthetic_same_family_diagnostic_not_gold"}
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    with args.output.open("x") as output:
+        json.dump(dict(report, status="running"), output)
     for index, case in enumerate(cases()):
         pair = {"case_index": index, "case": case}
         records.append(pair)
@@ -171,15 +174,18 @@ def main():
                 break
             inputs = provider_input(case)
             if role == "pro":
-                inputs = dict(inputs, draft=pair["flash"]["payload"])
+                inputs = dict(inputs, draft=pair["flash"]["payload"]
+                              if pair["flash"]["payload"] is not None
+                              else pair["flash"]["draft_text"])
             report["attempted_calls"] += 1
             try:
                 result = _call(model, inputs, key)
-            except (urllib.error.URLError, OSError, ValueError, KeyError, TypeError):
+            except (urllib.error.URLError, OSError, ValueError, KeyError, TypeError, IndexError):
                 report["status"] = "provider_failure_inconclusive"
                 break  # No retry; no untrusted provider body/credential in logs.
             result["score"] = score(case, result["payload"])
             pair[role] = result
+            args.output.write_text(json.dumps(dict(report, status="running"), indent=2) + "\n")
             print(json.dumps({"case": index, "role": role, "valid": result["score"]["valid"], "exact": result["score"]["exact"]}), flush=True)
         if report["status"] != "completed":
             break
@@ -192,7 +198,7 @@ def main():
                   estimated_peak_usd=round(cost, 6), elapsed_seconds=round(time.monotonic() - started, 2),
                   editor_gate_passed=len(pairs) == 12 and corrected >= 2 and regressed == 0,
                   competition_score_gain_demonstrated=False)
-    with args.output.open("x") as output:
+    with args.output.open("w") as output:
         json.dump(report, output, indent=2)
         output.write("\n")
     print(json.dumps({k: v for k, v in report.items() if k != "records"}), flush=True)
