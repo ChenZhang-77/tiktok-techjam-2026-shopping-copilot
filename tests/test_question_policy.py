@@ -31,7 +31,8 @@ class QuestionPolicyTest(unittest.TestCase):
         state_before = copy.deepcopy(state)
         result_before = copy.deepcopy(result)
 
-        outcome = QuestionPolicy().decide(
+        policy = QuestionPolicy()
+        outcome = policy.decide(
             state=state,
             result=result,
             turn=1,
@@ -49,6 +50,8 @@ class QuestionPolicyTest(unittest.TestCase):
         self.assertEqual(outcome.decision_evidence.pool_size, 2)
         self.assertEqual(outcome.diagnostics["baseline_attribute"], "feature")
         self.assertIn("feature", outcome.diagnostics["eligible_attributes"])
+        self.assertIsNotNone(policy.last_latency_ms)
+        self.assertGreaterEqual(policy.last_latency_ms, 0.0)
         self.assertNotIn("candidate_ids", outcome.diagnostics)
         self.assertNotIn("candidate_texts", outcome.diagnostics)
         self.assertNotIn("target", str(outcome.diagnostics).lower())
@@ -84,6 +87,46 @@ class QuestionPolicyTest(unittest.TestCase):
             outcome.diagnostics["fallback_reason"],
             "invalid_retrieval_evidence",
         )
+
+    def test_duplicate_candidate_ids_preserve_the_legacy_text_projection(self) -> None:
+        state = SessionState(session_id="s1", user_profile={})
+        state.intent = "browsing"
+        state.asked_attributes.add("feature")
+        result = RetrievalResult(
+            candidates=[
+                Candidate("A", evidence_text="leather product"),
+                Candidate("A", evidence_text="cotton product"),
+            ],
+            diagnostics=RetrievalDiagnostics(route="fixture", candidate_count=2),
+        )
+
+        outcome = QuestionPolicy().decide(
+            state=state,
+            result=result,
+            turn=2,
+            top_k=2,
+            response_fallback_used=True,
+        )
+
+        self.assertEqual(outcome.decision.attribute, "use_case")
+
+    def test_invalid_policy_state_returns_a_total_guarded_stop(self) -> None:
+        state = SessionState(session_id="s1", user_profile={})
+        state.intent = "buying"
+        state.active_constraints = [None]
+
+        outcome = QuestionPolicy().decide(
+            state=state,
+            result=None,
+            turn=1,
+            top_k=2,
+        )
+
+        self.assertEqual(outcome.decision.action, "stop")
+        self.assertIsNone(outcome.decision.attribute)
+        self.assertEqual(outcome.decision.question, "")
+        self.assertTrue(outcome.diagnostics["fallback_used"])
+        self.assertEqual(outcome.diagnostics["fallback_reason"], "legacy_policy_error")
 
 
 if __name__ == "__main__":

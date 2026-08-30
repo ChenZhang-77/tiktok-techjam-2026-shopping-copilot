@@ -8,6 +8,38 @@ from pathlib import Path
 from typing import Any
 
 
+def _sha256_bytes(value: bytes) -> str:
+    return hashlib.sha256(value).hexdigest()
+
+
+def _sha256_json(value: object) -> str:
+    return _sha256_bytes(
+        json.dumps(
+            value,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+        ).encode("utf-8")
+    )
+
+
+def _sha256_file(path: str | Path) -> str:
+    return _sha256_bytes(Path(path).read_bytes())
+
+
+def _latency_summary(values: list[float]) -> dict[str, int | float | None]:
+    if not values:
+        return {"count": 0, "mean": None, "p95": None, "max": None}
+    ordered = sorted(values)
+    p95_index = max(0, min(len(ordered) - 1, (95 * len(ordered) + 99) // 100 - 1))
+    return {
+        "count": len(ordered),
+        "mean": round(sum(ordered) / len(ordered), 6),
+        "p95": round(ordered[p95_index], 6),
+        "max": round(ordered[-1], 6),
+    }
+
+
 def _answer_outcome(
     turn: dict[str, Any],
     *,
@@ -38,13 +70,17 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
     evidence_statuses: Counter[str] = Counter()
     answer_outcomes: Counter[str] = Counter()
     policy_violation_count = 0
+    unproductive_reply_count = 0
+    policy_latencies_ms: list[float] = []
 
     for source_session in source.get("sessions", []):
         previous_ask_attribute: str | None = None
         turns: list[dict[str, Any]] = []
         for source_turn in source_session.get("turns", []):
             question_policy = source_turn.get("question_policy")
-            if not isinstance(question_policy, dict):
+            if not isinstance(question_policy, dict) or not question_policy.get(
+                "policy_version"
+            ):
                 raise ValueError("A14-0 requires Question Policy diagnostics on every turn")
             outcome = _answer_outcome(
                 source_turn,
@@ -58,9 +94,18 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
                 baseline_attribute if isinstance(baseline_attribute, str) else None
             )
             evidence_status = str(question_policy.get("evidence_status") or "")
+            raw_latency_ms = question_policy.get("latency_ms")
+            latency_ms = (
+                float(raw_latency_ms)
+                if isinstance(raw_latency_ms, (int, float))
+                and not isinstance(raw_latency_ms, bool)
+                and raw_latency_ms >= 0
+                else None
+            )
             policy_flags = sorted(
                 str(flag) for flag in source_turn.get("question_policy_flags", [])
             )
+            unproductive_reply = source_turn.get("unproductive_reply") is True
             turn = {
                 "turn": int(source_turn["turn"]),
                 "policy_version": str(question_policy.get("policy_version") or ""),
@@ -75,6 +120,15 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
                 "reason_code": str(question_policy.get("reason_code") or ""),
                 "evidence_status": evidence_status,
                 "answer_outcome": outcome,
+                "unproductive_reply": unproductive_reply,
+                "latency_ms": latency_ms,
+                "message_sha256": str(source_turn.get("message_sha256") or ""),
+                "recommendations_sha256": str(
+                    source_turn.get("recommendations_sha256") or ""
+                ),
+                "visible_response_sha256": str(
+                    source_turn.get("visible_response_sha256") or ""
+                ),
                 "policy_flags": policy_flags,
             }
             turns.append(turn)
@@ -84,6 +138,9 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
             evidence_statuses[evidence_status] += 1
             answer_outcomes[outcome] += 1
             policy_violation_count += len(policy_flags)
+            unproductive_reply_count += int(unproductive_reply)
+            if latency_ms is not None:
+                policy_latencies_ms.append(latency_ms)
             previous_ask_attribute = ask_attribute
         sessions.append(
             {
@@ -99,19 +156,38 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
         separators=(",", ":"),
         ensure_ascii=False,
     ).encode("utf-8")
+    visible_trace = [
+        {
+            "sample_id": session["sample_id"],
+            "turns": [
+                {
+                    "turn": turn["turn"],
+                    "ask_attribute": turn["ask_attribute"],
+                    "message_sha256": turn["message_sha256"],
+                    "recommendations_sha256": turn["recommendations_sha256"],
+                    "visible_response_sha256": turn["visible_response_sha256"],
+                }
+                for turn in session["turns"]
+            ],
+        }
+        for session in sessions
+    ]
     return {
         "version": "a14-0-turn-audit-v1",
         "scope": "offline Development-160 Question Policy trace",
         "protocol": {
-            "runtime_behavior_changed": False,
             "full_or_holdout_used": False,
             "candidate_ids_or_text_recorded": False,
             "private_product_identifiers_recorded": False,
+            "behavior_parity_status": "unverified_without_baseline",
         },
         "code_provenance": dict(source.get("code_provenance") or {}),
         "fold_manifest_version": source.get("fold_manifest_version"),
         "baseline_metrics": dict(source.get("baseline_metrics") or {}),
+        "observed_run_counts": dict(source.get("observed_run_counts") or {}),
+        "input_sha256": dict(source.get("input_sha256") or {}),
         "question_trace_sha256": hashlib.sha256(canonical_trace).hexdigest(),
+        "visible_response_trace_sha256": _sha256_json(visible_trace),
         "summary": {
             "session_count": len(sessions),
             "turn_count": sum(len(session["turns"]) for session in sessions),
@@ -120,9 +196,123 @@ def build_turn_audit(source: dict[str, Any]) -> dict[str, Any]:
             "attribute_counts": dict(sorted(attribute_counts.items())),
             "evidence_statuses": dict(sorted(evidence_statuses.items())),
             "answer_outcomes": dict(sorted(answer_outcomes.items())),
+            "unproductive_reply_count": unproductive_reply_count,
             "policy_violation_count": policy_violation_count,
+            "policy_latency_ms": _latency_summary(policy_latencies_ms),
         },
         "sessions": sessions,
+    }
+
+
+def build_visible_baseline(source: dict[str, Any]) -> dict[str, Any]:
+    """Freeze only safe hashes of the legacy public response trace."""
+
+    sessions = [
+        {
+            "sample_id": str(session.get("sample_id") or ""),
+            "turns": [
+                {
+                    "turn": int(turn["turn"]),
+                    "ask_attribute": (
+                        turn.get("ask_attribute")
+                        if isinstance(turn.get("ask_attribute"), str)
+                        else None
+                    ),
+                    "message_sha256": str(turn.get("message_sha256") or ""),
+                    "recommendations_sha256": str(
+                        turn.get("recommendations_sha256") or ""
+                    ),
+                    "visible_response_sha256": str(
+                        turn.get("visible_response_sha256") or ""
+                    ),
+                }
+                for turn in session.get("turns", [])
+            ],
+        }
+        for session in source.get("sessions", [])
+    ]
+    return {
+        "version": "a14-0-visible-baseline-v1",
+        "scope": "fixed Development-160 legacy public response trace hashes",
+        "protocol": {
+            "full_or_holdout_used": False,
+            "candidate_ids_or_text_recorded": False,
+            "private_product_identifiers_recorded": False,
+        },
+        "code_provenance": dict(source.get("code_provenance") or {}),
+        "fold_manifest_version": source.get("fold_manifest_version"),
+        "baseline_metrics": dict(source.get("baseline_metrics") or {}),
+        "observed_run_counts": dict(source.get("observed_run_counts") or {}),
+        "input_sha256": dict(source.get("input_sha256") or {}),
+        "visible_response_trace_sha256": _sha256_json(sessions),
+        "sessions": sessions,
+    }
+
+
+def compare_visible_traces(
+    baseline: dict[str, Any],
+    current: dict[str, Any],
+) -> dict[str, Any]:
+    """Compare safe legacy/current hashes and report exact parity."""
+
+    baseline_sessions = {
+        str(session.get("sample_id") or ""): session
+        for session in baseline.get("sessions", [])
+    }
+    current_sessions = {
+        str(session.get("sample_id") or ""): session
+        for session in current.get("sessions", [])
+    }
+    session_mismatches = sorted(set(baseline_sessions) ^ set(current_sessions))
+    message_mismatches = 0
+    recommendation_mismatches = 0
+    ask_mismatches = 0
+    turn_shape_mismatches = 0
+    compared_turns = 0
+    for sample_id in sorted(set(baseline_sessions) & set(current_sessions)):
+        baseline_turns = {
+            int(turn["turn"]): turn
+            for turn in baseline_sessions[sample_id].get("turns", [])
+        }
+        current_turns = {
+            int(turn["turn"]): turn
+            for turn in current_sessions[sample_id].get("turns", [])
+        }
+        turn_shape_mismatches += len(set(baseline_turns) ^ set(current_turns))
+        for turn_number in sorted(set(baseline_turns) & set(current_turns)):
+            compared_turns += 1
+            before = baseline_turns[turn_number]
+            after = current_turns[turn_number]
+            message_mismatches += int(
+                before.get("message_sha256") != after.get("message_sha256")
+            )
+            recommendation_mismatches += int(
+                before.get("recommendations_sha256")
+                != after.get("recommendations_sha256")
+            )
+            ask_mismatches += int(
+                before.get("ask_attribute") != after.get("ask_attribute")
+            )
+    input_hashes_match = baseline.get("input_sha256") == current.get("input_sha256")
+    metric_parity = baseline.get("baseline_metrics") == current.get("baseline_metrics")
+    mismatch_count = (
+        len(session_mismatches)
+        + turn_shape_mismatches
+        + message_mismatches
+        + recommendation_mismatches
+        + ask_mismatches
+    )
+    exact = mismatch_count == 0 and input_hashes_match and metric_parity
+    return {
+        "exact": exact,
+        "compared_turns": compared_turns,
+        "session_shape_mismatches": len(session_mismatches),
+        "turn_shape_mismatches": turn_shape_mismatches,
+        "message_mismatches": message_mismatches,
+        "recommendation_mismatches": recommendation_mismatches,
+        "ask_attribute_mismatches": ask_mismatches,
+        "input_hashes_match": input_hashes_match,
+        "metric_parity": metric_parity,
     }
 
 
@@ -132,6 +322,8 @@ def run_development_turn_audit(
     dataset_path: str | Path = "data/public_set.jsonl",
     public_split_path: str | Path = "docs/public_split_v1.json",
     development_fold_path: str | Path = "docs/development_folds_v1.json",
+    baseline_trace: dict[str, Any] | None = None,
+    capture_baseline: bool = False,
 ) -> dict[str, Any]:
     """Run the current Agent on Development-160 and build the A14-0 trace."""
 
@@ -180,6 +372,11 @@ def run_development_turn_audit(
                     "turn": turn,
                     "user_message": user_message,
                     "response": response,
+                    "policy_latency_ms": getattr(
+                        getattr(self._agent, "question_policy", None),
+                        "last_latency_ms",
+                        None,
+                    ),
                 }
             )
             return response
@@ -207,8 +404,9 @@ def run_development_turn_audit(
             diagnostics = diagnostics if isinstance(diagnostics, dict) else {}
             question_policy = diagnostics.get("question_policy")
             question_policy = (
-                question_policy if isinstance(question_policy, dict) else {}
+                dict(question_policy) if isinstance(question_policy, dict) else {}
             )
+            question_policy["latency_ms"] = response_turn.get("policy_latency_ms")
             ask_attribute = response.get("ask_attribute")
             ask_attribute = ask_attribute if isinstance(ask_attribute, str) else None
             no_preference = {
@@ -226,6 +424,12 @@ def run_development_turn_audit(
                 if int(response_turn["turn"]) >= 10:
                     policy_flags.append("asked_on_final_turn")
                 asked_attributes.add(ask_attribute)
+                eligible_attributes = {
+                    str(attribute)
+                    for attribute in question_policy.get("eligible_attributes", [])
+                }
+                if ask_attribute not in eligible_attributes:
+                    policy_flags.append(f"asked_ineligible_attribute:{ask_attribute}")
             baseline_action = question_policy.get("baseline_action")
             baseline_attribute = question_policy.get("baseline_attribute")
             if (
@@ -242,6 +446,8 @@ def run_development_turn_audit(
                     and str(item.get("attribute") or "")
                 }
             )
+            if ask_attribute in active_attributes and ask_attribute != "other":
+                policy_flags.append(f"asked_known_attribute:{ask_attribute}")
             rejected_attributes = sorted(
                 {
                     str(item.get("attribute"))
@@ -249,6 +455,17 @@ def run_development_turn_audit(
                     if isinstance(item, dict) and str(item.get("attribute") or "")
                 }
             )
+            recommendations = [
+                str(item.get("parent_asin") or "")
+                for item in response.get("recommendations", [])
+                if isinstance(item, dict) and str(item.get("parent_asin") or "")
+            ]
+            message = str(response.get("message") or "")
+            visible_response = {
+                "message": message,
+                "ask_attribute": ask_attribute,
+                "recommendations": recommendations,
+            }
             turns.append(
                 {
                     "turn": int(response_turn["turn"]),
@@ -261,6 +478,9 @@ def run_development_turn_audit(
                     "rejected_attributes": rejected_attributes,
                     "question_policy_flags": sorted(policy_flags),
                     "question_policy": question_policy,
+                    "message_sha256": _sha256_json(message),
+                    "recommendations_sha256": _sha256_json(recommendations),
+                    "visible_response_sha256": _sha256_json(visible_response),
                 }
             )
         sessions.append(
@@ -283,14 +503,32 @@ def run_development_turn_audit(
                 "efficiency",
                 "recommended_technical_score",
                 "scenario_metrics",
-                "response_exception_count",
-                "invalid_response_count",
-                "fallback_response_count",
             )
+        },
+        "observed_run_counts": dict(evaluation.get("observed_run_counts") or {}),
+        "input_sha256": {
+            "catalog": _sha256_file(catalog_path),
+            "dataset": _sha256_file(dataset_path),
+            "public_split": _sha256_file(public_split_path),
+            "development_folds": _sha256_file(development_fold_path),
+            "evaluation_config": _sha256_file("docs/evaluation_config.json"),
+            "local_evaluator": _sha256_file("evaluator/local_evaluator.py"),
+            "splits": _sha256_file("evaluator/splits.py"),
         },
         "sessions": sessions,
     }
+    if capture_baseline:
+        return build_visible_baseline(source)
     audit = build_turn_audit(source)
+    if baseline_trace is None:
+        raise ValueError("A14-0 current audit requires a fixed legacy baseline trace")
+    parity = compare_visible_traces(baseline_trace, audit)
+    audit["parity"] = parity
+    audit["protocol"]["behavior_parity_status"] = (
+        "verified_exact" if parity["exact"] else "mismatch"
+    )
+    if not parity["exact"]:
+        raise RuntimeError(f"A14-0 visible behavior parity failed: {parity}")
     return audit
 
 
@@ -309,12 +547,30 @@ def main() -> None:
         "--output",
         default="/private/tmp/shopping-copilot-a14-0-turn-audit.json",
     )
+    parser.add_argument(
+        "--baseline",
+        help="Fixed legacy visible-trace JSON used for exact parity comparison.",
+    )
+    parser.add_argument(
+        "--capture-baseline",
+        action="store_true",
+        help="Capture safe visible-response hashes without requiring QuestionPolicy.",
+    )
     args = parser.parse_args()
+    if args.capture_baseline and args.baseline:
+        parser.error("--capture-baseline and --baseline are mutually exclusive")
+    if not args.capture_baseline and not args.baseline:
+        parser.error("current A14-0 audit requires --baseline")
+    baseline_trace = None
+    if args.baseline:
+        baseline_trace = json.loads(Path(args.baseline).read_text(encoding="utf-8"))
     audit = run_development_turn_audit(
         catalog_path=args.catalog,
         dataset_path=args.dataset,
         public_split_path=args.public_split,
         development_fold_path=args.development_fold_manifest,
+        baseline_trace=baseline_trace,
+        capture_baseline=args.capture_baseline,
     )
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -322,13 +578,25 @@ def main() -> None:
         json.dumps(audit, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+    summary = audit.get("summary")
+    if not isinstance(summary, dict):
+        summary = {
+            "session_count": len(audit.get("sessions", [])),
+            "turn_count": sum(
+                len(session.get("turns", []))
+                for session in audit.get("sessions", [])
+            ),
+        }
     print(
         json.dumps(
             {
                 "output": str(output),
-                "session_count": audit["summary"]["session_count"],
-                "turn_count": audit["summary"]["turn_count"],
-                "question_trace_sha256": audit["question_trace_sha256"],
+                "session_count": summary["session_count"],
+                "turn_count": summary["turn_count"],
+                "question_trace_sha256": audit.get("question_trace_sha256"),
+                "visible_response_trace_sha256": audit[
+                    "visible_response_trace_sha256"
+                ],
             },
             sort_keys=True,
         )
