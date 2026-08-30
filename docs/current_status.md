@@ -38,6 +38,27 @@ read-only.
 
 ## Verified Behavior Checkpoint
 
+### 2026-08-31 deadline override — read before historical phase blockers
+
+The coordinator now prioritizes competition score with one day remaining.
+[A13-LR0](a13_light_review.md) completed the authorized 24-call synthetic
+Flash/Pro editor test. It supports keeping a cheap offline editor, not a runtime
+LLM or a competition-score claim. A13 runtime and AS0R/AS0X/AS1/AS2 are deferred
+for this deadline, not passed; older descriptions of their blockers below are
+historical and must not restart the full reference-build workflow.
+
+This is the A13 disposition allowing the separate
+[A14 deadline selection pilot](a14_deadline_selection.md). Its initial
+structured-only comparator was found not to match default B9, so only the
+corrected default-route comparison may inform retention. No production source,
+shared contract, evaluator, catalog, or default LLM setting has changed.
+For the next action and measured disposition, read that pilot record first.
+
+The existing `0.925 / 0.765703` A13/A14 reports used explicit structured
+retrieval injection. They remain valid for that comparator; do not silently
+describe them as a new measurement of active B9 default routing. A corrected
+default-route baseline is reported separately by the deadline pilot.
+
 The retained B12 checkpoint was verified on 2026-08-28. A13-0 bound the current
 baseline and refreshed taxonomy on 2026-08-29. A13-1 then tested and rejected a
 deterministic State / Override candidate. A14-0 was retained on 2026-08-30 as a

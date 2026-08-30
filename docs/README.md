@@ -5,6 +5,13 @@ from old reports.
 
 ## Start here
 
+For the one-day score-first work (2026-08-31), start with
+[A13 lightweight review result](a13_light_review.md), then
+[A14 default-route selection pilot](a14_deadline_selection.md).
+The older multi-family A13 reference pipeline is deferred, not a prerequisite
+for completing the deadline pilot. Neither synthetic review agreement nor an
+opt-in experiment implies retained runtime improvement.
+
 1. `../AGENTS.md` — operating rules for Codex and contributors
 2. `current_status.md` — authoritative current checkpoint, evidence, and risks
 3. `human_optimization_recap_zh.md` — plain-language Chinese timeline from
@@ -16,7 +23,7 @@ from old reports.
 7. `ablation_summary.md` — what was retained, rejected, and why
 8. `../DeepSeek_LLM接入实验方案.md` — authoritative A13 semantic-understanding
    plan, review gates, branch boundary, and relationship to B-side DS1
-9. `a13_ai_silver_protocol.md` — active no-human A13 reference protocol,
+9. `a13_ai_silver_protocol.md` — deferred no-human A13 reference protocol,
    applied-state comparator, KPI hierarchy, contamination controls, and
    separate reference-builder/Candidate provider gates
 
@@ -35,7 +42,7 @@ definitions instead of creating local variants.
 - `../DeepSeek_LLM接入实验方案.md` — selected A13 feature plan; A13-1 is
   rejected/reverted and A13-S0 has offline-only Shadow plumbing, not provider
   behavior
-- `a13_ai_silver_protocol.md` — selected no-human reference route; AS0 core
+- `a13_ai_silver_protocol.md` — deferred no-human reference route; AS0 core
   contracts passed, exact roles and execution runner still pending, and no current
   provider authorization
 - `a_control_plane_handoff.md` — compatibility pointer for old A-side links

@@ -1,5 +1,11 @@
 # A13 AI-Silver Evaluation Protocol
 
+Deadline disposition (2026-08-31): this full multi-family protocol is deferred,
+not passed. The coordinator authorized only the separate
+[LR0 synthetic editor diagnostic](a13_light_review.md); its result is not
+AI-silver. Continue the [A14 score-first pilot](a14_deadline_selection.md)
+without treating this reference-build backlog as a deadline dependency.
+
 ## Decision
 
 A13 may proceed without human annotation, but the resulting reference is

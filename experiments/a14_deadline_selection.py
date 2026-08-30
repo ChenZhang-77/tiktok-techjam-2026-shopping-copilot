@@ -28,8 +28,13 @@ class SelectionPolicy:
             top_k=top_k, response_fallback_used=response_fallback_used)
         baseline = outcome.decision.attribute
         proposed = baseline
-        active = {c.get("attribute") for c in state.active_constraints if c.get("active", True)}
-        protected = state.intent == "buying" and {"category", "color"} <= active and baseline == "material"
+        raw_constraints = getattr(state, "active_constraints", None)
+        active = {c["attribute"] for c in raw_constraints
+                  if isinstance(c, dict) and isinstance(c.get("attribute"), str) and c.get("active", True)
+                  } if isinstance(raw_constraints, list) else set()
+        raw_no_preference = getattr(state, "no_preference_attributes", None)
+        no_preference = sorted(a for a in raw_no_preference if isinstance(a, str)) if isinstance(raw_no_preference, set) else []
+        protected = getattr(state, "intent", None) == "buying" and {"category", "color"} <= active and baseline == "material"
         diagnostics = outcome.diagnostics
         if baseline and not protected and not diagnostics.get("fallback_used") and diagnostics["evidence_status"] == "available":
             evidence = diagnostics["attribute_evidence"]
@@ -52,12 +57,12 @@ class SelectionPolicy:
                 if alternatives:
                     proposed = max(alternatives, key=lambda a: (evidence[a]["rank_weighted_split"], evidence[a]["candidate_coverage"]))
         self.last_latency_ms = round((time.perf_counter() - started) * 1000, 6)
-        self.records.append({"session_id": state.session_id, "turn": turn,
+        self.records.append({"session_id": str(getattr(state, "session_id", "invalid")), "turn": turn,
             "baseline": baseline, "proposed": proposed,
             "selected": proposed if self.candidate else baseline,
             "eligible": diagnostics["eligible_attributes"],
             "active_attributes": sorted(active),
-            "no_preference_attributes": sorted(state.no_preference_attributes),
+            "no_preference_attributes": no_preference,
             "evidence": {a: {k: r[k] for k in ("status", "candidate_coverage", "rank_weighted_split")}
                          for a, r in diagnostics["attribute_evidence"].items()},
             "changed": proposed != baseline, "latency_ms": self.last_latency_ms})
@@ -119,6 +124,11 @@ def main():
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.trace = []
+            self.session_order = []
+
+        def reset(self, session_id, user_profile):
+            self.session_order.append(session_id)
+            super().reset(session_id, user_profile)
 
         def respond(self, session_id, user_message, turn, top_k):
             response = super().respond(session_id, user_message, turn, top_k)
@@ -140,6 +150,11 @@ def main():
         finally:
             retriever.close()
         report.update(score_sessions(report["sessions"]))
+        if len(agent.session_order) != len(development):
+            raise ValueError("session trace does not cover fixed Development")
+        # Offline report join only: sample identifiers never enter SelectionPolicy.
+        report["offline_session_sample_map"] = dict(zip(agent.session_order,
+            (s["sample_id"] for s in development)))
         next_answers = {"observed_replies": 0, "new_active_attribute": 0, "no_preference": 0}
         violations = 0
         previous = {}

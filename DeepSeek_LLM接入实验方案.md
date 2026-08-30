@@ -1,5 +1,11 @@
 # DeepSeek LLM 接入实验方案
 
+> 2026-08-31 截止期更新：按协调者“剩一天、比赛得分优先”的要求，
+> [轻量 AI 评审](docs/a13_light_review.md)已完成，仅保留为离线辅助。
+> 多模型 AI-silver 管线和 A13 运行时暂缓，不代表通过原门槛。
+> 当前转向独立的 [A14 得分对照试验](docs/a14_deadline_selection.md)。
+> 下方 provider 未授权等描述属于原正式 A13 阶段，不否定已单独授权的 LR0。
+
 > 状态：A13-0 已完成；A13-1 已拒绝并回滚；A13-S0 离线基础通过 parity；A13-AS0T 核心合约测试通过，但 AS0R 精确独立角色与 AS0X runner/repair/provenance 均待完成，provider 未授权。
 >
 > 当前发布分支：llm（源实验分支：a/a13-llm-semantic-understanding）

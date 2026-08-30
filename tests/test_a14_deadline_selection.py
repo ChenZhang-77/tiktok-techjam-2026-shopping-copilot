@@ -3,9 +3,18 @@ import unittest
 from experiments.a14_deadline_selection import SelectionPolicy, score_sessions
 from starter.contracts import Candidate, RetrievalDiagnostics, RetrievalResult
 from starter.core.state import SessionState
+from starter.core.question_policy import QuestionPolicy
 
 
 class DeadlineSelectionTest(unittest.TestCase):
+    def test_malformed_state_preserves_guarded_legacy_stop(self):
+        state = SessionState(session_id="synthetic", user_profile={})
+        state.active_constraints = [None]
+        args = dict(state=state, result=None, turn=2, top_k=10)
+        expected = QuestionPolicy().decide(**args)
+        observed = SelectionPolicy(candidate=True).decide(**args)
+        self.assertEqual(observed, expected)
+
     def test_fold_score_uses_official_formula_including_misses(self):
         scored = score_sessions([
             {"hit": True, "reciprocal_rank": 1.0, "first_hit_turn": 1, "scenario_type": "buying"},

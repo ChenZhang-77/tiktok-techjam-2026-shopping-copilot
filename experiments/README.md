@@ -1,5 +1,12 @@
 # Experiments
 
+Current deadline work (2026-08-31):
+[A13-LR0](../docs/a13_light_review.md) is an isolated small synthetic editor
+diagnostic; [A14 deadline selection](../docs/a14_deadline_selection.md) is an
+opt-in score comparison. Their disposition supersedes the old annotation-first
+instructions below. The full AI-silver pipeline is deferred; production imports
+neither experimental module.
+
 Use this folder for team experiment notes. Do not commit large generated artifacts.
 
 Run ordinary experiments on the fixed development split:

@@ -12,6 +12,18 @@ the verified engineering work into a complete submission.
 
 ## Non-Negotiable Boundaries
 
+### Current deadline priority (2026-08-31)
+
+The coordinator's one-day score-first instruction supersedes the older A13
+reference-build dependency map below. A13-LR0 is complete: retain only its
+small offline editor diagnostic, defer A13 runtime and the multi-family
+pipeline, and proceed to the isolated A14 deterministic selection pilot.
+See [LR0 disposition](a13_light_review.md) and
+[default-route pilot](a14_deadline_selection.md). AI agreement is not a keep
+metric; only fixed Development score with fold/scenario/reliability checks can
+support runtime retention. Default remains unchanged until that decision.
+Do not spend the remaining day completing AS0X/AS1 or repairing legacy labels.
+
 - Optimize only on the fixed Development-160 split and its four fixed folds.
 - Do not run or tune from Full-200 or the exposed 40-session holdout.
 - Never expose `ground_truth`, target ASIN, scenario labels, intent cards, or

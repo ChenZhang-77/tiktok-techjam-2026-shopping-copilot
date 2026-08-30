@@ -58,6 +58,14 @@ Do not edit code when the user asks only for a review, diagnosis, or plan.
 
 ## Current Integrated State
 
+Deadline update (2026-08-31): [A13-LR0](../a13_light_review.md) is complete;
+only the cheap offline editor is retained. A13 runtime and multi-family
+reference building are deferred, satisfying the disposition needed to start
+the separate [A14 deadline pilot](../a14_deadline_selection.md). Read its
+current result before the older pending-A13 flow below. The pilot must compare
+the real B9 default, not confuse the previous structured-only A-side audit
+with default-route evidence. No default activation is implied.
+
 The integrated checkout and verified metrics are in `docs/current_status.md`.
 The current Control Plane already provides:
 

@@ -2,6 +2,13 @@
 
 ## Status and Authority
 
+2026-08-31 deadline supplement: A13 runtime/reference construction has a
+recorded deferral in [LR0](a13_light_review.md). The coordinator's score-first
+request opens a bounded [selection pilot](a14_deadline_selection.md), while
+the full S1 counterfactual gate remains distinct from a pilot result. Consult
+that record before the historical wait-point below. No production activation
+or simulator-specific policy is authorized by a synthetic editor result.
+
 This document is the authoritative design and experiment plan for the next
 Question Policy optimization phase. It does not authorize a runtime behavior
 change by itself. `AGENTS.md` still owns safety, ownership, and evaluation
