@@ -88,7 +88,7 @@ Current Chen runtime source @ 0bd3375
 
 Current runtime and frozen evidence
   -> A14-0 turn audit and deep-Module parity             retained @ f594601
-      -> A14-1 complete attribute-evidence coverage      retained @ 9d93765
+      -> A14-1 complete attribute-evidence coverage      retained @ c6fb8e5
           -> wait for the A13 review disposition
               -> A14-S1 deterministic selection Shadow
                   -> A14-C1 selection-only Candidate
@@ -498,7 +498,7 @@ A14-0 turn audit and deep-Module parity       behavior unchanged
 ```
 
 A14-0 is retained at runtime source commit `f594601`; A14-1 is retained at
-`9d93765`. Their comparator, turn/coverage audits, Development/fold parity,
+`c6fb8e5`. Their comparator, turn/coverage audits, Development/fold parity,
 latency, boundaries, and evidence tests are recorded in
 `docs/a14_0_question_policy_evidence.md` and
 `docs/a14_1_attribute_evidence.md`. Wait at the A13 review gate before A14-S1.
