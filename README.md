@@ -106,7 +106,7 @@ executed on 102 of 725 retrieval turns, only Browsing outcomes changed, and all
 four fixed folds were non-regressing. B10a then tested Top-3 and Top-5 anchored
 CrossEncoder tails; both reduced MRR and TechnicalScore, so the B9 default is
 unchanged. B10b-DS1/DS2 subsequently added opt-in DeepSeek reranking code and
-provisional remote measurements, but complete reports are not yet hash-bound.
+provisional remote measurements. The later B10b-F2 evidence is separately bound on the llm branch.
 Neither is enabled by default. B12's
 optional bounded depth candidate has favorable aggregate metrics but remains
 disabled because it lacks a contemporaneous keep/revert gate and gains are
@@ -212,94 +212,18 @@ Run the actual default B9 Development-160 audit after preparing local dense asse
 
 Do not use `--split full` or `--split holdout` for optimization.
 
-### Optional DeepSeek API setup
+### Optional LLM Plan Two
 
-Historical DS1/DS2 setup below is not the verified F2 recipe. API work is
-optional Plan Two only; see [current disposition](docs/current_status.md).
+The default Agent does not read a key or call a hosted model. Plan Two uses only
+the exact verified B10b-F2 Top-10 recipe on the llm branch, with explicit
+activation, budget/token accounting and deterministic pre-rerank fallback.
+Read [F2 protocol/evidence](docs/b10b_paired_verification.md). Its experiment runner still uses workspace-relative asset paths; a portable independent package has not been produced.
 
+No additional paid calls are part of the release task. Keep keys in ignored
+local configuration, never in source, reports or logs. The exposed 40-session
+public subset must not be used for tuning or described as a fresh generalization check.
 
-The default deterministic experiment does not require an API key. For the
-optional LLM shadow/reranking experiments, create a local credentials file:
-
-```bash
-cp .env.example .env.local
-```
-
-Open `.env.local` and set `DEEPSEEK_API_KEY` to your own key. The named
-experiment launcher loads this file automatically. `.env.local` is ignored by
-Git and must never be committed.
-
-Friends should create their own local file and use their own key. Never copy
-someone else's `.env.local`:
-
-```bash
-cp .env.example .env.local
-# edit .env.local and set DEEPSEEK_API_KEY=...
-```
-
-The commands below are the existing **B-side ranking experiments**. They do not
-enable the planned A13 semantic interpreter. Run a small B-side Shadow pass; it
-records the model ranking but never changes the recommendations returned by the
-Agent:
-
-```bash
-.venv/bin/python -m experiments.deepseek_shadow --limit 5
-```
-
-The report is written to `/private/tmp/` by default. Use `--limit 160` only
-after the small run passes its fallback, latency, token, and cost checks.
-
-Run DS1 as an isolated performance experiment. It reranks only Browsing
-Top-10; the normal Agent path remains unchanged:
-
-```bash
-.venv/bin/python -m experiments.deepseek_ds1 --limit 5
-```
-
-For the full Development-160 DS1 experiment:
-
-```bash
-.venv/bin/python -m experiments.deepseek_ds1 \
-  --split development --limit 160 \
-  --output /private/tmp/tiktok-techjam-deepseek-ds1-development.json
-```
-
-Do not run the exposed 40-session public holdout during optimization; the
-organizer's private test remains the external generalization check.
-
-DS1 only reranks the existing Browsing Top-10, and DS2 expands that experiment
-to Top-20. Their current remote measurements are provisional because complete
-reports remain outside Git and are not hash-bound tracked evidence. Neither is
-enabled by default; see `docs/current_status.md` for the exact provisional
-disposition and caveats.
-
-The A13 semantic-interpreter track is different: a future provider stage would
-use DeepSeek as an A-owned, evidence-gated semantic interpreter before state
-mutation. A13-0 has
-bound the current no-LLM comparator, folds, hashes, and refreshed taxonomy in
-[`docs/a13_0_baseline_evidence.md`](docs/a13_0_baseline_evidence.md). A13-1 is
-rejected and reverted after it lost three Development hits and regressed all
-four fixed folds; see
-[`docs/a13_1_state_override_evidence.md`](docs/a13_1_state_override_evidence.md).
-A13-S0 now has an offline-only typed/fake/validated Shadow foundation with exact
-Development behavior parity; see
-[`docs/a13_s0_offline_evidence.md`](docs/a13_s0_offline_evidence.md). There is
-still no DeepSeek transport, key read, or API call. The exposed two-member
-annotation attempt is no longer the active route. A13-AS0T has frozen the
-applied-state comparator, Candidate config, fresh-fixture rules, schemas, and
-fail-closed offline checks without provider access. A13-AS0R must still bind
-exact independent generator/auditor/judge/adjudicator identities. Separately
-complete the AS0X runner/repair/provenance gate before any authorized
-reference-builder calls create and judge a new target-free
-fixture; Candidate provider calls require a later authorization. AI-silver may
-open Candidate Shadow;
-only fixed Development folds may retain runtime behavior. Do not infer an A-side
-provider feature from the presence of the offline plumbing or planning docs.
-
-The committed [`A13_annotation_pack_v1.zip`](A13_annotation_pack_v1.zip)
-embeds the same
-60 runtime-gate-bound unlabeled items as the source fixture, retains the legacy
-offline annotation UI, and is not gold, AI-silver, or model output.
+A13-F1 used a real provider for Shadow only: 60/67 valid returns missed the 95% gate, so no Candidate ran. [Semantic evidence](docs/a13_semantic_score_test.md) is preserved; A13 and unfinished AI-silver are frozen. The legacy annotation bundle is historical diagnostics, not gold.
 
 ## Named Experiments and Visualizer
 
@@ -374,7 +298,7 @@ reopen work. All freeze/recovery decisions are in [final release plan](docs/fina
 
 ## Reliability and Cost
 
-Retained B9 Development-160 evidence:
+Historical B9 checkpoint cost evidence (not a new Chen/llm latency benchmark):
 
 | Measure | Value |
 | --- | ---: |
@@ -407,7 +331,7 @@ hard filters, duplicate/invalid ASINs, and Candidate Pool shortages.
 - Profile ranking is disabled at weight 0.0.
 - B9 closes the literal Browsing-dense route only for its narrow gate; global
   dense remains rejected. DeepSeek DS1 is an opt-in isolated experiment with
-  provisional remote evidence and is not part of the default runtime.
+  historical provisional evidence; the later F2 recipe is verified only as optional Plan Two, never as the default.
 - B9 adds about 1.5 seconds of initialization and about 546 MB of observed peak
   RSS for a small rank/turn gain with no additional hits.
 - Long-term profile value has not been demonstrated; profile ranking remains
