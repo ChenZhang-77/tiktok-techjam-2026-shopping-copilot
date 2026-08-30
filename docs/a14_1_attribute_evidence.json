@@ -5,7 +5,7 @@
   "provenance": {
     "baseline_visible_trace_commit": "2e4108a",
     "a14_0_commit": "f594601",
-    "runtime_source_commit": "c6fb8e5",
+    "runtime_source_commit": "b238c68",
     "standard_evaluation_report_commit": "4f615f4",
     "inputs": {
       "catalog": {"path": "data/catalog.jsonl", "sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67"},
@@ -19,11 +19,11 @@
     "runtime_source_hashes": {
       "starter/core/question_policy.py": "5580afdf499acaf6a4447342629946fbe48efe1f1430fe2363648840cb25a9d5",
       "starter/core/decision_evidence.py": "bc32c04aa9e2caba7ac0a471eaf638a60e162e6d5f8efcb42ceb78821e01fd71",
-      "experiments/a14_turn_audit.py": "24bf4b8853e9861ec1f56a528da8b1140df19e649d1cd1828a3384bad006da83"
+      "experiments/a14_turn_audit.py": "14d63e69ea45c7d5c4e9ee60419b49b636c121e8fb1ed4db7404ae050fd18ee4"
     },
     "run_artifacts": {
-      "coverage_audit": {"path": "docs/a14_1_reports/coverage_audit.json", "sha256": "20c8c4d38b98ccef7670f82e4070d9f069ddcc138745015bd093a9f92b8ce4cb"},
-      "turn_audit": {"path": "docs/a14_1_reports/turn_audit.json", "sha256": "da19c26062e918162b9129a414dd95a70e05c142d91774a47e2bc4a4e31db951"},
+      "coverage_audit": {"path": "docs/a14_1_reports/coverage_audit.json", "sha256": "3f54568aecf75488c99bb481e4c35b8e8e15ac314c41063f5e085e562c63b236"},
+      "turn_audit": {"path": "docs/a14_1_reports/turn_audit.json", "sha256": "dfaf43480ffb18ff0bede3ddf44bbf15ae0a95d947ed5ca73998fe6a838a4d6e"},
       "development": {"path": "docs/a14_1_reports/development.json", "sha256": "2a90f9a48081b4c4c8e641dd4b8c509c8782e7374d1b1825619dc303e01185e1"},
       "fold_1": {"path": "docs/a14_1_reports/fold_1.json", "sha256": "54f895e8c527b5088abb8fae2f99b65ed182f8822ee9cfc2503a2b394123f4ed"},
       "fold_2": {"path": "docs/a14_1_reports/fold_2.json", "sha256": "f69f3dcf442a81a96a53df46e3a9ee264ea604dd4310200104c0daf10e8329df"},
@@ -51,7 +51,7 @@
   },
   "visible_behavior_parity": {
     "visible_response_trace_sha256": "098afbdf9b1ce3c0813ccb311b90432837e8b3ac7f36ed78248fe2fef3a75146",
-    "question_trace_sha256": "032d4c897f29b06efda53977341a1867cf562d621692039e97dedd2bdaa586ed",
+    "question_trace_sha256": "ef5d80451f796389596b466bf3fa0ec4fec5bce20b0f03653005aace0d54bf01",
     "compared_turns": 649,
     "exact": true,
     "all_mismatch_counts": 0,
@@ -68,7 +68,7 @@
     "respond_exceptions": 0,
     "invalid_response_payloads": 0,
     "reported_fallbacks": 0,
-    "policy_latency_ms": {"count": 649, "mean": 9.646601, "p95": 15.545958, "max": 21.163875}
+    "policy_latency_ms": {"count": 649, "mean": 9.756817, "p95": 15.697208, "max": 20.476208}
   },
   "folds": {
     "fold_1": {"sample_count": 40, "hit_rate_at_10": 0.925, "mrr": 0.485724, "mttc": 4.075, "efficiency": 0.6925, "technical_score": 0.746717},

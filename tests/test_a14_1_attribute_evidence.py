@@ -78,7 +78,7 @@ class A141AttributeEvidenceTest(unittest.TestCase):
                 )
         self.assertEqual(
             self.audit["code_provenance"],
-            {"commit": "c6fb8e5", "worktree_clean": True},
+            {"commit": "b238c68", "worktree_clean": True},
         )
         source_commit = self.record["provenance"]["runtime_source_commit"]
         for path, digest in self.record["provenance"]["runtime_source_hashes"].items():

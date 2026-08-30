@@ -69,9 +69,9 @@ correctly says `unavailable` and `preserve_legacy_action`.
 
 ## Exact behavior and metrics
 
-The clean final A14-1 runtime/audit source commit is `c6fb8e5`. The standard
+The clean final A14-1 runtime/audit source commit is `b238c68`. The standard
 Development/fold reports were captured at clean behavior commit `4f615f4`;
-the final clean 649-turn audit at `c6fb8e5` independently reproduces their
+the final clean 649-turn audit at `b238c68` independently reproduces their
 metrics and exact visible trace. Against the independent
 legacy visible trace captured at `2e4108a`:
 
@@ -88,8 +88,8 @@ legacy visible trace captured at `2e4108a`:
 The visible-response trace remains
 `098afbdf9b1ce3c0813ccb311b90432837e8b3ac7f36ed78248fe2fef3a75146`.
 The A14-1 semantic Question Policy trace digest is
-`032d4c897f29b06efda53977341a1867cf562d621692039e97dedd2bdaa586ed`.
-It excludes only operational latency and reproduced exactly in four independent
+`ef5d80451f796389596b466bf3fa0ec4fec5bce20b0f03653005aace0d54bf01`.
+It excludes only operational latency and reproduced exactly in two independent
 clean runs whose latency summaries differed. The complete bounded 649-turn,
 ten-attribute trace is retained at `docs/a14_1_reports/turn_audit.json`; the
 evidence test validates every field and derives the published status and
@@ -109,10 +109,10 @@ Full-200 or exposed-Holdout run was performed.
 
 ## Cost
 
-Question Policy compilation observed mean `9.647 ms`, p95 `15.546 ms`, and max
-`21.164 ms`. A14-0's separate local run observed mean `2.987 ms` and p95
-`4.653 ms`; the non-paired differences are about `+6.660 ms` mean and
-`+10.893 ms` p95. The A14-1 standard Development report observed overall
+Question Policy compilation observed mean `9.757 ms`, p95 `15.697 ms`, and max
+`20.476 ms`. A14-0's separate local run observed mean `2.987 ms` and p95
+`4.653 ms`; the non-paired differences are about `+6.770 ms` mean and
+`+11.044 ms` p95. The A14-1 standard Development report observed overall
 response mean `33.797 ms` and p95 `58.919 ms`.
 
 These local sequential timings are noisy and are not a paired causal estimate.
@@ -127,6 +127,8 @@ than rescan Candidate text.
 - the complete Question Policy diagnostics and each attribute record reject
   unknown fields before projection; source/status/family, lifecycle/range,
   answerability/actionability, and eligibility use closed vocabularies and relations;
+- fallback usage and its closed reason vocabulary are retained in every turn;
+  changing fallback semantics changes the semantic digest while latency does not;
 - coverage/split values are either null or bounded to `[0, 1]`; value count is
   null or a non-negative integer;
 - bounded `available` requires at least two covered Candidates and at least two
