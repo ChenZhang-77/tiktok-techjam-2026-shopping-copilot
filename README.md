@@ -136,6 +136,10 @@ Historical [ablations](docs/ablation_summary.md) and
 
 From the repository root:
 
+The full repository test suite also expects the official catalog at repository
+`data/catalog.jsonl` (distinct from a standalone bundle's data directory). Prepare
+that file first; two catalog-integrity tests intentionally fail when it is absent.
+
 ```bash
 python scripts/build_submission.py
 python scripts/build_submission.py --check
@@ -143,6 +147,16 @@ python scripts/verify_delivery_evidence.py
 PYTHONDONTWRITEBYTECODE=1 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
   python -m unittest discover -s tests -q
 ```
+
+For a combined source-and-evidence delivery ZIP, after evidence verification:
+
+```bash
+python scripts/build_submission.py --check --archive /path/to/new-delivery.zip --include-evidence
+```
+
+The archive keeps `submission/` and `evidence/` separate with their own manifests;
+the latter retains Dev160, historical F2 and frozen Full200 reporting, not catalog
+data, labels for runtime, model weights or another branch's code.
 
 The source-only bundle includes an allowlisted runtime, setup tools, dependency
 versions, split/folds, report and SHA-256 manifest. Evaluation reports live under
