@@ -7,6 +7,12 @@
 
 ## Purpose
 
+Current delivery integration adds a configuration-aware Agent subclass at the
+official reset/respond seam, with per-turn usage and delivery diagnostics only.
+The Control Plane/state/question behavior and A/B contract remain unchanged.
+See [delivery configuration](../delivery_configuration.md); historical work below
+is not a request to resume algorithms.
+
 This is the standalone route for a fresh Codex conversation working on the
 Agent / Control Plane. It describes current responsibilities and blockers, not
 permission to implement every item.

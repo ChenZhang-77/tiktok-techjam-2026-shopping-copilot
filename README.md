@@ -1,5 +1,9 @@
 # TikTok TechJam 2026 - Adaptive Shopping Copilot
 
+Active final delivery integration: [configuration](docs/delivery_configuration.md),
+[approved rules](docs/final_delivery_rules.md), and [step/review log](docs/final_delivery_execution.md).
+The offline default is preserved; the new optional LLM entry has no new live verification yet.
+
 An evidence-driven conversational shopping Agent for Track 4: **Shopping
 Copilot: AI Conversational Search and Recommendations**.
 

@@ -11,6 +11,11 @@ sequence. Do not start implementation until the user asks for code changes.
 
 ## New-session startup
 
+Current delivery integration extracts only the frozen F2 ProductReranker and
+BudgetedRanker into runtime, behind explicit delivery configuration. B9 and
+request/result/route semantics remain unchanged. Synthetic tests are not a new
+paid verification; see [configuration](../delivery_configuration.md).
+
 Read, in order:
 
 1. `AGENTS.md`

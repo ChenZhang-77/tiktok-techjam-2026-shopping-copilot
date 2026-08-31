@@ -63,7 +63,11 @@ old P0 packaging are frozen. Their code/evidence remains available; “frozen”
 does not mean passed or implemented. Full disposition and reopening conditions
 are in [final release plan](final_release_plan.md).
 
-Existing optional DS1/DS2 code remains for history, with no default activation. No llm runtime/interface expansion has been merged into Plan One.
+Existing optional DS1/DS2 code remains for history, with no default activation.
+Step 02 adds `starter.delivery.Agent` and the frozen F2 reranking wrapper without
+changing the retained Control Plane or shared contracts. The offline default is
+unchanged; live enhancement of this new entry is not yet verified. See
+[configuration and explicit limits](delivery_configuration.md) and the execution log.
 
 No catalog, cache/model assets, original annotations, raw runs, branches or user
 stash were deleted. Chen's missing ignored catalog path was connected locally
