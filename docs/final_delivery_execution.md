@@ -23,6 +23,12 @@ Only local work is authorized; live API and public actions remain gated.
 
 ## Evidence discipline
 
+User clarification: Devpost will reference only final main/commit, preserving
+other branches. Main integration/push remains a final authorized operation, not
+an instruction to publish the current intermediate state. Plan one Full-200
+public-report gate after configuration freeze, following ADR-0001: retain results
+outside Agent runtime, no tuning/unseen-set claim, paid mode separately authorized.
+
 Step 02 keeps all four extracted F2 definitions AST-identical to `llm@a9e34ae`;
 external parser exceptions are normalized outside that frozen logic. Baseline
 Development-160 rerun: HR .925, MRR .554521, MTTC 4.13125, score .766231,

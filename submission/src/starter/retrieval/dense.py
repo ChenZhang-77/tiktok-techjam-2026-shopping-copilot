@@ -1,0 +1,357 @@
+from __future__ import annotations
+
+import hashlib
+import json
+import time
+from dataclasses import dataclass, replace
+from pathlib import Path
+from typing import Any, Callable, Mapping, Protocol, Sequence
+
+from starter.contracts import (
+    Candidate,
+    RetrievalDiagnostics,
+    RetrievalRequest,
+    RetrievalResult,
+    requested_route_weights,
+    validate_retrieval_request_object,
+)
+from starter.retrieval.hybrid import HybridRetriever
+from starter.retrieval.structured import EVIDENCE_FIELDS, evidence_text
+
+
+MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2"
+MODEL_REVISION = "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
+CACHE_SCHEMA_VERSION = 1
+EMBEDDING_DIMENSION = 384
+EMBEDDING_DTYPE = "float32"
+PRODUCT_TEXT_TEMPLATE = "product-fields-v1"
+QUERY_TEXT_TEMPLATE = "distilled-query-v1"
+
+
+def product_text(product: Mapping[str, object]) -> str:
+    return "\n".join(
+        f"{field}: {evidence_text(product.get(field))}" for field in EVIDENCE_FIELDS
+    )
+
+
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+@dataclass(frozen=True)
+class DenseConfig:
+    cache_dir: Path = Path("embeddings/minilm-l6-v2-v1")
+    model_id: str = MODEL_ID
+    model_revision: str = MODEL_REVISION
+    dimension: int = EMBEDDING_DIMENSION
+    dtype: str = EMBEDDING_DTYPE
+    normalized: bool = True
+    model_cache_dir: Path = Path("models/huggingface/hub")
+
+
+class DenseBackend(Protocol):
+    def rank(self, query: str, top_n: int) -> list[tuple[int, float]]:
+        ...
+
+
+class NumpySentenceBackend:
+    def __init__(self, config: DenseConfig, ids: Sequence[str]) -> None:
+        import numpy as np
+
+        self._np = np
+        self._config = config
+        self._vectors = np.load(config.cache_dir / "vectors.npy", mmap_mode="r")
+        if self._vectors.shape != (len(ids), config.dimension):
+            raise ValueError("dense vector shape is incompatible")
+        if str(self._vectors.dtype) != config.dtype:
+            raise ValueError("dense vector dtype is incompatible")
+        self._model = None
+
+    def _load_model(self) -> object:
+        if self._model is None:
+            from sentence_transformers import SentenceTransformer
+
+            self._model = SentenceTransformer(
+                self._config.model_id,
+                revision=self._config.model_revision,
+                cache_folder=str(self._config.model_cache_dir),
+                local_files_only=True,
+            )
+        return self._model
+
+    def rank(self, query: str, top_n: int) -> list[tuple[int, float]]:
+        model = self._load_model()
+        query_vector = model.encode(
+            [query],
+            normalize_embeddings=self._config.normalized,
+            convert_to_numpy=True,
+            show_progress_bar=False,
+        )[0].astype(self._config.dtype, copy=False)
+        scores = self._vectors @ query_vector
+        limit = min(top_n, len(scores))
+        if limit == 0:
+            return []
+        selected = self._np.argpartition(-scores, limit - 1)[:limit]
+        ordered = sorted(selected.tolist(), key=lambda index: (-float(scores[index]), index))
+        return [(index, float(scores[index])) for index in ordered]
+
+    def prepare(self) -> None:
+        self._load_model()
+
+
+class DenseRetriever:
+    """Optional local dense route with deterministic BM25 degradation."""
+
+    def __init__(
+        self,
+        catalog_path: str | Path = "data/catalog.jsonl",
+        *,
+        config: DenseConfig | None = None,
+        lexical_fallback: HybridRetriever | None = None,
+        backend_factory: Callable[[DenseConfig, Sequence[str]], DenseBackend] | None = None,
+    ) -> None:
+        self.catalog_path = Path(catalog_path)
+        self.config = config if config is not None else DenseConfig()
+        self._lexical = (
+            lexical_fallback
+            if lexical_fallback is not None
+            else HybridRetriever(self.catalog_path)
+        )
+        self.catalog_ids = self._lexical.catalog_ids
+        self.fallback_ids = self._lexical.fallback_ids
+        self._unavailable_reason = self._validate_cache_metadata()
+        self._ids: list[str] = []
+        self._backend: DenseBackend | None = None
+        if self._unavailable_reason is None:
+            try:
+                payload = json.loads(
+                    (self.config.cache_dir / "ids.json").read_text(encoding="utf-8")
+                )
+                if (
+                    not isinstance(payload, list)
+                    or payload != list(self.fallback_ids)
+                ):
+                    raise ValueError("dense ids are incompatible")
+                self._ids = [str(item) for item in payload]
+                factory = backend_factory or NumpySentenceBackend
+                self._backend = factory(self.config, self._ids)
+            except (EOFError, ImportError, OSError, UnicodeError, ValueError, json.JSONDecodeError):
+                self._unavailable_reason = "dense_cache_corrupt"
+
+    def _validate_cache_metadata(self) -> str | None:
+        metadata_path = self.config.cache_dir / "metadata.json"
+        if not metadata_path.is_file():
+            return "dense_cache_missing"
+        try:
+            payload = json.loads(metadata_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            return "dense_cache_corrupt"
+        if not isinstance(payload, Mapping):
+            return "dense_cache_corrupt"
+        expected: dict[str, Any] = {
+            "schema_version": CACHE_SCHEMA_VERSION,
+            "catalog_sha256": file_sha256(self.catalog_path),
+            "model_id": self.config.model_id,
+            "model_revision": self.config.model_revision,
+            "dimension": self.config.dimension,
+            "dtype": self.config.dtype,
+            "normalized": self.config.normalized,
+            "product_count": len(self.catalog_ids),
+            "product_text_template": PRODUCT_TEXT_TEMPLATE,
+            "query_text_template": QUERY_TEXT_TEMPLATE,
+        }
+        if any(payload.get(key) != value for key, value in expected.items()):
+            return "dense_cache_incompatible"
+        ids_path = self.config.cache_dir / "ids.json"
+        vectors_path = self.config.cache_dir / "vectors.npy"
+        if not ids_path.is_file():
+            return "dense_cache_corrupt"
+        if not vectors_path.is_file():
+            return "dense_cache_corrupt"
+        try:
+            artifact_hashes = {
+                "ids_sha256": file_sha256(ids_path),
+                "vectors_sha256": file_sha256(vectors_path),
+            }
+        except OSError:
+            return "dense_cache_corrupt"
+        if any(payload.get(key) != value for key, value in artifact_hashes.items()):
+            return "dense_cache_corrupt"
+        return None
+
+    def retrieve(self, request: RetrievalRequest) -> RetrievalResult:
+        attempted = self.retrieve_dense_attempt(request)
+        if not attempted.diagnostics.fallback_used:
+            return attempted
+        reason = attempted.diagnostics.route_failures.get(
+            "dense",
+            self._unavailable_reason or "dense_route_unavailable",
+        )
+        return self._fallback_result(request, reason, attempted=attempted)
+
+    def retrieve_dense_attempt(self, request: RetrievalRequest) -> RetrievalResult:
+        """Run only dense work, returning failure status without invoking fallback."""
+
+        validate_retrieval_request_object(request)
+        if self._backend is not None:
+            started = time.perf_counter()
+            try:
+                ranked = self._backend.rank(request.query, request.strategy.retrieval_depth)
+            except Exception:
+                latency_ms = (time.perf_counter() - started) * 1000.0
+                self._backend = None
+                self._unavailable_reason = "dense_query_failed"
+                return self._failed_attempt(
+                    self._unavailable_reason,
+                    latency_ms=latency_ms,
+                )
+            latency_ms = (time.perf_counter() - started) * 1000.0
+            candidates = [
+                Candidate(
+                    parent_asin=self._ids[index],
+                    score=round(score, 8),
+                    source="dense",
+                    evidence_text=self._lexical.evidence_text(self._ids[index]),
+                    diagnostics={"dense_rank": rank, "dense_score": round(score, 8)},
+                )
+                for rank, (index, score) in enumerate(ranked, start=1)
+            ]
+            return RetrievalResult(
+                candidates=candidates,
+                diagnostics=RetrievalDiagnostics(
+                    route="dense",
+                    candidate_count=len(candidates),
+                    fallback_used=False,
+                    latency_ms=round(latency_ms, 6),
+                    notes=["dense_cache_hit"],
+                    stage_latencies_ms={"dense": round(latency_ms, 6)},
+                    cache_state={"dense": "compatible"},
+                    ranking_pool_sizes={"dense": len(candidates)},
+                    requested_route_weights=requested_route_weights(
+                        request.strategy
+                    ),
+                    executed_routes=["dense"],
+                ),
+            )
+        return self._failed_attempt(
+            self._unavailable_reason or "dense_route_unavailable",
+        )
+
+    @staticmethod
+    def _failed_attempt(
+        reason: str,
+        *,
+        latency_ms: float | None = None,
+    ) -> RetrievalResult:
+        rounded_latency = round(latency_ms, 6) if latency_ms is not None else None
+        return RetrievalResult(
+            candidates=[],
+            diagnostics=RetrievalDiagnostics(
+                route="dense",
+                candidate_count=0,
+                fallback_used=True,
+                latency_ms=rounded_latency,
+                notes=[reason],
+                stage_latencies_ms=(
+                    {"dense": rounded_latency}
+                    if rounded_latency is not None
+                    else {}
+                ),
+                cache_state={"dense": reason},
+                route_failures={"dense": reason},
+            ),
+        )
+
+    def prepare(self) -> str | None:
+        """Load the local query model before a request reaches the dense Route."""
+
+        if self._backend is None:
+            return self._unavailable_reason or "dense_route_unavailable"
+        prepare_backend = getattr(self._backend, "prepare", None)
+        if not callable(prepare_backend):
+            return None
+        try:
+            prepare_backend()
+        except Exception:
+            self._backend = None
+            self._unavailable_reason = "dense_warmup_failed"
+            return self._unavailable_reason
+        return None
+
+    def configuration_snapshot(self) -> dict:
+        metadata_path = self.config.cache_dir / "metadata.json"
+        metadata: dict = {}
+        try:
+            loaded = json.loads(metadata_path.read_text(encoding="utf-8"))
+            if isinstance(loaded, dict):
+                metadata = loaded
+        except (OSError, ValueError):
+            pass
+        cache_files = [
+            self.config.cache_dir / name
+            for name in ("metadata.json", "ids.json", "vectors.npy")
+        ]
+        return {
+            "cache_dir": str(self.config.cache_dir),
+            "cache_schema_version": CACHE_SCHEMA_VERSION,
+            "cache_status": self._unavailable_reason or "compatible",
+            "cache_available": self._unavailable_reason is None,
+            "cache_size_bytes": sum(
+                path.stat().st_size for path in cache_files if path.is_file()
+            ),
+            "build_seconds": metadata.get("build_seconds"),
+            "model_id": self.config.model_id,
+            "model_revision": self.config.model_revision,
+            "dimension": self.config.dimension,
+            "dtype": self.config.dtype,
+            "normalized": self.config.normalized,
+            "product_text_template": PRODUCT_TEXT_TEMPLATE,
+            "query_text_template": QUERY_TEXT_TEMPLATE,
+        }
+
+    def _fallback_result(
+        self,
+        request: RetrievalRequest,
+        reason: str,
+        *,
+        attempted: RetrievalResult | None = None,
+    ) -> RetrievalResult:
+        result = self._lexical.retrieve(request)
+        attempted_latency = (
+            float(attempted.diagnostics.latency_ms)
+            if attempted is not None and attempted.diagnostics.latency_ms is not None
+            else 0.0
+        )
+        diagnostics = replace(
+            result.diagnostics,
+            fallback_used=True,
+            latency_ms=round(
+                float(result.diagnostics.latency_ms or 0.0) + attempted_latency,
+                6,
+            ),
+            notes=[*result.diagnostics.notes, reason],
+            stage_latencies_ms={
+                **result.diagnostics.stage_latencies_ms,
+                **(
+                    attempted.diagnostics.stage_latencies_ms
+                    if attempted is not None
+                    else {}
+                ),
+            },
+            cache_state={
+                **result.diagnostics.cache_state,
+                **(
+                    attempted.diagnostics.cache_state
+                    if attempted is not None
+                    else {}
+                ),
+                "dense": reason,
+            },
+            route_failures={**result.diagnostics.route_failures, "dense": reason},
+            fallback_route=result.diagnostics.route,
+        )
+        return RetrievalResult(candidates=result.candidates, diagnostics=diagnostics)

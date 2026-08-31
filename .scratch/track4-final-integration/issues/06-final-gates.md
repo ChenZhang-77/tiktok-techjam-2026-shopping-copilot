@@ -8,5 +8,7 @@ from live verification, team approvals and actual public submission.
 - [ ] Local tests, clean-start, provenance and independent reviews are reconciled.
 - [ ] New real F2 paired passes occur only with explicit transfer/budget authorization.
 - [ ] Organizer network/resource policy and the official scoring configuration are confirmed.
+- [ ] After configuration freeze, one Full-200 public report is retained separately from Development evidence; no tuning or unseen-set claim, paid mode separately authorized.
+- [ ] Devpost references only final main/commit; other GitHub branches are preserved.
 - [ ] Contributions/assets approved; public repo, video and Devpost submitted only when authorized.
 - [ ] Incomplete external gates are reported, never marked as submission complete.

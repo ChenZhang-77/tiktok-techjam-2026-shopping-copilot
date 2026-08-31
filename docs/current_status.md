@@ -90,10 +90,15 @@ Use a new output filename each time. Missing models/caches mean degraded
 structured behavior, not reproduction of the B9 score. Ordinary
 `evaluation_reporting --structured-filter` intentionally tests that separate path.
 
-**Source release is not completed competition submission.** Neither selected
-checkout contains the new independent package yet. Old P0 packaging is tied
-to its older runtime. Next: regenerate from the chosen source, validate a
-fresh environment and degradation, then finish evidence-backed contributions,
-demo/video and final submission artifacts. Profile remains disabled; B9 is
+**Source release is not completed competition submission.** The integration
+checkout now contains the newly generated independent package; old P0 packaging
+was not copied as runtime. Package-source hashes, clean-directory synthetic
+startup and an actual Development-160/four-fold paired run pass: score .766231,
+649 turns, zero observed fallback, exact core/delivery traces. See
+[bound package evidence](delivery_reports/offline_package.json).
+Validation used separately copied local assets and the prepared same-machine
+Python environment; no other-machine/fresh dependency-install claim is made.
+New live LLM verification, contributions, demo/video and actual public submission
+remain incomplete. Profile remains disabled; B9 is
 conditional, not global hybrid retrieval, and Plan One does not claim an active
 LLM-ranking pillar. See [delivery plan](demo_and_submission_plan.md).
