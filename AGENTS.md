@@ -11,7 +11,7 @@ Authority order:
 1. The official competition PDF and participant kit.
 2. The official Agent contract, evaluator, frozen catalog, and submission rules.
 3. This file.
-4. `docs/current_status.md` and `docs/optimization_roadmap.md`.
+4. `README.md`, `docs/delivery_configuration.md`, and the bound delivery evidence.
 5. Workstream and experiment documents.
 
 If two sources conflict, stop and follow the higher authority. Never treat
@@ -24,10 +24,10 @@ Before changing anything:
 
 1. run `git status --short --branch` and inspect HEAD,
 2. read this file completely,
-3. read `docs/current_status.md`,
-4. read `docs/optimization_roadmap.md`,
-5. read the selected A or B workstream document,
-6. inspect the real interfaces and tests named by that workstream,
+3. read `README.md` and `docs/delivery_reports/README.md`,
+4. read `docs/delivery_configuration.md`,
+5. read the A/B ownership and contract boundaries in Sections 7-8 below,
+6. inspect the relevant runtime interfaces and tests directly,
 7. state the selected experiment, files expected to change, and verification
    command,
 8. work on a feature/experiment branch, not directly on `main`,
@@ -39,13 +39,14 @@ existence of a roadmap item.
 
 ## 3. Current State
 
-Release disposition (2026-08-31): `docs/final_release_plan.md` freezes unfinished
-experiments; `docs/optimization_roadmap.md` now schedules delivery only. Older
-A13/A14/B10b “next step” prose below is historical, not permission to resume.
+Release disposition (2026-08-31): unfinished A13/A14/profile/B11/B12 experiments
+remain frozen; only explicitly requested delivery work is active. Older experiment
+results and “next step” prose below are historical, not permission to resume.
 
-`docs/current_status.md` is the single source of truth for checkout-specific
-state, metrics, retained architecture, known risks, and the next decision.
-Re-check Git state because branch and remote facts can drift.
+`README.md` and its bound delivery evidence describe current behavior, metrics and
+limitations. Re-check Git state because branch and remote facts can drift.
+Internal task, roadmap and publication notes are local-only; a fresh public clone
+must not depend on them. Keep new working notes in ignored `.scratch/`.
 
 Key evidence documents:
 
@@ -260,9 +261,8 @@ experiment at `82891c8`: its aggregate result is favorable, but there was no
 contemporaneous keep/revert gate and the gain is concentrated in fold 4. The
 B9 default is preserved exactly. See `docs/b12_adaptive_depth_evidence.md`.
 
-The current optimization order is defined in
-`docs/optimization_roadmap.md`. Diagnose failures before introducing another
-model or route.
+There is no active optimization queue in this release. Diagnose failures and
+obtain a new scoped implementation request before introducing another model or route.
 
 ## 7. Shared A/B Contract
 
@@ -321,7 +321,7 @@ weight, or fallback semantic:
 2. coordinate A and B,
 3. add or update contract tests,
 4. keep compatibility when practical,
-5. update both workstream documents and `docs/current_status.md`,
+5. update the shared-contract documentation and public behavior documentation,
 6. change one primary behavior per experiment.
 
 ## 8. Ownership
@@ -454,11 +454,10 @@ such as `query`, `dialogue`, or `timing failure` without mapping them to the
 canonical class or the separate evaluation-validity flag.
 
 Evidence availability is a blocker, not an implementation shortcut: verify each
-should-ask signal before writing the policy. The current experiment IDs and
-dependency order belong in `docs/optimization_roadmap.md`.
-
-Run blockers-first according to `docs/optimization_roadmap.md`. Do not combine
-several speculative changes and attempt to explain the aggregate later.
+should-ask signal before writing the policy. Record any newly authorized experiment's
+dependencies and keep/revert gates in its local working plan before implementation.
+Run blockers first. Do not combine several speculative changes and attempt to
+explain the aggregate later.
 
 After each retained behavior slice:
 
@@ -514,12 +513,12 @@ fallback in diagnostics and test the degraded result.
 After a retained behavior or shared-contract change, update the smallest
 authoritative set:
 
-- `docs/current_status.md` for state and next decision,
-- the owning workstream document,
+- `README.md` and its evidence links for current public behavior and limits,
+- the relevant architecture or contract document,
 - `docs/ablation_summary.md` only after evidence is bound,
 - `README.md` when public behavior, setup, results, or limitations change,
 - `CONTEXT.md` only when stable vocabulary changes,
-- `docs/demo_and_submission_plan.md` when deliverable status changes.
+- local-only submission notes when operating status changes; do not publish them.
 
 Do not copy mutable status into every document. Link to the source.
 
@@ -538,7 +537,7 @@ The final repository must include:
 
 The visualizer is a debugging/presentation tool. Clearly separate Agent-visible
 state from evaluator-only target/score data so the demo cannot imply target
-leakage. See `docs/demo_and_submission_plan.md`.
+leakage. See `visualizer/README.md` for the public demonstration boundary.
 
 ## 16. Definition of Done
 
@@ -556,7 +555,7 @@ The project is ready only when:
 - literal Track 4 dense/semantic and profile coverage gaps are disclosed when
   the retained runtime does not implement them,
 - results and limitations are reproducible and current,
-- README, AGENTS, workstreams, demo, submission package, and contributions agree,
+- README, AGENTS, architecture, demo, submission package, and contributions agree,
 - every major tradeoff can be explained without framework buzzwords.
 
 ## 17. End-of-Session Report

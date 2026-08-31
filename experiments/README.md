@@ -78,7 +78,7 @@ R0 is complete. Its clean Development-160 artifacts are
 The corrected causal-evidence audit classified 25 of 38 misses as Intent / Strategy
 Routing, seven as State / Override, and six as Extraction. The evidence-ranked
 and dependency-ordered next module is A8.
-The authoritative dependency order is maintained only in
-`../docs/optimization_roadmap.md`. Use the selected A/B workstream for its
-hypothesis, inputs, tests, and keep/revert gate. Do not copy the full sequence
-into an experiment note.
+That dependency order describes the historical R0 checkpoint, not the current
+release backlog. Current behavior and evidence are documented in `../README.md`;
+engineering constraints are in `../AGENTS.md`. Any new experiment requires a
+separate hypothesis, inputs, tests and keep/revert gate before implementation.

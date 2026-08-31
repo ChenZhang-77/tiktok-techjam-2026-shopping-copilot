@@ -70,6 +70,10 @@ Both commands default to this bundle's prepared catalog/model/vector paths; use
 identical explicit path options for nondefault assets. Freeze records runtime,
 evaluator, data, vector and local-model hashes. A `.started` marker prevents an
 automatic second run from the same freeze; preserve it, including on failure.
+The marker is retained after successful completion too: it is not an unfinished
+run indicator. In the combined ZIP, `evidence/final_public_full200.json` contains
+200 outcomes and records `acceptance_passed: true` with unchanged source/input
+hashes; source-only bundle users can read it in the public repository evidence directory.
 The runner uses only offline configuration, verifies each response contract and
 retains all200 outcomes/scenarios/timing. No private set or external LLM is used.
 

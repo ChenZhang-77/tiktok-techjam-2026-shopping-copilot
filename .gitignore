@@ -27,6 +27,23 @@ checkpoints/
 organizer/
 secure/
 # Internal provenance and release-audit working documents.
+.scratch/
+docs/agents/
+docs/archive/
+docs/workstreams/
+docs/a_control_plane_handoff.md
+docs/b_retrieval_ranking_handoff.md
+docs/final_delivery_execution.md
+docs/final_delivery_rules.md
+docs/judge_readiness_review.md
+docs/current_status.md
+docs/optimization_roadmap.md
+docs/final_release_plan.md
+docs/branch_inventory.md
+docs/human_optimization_recap_zh.md
+docs/final_readiness.md
+docs/demo_and_submission_plan.md
+docs/demo_recording_script.md
 docs/audits/
 docs/data_selection_audit.md
 docs/participant_release_checklist.md

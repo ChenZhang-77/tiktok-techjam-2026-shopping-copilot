@@ -1,24 +1,35 @@
----
-status: accepted
----
+# Bound optional LLM enhancement to product reranking
 
-# 将收尾版本的 LLM 增强限定为商品重排
+## Decision
 
-2026-08-31，用户确认：最终版本默认使用离线配置，显式开启的 LLM 增强仅迁入已有验证证据的 B10b-F2，在符合条件的 Browsing 回合对已有 Top-10 商品进行约束保护的语义重排，不改变该回合重排池的成员。
-相比将 LLM 接入需求理解、状态更新或提问策略，这一边界保留已有多轮控制逻辑、限制收尾验证范围；本次不重启 A13，也不承诺增强模式能修复复杂对话理解或召回池外商品。
-既有证据和局限见 [当前状态](../current_status.md#optional-llm-disposition)，不能将分支上的历史验证视为新提交包已经验证通过。
+The Agent defaults to offline execution. An explicit pre-run LLM configuration
+adds the retained B10b-F2 reranker only for eligible Browsing turns. It can reorder
+the existing Top-10 candidate pool with constraint protection, but cannot add or
+remove pool members.
 
-## 已确认的故障回退与证据边界
+The integration preserves local multi-turn state, query construction and
+clarification. It does not add LLM dialogue understanding, profile updates or
+recall expansion. This boundary limits external data transfer and the surface
+requiring remote-provider validation.
 
-用户进一步确认：增强不可用时继续提供离线能力，但必须明确标记降级，不能以运行未中断代替增强验证成功。
+## Failure behavior
 
-- 缺密钥或无法联网时，使用离线能力继续运行；该承诺以必要本地数据和运行依赖可用为前提，不掩盖 catalog 缺失等独立错误。
-- LLM 调用超时、返回非法结果或预算耗尽时，保留本轮 LLM 重排前的推荐顺序，不以另一套未验证排序代替回退。
-- 运行报告区分请求配置与实际执行，记录调用、成功和回退次数；全程未成功使用 LLM 不能标记为增强模式验证通过。
-- 未满足重排条件的正常跳过不等于故障回退；已选择离线配置时不会因网络或密钥可用而自动启用 LLM。
+- Missing keys, network errors, timeouts, invalid output or exhausted budgets
+  preserve the pre-rerank recommendation order with a visible reason.
+- A required catalog/setup error is separate from optional-model degradation.
+- Requested mode, actual execution, attempts, successes and fallbacks are reported
+  separately. Completing a session without any successful provider call does not
+  establish successful enhancement validation.
+- Normal eligibility skips are not provider failures. Keys or network availability
+  never activate LLM mode when offline mode was selected.
 
-## 已确认的正式参赛配置原则
+## Evidence and scoring configuration
 
-用户确认软件默认与正式评分配置分开：默认仍离线；仅当主办方允许外部服务和凭据配置，且新提交包的增强质量、延迟和稳定性复验达标时，优先显式选择增强参赛，否则采用已验证的离线配置。这不是宣称主办方已开放网络，也不是允许以旧分支成绩替代新包验证。
+The final public Full200 evidence uses offline mode. Historical F2 paired results
+are retained as earlier experiments, not new live measurements of this integrated
+package. Any use of the optional mode for official scoring depends on organizer
+network/resource rules and fresh validation of ranking quality, latency and cost.
 
-本 ADR 记录已接受的设计边界，不代表迁入或打包完成，也不授权付费调用、提交或发布。后续完整约束见 [批量收尾规则](../final_delivery_rules.md)，用户指定未提出异议的条目作为默认规则；新付费预算和主办方最终运行限制仍需分别确定。
+See [configuration](../delivery_configuration.md), the
+[technical report](../../submission/REPORT.md) and
+[bound evidence](../delivery_reports/README.md).

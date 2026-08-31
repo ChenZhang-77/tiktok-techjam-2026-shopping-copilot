@@ -2,9 +2,9 @@
 
 ## Decision: Chen is the stronger main source
 
-Share with caveats. Publish Chen `0bd3375` descendants to `yuqing`, keep
-`llm` for optional Plan Two, and freeze P0 packaging at `aaa7e45`.
-[Final plan](final_release_plan.md) defines the release scope and pending package work.
+Chen `0bd3375` supplies the selected offline runtime; the optional F2 path is
+evaluated separately. This report compares source checkpoints under one fixed
+protocol. Current package evidence is indexed in [delivery reports](delivery_reports/README.md).
 
 | Source | HR@10 | MRR | MTTC | TechnicalScore | Dense executions |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -95,7 +95,7 @@ The original P0 checkpoint lacks this new runner: run the same audit script
 through `runpy.run_path` from P0's working directory so its own Agent/evaluator
 are imported. The report hashes record the runner actually used.
 
-## Verification and review
+## Historical verification boundary
 
 Before organization: P0 **294**, Chen **297**, llm **443** tests passed.
 After organization: P0 **294**, Chen **302**, llm **448** tests pass.
@@ -103,23 +103,7 @@ Tests recompute metrics/folds, verify active-source and artifact hashes,
 and cover synthetic score/miss accounting. Local Markdown links: P0 28,
 Chen 53, llm 109 checked, zero missing targets.
 
-### Standards
-
-PASS, zero remaining findings. Two initial P2 documentation findings were
-corrected: stale exposed-holdout instructions and outdated A13 provider/status
-claims. Independent recheck passed after llm `1190a68` / Chen `672055a`.
-
-### Spec
-
-PASS, zero remaining findings. The same two documentation gaps are closed;
-branch selection, fixed-population evidence, freeze scope, no-default-change
-and package-not-ready boundaries were independently checked.
-
-Review scope: llm `7f0dc6c..1190a68`, Chen `0bd3375..672055a`, P0
-`aaa7e45..24570f2`. This records release-diff review, not a claim of a new full
-security audit of every historical commit. Pattern/forbidden-path scanning of
-newly publishable Git blobs found no potential keys or forbidden data/cache paths.
-
-Source publication is independent of competition-package readiness. The P0
-package's tests pass for P0 only; selected branch `submission/` is still staging.
-See [delivery plan](demo_and_submission_plan.md).
+These are source-checkpoint tests, not a fresh-install guarantee for the final
+package. The independent package was subsequently built and evaluated; its
+setup and retained results are in the [submission README](../submission/README.md)
+and [delivery evidence](delivery_reports/README.md).

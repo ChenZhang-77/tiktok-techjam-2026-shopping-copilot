@@ -26,8 +26,8 @@ runtime request/diagnostic.
   and no target leakage or runtime behavior change
 - **Revert gate:** any target leakage, holdout/full selection, runtime change,
   or non-reproducible fold assignment
-- **Decision:** Retain offline audit tooling and evidence; follow the roadmap
-  dependency order
+- **Decision:** Retain offline audit tooling and evidence; future experiments
+  require separate scope and fixed evaluation gates
 
 ## Primary causes
 
@@ -72,8 +72,9 @@ runtime request/diagnostic.
 
 **A8** — stabilize intent assessment before B routing.
 
-This recommendation is evidence-ranked but still subject to the dependency
-order in `docs/optimization_roadmap.md`.
+This recommendation applies to the recorded checkpoint, not an active
+release task. New experiments must follow the static evaluation and
+safety rules in the repository-root `AGENTS.md`.
 
 ## Example misses
 

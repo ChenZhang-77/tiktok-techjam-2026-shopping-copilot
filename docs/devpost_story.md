@@ -81,7 +81,8 @@ external API charges for that run, not zero local compute or setup cost.
 
 The independent package also reproduced the fixed Development-160/four-fold
 results with exact core/package response parity and TechnicalScore 0.766231.
-The repository passes 330 automated tests. We retain per-session results,
+Automated tests cover the Agent contract, delivery package and visualizer.
+We retain per-session results,
 configuration, source/input hashes and timing evidence outside Agent runtime.
 
 These are exposed public-data evaluations, not unseen validation or measured

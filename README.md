@@ -184,4 +184,4 @@ See [component contributions and AI-assistance disclosure](docs/team_contributio
 [data attribution](DATA_ATTRIBUTION.md). Public visibility does not itself grant
 a source-code license. No project-wide open-source license is included.
 
-Further reading: [documentation map and maintainer reference](docs/README.md).
+Further reading: [project documentation and evidence](docs/README.md).

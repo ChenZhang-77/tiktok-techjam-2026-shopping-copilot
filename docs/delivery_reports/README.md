@@ -25,6 +25,16 @@ to the Agent. No other branch is needed to read the retained numerical evidence.
   unchanged. Independent verification recomputes results without another run.
   Do not use this public/exposed report for tuning or label it an unseen holdout.
 
+## Full200 run completion
+
+The frozen run is complete: `final_public_full200.json` contains all 200 session
+outcomes with `acceptance_passed: true` and `source_and_inputs_unchanged: true`.
+The `.started` file is a permanent one-shot start record, not an in-progress lock
+or evidence of an unfinished run. The runner retains it after success to prevent
+automatic reuse of the same freeze. Completion is established by the result
+report and its integrity checks, not by removing the start record. Keep the
+report, freeze and start record together, with their original bytes unchanged.
+
 Source-only ZIP users can read the reports in the
 [public repository evidence directory](https://github.com/ChenZhang-77/tiktok-techjam-2026-shopping-copilot/tree/main/docs/delivery_reports).
 Combined ZIP users can read the included `evidence/` directory without GitHub

@@ -29,7 +29,7 @@ present a degraded run as a reproduction of the recorded dense result.
    replay does not change the recorded score and does not rerun the full set.
 4. Expand **Agent-only diagnostics and usage** for state, strategy, query,
    retrieval/fallback details and offline mode. No API key is needed.
-4. Click **Stop** to disconnect; the server releases the session when it detects
+5. Click **Stop** to disconnect; the server releases the session when it detects
    the closed connection (after any in-flight local work/message delay).
 
 The visualizer explicitly forces offline delivery configuration and fixed local
@@ -45,9 +45,10 @@ not a switch for real paid execution. Use the documented headless entry for that
   report's recorded environment, not every machine or currently running session.
 - **Current workspace** executes a fresh local offline simulated session.
   It is not a replay of the exact recorded aggregate run.
-- Historical entries under `experiments/runs/` show saved metrics only. Start is
-  disabled; the server rejects attempts to rerun them as current code. Saved
-  partial Agent snapshots are insufficient to reproduce an entire old runtime.
+- Historical entries under `experiments/runs/` retain their saved aggregate
+  metrics. **Start** replays the selected session using the current local Agent;
+  it does not reproduce the historical runtime or change those saved metrics.
+  Saved partial Agent snapshots cannot reconstruct an entire old runtime.
 - Green **Evaluator HIT**, target rank and scenario/session results are evaluator
   annotations. They are never passed to Agent state, retrieval, prompts or
   configuration. The Agent receives only `reset`/`respond` inputs and the catalog.

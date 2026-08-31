@@ -64,7 +64,10 @@ setup are not included in this timing. These are prepared same-machine results.
 The repository evidence directory retains `final_public_full200.json`, its
 source/configuration/input/model freeze and one-shot marker. No tuning followed
 this run. Full200 is exposed/public, not unseen validation; do not interpret a
-Dev160-versus-Full200 difference as an algorithm gain/regression. Documentation
+Dev160-versus-Full200 difference as an algorithm gain/regression. The retained
+`.started` file is a permanent anti-rerun record, not an unfinished-run flag;
+completion is recorded by all 200 outcomes and `acceptance_passed: true` in the
+result report. Documentation
 can be updated after a run; frozen Python/runtime hashes are checked separately.
 
 ## Reproducibility boundaries
