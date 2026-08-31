@@ -1,67 +1,50 @@
-# Dialogue Visualizer
+# Offline process visualizer
 
-Local process visualizer for one customer session at a time. It is separate
-from the official evaluator and does not change `evaluator/local_evaluator.py`.
+Optional localhost demonstration, separate from the submitted headless Agent and
+unmodified official evaluator. It uses simulated customers, not a live-chat backend.
 
-## Run An Experiment
+## Start without a new aggregate experiment
 
-From the repository root:
-
-```bash
-./scripts/start_experiment.sh my-experiment --split development
-```
-
-The command evaluates the Agent, creates a new directory under
-`experiments/runs/`, saves `results.json`, copies the Agent snapshot, starts
-the visualizer, and prints a URL such as:
-
-```text
-http://127.0.0.1:8765?experiment=2026-08-31-0646-my-experiment-development
-```
-
-The URL is also opened automatically on macOS when possible. If no browser tab
-opens, copy the printed URL into a browser. Every run has its own directory and
-URL; earlier runs are not overwritten.
-
-## Use The Page
-
-1. Select an experiment from `Experiment`.
-2. Select one customer session from `Session`.
-3. Enter the delay between messages in `Interval (seconds)`. The default is
-   `0.7`; use `0` for immediate playback.
-4. Click `Start` to play the selected conversation.
-5. Click `Stop` to stop playback.
-
-The page shows the initial customer request, each Agent response, the
-recommendations, and the simulated customer follow-up one event at a time.
-When the evaluator-valid target is found, the matching recommendation is green,
-the left panel reports the first hit turn and rank, and playback stops.
-
-The left panel also shows the five overall metrics from the saved run:
-HitRate@10, MRR, MTTC, Efficiency, and TechnicalScore. These are aggregate
-experiment metrics, not metrics for only the selected customer.
-
-## Start Only The Visualizer
-
-If a saved experiment already exists, start the page without running another
-evaluation:
+From the repository root, in the prepared Python environment described in
+[`submission/README.md`](../submission/README.md):
 
 ```bash
-python3 visualizer/server.py
+HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 python visualizer/server.py --port 8765
 ```
 
-Then open:
+Open <http://127.0.0.1:8765>. The default bind is localhost. The repository needs
+`data/catalog.jsonl`, `data/public_set.jsonl` and prepared local model/vector
+assets. Missing assets produce explicit degraded retrieval diagnostics; do not
+present a degraded run as a reproduction of the recorded dense result.
 
-```text
-http://127.0.0.1:8765
-```
+1. Select **Current workspace**, then a Development-160 session.
+2. Choose a message interval (0–60 seconds); click **Start**.
+3. Expand **Agent-only diagnostics and usage** for state, strategy, query,
+   retrieval/fallback details and offline mode. No API key is needed.
+4. Click **Stop** to disconnect; the server releases the session when it detects
+   the closed connection (after any in-flight local work/message delay).
 
-The repository must contain `data/catalog.jsonl` and `data/public_set.jsonl`.
-The experiment dropdown discovers saved runs under `experiments/runs/`.
+The visualizer explicitly forces offline delivery configuration and fixed local
+asset locations, even if the shell has `SHOPPING_MODE=llm` or an API key. It is
+not a switch for real paid execution. Use the documented headless entry for that.
 
-## Scope And Safety
+## What the evidence means
 
-The page is a local demo and debugging tool. It does not affect scoring and
-does not send target answers into Agent state, retrieval, ranking, prompts, or
-routing. Generated run directories and downloaded data are local artifacts and
-are ignored by Git.
+- **Recorded Evaluation** is the independent package's Development-160 report,
+  not a metric computed from the selected session. Source/module/input/vector
+  hashes are checked before linking it to this checkout; missing/stale evidence
+  is shown without scores. Timing/environment guarantees still belong to the
+  report's recorded environment, not every machine or currently running session.
+- **Current workspace** executes a fresh local offline simulated session.
+  It is not a replay of the exact recorded aggregate run.
+- Historical entries under `experiments/runs/` show saved metrics only. Start is
+  disabled; the server rejects attempts to rerun them as current code. Saved
+  partial Agent snapshots are insufficient to reproduce an entire old runtime.
+- Green **Evaluator HIT**, target rank and scenario/session results are evaluator
+  annotations. They are never passed to Agent state, retrieval, prompts or
+  configuration. The Agent receives only `reset`/`respond` inputs and the catalog.
+- The local API exposes evaluation metadata for inspection. Do not deploy this
+  tool as an unreviewed public service or include it in the Agent runtime bundle.
+
+`scripts/start_experiment.sh` remains a historical experiment helper. It is not
+the final demo entry, and starting a demo does not require another evaluation.

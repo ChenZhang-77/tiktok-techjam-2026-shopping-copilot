@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 import argparse
-import importlib
-import importlib.util
+import hashlib
 import json
-import subprocess
 import time
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -26,14 +24,26 @@ from evaluator.local_evaluator import (
     materialize_hidden_fields,
     normalize_recommendations,
 )
-from starter.agent import Agent
+from starter.delivery import Agent as DeliveryAgent, DeliveryConfig
 from starter.retrieval import HybridRetriever, StructuredConfig
+from starter.retrieval.conditional_dense import ConditionalDenseRetriever
+from starter.retrieval.dense import DenseConfig
 
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 RUNS_DIR = ROOT / "experiments/runs"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8765
+
+
+class Agent(DeliveryAgent):
+    """Visualizer reruns are explicitly offline, never a paid model switch."""
+    def __init__(self, catalog_path=None, *, retriever=None):
+        if retriever is None:
+            retriever = ConditionalDenseRetriever.from_catalog(catalog_path, dense_config=DenseConfig(
+                cache_dir=ROOT / "embeddings/minilm-l6-v2-v1",
+                model_cache_dir=ROOT / "models/huggingface/hub"))
+        super().__init__(catalog_path, retriever=retriever, config=DeliveryConfig())
 
 
 def _safe_product(product: dict | None) -> dict:
@@ -102,6 +112,7 @@ class InteractiveSession:
 
     def start_payload(self) -> dict:
         return {
+            "execution_kind": "live_offline_simulation",
             "session_index": self.index,
             "session_id": self.session_id,
             "sample_id": self.sample.get("sample_id"),
@@ -162,6 +173,8 @@ class InteractiveSession:
             "user_message": current_user_message,
             "agent_message": response.get("message", ""),
             "ask_attribute": response.get("ask_attribute"),
+            "agent_diagnostics": response.get("diagnostics", {}),
+            "usage": response.get("usage", {}),
             "recommendations": recommendations,
             "hit": turn_rank is not None,
             "target_rank": turn_rank,
@@ -200,7 +213,6 @@ class TraceRunner:
         self.samples = load_jsonl(dataset_path)
         self.catalog_ids, self.categories, self.products = catalog_index(catalog_path)
         self.active_sessions: dict[str, InteractiveSession] = {}
-        self._agent_cache: dict[str, type[Agent]] = {"current": Agent}
 
     def _run_dir(self, experiment_id: str | None) -> Path | None:
         if not experiment_id or experiment_id == "current":
@@ -214,83 +226,30 @@ class TraceRunner:
         return candidate
 
     def _agent_class(self, experiment_id: str | None) -> type[Agent]:
-        run_dir = self._run_dir(experiment_id)
-        if run_dir is None:
+        if self._run_dir(experiment_id) is None:
             return Agent
-        metadata_path = run_dir / "metadata.json"
-        if metadata_path.exists():
-            try:
-                metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-            except json.JSONDecodeError:
-                metadata = {}
-            try:
-                current_commit = subprocess.run(
-                    ["git", "rev-parse", "--short", "HEAD"],
-                    cwd=ROOT,
-                    check=True,
-                    capture_output=True,
-                    text=True,
-                ).stdout.strip()
-            except (OSError, subprocess.CalledProcessError):
-                current_commit = ""
-            if metadata.get("git_commit") == current_commit:
-                return Agent
-        cache_key = run_dir.name
-        if cache_key in self._agent_cache:
-            return self._agent_cache[cache_key]
-        package_snapshot = run_dir / "starter/agent.py"
-        if package_snapshot.exists():
-            saved_modules = {
-                name: module
-                for name, module in sys.modules.items()
-                if name == "starter" or name.startswith("starter.")
-            }
-            saved_path = list(sys.path)
-            for name in list(saved_modules):
-                sys.modules.pop(name, None)
-            sys.path.insert(0, str(run_dir))
-            try:
-                module = importlib.import_module("starter.agent")
-                agent_cls = getattr(module, "Agent", None)
-            finally:
-                for name in [name for name in list(sys.modules) if name == "starter" or name.startswith("starter.")]:
-                    sys.modules.pop(name, None)
-                sys.modules.update(saved_modules)
-                sys.path[:] = saved_path
-            if agent_cls is None:
-                raise ValueError(f"starter/agent.py in {cache_key} does not define Agent.")
-            self._agent_cache[cache_key] = agent_cls
-            return agent_cls
-        snapshot = run_dir / "agent_snapshot.py"
-        if not snapshot.exists():
-            return Agent
-        module_name = f"experiment_agent_{cache_key.replace('-', '_')}"
-        spec = importlib.util.spec_from_file_location(module_name, snapshot)
-        if spec is None or spec.loader is None:
-            raise ValueError(f"Could not load agent snapshot for {cache_key}.")
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        agent_cls = getattr(module, "Agent", None)
-        if agent_cls is None:
-            raise ValueError(f"agent_snapshot.py in {cache_key} does not define Agent.")
-        self._agent_cache[cache_key] = agent_cls
-        return agent_cls
+        raise ValueError("Historical runs are read-only metrics; choose Current workspace for an offline rerun.")
 
     def _retriever_for(self, experiment_id: str | None):
         """Mirror the saved experiment's deterministic retrieval configuration."""
         result = self._experiment_result(experiment_id)
         evaluation = result.get("evaluation") if isinstance(result.get("evaluation"), dict) else {}
         mode = str(evaluation.get("retrieval_mode") or "conditional_dense")
-        if mode not in {"structured", "no_guarded_filter", "lexical"}:
+        if mode == "conditional_dense":
             return None
+        if mode not in {"structured", "no_guarded_filter", "lexical"}:
+            raise ValueError(f"Unsupported replay retrieval mode: {mode}")
         return HybridRetriever(
             self.catalog_path,
-            structured_config=StructuredConfig(enabled=mode != "lexical"),
+            structured_config=StructuredConfig(enabled=mode == "structured"),
             constraint_rerank_enabled=mode != "lexical",
         )
 
     def _experiment_result(self, experiment_id: str | None) -> dict:
         run_dir = self._run_dir(experiment_id)
+        if run_dir is None:
+            return {"evaluation": {"split": "development", "retrieval_mode": "conditional_dense",
+                                   "mode": "offline", "split_manifest": "docs/public_split_v1.json"}}
         result_path = run_dir / "results.json" if run_dir is not None else ROOT / "results.json"
         if result_path.exists():
             return json.loads(result_path.read_text(encoding="utf-8"))
@@ -314,8 +273,9 @@ class TraceRunner:
         items = [{
             "id": "current",
             "label": "Current workspace",
-            "has_results": (ROOT / "results.json").exists(),
-            "source": "results.json" if (ROOT / "results.json").exists() else "docs/baseline_results.json",
+            "has_results": (ROOT / "docs/delivery_reports/offline_package.json").exists(),
+            "source": "docs/delivery_reports/offline_package.json",
+            "can_rerun": True,
         }]
         if RUNS_DIR.exists():
             for run_dir in sorted([path for path in RUNS_DIR.iterdir() if path.is_dir()], reverse=True):
@@ -335,22 +295,26 @@ class TraceRunner:
                     "git_branch": metadata.get("git_branch"),
                     "git_commit": metadata.get("git_commit"),
                     "has_results": (run_dir / "results.json").exists(),
+                    "can_rerun": False,
                     "source": f"experiments/runs/{run_dir.name}/results.json",
                 })
         return items
 
     def overall_metrics(self, experiment_id: str | None = None) -> dict:
         run_dir = self._run_dir(experiment_id)
-        result_path = run_dir / "results.json" if run_dir is not None else ROOT / "results.json"
-        baseline_path = ROOT / "docs/baseline_results.json"
-        source = f"experiments/runs/{run_dir.name}/results.json" if run_dir is not None else "results.json"
-        if result_path.exists():
-            data = json.loads(result_path.read_text(encoding="utf-8"))
+        status = "historical_record_only"
+        if run_dir is None:
+            source = "docs/delivery_reports/offline_package.json"
+            data = self._current_evidence()
+            status = "verified_offline_evidence" if data else "missing_or_stale"
         else:
-            source = "docs/baseline_results.json"
-            data = json.loads(baseline_path.read_text(encoding="utf-8"))
+            source = f"experiments/runs/{run_dir.name}/results.json"
+            result_path = run_dir / "results.json"
+            data = json.loads(result_path.read_text(encoding="utf-8")) if result_path.exists() else {}
         return {
             "source": source,
+            "evidence_status": status,
+            "view": "recorded_evaluation",
             "sample_count": data.get("sample_count"),
             "hit_rate_at_10": data.get("hit_rate_at_10"),
             "mrr": data.get("mrr"),
@@ -360,6 +324,35 @@ class TraceRunner:
             "scenario_metrics": data.get("scenario_metrics", {}),
             "evaluation": data.get("evaluation", {}),
         }
+
+    def _current_evidence(self) -> dict:
+        """Only associate a recorded score with matching runtime and inputs."""
+        def sha(path):
+            digest = hashlib.sha256()
+            with Path(path).open("rb") as handle:
+                for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                    digest.update(chunk)
+            return digest.hexdigest()
+        try:
+            report = json.loads((ROOT / "docs/delivery_reports/offline_package.json").read_text())
+            manifest_path = ROOT / "docs/delivery_reports/tested_bundle_manifest.json"
+            if sha(manifest_path) != report["bundle_manifest_sha256"]:
+                return {}
+            manifest = json.loads(manifest_path.read_text())
+            for name, expected in manifest.items():
+                if name.startswith("src/") and name.endswith(".py"):
+                    if sha(ROOT / name.removeprefix("src/")) != expected:
+                        return {}
+            inputs = {"catalog": self.catalog_path, "dataset": self.dataset_path,
+                      "split": ROOT / "docs/public_split_v1.json", "folds": ROOT / "docs/development_folds_v1.json"}
+            if any(sha(path) != report["input_sha256"][name] for name, path in inputs.items()):
+                return {}
+            for name, expected in report["model_asset_sha256"].items():
+                if sha(ROOT / "embeddings/minilm-l6-v2-v1" / name) != expected:
+                    return {}
+            return {**report["delivery"], "evaluation": report["evaluation"]}
+        except (OSError, ValueError, KeyError, TypeError):
+            return {}
 
     def session_summaries(self, experiment_id: str | None = None) -> list[dict]:
         selected = self._split_sample_ids(experiment_id)
@@ -405,6 +398,7 @@ class TraceRunner:
         result = session.step()
         if result.get("done"):
             self.active_sessions.pop(run_id, None)
+            session.agent.close()
         return result
 
     def session_trace(self, index: int, experiment_id: str | None = None) -> dict:
@@ -422,43 +416,6 @@ class TraceRunner:
         return {"start": start, "turns": turns, "final": final}
 
     def stream_session(self, index: int, delay_ms: int, experiment_id: str | None = None):
-        if index < 0 or index >= len(self.samples):
-            yield _sse("error", {"message": f"Session index out of range: {index}"})
-            return
-
-        sample = self.samples[index]
-        agent_cls = self._agent_class(experiment_id)
-        retriever = self._retriever_for(experiment_id)
-        agent = agent_cls(self.catalog_path, retriever=retriever)
-        session_id = f"visual_{uuid.uuid4().hex}"
-        agent.reset(session_id, sample["user_profile"])
-
-        target = str(sample["ground_truth"]["parent_asin"])
-        target_product = self.products.get(target)
-        effective_intent_card, effective_behavior = materialize_hidden_fields(sample, self.products)
-        effective_sample = {**sample, "intent_card": effective_intent_card, "behavior": effective_behavior}
-
-        disclosed: set[str] = set()
-        boundary_used = False
-        override_applied = sample["scenario_type"] != "intent_override"
-        user_message = initial_message(effective_sample, coarse_category(self.categories.get(target, [])), disclosed)
-        hit_turn: int | None = None
-        best_rank: int | None = None
-
-        yield _sse(
-            "start",
-            {
-                "session_index": index,
-                "session_id": session_id,
-                "sample_id": sample.get("sample_id"),
-                "scenario_type": sample.get("scenario_type"),
-                "target": target,
-                "target_product": _safe_product(target_product),
-                "user_profile": sample.get("user_profile", {}),
-                "max_turns": MAX_TURNS,
-                "initial_user_message": user_message,
-            },
-        )
         last_event_at = time.monotonic()
 
         def wait_for_pace() -> None:
@@ -469,105 +426,28 @@ class TraceRunner:
                     time.sleep(remaining)
             last_event_at = time.monotonic()
 
-        for turn in range(1, MAX_TURNS + 1):
-            try:
-                response = agent.respond(session_id, user_message, turn, TOP_K)
-            except Exception as exc:
-                response = {"message": "", "ask_attribute": None, "recommendations": []}
-                error = f"{type(exc).__name__}: {exc}"
-            else:
-                error = None
-
-            if not isinstance(response, dict) or not isinstance(response.get("message"), str):
-                response = {"message": "", "ask_attribute": None, "recommendations": []}
-                error = error or "Agent returned an invalid response payload."
-
-            ranked = normalize_recommendations(response.get("recommendations"), self.catalog_ids)
-            turn_rank = ranked.index(target) + 1 if override_applied and target in ranked else None
-            if turn_rank is not None:
-                best_rank = turn_rank
-                hit_turn = turn
-
-            recommendations = []
-            for rank, parent_asin in enumerate(ranked, start=1):
-                product = self.products.get(parent_asin)
-                recommendations.append(
-                    {
-                        "rank": rank,
-                        "parent_asin": parent_asin,
-                        "is_target": parent_asin == target,
-                        "product": _safe_product(product),
-                    }
-                )
-
-            next_user_message = None
-            will_continue = turn_rank is None and turn != MAX_TURNS
-            if will_continue:
-                override = effective_sample.get("behavior", {}).get("override") or {}
-                if not override_applied and turn + 1 == int(override.get("turn", 3)):
-                    next_user_message = str(override.get("message", "Actually, please ignore my earlier preference."))
-                else:
-                    preview_message, _ = customer_reply(
-                        effective_sample,
-                        response.get("ask_attribute"),
-                        set(disclosed),
-                        boundary_used,
-                    )
-                    next_user_message = preview_message
-
-            wait_for_pace()
-            yield _sse(
-                "turn",
-                {
-                    "turn": turn,
-                    "user_message": user_message,
-                    "agent_message": response.get("message", ""),
-                    "ask_attribute": response.get("ask_attribute"),
-                    "recommendations": recommendations,
-                    "hit": turn_rank is not None,
-                    "target_rank": turn_rank,
-                    "override_applied": override_applied,
-                    "error": error,
-                    "next_user_message": next_user_message,
-                },
-            )
-
-            if turn_rank is not None or turn == MAX_TURNS:
-                break
-
-            override = effective_sample.get("behavior", {}).get("override") or {}
-            if not override_applied and turn + 1 == int(override.get("turn", 3)):
-                override_applied = True
-                new_value = str(override.get("new_value", ""))
-                if new_value:
-                    disclosed.add(new_value)
-                user_message = str(override.get("message", "Actually, please ignore my earlier preference."))
-            else:
-                user_message, boundary_used = customer_reply(
-                    effective_sample, response.get("ask_attribute"), disclosed, boundary_used
-                )
-
-            wait_for_pace()
-            yield _sse(
-                "customer",
-                {
-                    "message": user_message,
-                    "label": "Customer follow-up",
-                },
-            )
-
-        yield _sse(
-            "done",
-            {
-                "hit": hit_turn is not None,
-                "first_hit_turn": hit_turn,
-                "best_rank": best_rank,
-                "reciprocal_rank": 0.0 if best_rank is None else 1.0 / best_rank,
-            },
-        )
-        close_retriever = getattr(retriever, "close", None)
-        if callable(close_retriever):
-            close_retriever()
+        run_id = None
+        try:
+            start = self.start_session(index, experiment_id)
+            run_id = start["run_id"]
+            yield _sse("start", start)
+            while True:
+                result = self.next_turn(run_id)
+                if result.get("turn"):
+                    wait_for_pace()
+                    yield _sse("turn", result["turn"])
+                if result.get("done"):
+                    yield _sse("done", result["final"])
+                    break
+                wait_for_pace()
+                yield _sse("customer", {"message": result["turn"]["next_user_message"],
+                                        "label": "Simulated customer follow-up"})
+        except ValueError as exc:
+            yield _sse("error", {"message": str(exc)})
+        finally:
+            session = self.active_sessions.pop(run_id, None)
+            if session is not None:
+                session.agent.close()
 
 
 class VisualizerHandler(BaseHTTPRequestHandler):
@@ -658,9 +538,15 @@ class VisualizerHandler(BaseHTTPRequestHandler):
             self.send_header("Cache-Control", "no-cache")
             self.send_header("Connection", "keep-alive")
             self.end_headers()
-            for chunk in self.runner.stream_session(index, delay_ms, experiment_id):
-                self.wfile.write(chunk)
-                self.wfile.flush()
+            stream = self.runner.stream_session(index, max(0, min(delay_ms, 60000)), experiment_id)
+            try:
+                for chunk in stream:
+                    self.wfile.write(chunk)
+                    self.wfile.flush()
+            except (BrokenPipeError, ConnectionResetError):
+                pass
+            finally:
+                stream.close()
             return
         self._send_json({"message": "Not found"}, status=404)
 

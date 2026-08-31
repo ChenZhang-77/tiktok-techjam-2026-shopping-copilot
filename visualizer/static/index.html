@@ -10,7 +10,7 @@
     <header class="topbar">
       <div>
         <h1>Shopping Copilot Dialogue</h1>
-        <p>Inspect one selected customer session turn by turn.</p>
+        <p>Local offline simulation · simulated customers, not a live-chat service.</p>
       </div>
       <div class="controls" aria-label="Run controls">
         <label>
@@ -33,12 +33,12 @@
     <main class="layout">
       <aside class="sidebar" aria-label="Session metadata">
         <section class="side-panel">
-          <h2>Overall Metrics</h2>
+          <h2>Recorded Evaluation</h2>
           <dl id="overallMetrics"></dl>
           <div id="scenarioMetrics" class="scenario-metrics"></div>
         </section>
         <section class="side-panel">
-          <h2>Current Customer</h2>
+          <h2>Evaluator-only Session Results</h2>
           <dl id="sessionMeta"></dl>
           <div id="sessionOutcome" class="session-outcome">Waiting for dialogue.</div>
         </section>
@@ -46,7 +46,7 @@
 
       <section class="timeline" aria-label="Realtime conversation turns">
         <div class="timeline-header">
-          <h2>Dialogue</h2>
+          <h2>Agent Exchange + Evaluator Annotations</h2>
           <span id="statusText">Idle</span>
           <span id="turnProgress">Ready</span>
         </div>

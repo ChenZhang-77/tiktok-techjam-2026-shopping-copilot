@@ -60,7 +60,9 @@ function renderOverall(payload) {
   const evaluation = payload.evaluation || {};
   overallMetrics.innerHTML = `
     <dt>Source</dt><dd>${escapeHtml(payload.source)}</dd>
-    <dt>Split</dt><dd>${escapeHtml(evaluation.split || "full")}</dd>
+    <dt>Evidence</dt><dd>${escapeHtml(payload.evidence_status)}</dd>
+    <dt>Mode</dt><dd>${escapeHtml(evaluation.mode || "historical / unspecified")}</dd>
+    <dt>Split</dt><dd>${escapeHtml(evaluation.split || "unspecified")}</dd>
     <dt>Samples</dt><dd>${escapeHtml(payload.sample_count)}</dd>
     <dt>HitRate@10</dt><dd>${escapeHtml(fmt(payload.hit_rate_at_10, 6))}</dd>
     <dt>MRR</dt><dd>${escapeHtml(fmt(payload.mrr, 6))}</dd>
@@ -105,7 +107,7 @@ function renderRecommendations(recommendations, turnPayload = {}) {
           <div class="mini-rec ${isHit ? "target" : ""}" data-tip="${escapeAttr(tip)}">
             <span class="mini-rank">#${escapeHtml(item.rank)}</span>
             <span class="mini-title">${escapeHtml(name)}</span>
-            ${isHit ? '<span class="target-dot">HIT</span>' : ""}
+            ${isHit ? '<span class="target-dot">Evaluator HIT</span>' : ""}
           </div>
         `;
       }).join("")}
@@ -133,11 +135,15 @@ function appendCustomer(message, meta = "") {
 
 function appendAgent(payload) {
   const ask = payload.ask_attribute ?? "null";
+  const diagnostics = payload.agent_diagnostics || {};
+  const delivery = diagnostics.delivery || {};
   const html = `
     <div class="agent-text">${escapeHtml(payload.agent_message)}</div>
     <div class="agent-toolbar">
       <span>ask_attribute: <strong>${escapeHtml(ask)}</strong></span>
+      <span>Mode: ${escapeHtml(delivery.requested_mode || "unknown")} · ${escapeHtml(delivery.turn_status || "unknown")}</span>
     </div>
+    <details><summary>Agent-only diagnostics and usage</summary><pre>${escapeHtml(JSON.stringify({diagnostics, usage: payload.usage || {}}, null, 2))}</pre></details>
     ${payload.error ? `<div class="error">${escapeHtml(payload.error)}</div>` : ""}
     ${renderRecommendations(payload.recommendations, payload)}
   `;
@@ -154,14 +160,15 @@ function appendSystem(text) {
 function renderFinal(payload) {
   sessionOutcome.className = `session-outcome ${payload.hit ? "hit" : "miss"}`;
   sessionOutcome.innerHTML = payload.hit
-    ? `<strong>Hit</strong><br>First hit: turn ${escapeHtml(payload.first_hit_turn)}<br>Rank: ${escapeHtml(payload.best_rank)}`
-    : "No hit within 10 turns.";
-  appendSystem("Dialogue complete.");
+    ? `<strong>Evaluator hit</strong><br>First hit: turn ${escapeHtml(payload.first_hit_turn)}<br>Rank: ${escapeHtml(payload.best_rank)}`
+    : "Evaluator: no hit within 10 turns.";
+  appendSystem("Offline simulation complete. Aggregate metrics are a separate recorded evaluation.");
 }
 
 function renderTraceStart(payload) {
   renderMeta(payload);
-  appendCustomer(payload.initial_user_message, "Initial request");
+  appendSystem("Live offline simulation · no external LLM calls. Hit annotations are evaluator-only.");
+  appendCustomer(payload.initial_user_message, "Simulated initial request");
 }
 
 function renderTraceTurn(payload) {
@@ -187,7 +194,7 @@ async function loadExperiments() {
   const params = new URLSearchParams(window.location.search);
   const requested = params.get("experiment") || "current";
   experimentSelect.innerHTML = experiments.map((experiment) => {
-    const status = experiment.has_results ? "" : " · no local result";
+    const status = experiment.can_rerun ? " · offline rerun" : " · historical metrics only";
     const label = `${experiment.label}${status}`;
     return `<option value="${escapeAttr(experiment.id)}">${escapeHtml(label)}</option>`;
   }).join("");
@@ -205,7 +212,7 @@ async function loadOverall() {
   renderOverall(payload);
 }
 
-function clearTrace(message = "Select a session and click Start.") {
+function clearTrace() {
   if (activeEventSource) {
     activeEventSource.close();
     activeEventSource = null;
@@ -214,9 +221,9 @@ function clearTrace(message = "Select a session and click Start.") {
   sessionMeta.innerHTML = "";
   sessionOutcome.className = "session-outcome";
   sessionOutcome.textContent = "Waiting for dialogue.";
-  statusText.textContent = "Ready";
+  statusText.textContent = selectedExperiment() === "current" ? "Ready · offline simulation" : "Historical metrics only";
   turnProgress.textContent = "Ready";
-  startButton.disabled = false;
+  startButton.disabled = selectedExperiment() !== "current";
   stopButton.disabled = true;
 }
 
@@ -227,13 +234,14 @@ function stopTrace(status = "Stopped") {
   }
   sessionSelect.disabled = false;
   experimentSelect.disabled = false;
-  startButton.disabled = false;
+  startButton.disabled = selectedExperiment() !== "current";
   stopButton.disabled = true;
   statusText.textContent = status;
   turnProgress.textContent = status;
 }
 
 async function startSelectedTrace() {
+  if (selectedExperiment() !== "current") return;
   if (activeEventSource) stopTrace("Stopped");
   chat.innerHTML = "";
   sessionMeta.innerHTML = "";
@@ -279,7 +287,7 @@ async function startSelectedTrace() {
     turnProgress.textContent = "";
     sessionSelect.disabled = false;
     experimentSelect.disabled = false;
-    startButton.disabled = false;
+    startButton.disabled = selectedExperiment() !== "current";
     stopButton.disabled = true;
     source.close();
     if (activeEventSource === source) activeEventSource = null;
@@ -296,7 +304,7 @@ async function startSelectedTrace() {
     statusText.textContent = message;
     sessionSelect.disabled = false;
     experimentSelect.disabled = false;
-    startButton.disabled = false;
+    startButton.disabled = selectedExperiment() !== "current";
     stopButton.disabled = true;
     source.close();
     if (activeEventSource === source) activeEventSource = null;
@@ -334,8 +342,8 @@ startButton.addEventListener("click", () => {
 
 stopButton.addEventListener("click", () => stopTrace());
 
-Promise.all([loadExperiments(), loadSessions()])
-  .then(() => loadOverall())
+loadExperiments()
+  .then(() => Promise.all([loadSessions(), loadOverall()]))
   .then(() => clearTrace())
   .catch((error) => {
   statusText.textContent = `Failed to load sessions: ${error.message}`;

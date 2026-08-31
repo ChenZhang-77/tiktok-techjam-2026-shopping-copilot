@@ -430,6 +430,18 @@ dd {
   text-align: center;
 }
 
+.message-bubble details {
+  margin: 8px 0;
+  font-size: 12px;
+}
+
+.message-bubble pre {
+  max-height: 300px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 900px) {
   .topbar {
     align-items: flex-start;
