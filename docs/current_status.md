@@ -16,8 +16,8 @@ are not authorized by that instruction.
 
 Plan One's runtime is Chen `0bd3375`: state/extraction corrections, scoped
 QueryPlan, priority-based clarification, structured retrieval, and conditional
-local MiniLM/RRF (B9). B12 and profile scoring remain off. Step 01 changes
-documentation only; subsequent approved tickets integrate delivery runtime while
+local MiniLM/RRF (B9). B12 and profile scoring remain off. The new delivery entry
+and independent package now integrate explicit optional F2 reranking while
 preserving offline behavior and the shared contract.
 
 ## Current measured default — Development-160 only
@@ -49,7 +49,9 @@ two paired 160-session passes, scores `0.779043 / 0.779199` versus
 `0.766231`, all four folds positive, unchanged HR/MTTC. It used 826 real calls,
 estimated total USD 0.69472392; provider p95 1.146/1.609 seconds, max
 7.318 seconds, and non-identical ranking orders between rounds.
-Evidence stays on the [llm source branch](https://github.com/ChenZhang-77/tiktok-techjam-2026-shopping-copilot/blob/7f0dc6c07b0cc2375a82c50ff47e5ee98652f0b6/docs/b10b_paired_verification.md); do not substitute this checkout's older DS1/DS2 scripts for the F2 recipe.
+The unchanged [historical F2 evidence](delivery_reports/f2_historical.json) is
+retained here, so judges do not need another branch. Do not substitute older
+DS1/DS2 scripts or call historical F2 a live test of this new integrated package.
 
 No new paid tests follow from this release. A13 semantic understanding is
 inactive: 60/67 real Shadow responses validated, below the 95% gate; no Candidate
@@ -98,7 +100,12 @@ startup and an actual Development-160/four-fold paired run pass: score .766231,
 [bound package evidence](delivery_reports/offline_package.json).
 Validation used separately copied local assets and the prepared same-machine
 Python environment; no other-machine/fresh dependency-install claim is made.
-New live LLM verification, contributions, demo/video and actual public submission
-remain incomplete. Profile remains disabled; B9 is
+The visualizer now forces offline mode, binds recorded metrics to matching source
+and inputs, separates evaluator annotations, and rejects historical/out-of-split
+reruns. Seven API/behavior regressions and the browser walkthrough pass; the full
+suite is 323 tests at step 04. Step 05 prepares a main-only Devpost draft, a
+commit-supported contribution draft and a rehearsed recording script.
+Actual video recording/upload, approved contributions, new live LLM verification
+and public submission remain incomplete. Profile remains disabled; B9 is
 conditional, not global hybrid retrieval, and Plan One does not claim an active
 LLM-ranking pillar. See [delivery plan](demo_and_submission_plan.md).

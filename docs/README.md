@@ -25,6 +25,11 @@ They do not authorize resuming frozen work or override current status.
 
 ## Delivery
 
+- `final_delivery_execution.md` — six-step execution and automatic review log
+- `devpost_draft.md` — main-only code link and honest submission text
+- `demo_recording_script.md` — rehearsed simulated cases and recording script
+- `team_contributions.md` — commit-supported draft pending team confirmation
+- `delivery_reports/README.md` — independent package and historical F2 evidence
 - `demo_and_submission_plan.md` — demo, report, video, packaging, and claim rules
 - `../submission/README.md` — final-package staging checklist
 - `../visualizer/README.md` — visual debugging and Agent/Evaluator view boundary

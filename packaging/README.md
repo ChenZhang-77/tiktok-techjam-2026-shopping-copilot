@@ -14,7 +14,10 @@ python -m pip install -r requirements-dense.txt
 ```
 
 Obtain the frozen catalog from the official participant kit, verify its checksum,
-and place it at `data/catalog.jsonl`. Prepare the pinned local MiniLM model and
+and place it at `data/catalog.jsonl`. Expected SHA-256:
+`da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67`.
+For example, check it with `shasum -a 256 data/catalog.jsonl` on macOS.
+Prepare the pinned local MiniLM model and
 vectors before runtime (setup may need internet):
 
 ```bash

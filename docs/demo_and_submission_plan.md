@@ -1,177 +1,63 @@
-# Demo and Submission Plan
+# Demo and submission checklist
 
-This document turns the current system into a clear, reproducible competition
-story. It is a delivery plan, not evidence that every listed artifact already
-exists. Confirm actual files before making submission claims.
+This is the active delivery checklist, not proof of publication. The supplied
+competition PDF (Track4, pages33–37), participant kit and actual organizer
+instructions govern submission. Our [approved rules](final_delivery_rules.md)
+are implementation choices, not extra official requirements.
 
-## Message to judges
+## What must be delivered
 
-Shopping Copilot is a stateful catalog-grounded agent. It carries forward valid
-preferences, handles corrections and no-preference language, and returns
-deterministic Top 10 catalog recommendations with non-repeating, currently
-priority-biased clarification through a local retrieval/ranking pipeline. A
-complete candidate-evidence should-ask gate is planned work, not a retained
-capability.
+| Requirement | Prepared artifact / current boundary |
+| --- | --- |
+| Agent implementation and helper files | `submission/agent.py`, allowlisted `submission/src/` |
+| Dependencies, setup, evaluator command | `submission/README.md`, pinned requirements, setup/evaluation tools |
+| Method/model and runtime-cost report | `submission/REPORT.md`, configuration and bound evidence |
+| Public GitHub repository with reproducible README, limitations and credits | Main-only README prepared; main integration/public access and team credits pending |
+| Devpost project description, tools/APIs/libraries/data and links | `devpost_draft.md` prepared; actual form submission pending |
+| Short public YouTube demo linked from Devpost | Rehearsed `demo_recording_script.md`; actual recording/upload pending |
+| Permission-safe assets and attribution | Third-party notices and data attribution; team license/asset decisions pending |
 
-The defensible technical story is:
+A standalone ZIP/`submission/` is our convenient packaging layout, not a claim
+that the PDF requires that exact filename or only one ZIP. No mandatory production
+chat backend, real transaction system or extra PPT is inferred. API/result
+walkthroughs can demonstrate the text-only Agent. Suggested3–4minutes is an
+editing target, not a verified official hard duration.
 
-```text
-conversation
-  -> active intent and constraint state
-  -> distilled retrieval request
-  -> structured candidates
-  -> gated local dense/RRF for broad Browsing, exact structured fallback
-  -> priority-biased clarification selection
-  -> response guard and catalog-valid Top 10
-```
+## One submission, preserved branches
 
-Do not claim that every turn uses dense retrieval, RRF, or semantic reranking.
-B9 runs pinned local dense plus weighted RRF only behind its broad-Browsing
-gate; global variants were rejected.
+Final Devpost points to existing repository **main**, plus the exact final commit.
+Main contains the runnable bundle and evaluator-side evidence; judges need not
+switch branches. Keep other branches for history. A public repository exposes
+those branches too; main-only submission is not branch-level privacy.
 
-The default executes dense only behind B9's narrow gate; this is not a global
-hybrid or default LLM-ranking claim. CrossEncoder variants remain rejected.
-B10b-F2 is verified only as optional Plan Two on llm. A13-F1 has real Shadow
-evidence but failed the validity gate before Candidate; it is inactive, not an
-unimplemented idea and not a proven score improvement. Profile weight stays zero.
+No merge/push, public-visibility change, upload or final submit is implied by
+preparing these materials. Inspect remote heads and public access at release time.
 
-## Evidence available now
+## Evidence and claims
 
-Use [current status](current_status.md) for measured default metrics and LLM
-cost/latency caveats; use [release comparison](release_comparison.md) for source
-selection and tests. Do not reuse the old P0/B12 default score as Chen's score,
-or describe old DS1 evidence as the verified F2 recipe.
+Use [current status](current_status.md), [delivery evidence](delivery_reports/README.md)
+and the technical report. The independent offline package's Dev160 result is
+current; F2 paired results are explicitly historical. New paid verification is
+gated. Frozen Full200 public reporting is separate from Dev160 selection and
+cannot become a tuning input or unseen-data claim.
 
-The old P0 independent package/report/video drafts remain frozen at `aaa7e45`.
-Neither selected branch currently contains a regenerated independent package.
-Reuse requires source synchronization and fresh-directory tests. Final video,
-team contributions and submission metadata are not marked complete here.
+The visualizer forces offline simulation. Agent diagnostics are separate from
+evaluator HIT/rank/scenario annotations. Historical experiments show saved
+metrics only, never silently execute current code as old snapshots.
 
-## Four-case demo script
+## Local completion and remaining gates
 
-Use fixed, preselected public sessions and rehearse within the official time
-limit. Choose exact session IDs only after verifying that each visibly
-demonstrates its intended behavior.
+- [x] Approved scope and one offline-default entry with explicit bounded enhancement.
+- [x] Source-only independent package, manifests and Dev160/four-fold parity.
+- [x] Synthetic failure/contract tests and explicit local-asset degradation.
+- [x] Local browser start/stop/diagnostics and four scenario API walkthroughs.
+- [x] README, report, Devpost/credit drafts and recording script prepared.
+- [ ] Final runtime freeze and one Full200 public report.
+- [ ] Final archive, provenance checks and last dual review.
+- [ ] Independent fresh dependency install / intended evaluator-host validation.
+- [ ] New real F2 package verification, only if separately authorized and needed.
+- [ ] Team-approved names, roles, source license and asset permissions.
+- [ ] Final main integration/public access verified.
+- [ ] Actual public YouTube video and all Devpost fields verified/submitted.
 
-1. **Straight buying intent** — show a narrow request, current state, the actual
-   clarification behavior, and relevant Top 10 results. Do not claim “no wasted
-   question”: A9 was rejected and no broad stop rule is retained.
-2. **Broad browsing intent** — show how the current clarification changes the
-   candidate set. Describe only the observed question effect, not an unverified optimal policy.
-3. **Intent override** — show an earlier preference being replaced without
-   contaminating the new query.
-4. **No-preference / boundary case** — show the system dropping the correct
-   constraint while preserving unrelated preferences. Disclose the known
-   multi-attribute scope limitation if it is not fixed before recording.
-
-For each case narrate: incoming message, visible active state, decision, query,
-Top 10, and one concise diagnostic. Do not narrate the evaluator's target as if
-the agent knew it.
-
-## Visualizer safety: two views
-
-The visualizer should clearly separate:
-
-- **Agent View**: only information available to the agent at that turn — user
-  history, active constraints, strategy, distilled query, route diagnostics,
-  and returned recommendations.
-- **Evaluator View**: target ASIN, target rank, hit/miss, first-hit turn, and
-  aggregate evaluation metrics.
-
-Evaluator-only fields may help analysis but must be visually labeled and must
-never feed agent state, prompts, retrieval, ranking, or route selection. A demo
-recording should keep the separation visible so judges cannot mistake analysis
-data for online inputs.
-
-Development targets may be used here to select and explain an offline demo
-case, but the recording must not imply that target rank or hit/miss was available
-to the running Agent.
-
-## README and written submission structure
-
-Keep the public narrative in this order:
-
-1. one-sentence problem and solution;
-2. architecture diagram or compact flow;
-3. reproducible quickstart;
-4. verified metrics with dataset labels;
-5. one example dialogue;
-6. retained-vs-rejected ablation table;
-7. latency, dependencies, and fallback behavior;
-8. limitations and next work;
-9. factual team contributions.
-
-Avoid marketing claims such as “production ready,” “state of the art,” or
-“validated on unseen data” unless new evidence genuinely supports them.
-
-## Video outline
-
-A compact 3–4 minute video can use:
-
-- 0:00–0:25 — shopping problem and Track 4 constraint;
-- 0:25–0:55 — architecture and why state matters;
-- 0:55–2:35 — two or three strongest live cases;
-- 2:35–3:10 — evaluation and ablations;
-- 3:10–3:35 — limitations, cost, and next step.
-
-Prefer a deterministic prerecorded fallback for the live demo. Record the exact
-commit, command, environment, session IDs, and expected output before filming.
-
-## Submission package target
-
-```text
-submission/
-  README.md
-  agent.py
-  requirements.txt
-  src/                 # only if imports require it
-```
-
-Before packaging, verify:
-
-- a clean environment can import and instantiate `Agent`;
-- the official response schema is respected on every turn;
-- all ASINs exist in the frozen catalog and are unique per response;
-- optional caches/models have documented setup and safe fallback behavior;
-- no tests, reports, or scripts depend on absolute developer-machine paths;
-- no secrets, `.env` files, credentials, private data, generated embeddings, or
-  unnecessary artifacts are included;
-- evaluator code and official data are not modified;
-- licenses and model/data attribution are present where required.
-
-## Team-contribution rule
-
-List only work that can be supported by commits, documents, experiments, or
-tests. Use component-level wording such as dialogue state, retrieval/ranking,
-evaluation tooling, visualizer, documentation, or demo. Separate joint design
-from individual implementation. Do not infer ownership from filenames alone.
-
-## Questions to rehearse
-
-- Why is dense/RRF restricted to broad Browsing rather than enabled globally?
-- How do you prevent stale preferences after an intent change?
-- When is a clarifying question worth its MTTC cost?
-- How do you handle sparse product metadata?
-- What happens when an optional model or cache fails?
-- How did you avoid tuning on the exposed public slice?
-- What is the largest known failure mode, and what experiment comes next?
-
-## Delivery definition of done
-
-- [ ] Final retained configuration is frozen and recorded.
-- [ ] Full tests pass from a clean checkout.
-- [ ] Development metrics and ablations are reproducible.
-- [ ] Agent View and Evaluator View are visibly separated.
-- [ ] Demo sessions are preselected and rehearsed without target leakage.
-- [ ] Submission package passes a clean-start smoke test.
-- [ ] README, report, video, and live demo use identical metrics and claims.
-- [ ] Limitations, costs, dependencies, fallbacks, and contributions are stated.
-- [ ] Final archive contains only required, license-safe files.
-
-## Related documents
-
-- `docs/current_status.md` — authoritative current state
-- `docs/optimization_roadmap.md` — development order and gates
-- `docs/ablation_summary.md` — retained and rejected experiments
-- `submission/README.md` — packaging checklist
-- `visualizer/README.md` — demo tool usage and information boundaries
+Unfinished external gates remain unfinished even if every local test passes.
