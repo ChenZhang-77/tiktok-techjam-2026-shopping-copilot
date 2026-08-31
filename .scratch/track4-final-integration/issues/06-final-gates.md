@@ -9,11 +9,13 @@ from live verification, team approvals and actual public submission.
 - [ ] New real F2 paired passes occur only with explicit transfer/budget authorization.
 - [ ] Organizer network/resource policy and the official scoring configuration are confirmed.
 - [x] After configuration freeze, one offline Full-200 public report is retained separately from Development evidence; no tuning or unseen-set claim, paid mode separately authorized.
-- [ ] Devpost references only final main/commit; other GitHub branches are preserved.
+- [x] Separately authorized reviewed delivery pushed to private main; other GitHub branches preserved.
+- [ ] Actual Devpost submission references only final main/commit.
 - [ ] Contributions/assets approved; public repo, video and Devpost submitted only when authorized.
 - [x] Incomplete external gates are reported, never marked as submission complete.
 
 Final local Standards/Spec reviews pass at 2f0677c. Full details:
-`docs/final_readiness.md`. The unchecked main/public/organizer/live-LLM/team/video
-items above are not completed by this local audit. No new paid requests, push,
-branch deletion, visibility changes or submissions occurred.
+`docs/final_readiness.md`. The later explicit main-only authorization promoted
+reviewed `bb6b7f3` to private remote main on 2026-08-31. The unchecked
+public/organizer/live-LLM/team/video/Devpost items remain incomplete. No new paid
+requests, branch deletion, visibility changes or competition submissions occurred.

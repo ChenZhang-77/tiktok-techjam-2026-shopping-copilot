@@ -7,12 +7,16 @@ history. Read [final release plan](final_release_plan.md) for decisions,
 
 ## Selected branch
 
-This checkout is `release/track4-final-integration`, based on fetched main
+The delivery was assembled on `release/track4-final-integration`, based on fetched main
 `3b01416` (Chen offline runtime plus teammate visualizer updates). Chen's earlier
 source publication to `yuqing` remains historical. The user has now authorized
 stepwise local implementation and automatic per-step review; see the
-[execution log](final_delivery_execution.md). Paid calls and public actions
-are not authorized by that instruction.
+[execution log](final_delivery_execution.md). On 2026-08-31 the user separately
+authorized integrating/pushing the reviewed version to existing main while
+preserving all other branches and repository visibility. Remote main was safely
+fast-forwarded from `3b01416` to reviewed checkpoint `bb6b7f3`; subsequent release
+status edits are documentation-only. The repository remains PRIVATE. Paid calls,
+public-visibility changes, uploads and Devpost submission are not authorized.
 
 Plan One's runtime is Chen `0bd3375`: state/extraction corrections, scoped
 QueryPlan, priority-based clarification, structured retrieval, and conditional

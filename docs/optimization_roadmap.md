@@ -16,7 +16,10 @@ not another optimization cycle.
    organizer/host/team decisions and explicit publication or paid-call authority.
 
 Final Devpost references only **main and the exact final commit**. Other GitHub
-branches remain intact. The integration branch is not yet merged/pushed to main.
+branches remain intact. On 2026-08-31, reviewed integration checkpoint `bb6b7f3`
+was fast-forwarded to the existing private remote main with explicit authorization.
+Only release-status documentation follows that checkpoint; frozen runtime and
+recorded evaluation bytes are unchanged.
 Public visibility, uploads and final submission require separate authorization.
 
 Earlier source publication to yuqing/llm is history, not a current instruction or

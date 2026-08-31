@@ -12,7 +12,7 @@ are implementation choices, not extra official requirements.
 | Agent implementation and helper files | `submission/agent.py`, allowlisted `submission/src/` |
 | Dependencies, setup, evaluator command | `submission/README.md`, pinned requirements, setup/evaluation tools |
 | Method/model and runtime-cost report | `submission/REPORT.md`, configuration and bound evidence |
-| Public GitHub repository with reproducible README, limitations and credits | Main-only README prepared; main integration/public access and team credits pending |
+| Public GitHub repository with reproducible README, limitations and credits | Reviewed delivery pushed to private main; public access and team credits pending |
 | Devpost project description, tools/APIs/libraries/data and links | `devpost_draft.md` prepared; actual form submission pending |
 | Short public YouTube demo linked from Devpost | Rehearsed `demo_recording_script.md`; actual recording/upload pending |
 | Permission-safe assets and attribution | Third-party notices and data attribution; team license/asset decisions pending |
@@ -30,8 +30,11 @@ Main contains the runnable bundle and evaluator-side evidence; judges need not
 switch branches. Keep other branches for history. A public repository exposes
 those branches too; main-only submission is not branch-level privacy.
 
-No merge/push, public-visibility change, upload or final submit is implied by
-preparing these materials. Inspect remote heads and public access at release time.
+The separately authorized main-only fast-forward completed on 2026-08-31 at
+reviewed checkpoint `bb6b7f3`; all other remote heads and PRIVATE visibility were
+verified unchanged. Release-status documentation follows that checkpoint.
+Public-visibility changes, uploads and final submission still require separate
+authorization. Inspect remote heads and signed-out access before public release.
 
 ## Evidence and claims
 
@@ -57,7 +60,8 @@ metrics only, never silently execute current code as old snapshots.
 - [ ] Independent fresh dependency install / intended evaluator-host validation.
 - [ ] New real F2 package verification, only if separately authorized and needed.
 - [ ] Team-approved names, roles, source license and asset permissions.
-- [ ] Final main integration/public access verified.
+- [x] Reviewed delivery integrated/pushed to private main; other remote branches preserved.
+- [ ] Public repository access verified after separate visibility authorization.
 - [ ] Actual public YouTube video and all Devpost fields verified/submitted.
 
 Unfinished external gates remain unfinished even if every local test passes.

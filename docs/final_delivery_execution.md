@@ -10,7 +10,9 @@ For each step, record its starting commit, run focused/full tests and syntax/dif
 checks, commit locally, then run independent Standards and Spec reviews against
 that starting commit. Fix actionable findings and re-review before proceeding.
 The user's per-step request defines the review fixed point as each step's start.
-Only local work is authorized; live API and public actions remain gated.
+The original six-step authority covered local work only. The subsequent explicit
+main-only push authorization is recorded below; live API, visibility changes,
+uploads and Devpost submission remain gated.
 
 | Step | Outcome | Validation/review |
 | --- | --- | --- |
@@ -24,8 +26,8 @@ Only local work is authorized; live API and public actions remain gated.
 ## Evidence discipline
 
 User clarification: Devpost will reference only final main/commit, preserving
-other branches. Main integration/push remains a final authorized operation, not
-an instruction to publish the current intermediate state. One offline Full-200
+other branches. Main integration/push was separately authorized after the final
+local review and completed at reviewed checkpoint `bb6b7f3`. One offline Full-200
 public-report gate completed after configuration freeze, following ADR-0001;
 results remain outside Agent runtime, without tuning/unseen-set claims. Paid mode
 is separately authorized. See [final readiness](final_readiness.md) for exact
@@ -42,3 +44,27 @@ Baseline command: `PYTHONDONTWRITEBYTECODE=1 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLI
 Keep generated runs outside tracked evidence until their contents and provenance
 are verified. No Full-200/holdout tuning. Existing ignored catalog/model links
 are development conveniences, not proof of an independent package.
+
+## Authorized private-main promotion — 2026-08-31
+
+User authorization: integrate and push the reviewed delivery to existing main,
+preserve every other branch, and do not change repository visibility. No new
+paid-call, video/upload, public-visibility or Devpost-submit authority is implied.
+
+- Starting integration/review fixed point: `bb6b7f3`; clean working tree.
+- Fresh remote main: `3b0141633f2df8044fcbde4e9f99794f30778e93`, verified ancestor
+  of the reviewed integration. No concurrent teammate divergence was observed.
+- 330 tests, 37-file bundle check, diff check and independent Dev160/Full200
+  evidence verification passed. The frozen Full200 Agent run was not repeated.
+- Ordinary non-force push promoted only remote main to
+  `bb6b7f31c2f3b35a8425498711bdb938e0b22ae3`; a direct remote read confirmed it.
+- Other remote heads were unchanged: `Zhang-Chen`=`3b01416`, `llm`=`a9e34ae`,
+  `yuqing`=`9e1b1d4`. Default branch main and PRIVATE visibility were unchanged.
+- Release-status follow-up changes only documentation/generated document hashes;
+  runtime, evaluation tools, recorded numerical reports and frozen manifests stay
+  unchanged. Standards/Spec review uses this step's `bb6b7f3` starting point.
+- A new 45-entry `Track4_main_with_evidence_2026-08-31.zip` carries the updated
+  prose/manifests without overwriting the original candidate ZIP. Its hash and
+  scope are recorded in [final readiness](final_readiness.md).
+
+This completes private source promotion, not public competition submission.

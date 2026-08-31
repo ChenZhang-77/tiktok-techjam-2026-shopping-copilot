@@ -35,6 +35,14 @@ Archive SHA-256:
 `b4106d92b894831cc9f7a2a324650c445207d12515622fa98a2c7bab328bf609`.
 The ZIP is a local candidate artifact, not a GitHub Release or uploaded submission.
 
+After the authorized private-main source promotion, the current documentation
+bundle is `Track4_main_with_evidence_2026-08-31.zip` (45 entries), SHA-256:
+`f577dec2bf39601bd6c74a4e87060c75322cc5cd98aea12b5301fc284bd78e98`.
+This new archive only updates release-status prose and the resulting manifests;
+frozen Python/runtime and numerical evidence files are unchanged. The original
+candidate ZIP above is preserved with its original hash. Neither ZIP has been
+uploaded or submitted; the main-only Devpost plan is unchanged.
+
 ## Evidence and reproducibility
 
 See [delivery evidence index](delivery_reports/README.md),
@@ -67,12 +75,15 @@ and a configuration decision; it cannot borrow this report or old paid approval.
    retain the verified offline configuration rather than claim live enhancement.
 4. **Team/rights:** confirm the participant roster, names, component credits,
    source license and all video/data/model asset permissions.
-5. **Main/public GitHub:** read-only live checks confirmed remote main=`3b01416`,
-   llm=`a9e34ae`, yuqing=`9e1b1d4`; default branch main; repository PRIVATE.
-   The local delivery is not merged/pushed. Before authorized main publication,
-   recheck remote ancestry/concurrent teammate changes and audit history/branches
-   for material not intended for public release. Preserve every other branch;
-   making the repository public exposes them too.
+5. **Public GitHub:** private source integration is complete: user-authorized
+   non-force push fast-forwarded main=`3b01416` to reviewed checkpoint `bb6b7f3`
+   on 2026-08-31. Remote `Zhang-Chen`=`3b01416`, `llm`=`a9e34ae` and
+   `yuqing`=`9e1b1d4` were verified unchanged; default main and PRIVATE visibility
+   were preserved. Subsequent release-status documentation does not change the
+   frozen runtime or numerical reports. Public visibility is still NOT authorized
+   or enabled. Before a separately authorized public release, audit history and
+   all branches for material not intended for public release, and verify signed-out
+   access. Preserve every other branch; making the repository public exposes them too.
 6. **Video/Devpost:** record the real demo, upload a public YouTube video, verify
    signed-out playback/repository access, fill the actual event fields and submit.
    Upload/public-visibility changes and final submission need explicit authority.

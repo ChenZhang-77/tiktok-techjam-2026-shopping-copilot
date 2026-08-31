@@ -33,8 +33,10 @@ MTTC 4.13125, TechnicalScore .766231, exact paired core/delivery response traces
 and four-fold results, with 649 turns and zero observed fallback. Dense/fusion
 executed 101 times. The bound repository report and tested-runtime manifest are
 in the repository's [delivery evidence directory](https://github.com/ChenZhang-77/tiktok-techjam-2026-shopping-copilot/tree/main/docs/delivery_reports)
-after authorized main publication; until then use the local checkout's
-`docs/delivery_reports/`. These are same-machine, prepared-asset, synthetic-prewarm
+on private main after the authorized 2026-08-31 source push. Public access is
+still pending; use an authorized checkout's `docs/delivery_reports/` or the
+combined ZIP's separate `evidence/` directory. These are same-machine,
+prepared-asset, synthetic-prewarm
 measurements, not a fresh dependency install or hidden-set guarantee.
 Offline prompt/completion tokens and external API charges are zero; local CPU,
 memory and setup costs are not zero. Warm source evaluation is not a cold-start
@@ -75,11 +77,11 @@ fresh virtual environment imported the package and returned catalog-valid offlin
 results with an explicit dense failure; that proves degraded startup only, not
 full dense dependency installation or matching benchmark performance.
 
-Final main will contain the code, setup, evaluation evidence, contribution draft
+Private main now contains the code, setup, evaluation evidence, contribution draft
 and Devpost/demo materials. No branch assembly is required. Draft credits name
 ChenZhang-77 for context/preference fixes and visualization, and Patryk for
 retrieval/evaluation and release integration; the full component-level draft needs
-team approval and is not proof of exclusive ownership. Main publication, public
+team approval and is not proof of exclusive ownership. Public repository access,
 video, Devpost URLs, final roster and license decisions remain external gates.
 No new live LLM performance is claimed. The offline Full200 run does not clear
 the separate live-enhancement, organizer eligibility or public-submission gates.

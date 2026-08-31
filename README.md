@@ -18,8 +18,10 @@ bounded LLM product reranking. No live-chat service is required to run the Agent
 
 The final Devpost code link will point only to this repository's **main** and an
 identified final commit. No other branch is required to run the submission.
-Historical branches are preserved. This integration checkout is not yet merged
-or pushed to main, and public GitHub/video/Devpost submission is not complete.
+Historical branches are preserved. On 2026-08-31 the reviewed integration
+checkpoint `bb6b7f3` was fast-forwarded to remote main with user authorization.
+The repository remains private; public GitHub/video/Devpost submission is not
+complete. See the [release record](docs/final_delivery_execution.md).
 
 ## Run the independent Agent
 
@@ -171,7 +173,7 @@ work from details still needing team confirmation. See
 [data attribution](DATA_ATTRIBUTION.md). Public visibility does not itself grant
 a source-code license; maintainers must confirm their license/asset decisions.
 
-The remaining external gates are final main integration/public visibility,
+The remaining external gates include repository public visibility,
 team-approved credits, an actual public YouTube demo and final Devpost fields.
 Prepared text or local tests do not mean those actions have happened.
 

@@ -81,7 +81,11 @@ reproducibility and honest fallback over unsupported production-readiness claims
 ## Links to fill and verify before submission
 
 - Code: final **main** of the existing repository, plus the exact submitted commit.
-  Intended URL: https://github.com/ChenZhang-77/tiktok-techjam-2026-shopping-copilot/tree/main
+  URL: https://github.com/ChenZhang-77/tiktok-techjam-2026-shopping-copilot/tree/main
+  Reviewed integration checkpoint `bb6b7f3` was pushed on 2026-08-31; release-status
+  documentation follows it. The repository is still PRIVATE, not judge-accessible.
+  Pin the actual main HEAD again when submitting, rather than assuming this checkpoint
+  is the final documentation commit.
 - Run instructions: main's `submission/README.md`; no branch assembly required.
 - Evidence: main's `docs/delivery_reports/`, not another branch's working tree.
 - Video: **PENDING — record and upload an actual public YouTube demo.**

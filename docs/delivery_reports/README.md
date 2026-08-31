@@ -1,6 +1,6 @@
 # Delivery evidence index
 
-These are evaluator-side artifacts intended to remain in final main, not inputs
+These are evaluator-side artifacts retained in final main, not inputs
 to the Agent. No other branch is needed to read the retained numerical evidence.
 
 - `offline_package.json`: actual independent-bundle Development-160 core/delivery
@@ -24,8 +24,11 @@ to the Agent. No other branch is needed to read the retained numerical evidence.
   unchanged. Independent verification recomputes results without another run.
   Do not use this public/exposed report for tuning or label it an unseen holdout.
 
-Source-only ZIP users can locate this directory after authorized main publication:
+Source-only ZIP users with repository access can locate this directory on main:
 https://github.com/ChenZhang-77/tiktok-techjam-2026-shopping-copilot/tree/main/docs/delivery_reports
 
-That URL is a planned release location until the integration is actually merged,
-pushed and made public. It is not evidence that publication has occurred.
+The reviewed integration was pushed to private main with authorization on
+2026-08-31. Public access is still pending separate authorization, so this URL
+is not yet a public submission link. Combined ZIP users can read the included
+`evidence/` directory without GitHub access. No recorded numerical evidence or
+frozen runtime bytes changed during source promotion.
