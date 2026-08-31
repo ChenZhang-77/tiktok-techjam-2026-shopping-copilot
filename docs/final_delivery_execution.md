@@ -18,8 +18,8 @@ Only local work is authorized; live API and public actions remain gated.
 | 02 Dual configuration | Complete | eebef64..aa5df4e; 314 tests; provider-boundary P2 fixed; Standards/Spec re-review pass |
 | 03 Independent bundle | Complete | 28694f4..a70b213; 316 tests; 36-file check; exact 160/four-fold parity; dual review pass |
 | 04 Accurate replay | Complete | 2511843..c4c5ad9; 323 tests; browser walkthrough; two API-boundary P2 issues fixed; dual re-review pass |
-| 05 Submission materials | In review | Starting 0233dbe; main-only README/drafts; unchanged F2 evidence; rehearsed four scenarios; rebuilt package/QA |
-| 06 Final audit/external gates | Pending | Local checks can proceed without paid/public authorization |
+| 05 Submission materials | Complete | 0233dbe..64a3839; 323 tests/package QA; two documentation P2 issues fixed; dual re-review pass |
+| 06 Final audit/external gates | In progress | Offline freeze/Full200/local QA only; paid/public actions remain gated |
 
 ## Evidence discipline
 
