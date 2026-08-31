@@ -16,7 +16,7 @@ Only local work is authorized; live API and public actions remain gated.
 | --- | --- | --- |
 | 01 Scope and baseline | Complete | 302 tests; caad3ea vs 3b01416: Standards/Spec pass; historical phase wording clarified |
 | 02 Dual configuration | Complete | eebef64..aa5df4e; 314 tests; provider-boundary P2 fixed; Standards/Spec re-review pass |
-| 03 Independent bundle | Pending | Blocked by 02 |
+| 03 Independent bundle | Complete | 28694f4..a70b213; 316 tests; 36-file check; exact 160/four-fold parity; dual review pass |
 | 04 Accurate replay | Pending | Blocked by 03 |
 | 05 Submission materials | Pending | Blocked by 03 and 04 |
 | 06 Final audit/external gates | Pending | Local checks can proceed without paid/public authorization |
