@@ -13,7 +13,7 @@ reports the measured result without turning it into unseen accuracy, real-user
 conversion or a prize claim. User approval of the rewritten copy is still needed.
 
 This is not a declaration of complete Track 4 fulfillment or completed submission.
-Public visibility, video, exact registered team name, final form confirmation,
+Public visibility, video, final form confirmation,
 intended-host installation and source/asset rights decisions remain open.
 Known architectural gaps are listed explicitly below and in the public story.
 
@@ -36,11 +36,11 @@ Known architectural gaps are listed explicitly below and in the public story.
 
 ## Archive
 
-Current reviewed-copy candidate: `Track4_judge_review_with_evidence_2026-08-31.zip`.
+Earlier reviewed-copy candidate: `Track4_judge_review_with_evidence_2026-08-31.zip`.
 SHA-256: `4a8ededc688b9d2f38bb6a97c324ac1ea85637e19341d6dfcc56592221e620ad`.
 
-All 45 entries match both manifests and the current checkout's source/evidence
-bytes. It contains 37 submission files, seven evaluator-side evidence files and
+At that checkpoint all 45 entries matched both manifests and the checkout's
+source/evidence bytes. It contains 37 submission files, seven evaluator-side evidence files and
 one evidence manifest; no catalog, model weights, credentials or alternate branch
 checkout. The earlier two ZIPs remain preserved. This ZIP is local and not uploaded.
 The human-facing Devpost story is a repository document/form text, not Agent input.
@@ -90,7 +90,8 @@ The new leader email is not copied to any public file or archive.
   must describe that history honestly, not claim everything began on August 29.
 - User confirms both members registered and approves the existing component
   credits/publication. Their public handles remain unchanged. This does not
-  substitute for confirming the exact team name or accepting terms for everyone.
+  substitute for accepting terms for everyone. The exact team name was subsequently
+  confirmed and is maintained in [field values](devpost_draft.md#team-name).
 - Source-license and third-party asset decisions are not inferred from approval
   to publish. No new source license or ownership assertion was invented.
 - Coverage gaps remain: complete over-generality retrieval cutoff, long-term
@@ -110,3 +111,23 @@ not repeated independently or treated as security certification.
 This completion note changes review metadata only, not the reviewed submission
 payload or ZIP. A pass of document consistency cannot clear the external gates
 above. No push, publication, form filling or submission has been performed.
+
+## Audience-boundary correction
+
+The subsequent user/teammate review found that the zero-finding conclusion above
+missed an important audience boundary. Both review axes identified two P2 issues
+and one P3 issue: operational notes mixed into field values, a newly supplied team
+name still marked missing, and internal approval language in the public story.
+The earlier product/evidence checks remain historical evidence, not proof that
+the copy was ready for direct submission.
+
+The user authorized fixing those findings. The revision based on `318e948` keeps
+only actual field values plus a clearly separated story link in the field document,
+moves operating guidance to the existing team checklist, and replaces approval
+language with product-focused wording. Private contact details remain outside Git.
+Public-data, same-machine, live-LLM and architectural limitations are preserved.
+Runtime and numerical evidence are unchanged. Independent re-review is pending.
+
+The current attachment and its hash are recorded in [final readiness](final_readiness.md).
+It only updates the package report's obsolete team-name gate and generated
+document hashes; the three prior archives are preserved.

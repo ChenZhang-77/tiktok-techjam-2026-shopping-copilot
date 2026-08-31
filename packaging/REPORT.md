@@ -83,8 +83,9 @@ ChenZhang-77 for context/preference fixes and visualization, and Patryk for
 retrieval/evaluation and release integration. On 2026-08-31 the user confirmed both
 participants registered and approved the existing component descriptions; this
 is not a claim of exclusive subsystem ownership. Public repository access, the
-required public 3-minute YouTube video, Devpost submission, exact registered team
-name and license/asset decisions remain external gates. See the event requirements
+required public 3-minute YouTube video, Devpost submission and license/asset
+decisions remain external gates. The registered team name has been confirmed.
+See the event requirements
 at https://tiktoktechjam2026.devpost.com/ . Publication approval has been given;
 visibility is not yet enabled and requires owner/admin permission.
 No new live LLM performance is claimed. The offline Full200 run does not clear

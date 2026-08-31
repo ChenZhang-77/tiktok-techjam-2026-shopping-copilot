@@ -21,8 +21,9 @@ AI coding assistance was used during implementation, testing, review and documen
 preparation. Maintainers remain responsible for reviewing the submitted code and
 claims. Confirm any disclosure wording required by the event.
 
-Still needed: the exact registered team name, final video presenter/recorder
-credit and source/data/model asset licensing decisions. Approval of publication
+The registered team name is confirmed in [field values](devpost_draft.md#team-name).
+Still needed: final video presenter/recorder credit and source/data/model asset
+licensing decisions. Approval of publication
 and component credits does not by itself select a source license or establish
 permission to redistribute third-party assets.
 No percentages, hours, employment claims or invented project responsibilities are

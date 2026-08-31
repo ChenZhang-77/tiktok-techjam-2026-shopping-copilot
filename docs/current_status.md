@@ -148,4 +148,9 @@ Judge-facing revision: [story](devpost_story.md) and [field preview](devpost_dra
 are locally revised, not yet approved/filled or pushed. Existing component credits
 are now user-approved. The live event page's public 3-minute YouTube requirement
 and 2026-09-01 12:00 SGT deadline supersede the earlier video editing suggestion.
-The registered team name is still missing; leader contact data stays out of Git.
+The user confirmed the registered team name; its exact value is in the
+[field values](devpost_draft.md#team-name). Leader contact data stays out of Git.
+Following the audience-boundary re-review, field values and public story are
+separated from the [team-only operating checklist](demo_and_submission_plan.md#devpost-填表操作清单仅供队内操作不复制提交).
+The earlier zero-finding copy review missed this distinction; see the
+[correction record](judge_readiness_review.md#audience-boundary-correction).

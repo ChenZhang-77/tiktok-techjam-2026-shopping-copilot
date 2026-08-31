@@ -43,13 +43,22 @@ frozen Python/runtime and numerical evidence files are unchanged. The original
 candidate ZIP above is preserved with its original hash. Neither ZIP has been
 uploaded or submitted; the main-only Devpost plan is unchanged.
 
-The later judge-facing revision's current local ZIP is
+The earlier judge-facing revision's local ZIP is
 `Track4_judge_review_with_evidence_2026-08-31.zip`, SHA-256:
 `4a8ededc688b9d2f38bb6a97c324ac1ea85637e19341d6dfcc56592221e620ad`.
 It updates approved-credit/status prose only, with regenerated document hashes;
 runtime and numerical evidence are unchanged. All 45 entries verify. Both older
 ZIPs above are retained. See [judge readiness review](judge_readiness_review.md)
 for the publication-risk checks and approval boundary.
+
+After the audience-boundary correction, the current local attachment is
+`Track4_copy_ready_with_evidence_2026-08-31.zip`, SHA-256:
+`36ac1fb2bf37833f6867ad35e7867da40b08ebb0502ae5e63c5177972e785453`.
+The package report no longer lists the now-confirmed team name as missing; its
+generated hashes were refreshed. The 37-file package and frozen evidence checks
+pass. No runtime or numerical evidence changed. All three older ZIPs are preserved;
+none has been uploaded by this revision. The field preview and project story are
+separate repository/form documents, not files in this minimal Agent attachment.
 
 ## Evidence and reproducibility
 
@@ -82,8 +91,9 @@ and a configuration decision; it cannot borrow this report or old paid approval.
    requires explicit data-transfer/budget approval. It has not happened; otherwise
    retain the verified offline configuration rather than claim live enhancement.
 4. **Team/rights:** the user confirms both participants registered and approves
-   existing component credits. The exact registered team name, source license
-   choice and all video/data/model asset permissions still need resolution;
+   existing component credits. The exact registered team name is now confirmed
+   in [field values](devpost_draft.md#team-name). Source license choice and all
+   video/data/model asset permissions still need resolution;
    publication/credit approval does not grant third-party redistribution rights.
 5. **Public GitHub:** private source integration is complete: user-authorized
    non-force push fast-forwarded main=`3b01416` to reviewed checkpoint `bb6b7f3`

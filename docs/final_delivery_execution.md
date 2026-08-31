@@ -81,7 +81,8 @@ for more effective judge-facing wording and another project/material review,
 confirms both members registered, and approves the existing contributions and
 publication. Revised wording must still be shown before any form filling.
 Private leader contact details are intentionally absent from repository files.
-The exact registered team name has not been provided.
+At this checkpoint the exact registered team name had not yet been provided;
+the subsequent confirmation is reflected in the current Devpost field values.
 
 Changes are prose and corresponding generated-document hashes only: README,
 Devpost story/field preview, approved component credits, recording timing and

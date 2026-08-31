@@ -103,17 +103,17 @@ control. We have not measured business impact or production reliability.
 The current system does not implement complete over-generality retrieval
 cutoff, long-term profile updating/ranking, or self-refining workflow
 orchestration. These are explicit Track 4 coverage gaps, not capabilities we
-claim to have finished. Next priorities are intended-host validation, stronger
-clarification and profile handling, and separately authorized live verification
-of the optional LLM mode.
+claim to have finished. Next priorities are cross-machine validation, stronger
+clarification and profile handling, and live evaluation of the optional LLM
+integration's ranking quality, cost and latency.
 
 ## Team and reproducibility
+
+Team: **double zhang**.
 
 ChenZhang-77 contributed context/preference correctness fixes, guarded DeepSeek
 handoff and local dialogue visualization. Pat7ryk contributed retrieval/ranking,
 evaluation tooling, release integration and the standalone dual-mode package.
-These are team-approved component contributions, not claims of exclusive
-ownership of each subsystem.
 
 [Start with main](https://github.com/ChenZhang-77/tiktok-techjam-2026-shopping-copilot/tree/main).
 The `submission/` directory contains the Agent, setup, configuration and technical
