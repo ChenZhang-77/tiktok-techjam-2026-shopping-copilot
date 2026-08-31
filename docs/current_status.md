@@ -151,7 +151,8 @@ verify. Standards/Spec final reviews pass. [Final readiness](final_readiness.md)
 records the exact limits of this local completion and the uncompleted external gates.
 
 Judge-facing revision: [story](devpost_story.md) and [field preview](devpost_draft.md)
-are locally revised, not yet approved/filled or pushed. Existing component credits
+are revised and synchronized to main; confirmation before form filling is still
+required, and no Devpost form has been filled or submitted. Existing component credits
 are now user-approved. The live event page's public 3-minute YouTube requirement
 and 2026-09-01 12:00 SGT deadline supersede the earlier video editing suggestion.
 The user confirmed the registered team name; its exact value is in the

@@ -160,6 +160,9 @@ Completion:
 - This follow-up records completion only; it does not alter the reviewed package,
   current ZIP, frozen runtime or numerical reports. All four prior ZIP hashes
   were independently rechecked and match their historical records.
+- Metadata follow-up review caught one stale "not yet pushed" sentence in the
+  lower current-status section. It was corrected to distinguish completed main
+  synchronization from still-pending form confirmation/filling/submission.
 
 The public entry cleanup and main source synchronization are complete. Actual
 video preparation/upload and Devpost filling/submission remain separate unfinished
