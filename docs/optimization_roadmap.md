@@ -21,8 +21,8 @@ was fast-forwarded to the existing private remote main with explicit authorizati
 Only release-status documentation follows that checkpoint; frozen runtime and
 recorded evaluation bytes are unchanged.
 GitHub now reports PUBLIC visibility, verified on 2026-08-31 without changing it.
-The active user-authorized follow-up is public-entry cleanup, attachment rebuild,
-independent review and main-only synchronization, not runtime tuning. See the
+The user-authorized public-entry cleanup, attachment rebuild, independent review
+and main-only synchronization are complete, with no runtime tuning. See the
 [execution log](final_delivery_execution.md) for completion evidence. Form filling,
 actual uploads and final Submit retain their confirmation gates; see the
 [operating checklist](demo_and_submission_plan.md).

@@ -142,3 +142,25 @@ Validation completed before review:
 Independent review uses the full `9d83674...HEAD` range, including the previously
 unpushed copy revisions. Review results and actual promotion confirmation follow
 after those actions; none is inferred from this pre-push validation record.
+
+Completion:
+
+- Independent Standards review of `9d83674...bc72b7a`: zero hard violations and
+  zero actionable heuristic findings; all four prior public-entry findings resolved.
+- Independent Spec review of the same range: zero remaining findings; both prior
+  requirement gaps resolved. True architecture/evidence limits remain disclosed.
+- A fresh committed `git archive` snapshot also passed all 330 tests, package
+  verification and evidence checks with a physical catalog copy and the prepared
+  Python environment. This is not a new full dependency installation.
+- Signed-out access to public main returned HTTP 200. Immediately before promotion,
+  remote main still matched `9d83674`; no teammate divergence was observed.
+- Ordinary non-force push advanced only main to
+  `bc72b7ad7f26c03eb4908debe1037306b6340e6a`; a direct remote read confirmed it.
+  Remote `Zhang-Chen`=`3b01416`, `llm`=`a9e34ae`, `yuqing`=`9e1b1d4` stayed unchanged.
+- This follow-up records completion only; it does not alter the reviewed package,
+  current ZIP, frozen runtime or numerical reports. All four prior ZIP hashes
+  were independently rechecked and match their historical records.
+
+The public entry cleanup and main source synchronization are complete. Actual
+video preparation/upload and Devpost filling/submission remain separate unfinished
+steps. No new provider request, Full200 run, upload or visibility change occurred.
