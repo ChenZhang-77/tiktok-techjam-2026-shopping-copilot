@@ -57,7 +57,10 @@ and source/input hashes are retained alongside per-session results.
 Historical F2 runs improved ranking but not hit rate or conversion turns, and
 introduced remote latency and cost. They are recorded historical experiments,
 not live verification of the integrated package. The default remains offline.
-The Full-200 final public report is pending the freeze gate at this draft stage.
+The frozen offline Full200 public report records 186/200 hits: HR@10 0.930000,
+MRR 0.527544, MTTC 4.105000 and TechnicalScore 0.761163, with zero observed
+fallback/invalid responses/exceptions across 807 turns and zero external calls.
+This is a different population from Dev160, not a before/after improvement claim.
 
 We used Development-160/four folds for selection. The other 40 public sessions
 were exposed earlier; neither those nor Full-200 are unseen validation. The

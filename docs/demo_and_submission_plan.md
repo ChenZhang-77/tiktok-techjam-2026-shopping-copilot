@@ -52,7 +52,7 @@ metrics only, never silently execute current code as old snapshots.
 - [x] Synthetic failure/contract tests and explicit local-asset degradation.
 - [x] Local browser start/stop/diagnostics and four scenario API walkthroughs.
 - [x] README, report, Devpost/credit drafts and recording script prepared.
-- [ ] Final runtime freeze and one Full200 public report.
+- [x] Final offline runtime freeze and one Full200 public report (not unseen validation).
 - [ ] Final archive, provenance checks and last dual review.
 - [ ] Independent fresh dependency install / intended evaluator-host validation.
 - [ ] New real F2 package verification, only if separately authorized and needed.

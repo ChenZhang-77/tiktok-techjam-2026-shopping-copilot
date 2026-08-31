@@ -15,10 +15,14 @@ to the Agent. No other branch is needed to read the retained numerical evidence.
   artifact hashes. It is historical optional-mode evidence, not a fresh live test
   of this delivery. Old full raw provider runs are not copied into the Agent or
   this directory; the bound report records that limitation and their hashes.
-- Final Full-200 report: pending the configuration-freeze gate. Once generated,
-  retain the frozen configuration/manifest, evaluator/input hashes, all sessions,
-  scenarios, latency and zero-call accounting alongside it. Do not use it for
-  parameter selection or label it an unseen holdout.
+- `final_public_full200.json`: one actual frozen offline Full200 pass at runtime
+  `951d03e`; 200 outcomes, scenarios, timing and zero-call/failure accounting.
+- `final_public_freeze.json` and `.started`: exact source/configuration/manifest,
+  evaluator/input/vector/local-model hashes and the one-shot start record. These
+  are copied unchanged from the independent bundle run, not regenerated to hide
+  a mismatch. Later documentation-only package changes leave tested Python bytes
+  unchanged. Independent verification recomputes results without another run.
+  Do not use this public/exposed report for tuning or label it an unseen holdout.
 
 Source-only ZIP users can locate this directory after authorized main publication:
 https://github.com/ChenZhang-77/tiktok-techjam-2026-shopping-copilot/tree/main/docs/delivery_reports

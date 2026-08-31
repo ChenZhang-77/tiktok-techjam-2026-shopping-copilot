@@ -89,6 +89,7 @@ budget exhaustion preserve the pre-rerank order with visible reasons. See
 | Population / configuration | HitRate@10 | MRR | MTTC | TechnicalScore |
 | --- | ---: | ---: | ---: | ---: |
 | Independent offline package, Development-160 | 0.925000 | 0.554521 | 4.131250 | 0.766231 |
+| Frozen offline package, Full-200 public report | 0.930000 | 0.527544 | 4.105000 | 0.761163 |
 
 The [package report](docs/delivery_reports/offline_package.json) contains sessions,
 four fixed folds, scenarios, source/input hashes and latency/resource evidence.
@@ -108,9 +109,12 @@ records 826 calls and an inherited USD 0.69472392 allowance estimate, not a curr
 price or invoice. New real F2 verification remains separately gated.
 
 Recent selection used fixed Development-160/four folds. The remaining 40 public
-sessions were exposed earlier. One final Full-200 report is scheduled only after
-configuration freeze; it is public reporting, not unseen validation or a tuning
-input. Do not compare a 160-row score with a 200-row score as an improvement.
+sessions were exposed earlier. The [final Full-200 report](docs/delivery_reports/final_public_full200.json)
+was run once after offline configuration freeze: 186/200 hits, 807 turns, zero
+observed fallback/invalid responses/exceptions and no external calls. Frozen
+source/configuration/evaluator/data/model hashes are retained in the same directory.
+It is public reporting, not unseen validation or a tuning input. Do not compare
+a 160-row score with a 200-row score as an improvement or regression.
 Historical [ablations](docs/ablation_summary.md) and
 [source comparison](docs/release_comparison.md) remain available separately.
 

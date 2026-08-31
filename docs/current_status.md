@@ -42,6 +42,27 @@ injection; it is not this default-route measurement. The old B12
 The 40 exposed public sessions are not unseen validation; private generalization
 is unverified.
 
+## Frozen final public report — separate Full200 population
+
+One offline Full200 run completed on frozen package/runtime source `951d03e` after
+the reporting tool's independent review. No ranking/state/configuration was tuned
+using the result. [Full report](delivery_reports/final_public_full200.json),
+[freeze](delivery_reports/final_public_freeze.json) and the started marker retain
+200 session outcomes, scenario metrics, timing and code/input/model hashes.
+
+HR@10 **0.930000** (186/200), MRR **0.527544**, MTTC **4.105000**, Efficiency
+**0.689500**, TechnicalScore **0.761163**. 807 turns, 127 dense/fusion executions,
+zero observed fallback/invalid payloads/response exceptions, zero external calls
+and tokens. Response p95 **46.863 ms**, max **113.374 ms**, initialization with
+synthetic prewarm **4.342 s**, measured run **25.986 s**, peak process RSS
+**1,101,496,320 bytes**. These are prepared same-machine observations, not every
+cold-start/other-host guarantee. Setup downloads are outside measured runtime.
+
+This is the exposed **public** population, not unseen validation or private800.
+Do not interpret its difference from Development160 as an algorithm change.
+Independent arithmetic/source/input verification is available through
+`python scripts/verify_delivery_evidence.py` without running the Agent again.
+
 ## Optional LLM disposition
 
 Only B10b-F2 product reranking is retained as **verified optional Plan Two**:

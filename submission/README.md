@@ -3,6 +3,9 @@
 Exports `Agent` from `agent.py`, with the official reset/respond interface. This
 source bundle is independent of the development checkout. It does not include
 catalog data, weights, private evaluation, secrets or experiment runners.
+The combined delivery ZIP also has a sibling `evidence/` directory with public
+evaluation reports and a separate evidence manifest. That directory is not on
+the Agent import/input path; no public labels or catalog are required from it.
 
 ## Setup
 

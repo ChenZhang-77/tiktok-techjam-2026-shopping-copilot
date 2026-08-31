@@ -14,6 +14,20 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class DeliveryPackageTest(unittest.TestCase):
+    def test_combined_archive_keeps_public_evidence_outside_agent_runtime(self):
+        with tempfile.TemporaryDirectory() as temp:
+            archive = Path(temp) / "delivery.zip"
+            subprocess.run([sys.executable, "scripts/build_submission.py", "--output", str(Path(temp) / "bundle"),
+                            "--archive", str(archive), "--include-evidence"],
+                           cwd=ROOT, check=True, capture_output=True)
+            with zipfile.ZipFile(archive) as bundle:
+                names = set(bundle.namelist())
+                self.assertIn("evidence/final_public_full200.json", names)
+                self.assertIn("EVIDENCE_MANIFEST.json", names)
+                self.assertFalse(any(n.startswith("submission/evidence/") or "public_set.jsonl" in n for n in names))
+                report = json.loads(bundle.read("evidence/final_public_full200.json"))
+                self.assertEqual(report["result"]["sample_count"], 200)
+
     def test_archive_is_source_only_and_tampering_fails_check(self):
         with tempfile.TemporaryDirectory() as temp:
             target = Path(temp) / "bundle"

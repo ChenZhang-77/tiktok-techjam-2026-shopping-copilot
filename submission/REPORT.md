@@ -51,6 +51,22 @@ New live verification is pending separate authorization. The API has no retries,
 8-second request timeout and call/cost/duration stop conditions; unknown usage
 is reserved as allowance, not called free. Failure preserves pre-rerank order.
 
+## Frozen offline Full200 public report
+
+After runtime freeze, one independent-bundle pass recorded HR@10 .930000
+(186/200), MRR .527544, MTTC 4.105000, Efficiency .689500 and TechnicalScore
+.761163. Across 807 turns: 127 dense/fusion executions, zero observed fallback,
+invalid responses or response exceptions, zero external calls/tokens. Response
+p95 was 46.863 ms, maximum 113.374 ms; initialization with synthetic prewarm 4.342 s;
+measured run 25.986 s; peak process RSS 1,101,496,320 bytes. Model downloads/dependency
+setup are not included in this timing. These are prepared same-machine results.
+
+The repository evidence directory retains `final_public_full200.json`, its
+source/configuration/input/model freeze and one-shot marker. No tuning followed
+this run. Full200 is exposed/public, not unseen validation; do not interpret a
+Dev160-versus-Full200 difference as an algorithm gain/regression. Documentation
+can be updated after a run; frozen Python/runtime hashes are checked separately.
+
 ## Contributions and final submission
 
 The paired run recorded peak RSS 1,140,097,024 bytes for the shared process,
@@ -65,5 +81,5 @@ ChenZhang-77 for context/preference fixes and visualization, and Patryk for
 retrieval/evaluation and release integration; the full component-level draft needs
 team approval and is not proof of exclusive ownership. Main publication, public
 video, Devpost URLs, final roster and license decisions remain external gates.
-No new live LLM performance is claimed. Full-200 public reporting remains pending
-configuration freeze; it must be labeled exposed/public, never unseen validation.
+No new live LLM performance is claimed. The offline Full200 run does not clear
+the separate live-enhancement, organizer eligibility or public-submission gates.

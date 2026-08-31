@@ -69,7 +69,11 @@ def main():
     parser.add_argument("--output", type=Path, default=ROOT / "submission")
     parser.add_argument("--check", action="store_true")
     parser.add_argument("--archive", type=Path, help="Write a new deterministic source ZIP")
+    parser.add_argument("--include-evidence", action="store_true",
+                        help="Add public evaluation reports outside submission/ in the ZIP")
     args = parser.parse_args()
+    if args.include_evidence and args.archive is None:
+        parser.error("--include-evidence requires --archive")
     target = args.output.absolute()
     if target.is_symlink() or target.resolve() == ROOT or target.resolve() in ROOT.parents:
         parser.error("output must be a dedicated bundle directory")
@@ -89,9 +93,18 @@ def main():
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
     if args.archive:
+        archive_files = {"submission/" + name: data for name, data in files.items()}
+        if args.include_evidence:
+            names = ("README.md", "offline_package.json", "tested_bundle_manifest.json",
+                     "f2_historical.json", "final_public_full200.json", "final_public_freeze.json",
+                     "final_public_freeze.json.started")
+            evidence = {"evidence/" + name: (ROOT / "docs/delivery_reports" / name).read_bytes() for name in names}
+            archive_files.update(evidence)
+            archive_files["EVIDENCE_MANIFEST.json"] = (json.dumps(
+                {name: digest(data) for name, data in sorted(evidence.items())}, indent=2) + "\n").encode()
         with zipfile.ZipFile(args.archive, "x", compression=zipfile.ZIP_DEFLATED) as archive:
-            for name, data in sorted(files.items()):
-                info = zipfile.ZipInfo("submission/" + name, date_time=(2026, 8, 31, 0, 0, 0))
+            for name, data in sorted(archive_files.items()):
+                info = zipfile.ZipInfo(name, date_time=(2026, 8, 31, 0, 0, 0))
                 info.compress_type = zipfile.ZIP_DEFLATED
                 info.external_attr = 0o100644 << 16
                 archive.writestr(info, data)
