@@ -1,7 +1,7 @@
 {
   "CONFIGURATION.md": "60b4a19244b632f8cdeeae44189029671a2cbf114abf7f932108ec6d3d4e9cb3",
-  "PROVENANCE.json": "0b394df935718fe01750870b382c8eec206138c6456ad83995cc0061e9843b36",
-  "README.md": "329d77cae718f1c01b60b1fe9685fffb010bf9d1b9850978e9ffb61c23d0e2fd",
+  "PROVENANCE.json": "96aba9f41206d31fbb828b1a6dd33cb1de21516003e2fad25a9164e0777338de",
+  "README.md": "0f9deb792b02345ba797cb123a23735a76fe31fda546457c106f0633efb4f25a",
   "REPORT.md": "58762eeb5c899b5c6baad97bae5c1d73bb91b55f2be08cccbbd75090a527d049",
   "THIRD_PARTY_NOTICES.md": "456e2dba8101fd2b181a167fc894497557a83c6325ccb5cf098ccd7fb19b2953",
   "agent.py": "8c2d1a81fc99ecd5d3dbc43201b1d3ef2e217f0aed175f742f25b62b0a58a887",
@@ -33,5 +33,6 @@
   "src/starter/retrieval/semantic_ranker.py": "72f2e45cb697df2eda949dcf27f96ce1a7f2db2e15575747771a2da70a63f646",
   "src/starter/retrieval/structured.py": "babcad2cde0070ecd927cefa73a7019b8b474525762451e7bec42624fbf39863",
   "tools/build_dense_index.py": "f9114364629498e355dfb92645da3e2a64b5d1079b85af2face886d3d71f9b30",
+  "tools/evaluate_final_public.py": "b6a43b3ee899ceddc18db2211473f239fe6d6dcace2febd33b299813512df32d",
   "tools/evaluate_offline.py": "8533edb99cdf1dc67612d47847ef582dba8fce35ba191aa78c56495706fc3406"
 }

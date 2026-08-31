@@ -51,6 +51,29 @@ catalog path. Organizer network/resource/packaging policy remains authoritative.
 
 ## Delivery status
 
+## Frozen final Full200 public report
+
+This is separate from development selection. The remaining40 were exposed earlier:
+Full200 is not unseen validation and must not be used to tune the frozen Agent.
+Only after selecting the offline final configuration, record a new freeze outside
+the bundle, then run once with the same inputs:
+
+```bash
+python tools/evaluate_final_public.py --kit-root /path/to/participant-kit \
+  --freeze-file /path/to/new-freeze.json --freeze-only
+python tools/evaluate_final_public.py --kit-root /path/to/participant-kit \
+  --freeze-file /path/to/new-freeze.json --output /path/to/new-full200-report.json
+```
+
+Both commands default to this bundle's prepared catalog/model/vector paths; use
+identical explicit path options for nondefault assets. Freeze records runtime,
+evaluator, data, vector and local-model hashes. A `.started` marker prevents an
+automatic second run from the same freeze; preserve it, including on failure.
+The runner uses only offline configuration, verifies each response contract and
+retains all200 outcomes/scenarios/timing. No private set or external LLM is used.
+
+## Delivery status
+
 See `REPORT.md`, `PROVENANCE.json`, `MANIFEST.json` and `THIRD_PARTY_NOTICES.md`.
 Local package validation does not mean the public repository/video/Devpost are
 submitted. New live F2 verification and final organizer eligibility are pending.

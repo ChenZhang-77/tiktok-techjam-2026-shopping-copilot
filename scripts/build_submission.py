@@ -53,6 +53,7 @@ def contents():
     files["tools/build_dense_index.py"] = data.replace(
         b"from __future__ import annotations\n", b"from __future__ import annotations\n" + bootstrap, 1)
     include("packaging/evaluate_offline.py", "tools/evaluate_offline.py")
+    include("packaging/evaluate_final_public.py", "tools/evaluate_final_public.py")
     provenance = {"source_files_sha256": sources,
                   "offline_lineage": "3b0141633f2df8044fcbde4e9f99794f30778e93",
                   "f2_lineage": "a9e34ae4b125c8103b4f740134d7f1752a97c476",
