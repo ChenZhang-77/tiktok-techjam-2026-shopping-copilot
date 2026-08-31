@@ -100,5 +100,13 @@ The new leader email is not copied to any public file or archive.
 
 ## Independent review
 
-Standards and Spec reviews of the committed revision against `9d83674` are
-pending. A pass of document consistency cannot clear the external gates above.
+Independent Standards and Spec reviews of `9d83674...e8d7519` both pass with
+zero actionable findings. Standards independently reproduced the 330-test suite;
+both reviewers verified the 37-file bundle, frozen evidence and all 45 ZIP entries.
+Neither review found runtime or numerical-evidence changes. The remote permission
+and history-scan observations above were assessed as supplied, bounded evidence,
+not repeated independently or treated as security certification.
+
+This completion note changes review metadata only, not the reviewed submission
+payload or ZIP. A pass of document consistency cannot clear the external gates
+above. No push, publication, form filling or submission has been performed.
