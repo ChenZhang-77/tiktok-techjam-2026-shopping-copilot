@@ -1,11 +1,20 @@
 # Adaptive Shopping Copilot — TikTok TechJam 2026, Track 4
 
-A stateful, catalog-grounded shopping Agent: it carries current preferences across
-turns, distinguishes Buying from Browsing, asks clarifying questions and returns
-ranked recommendations from the frozen 50,000-product catalog.
+**Shopping intent moves. Search should keep up.**
+
+A shopper can add a requirement, reject an earlier preference or change direction
+mid-conversation. Adaptive Shopping Copilot turns current session context into
+catalog-grounded recommendations: stateful intent handling, structured retrieval
+and conditional local semantic search over 50,000 products.
 
 **One delivery, two explicit configurations:** offline by default; optional,
 bounded LLM product reranking. No live-chat service is required to run the Agent.
+
+In one frozen offline public evaluation, the target product appeared in the
+Top-10 in **186 of 200 simulated sessions**, with zero external API calls.
+This is public benchmark evidence, not real-user conversion or unseen validation.
+See [measured results and limits](#measured-evidence) and the
+[judge-facing project story](docs/devpost_story.md).
 
 ## Start here
 
@@ -167,14 +176,14 @@ embeddings, credentials and private data are not shipped in the bundle.
 
 ## Team, attribution and submission
 
-[Contribution draft](docs/team_contributions.md) distinguishes commit-supported
-work from details still needing team confirmation. See
+[Team-approved contributions](docs/team_contributions.md) distinguish verified
+component work from unassigned/shared or future work. See
 [third-party notices](submission/THIRD_PARTY_NOTICES.md) and
 [data attribution](DATA_ATTRIBUTION.md). Public visibility does not itself grant
 a source-code license; maintainers must confirm their license/asset decisions.
 
 The remaining external gates include repository public visibility,
-team-approved credits, an actual public YouTube demo and final Devpost fields.
+source/asset rights decisions, an actual public YouTube demo and final Devpost fields.
 Prepared text or local tests do not mean those actions have happened.
 
 Repository navigation: [docs map](docs/README.md). Coding agents must read

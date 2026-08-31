@@ -78,10 +78,14 @@ results with an explicit dense failure; that proves degraded startup only, not
 full dense dependency installation or matching benchmark performance.
 
 Private main now contains the code, setup, evaluation evidence, contribution draft
-and Devpost/demo materials. No branch assembly is required. Draft credits name
+and Devpost/demo materials. No branch assembly is required. Approved credits name
 ChenZhang-77 for context/preference fixes and visualization, and Patryk for
-retrieval/evaluation and release integration; the full component-level draft needs
-team approval and is not proof of exclusive ownership. Public repository access,
-video, Devpost URLs, final roster and license decisions remain external gates.
+retrieval/evaluation and release integration. On 2026-08-31 the user confirmed both
+participants registered and approved the existing component descriptions; this
+is not a claim of exclusive subsystem ownership. Public repository access, the
+required public 3-minute YouTube video, Devpost submission, exact registered team
+name and license/asset decisions remain external gates. See the event requirements
+at https://tiktoktechjam2026.devpost.com/ . Publication approval has been given;
+visibility is not yet enabled and requires owner/admin permission.
 No new live LLM performance is claimed. The offline Full200 run does not clear
 the separate live-enhancement, organizer eligibility or public-submission gates.

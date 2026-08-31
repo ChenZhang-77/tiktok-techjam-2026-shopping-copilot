@@ -12,7 +12,7 @@ are implementation choices, not extra official requirements.
 | Agent implementation and helper files | `submission/agent.py`, allowlisted `submission/src/` |
 | Dependencies, setup, evaluator command | `submission/README.md`, pinned requirements, setup/evaluation tools |
 | Method/model and runtime-cost report | `submission/REPORT.md`, configuration and bound evidence |
-| Public GitHub repository with reproducible README, limitations and credits | Reviewed delivery pushed to private main; public access and team credits pending |
+| Public GitHub repository with reproducible README, limitations and credits | Private main published; component credits approved; public access still pending |
 | Devpost project description, tools/APIs/libraries/data and links | `devpost_draft.md` prepared; actual form submission pending |
 | Short public YouTube demo linked from Devpost | Rehearsed `demo_recording_script.md`; actual recording/upload pending |
 | Permission-safe assets and attribution | Third-party notices and data attribution; team license/asset decisions pending |
@@ -20,8 +20,9 @@ are implementation choices, not extra official requirements.
 A standalone ZIP/`submission/` is our convenient packaging layout, not a claim
 that the PDF requires that exact filename or only one ZIP. No mandatory production
 chat backend, real transaction system or extra PPT is inferred. API/result
-walkthroughs can demonstrate the text-only Agent. Suggested3–4minutes is an
-editing target, not a verified official hard duration.
+walkthroughs can demonstrate the text-only Agent. The [live event page](https://tiktoktechjam2026.devpost.com/)
+checked on 2026-08-31 specifies a public 3-minute YouTube video and a deadline of
+2026-09-01 12:00 SGT, superseding our earlier 3–4-minute suggestion.
 
 ## One submission, preserved branches
 
@@ -33,8 +34,12 @@ those branches too; main-only submission is not branch-level privacy.
 The separately authorized main-only fast-forward completed on 2026-08-31 at
 reviewed checkpoint `bb6b7f3`; all other remote heads and PRIVATE visibility were
 verified unchanged. Release-status documentation follows that checkpoint.
-Public-visibility changes, uploads and final submission still require separate
-authorization. Inspect remote heads and signed-out access before public release.
+The user subsequently approved public visibility and the current component
+credits, and requested another project/copy review before filling. Revised copy
+awaits approval; public access has not been enabled. The available CLI identity
+has WRITE, not ADMIN, permission, so an owner/admin is needed for visibility.
+Uploads and final submission still need action-time confirmation. Inspect remote
+heads, public-history risks and signed-out access before public release.
 
 ## Evidence and claims
 
@@ -59,9 +64,10 @@ metrics only, never silently execute current code as old snapshots.
 - [x] Final archive, provenance checks and last local dual review; see `final_readiness.md`.
 - [ ] Independent fresh dependency install / intended evaluator-host validation.
 - [ ] New real F2 package verification, only if separately authorized and needed.
-- [ ] Team-approved names, roles, source license and asset permissions.
+- [x] User confirms both members registered and approves current component credits.
+- [ ] Exact registered team name, source license and asset permissions confirmed.
 - [x] Reviewed delivery integrated/pushed to private main; other remote branches preserved.
-- [ ] Public repository access verified after separate visibility authorization.
+- [ ] Authorized public repository access enabled by owner/admin and verified.
 - [ ] Actual public YouTube video and all Devpost fields verified/submitted.
 
 Unfinished external gates remain unfinished even if every local test passes.

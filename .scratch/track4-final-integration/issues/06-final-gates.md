@@ -11,7 +11,8 @@ from live verification, team approvals and actual public submission.
 - [x] After configuration freeze, one offline Full-200 public report is retained separately from Development evidence; no tuning or unseen-set claim, paid mode separately authorized.
 - [x] Separately authorized reviewed delivery pushed to private main; other GitHub branches preserved.
 - [ ] Actual Devpost submission references only final main/commit.
-- [ ] Contributions/assets approved; public repo, video and Devpost submitted only when authorized.
+- [x] User confirms both members registered and approves existing component credits/publication.
+- [ ] Asset/license decisions resolved; public access enabled by owner/admin; video and Devpost submitted with confirmation.
 - [x] Incomplete external gates are reported, never marked as submission complete.
 
 Final local Standards/Spec reviews pass at 2f0677c. Full details:

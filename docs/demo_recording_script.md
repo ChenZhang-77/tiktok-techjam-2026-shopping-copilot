@@ -1,8 +1,11 @@
 # Recording script — offline default, honest optional enhancement
 
 Status: walkthrough rehearsed locally; no video has been recorded or uploaded by
-this task. Suggested length 3–4 minutes is our editing target, not a hard duration
-stated in the supplied PDF. The actual event form's limits take precedence.
+this task. The [live event page](https://tiktoktechjam2026.devpost.com/), checked
+on 2026-08-31, asks for a public **3-minute YouTube video**. Target 2:55–3:00;
+this supersedes our earlier 3–4-minute suggestion. Finish and link it before
+2026-09-01 12:00 SGT. Track 4 PDF section 4.5 requires a video despite the generic
+form's optional-looking field. API/result walkthroughs are accepted.
 
 ## Preparation
 
@@ -23,12 +26,12 @@ Use no unlicensed music, logos, brands-as-team-marks or third-party video assets
 
 | Approximate time | Shot / narration |
 | --- | --- |
-| 0:00–0:25 | Problem: customer preferences evolve; show official reset/respond contract and frozen-catalog restriction |
-| 0:25–0:50 | Explain state → strategy/query → structured retrieval → gated local dense → optional bounded product rerank → response guard |
-| 0:50–2:10 | Show the four rehearsed cases below, concentrating on the indicated turns; label any edited/skipped time |
-| 2:10–2:35 | Show offline mode and Agent-only diagnostics; demonstrate the synthetic no-key regression below, labeled as a failure test, not a live provider success |
-| 2:35–3:10 | Show independent Dev160 evidence and, after freeze, separately labeled Full200 public report; disclose historical F2 results and nonzero network cost/latency |
-| 3:10–3:40 | State limitations, show setup/main entry, factual team credits and repository/video links |
+| 0:00–0:20 | Hook: “Shopping intent moves. Search should keep up.” Introduce changing preferences and the 50k catalog |
+| 0:20–0:40 | Explain state → strategy/query → structured retrieval → gated local dense → optional bounded product rerank → response guard |
+| 0:40–1:50 | Show key moments from the four rehearsed cases below; label simulation and any edited/skipped time |
+| 1:50–2:10 | Show offline diagnostics and the synthetic no-key contract test, explicitly not a live provider success |
+| 2:10–2:35 | Show frozen Full200: 186/200 sessions hit Top-10, no external calls. Label Dev160 separately and historical F2 as historical; no real-user conversion claim |
+| 2:35–2:55 | State coverage gaps and next steps; show setup/main entry and approved component credits |
 
 ## Rehearsed Development cases
 

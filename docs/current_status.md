@@ -15,8 +15,12 @@ stepwise local implementation and automatic per-step review; see the
 authorized integrating/pushing the reviewed version to existing main while
 preserving all other branches and repository visibility. Remote main was safely
 fast-forwarded from `3b01416` to reviewed checkpoint `bb6b7f3`; subsequent release
-status edits are documentation-only. The repository remains PRIVATE. Paid calls,
-public-visibility changes, uploads and Devpost submission are not authorized.
+status edits are documentation-only. Main was directly verified at `9d83674`.
+The user subsequently approved publication and the existing component credits,
+confirmed both participants registered, and requested a fresh project/copy review
+before any form filling. Revised copy is pending approval. The repository remains
+PRIVATE; available CLI permission is WRITE, so visibility requires an owner/admin.
+No public change, upload, new paid call or Devpost submission has occurred.
 
 Plan One's runtime is Chen `0bd3375`: state/extraction corrections, scoped
 QueryPlan, priority-based clarification, structured retrieval, and conditional
@@ -130,7 +134,7 @@ and inputs, separates evaluator annotations, and rejects historical/out-of-split
 reruns. Seven API/behavior regressions and the browser walkthrough pass; the full
 suite was 323 tests at step 04. Step 05 prepared a main-only Devpost draft, a
 commit-supported contribution draft and a rehearsed recording script.
-Actual video recording/upload, approved contributions, new live LLM verification
+Actual video recording/upload, new live LLM verification
 and public submission remain incomplete. Profile remains disabled; B9 is
 conditional, not global hybrid retrieval, and Plan One does not claim an active
 LLM-ranking pillar. See [delivery plan](demo_and_submission_plan.md).
@@ -139,3 +143,9 @@ Final local audit: 330 tests pass, including a clean source snapshot with an
 independently copied catalog; 37-file bundle and45-entry combined ZIP hashes
 verify. Standards/Spec final reviews pass. [Final readiness](final_readiness.md)
 records the exact limits of this local completion and the uncompleted external gates.
+
+Judge-facing revision: [story](devpost_story.md) and [field preview](devpost_draft.md)
+are locally revised, not yet approved/filled or pushed. Existing component credits
+are now user-approved. The live event page's public 3-minute YouTube requirement
+and 2026-09-01 12:00 SGT deadline supersede the earlier video editing suggestion.
+The registered team name is still missing; leader contact data stays out of Git.

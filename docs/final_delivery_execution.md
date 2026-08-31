@@ -73,3 +73,25 @@ paid-call, video/upload, public-visibility or Devpost-submit authority is implie
   only and does not change the reviewed bundle or evidence.
 
 This completes private source promotion, not public competition submission.
+
+## Judge-facing revision and public-release review — 2026-08-31
+
+Review fixed point: `9d83674`, the verified private remote main. The user asks
+for more effective judge-facing wording and another project/material review,
+confirms both members registered, and approves the existing contributions and
+publication. Revised wording must still be shown before any form filling.
+Private leader contact details are intentionally absent from repository files.
+The exact registered team name has not been provided.
+
+Changes are prose and corresponding generated-document hashes only: README,
+Devpost story/field preview, approved component credits, recording timing and
+delivery status. Frozen Agent, evaluator, numerical reports and configurations
+are unchanged; no Full200 rerun or paid call is authorized by this work.
+
+The live event page requires a public 3-minute YouTube video before
+2026-09-01 12:00 SGT; this supersedes the earlier internal 3–4-minute suggestion.
+Remote visibility remains PRIVATE and the available CLI identity has WRITE,
+not ADMIN, permission. Owner/admin action is needed to make it public.
+Runtime/evidence, publication-risk and independent review results are reported
+in [judge readiness review](judge_readiness_review.md). No form filling, push,
+visibility change, upload or final submission occurs during this revision.

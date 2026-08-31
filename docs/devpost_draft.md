@@ -1,98 +1,77 @@
-# Devpost submission draft
+# Devpost field preview — awaiting approval of revised wording
 
-Status: prepared text, not submitted. Devpost is the event's project-submission
-platform; it links the description, code and demo. The attached competition PDF
-requires public GitHub and public YouTube links. Check the actual event form and
-latest organizer instructions before posting; this document does not claim to
-know every current form field or deadline.
+Status: revised locally on 2026-08-31; nothing filled or submitted by this revision.
+The user confirms both participants registered and approves repository publication
+and the existing contribution descriptions. That does not mean publication has
+happened or that this rewritten copy has been approved. Keep contact details out
+of public files; enter the supplied leader email only in the intended private
+Devpost field after confirmation. A leader's personal name is not the team name.
 
-## Project name and tagline
+## Project overview
 
-**Adaptive Shopping Copilot** — Stateful catalog search, offline by default,
-with explicitly bounded LLM ranking when needed.
+**Project name:** Adaptive Shopping Copilot
 
-## Inspiration / problem
+**Elevator pitch:** Shopping that keeps up when you change your mind. Stateful search across 50,000 products, offline by default, with optional LLM reranking.
 
-Shopping requests evolve: a customer may start broad, add a constraint, say an
-attribute does not matter, or change intent. Repeating a static keyword search
-loses context. We built a Track 4 Agent that preserves current preferences and
-returns ranked catalog recommendations with a clarifying question when useful.
+The actual form allows 60 characters for the name and 200 for the pitch.
+Thumbnail: pending approval of an actual project image; no stock/generated UI
+should be presented as a screenshot of working software.
 
-## What it does
+## Project details
 
-The headless Agent supports the competition's reset/respond interface and frozen
-50,000-product catalog. Buying/Browsing strategy, scoped state, a distilled query,
-constraint-aware ranking and guarded filtering form the local default. Broad
-Browsing can activate a pinned local MiniLM/RRF route. The optional LLM mode only
-reranks eligible existing Top-10 products; it is not an LLM dialogue-understanding
-module and does not require a production chat backend.
+**About the project:** copy the complete [judge-facing project story](devpost_story.md).
+The story is English and contains no private contact information or submission
+placeholders. Add the actual public YouTube URL to its end when available.
 
-Offline mode needs no external API or key after local assets are prepared.
-Enhancement is an explicit pre-run configuration, not automatic escalation or
-mid-session switching. It has call/cost/duration limits, no retries, and visible
-pre-rerank fallback for unavailable or invalid provider responses.
+**Built with:** Python, SQLite, NumPy, PyTorch, Transformers, Sentence Transformers,
+JavaScript, HTML, CSS, DeepSeek, Git, Codex. DeepSeek is optional; it was not used
+in the frozen offline Full200 run. Select matching platform tags if available,
+without adding tools the team has not used.
 
-## How we built it / tools
+**Try it out:** https://github.com/ChenZhang-77/tiktok-techjam-2026-shopping-copilot/tree/main
 
-Development tools verified in this work: **Codex, Git and the macOS terminal**;
-Python unittest for regression checks and the in-app browser for UI verification.
-Any additional IDE/notebook tools remain for team confirmation; no VSCode/Colab
-usage is assumed.
+**Image gallery:** pending real, approved screenshots.
 
-Python, SQLite FTS5, NumPy, PyTorch, Transformers and Sentence Transformers;
-sentence-transformers/all-MiniLM-L6-v2 at a pinned revision. Optional provider:
-DeepSeek deepseek-v4-flash with the frozen F2 prompt. Data comes from the official
-participant kit, derived from McAuley Lab's Amazon Reviews 2023. A vanilla
-HTML/CSS/JavaScript local visualizer shows simulated sessions and clearly labels
-evaluator-only annotations. AI coding assistance was used during development;
-team members must confirm the final disclosure and named contribution statements.
+**Video demo link:** leave empty until a real public YouTube video is available;
+do not use an unrelated video or a placeholder as a completed deliverable.
 
-## Results and what we learned
+## Additional info — judges/organizers, unless the form states otherwise
 
-The independent offline bundle reproduces Development-160 HitRate@10 0.925000,
-MRR 0.554521, MTTC 4.131250 and TechnicalScore 0.766231. Its paired traces and
-four fixed folds match the retained core, with zero observed fallback. Runtime
-and source/input hashes are retained alongside per-session results.
+- File upload: current reviewed source-and-evidence ZIP listed in
+  [final readiness](final_readiness.md); form limit 35 MB. Do not upload a whole
+  workspace, catalog, model cache, credentials or alternate branch checkout.
+- Team Name: **missing**; must exactly match the original registration form.
+  The team leader's personal name must not be substituted. This is a two-person
+  team, not a solo submission; do not enter N/A to bypass the field.
+- Team Leader's Email Address: user supplied privately for this form; not copied
+  into this repository or the public story.
+- All team members registered: user confirmed both members completed registration.
+- Problem Statement: Track 4, Shopping Copilot: AI Conversational Search and
+  Recommendations; match the actual dropdown label when filling.
+- Public code repository: the same main URL above, only after public access works.
 
-Historical F2 runs improved ranking but not hit rate or conversion turns, and
-introduced remote latency and cost. They are recorded historical experiments,
-not live verification of the integrated package. The default remains offline.
-The frozen offline Full200 public report records 186/200 hits: HR@10 0.930000,
-MRR 0.527544, MTTC 4.105000 and TechnicalScore 0.761163, with zero observed
-fallback/invalid responses/exceptions across 807 turns and zero external calls.
-This is a different population from Dev160, not a before/after improvement claim.
+## Submission controls and current boundary
 
-We used Development-160/four folds for selection. The other 40 public sessions
-were exposed earlier; neither those nor Full-200 are unseen validation. The
-organizer's private evaluation remains the external test. Public conversations
-are simulated, so we do not claim measured business impact or real-user uplift.
+The observed project contains @Pat7ryk and @ChenZhang-77; keep their membership.
+Existing component-level contribution wording is user-approved; see
+[team contributions](team_contributions.md). Do not infer a new source license,
+third-party redistribution rights or unseen personal details from that approval.
 
-## Limitations / next steps
+The [live event page](https://tiktoktechjam2026.devpost.com/) specifies a public
+3-minute YouTube demo and a deadline of **2026-09-01 12:00 SGT**. This supersedes
+our earlier 3–4-minute editing suggestion. Track 4 PDF section 4.5 requires the
+video even though the generic form's video field was not marked mandatory.
+The [event rules](https://tiktoktechjam2026.devpost.com/rules) allow draft editing
+before the deadline; do not plan to add the required video after it.
 
-Complex language and overrides can fail. Clarification is priority-biased,
-not a complete immediate over-generality retrieval-cutoff policy. Long-term
-profile ranking/update and self-refining workflow orchestration are not
-implemented; bounded fixed strategy selection should not be described as those
-capabilities. Dense retrieval is conditional. Same-machine
-prepared-asset results do not prove cold-start portability. New real LLM testing
-and organizer resource/network eligibility are separate gates. We prioritize
-reproducibility and honest fallback over unsupported production-readiness claims.
+Revised text must be approved before filling. Agree-to-rules and final Submit
+are separate actions; do not check a declaration that all team members have read
+and accepted terms merely because they confirmed registration. Saving a draft
+does not submit it. Verify a Submitted confirmation after an authorized submit.
 
-## Links to fill and verify before submission
-
-- Code: final **main** of the existing repository, plus the exact submitted commit.
-  URL: https://github.com/ChenZhang-77/tiktok-techjam-2026-shopping-copilot/tree/main
-  Reviewed integration checkpoint `bb6b7f3` was pushed on 2026-08-31; release-status
-  documentation follows it. The repository is still PRIVATE, not judge-accessible.
-  Pin the actual main HEAD again when submitting, rather than assuming this checkpoint
-  is the final documentation commit.
-- Run instructions: main's `submission/README.md`; no branch assembly required.
-- Evidence: main's `docs/delivery_reports/`, not another branch's working tree.
-- Video: **PENDING — record and upload an actual public YouTube demo.**
-- Team names/roles: **PENDING confirmation** of [contribution draft](team_contributions.md).
-- Repository public access, final commit, licenses/asset permission and all event
-  fields: **PENDING final checks/authorization**. A private link is not sufficient.
-
-Other GitHub branches remain preserved. Submitting only main does not hide those
-branches if they are in the same public repository. Do not paste placeholders as
-completed links or describe this draft as a finished Devpost submission.
+Remote main was directly checked at `9d83674` on 2026-08-31; repository PRIVATE.
+The available GitHub CLI identity has WRITE, not ADMIN, permission. Owner/admin
+action is needed for public visibility. Revised local documentation is not yet
+on main; re-pin the actual final main commit after an authorized documentation
+push. Keep every other branch; making the repository public exposes those
+branches and their history too.

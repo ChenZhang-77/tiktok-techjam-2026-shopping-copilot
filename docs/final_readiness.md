@@ -35,13 +35,21 @@ Archive SHA-256:
 `b4106d92b894831cc9f7a2a324650c445207d12515622fa98a2c7bab328bf609`.
 The ZIP is a local candidate artifact, not a GitHub Release or uploaded submission.
 
-After the authorized private-main source promotion, the current documentation
+After the authorized private-main source promotion, that documentation
 bundle is `Track4_main_with_evidence_2026-08-31.zip` (45 entries), SHA-256:
 `f577dec2bf39601bd6c74a4e87060c75322cc5cd98aea12b5301fc284bd78e98`.
 This new archive only updates release-status prose and the resulting manifests;
 frozen Python/runtime and numerical evidence files are unchanged. The original
 candidate ZIP above is preserved with its original hash. Neither ZIP has been
 uploaded or submitted; the main-only Devpost plan is unchanged.
+
+The later judge-facing revision's current local ZIP is
+`Track4_judge_review_with_evidence_2026-08-31.zip`, SHA-256:
+`4a8ededc688b9d2f38bb6a97c324ac1ea85637e19341d6dfcc56592221e620ad`.
+It updates approved-credit/status prose only, with regenerated document hashes;
+runtime and numerical evidence are unchanged. All 45 entries verify. Both older
+ZIPs above are retained. See [judge readiness review](judge_readiness_review.md)
+for the publication-risk checks and approval boundary.
 
 ## Evidence and reproducibility
 
@@ -73,20 +81,29 @@ and a configuration decision; it cannot borrow this report or old paid approval.
 3. **Optional enhancement:** new integrated-package paired real API verification
    requires explicit data-transfer/budget approval. It has not happened; otherwise
    retain the verified offline configuration rather than claim live enhancement.
-4. **Team/rights:** confirm the participant roster, names, component credits,
-   source license and all video/data/model asset permissions.
+4. **Team/rights:** the user confirms both participants registered and approves
+   existing component credits. The exact registered team name, source license
+   choice and all video/data/model asset permissions still need resolution;
+   publication/credit approval does not grant third-party redistribution rights.
 5. **Public GitHub:** private source integration is complete: user-authorized
    non-force push fast-forwarded main=`3b01416` to reviewed checkpoint `bb6b7f3`
    on 2026-08-31. Remote `Zhang-Chen`=`3b01416`, `llm`=`a9e34ae` and
    `yuqing`=`9e1b1d4` were verified unchanged; default main and PRIVATE visibility
    were preserved. Subsequent release-status documentation does not change the
-   frozen runtime or numerical reports. Public visibility is still NOT authorized
-   or enabled. Before a separately authorized public release, audit history and
+   frozen runtime or numerical reports. The user now approves public visibility,
+   but it is not enabled. The available CLI identity has WRITE, not ADMIN,
+   permission. Before owner/admin publication, audit history and
    all branches for material not intended for public release, and verify signed-out
    access. Preserve every other branch; making the repository public exposes them too.
 6. **Video/Devpost:** record the real demo, upload a public YouTube video, verify
    signed-out playback/repository access, fill the actual event fields and submit.
    Upload/public-visibility changes and final submission need explicit authority.
+
+The live event page checked on 2026-08-31 specifies a public 3-minute YouTube
+video and deadline 2026-09-01 12:00 SGT. Updated [judge-facing copy](devpost_story.md)
+and [field preview](devpost_draft.md) await user approval before form filling.
+The current rewrite is local; remote main remains `9d83674` until a later
+authorized documentation push. No video, form or visibility action was performed.
 
 The first five implementation slices have passed independent Standards/Spec
 review after fixes. Step06's reporting tool passed a pre-freeze re-review; final
