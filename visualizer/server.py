@@ -76,6 +76,7 @@ class InteractiveSession:
         self,
         *,
         index: int,
+        display_index: int | None = None,
         sample: dict,
         catalog_path: Path,
         catalog_ids: set[str],
@@ -85,6 +86,7 @@ class InteractiveSession:
         retriever=None,
     ) -> None:
         self.index = index
+        self.display_index = display_index if display_index is not None else index
         self.sample = sample
         self.catalog_ids = catalog_ids
         self.categories = categories
@@ -113,7 +115,8 @@ class InteractiveSession:
     def start_payload(self) -> dict:
         return {
             "execution_kind": "live_offline_simulation",
-            "session_index": self.index,
+            "session_index": self.display_index,
+            "source_index": self.index,
             "session_id": self.session_id,
             "sample_id": self.sample.get("sample_id"),
             "scenario_type": self.sample.get("scenario_type"),
@@ -207,9 +210,12 @@ class InteractiveSession:
 
 
 class TraceRunner:
-    def __init__(self, catalog_path: Path, dataset_path: Path) -> None:
+    def __init__(self, catalog_path: Path, dataset_path: Path, *, default_split: str = "full",
+                 split_manifest_path: Path | None = None) -> None:
         self.catalog_path = catalog_path
         self.dataset_path = dataset_path
+        self.default_split = default_split
+        self.split_manifest_path = split_manifest_path
         self.samples = load_jsonl(dataset_path)
         self.catalog_ids, self.categories, self.products = catalog_index(catalog_path)
         self.active_sessions: dict[str, InteractiveSession] = {}
@@ -226,9 +232,10 @@ class TraceRunner:
         return candidate
 
     def _agent_class(self, experiment_id: str | None) -> type[Agent]:
-        if self._run_dir(experiment_id) is None:
-            return Agent
-        raise ValueError("Historical runs are read-only metrics; choose Current workspace for an offline rerun.")
+        # Historical runs keep their recorded metrics, but a selected session can
+        # be replayed with the current local Agent without changing those metrics.
+        self._run_dir(experiment_id)
+        return Agent
 
     def _retriever_for(self, experiment_id: str | None):
         """Mirror the saved experiment's deterministic retrieval configuration."""
@@ -248,8 +255,10 @@ class TraceRunner:
     def _experiment_result(self, experiment_id: str | None) -> dict:
         run_dir = self._run_dir(experiment_id)
         if run_dir is None:
-            return {"evaluation": {"split": "development", "retrieval_mode": "conditional_dense",
-                                   "mode": "offline", "split_manifest": "docs/public_split_v1.json"}}
+            return {"evaluation": {"split": self.default_split, "retrieval_mode": "conditional_dense",
+                                   "mode": "offline",
+                                   "split_manifest": (str(self.split_manifest_path)
+                                                       if self.split_manifest_path else None)}}
         result_path = run_dir / "results.json" if run_dir is not None else ROOT / "results.json"
         if result_path.exists():
             return json.loads(result_path.read_text(encoding="utf-8"))
@@ -261,13 +270,25 @@ class TraceRunner:
         split = evaluation.get("split") or "full"
         if split == "full":
             return None
-        manifest_path = ROOT / str(evaluation.get("split_manifest") or "docs/public_split_v1.json")
+        manifest_value = evaluation.get("split_manifest")
+        manifest_path = Path(str(manifest_value)) if manifest_value else self.split_manifest_path
+        if manifest_path is not None and not manifest_path.is_absolute():
+            manifest_path = ROOT / manifest_path
+        if manifest_path is None:
+            return None
         if not manifest_path.exists():
             run_dir = self._run_dir(experiment_id)
             if run_dir is not None and (run_dir / "public_split_v1.json").exists():
                 manifest_path = run_dir / "public_split_v1.json"
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if split not in manifest:
+            return None
         return set(str(sample_id) for sample_id in manifest[split])
+
+    def _visible_source_indices(self, experiment_id: str | None = None) -> list[int]:
+        selected = self._split_sample_ids(experiment_id)
+        return [source_index for source_index, sample in enumerate(self.samples)
+                if selected is None or str(sample.get("sample_id")) in selected]
 
     def experiments(self) -> list[dict]:
         items = [{
@@ -276,6 +297,7 @@ class TraceRunner:
             "has_results": (ROOT / "docs/delivery_reports/offline_package.json").exists(),
             "source": "docs/delivery_reports/offline_package.json",
             "can_rerun": True,
+            "can_replay": True,
         }]
         if RUNS_DIR.exists():
             for run_dir in sorted([path for path in RUNS_DIR.iterdir() if path.is_dir()], reverse=True):
@@ -296,6 +318,7 @@ class TraceRunner:
                     "git_commit": metadata.get("git_commit"),
                     "has_results": (run_dir / "results.json").exists(),
                     "can_rerun": False,
+                    "can_replay": True,
                     "source": f"experiments/runs/{run_dir.name}/results.json",
                 })
         return items
@@ -321,6 +344,7 @@ class TraceRunner:
             "mttc": data.get("mttc"),
             "efficiency": data.get("efficiency"),
             "technical_score": data.get("recommended_technical_score", data.get("technical_score")),
+            "loaded_session_count": len(self._visible_source_indices(experiment_id)),
             "scenario_metrics": data.get("scenario_metrics", {}),
             "evaluation": data.get("evaluation", {}),
         }
@@ -335,6 +359,8 @@ class TraceRunner:
             return digest.hexdigest()
         try:
             report = json.loads((ROOT / "docs/delivery_reports/offline_package.json").read_text())
+            if report.get("evaluation", {}).get("split") != self.default_split:
+                return {}
             manifest_path = ROOT / "docs/delivery_reports/tested_bundle_manifest.json"
             if sha(manifest_path) != report["bundle_manifest_sha256"]:
                 return {}
@@ -357,14 +383,18 @@ class TraceRunner:
     def session_summaries(self, experiment_id: str | None = None) -> list[dict]:
         selected = self._split_sample_ids(experiment_id)
         summaries: list[dict] = []
-        for index, sample in enumerate(self.samples):
+        display_index = 0
+        for source_index, sample in enumerate(self.samples):
             if selected is not None and str(sample.get("sample_id")) not in selected:
                 continue
+            display_index += 1
             target = str(sample["ground_truth"]["parent_asin"])
             product = self.products.get(target)
             summaries.append(
                 {
-                    "index": index,
+                    "index": source_index,
+                    "display_index": display_index,
+                    "source_index": source_index,
                     "sample_id": sample.get("sample_id"),
                     "scenario_type": sample.get("scenario_type"),
                     "target": target,
@@ -376,13 +406,15 @@ class TraceRunner:
 
     def start_session(self, index: int, experiment_id: str | None = None) -> dict:
         if index < 0 or index >= len(self.samples):
-            raise ValueError(f"Session index out of range: {index}")
+            raise ValueError(f"Source session index out of range: {index}")
         agent_cls = self._agent_class(experiment_id)
-        selected = self._split_sample_ids(experiment_id)
-        if selected is not None and str(self.samples[index].get("sample_id")) not in selected:
-            raise ValueError("Session is outside the selected development split.")
+        visible = self._visible_source_indices(experiment_id)
+        if index not in visible:
+            raise ValueError("Session is outside the selected dataset.")
+        display_index = visible.index(index) + 1
         session = InteractiveSession(
             index=index,
+            display_index=display_index,
             sample=self.samples[index],
             catalog_path=self.catalog_path,
             catalog_ids=self.catalog_ids,
@@ -562,6 +594,8 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
     parser.add_argument("--catalog", default=str(ROOT / "data/catalog.jsonl"))
     parser.add_argument("--dataset", default=str(ROOT / "data/public_set.jsonl"))
+    parser.add_argument("--split", choices=("full", "development", "holdout"), default="full")
+    parser.add_argument("--split-manifest", default=str(ROOT / "docs/public_split_v1.json"))
     args = parser.parse_args()
 
     catalog_path = Path(args.catalog)
@@ -571,7 +605,12 @@ def main() -> None:
     if not dataset_path.exists():
         raise SystemExit(f"Missing dataset: {dataset_path}")
 
-    VisualizerHandler.runner = TraceRunner(catalog_path, dataset_path)
+    manifest_path = Path(args.split_manifest) if args.split != "full" else None
+    if manifest_path is not None and not manifest_path.exists():
+        raise SystemExit(f"Missing split manifest: {manifest_path}")
+    VisualizerHandler.runner = TraceRunner(catalog_path, dataset_path,
+                                           default_split=args.split,
+                                           split_manifest_path=manifest_path)
     server = ThreadingHTTPServer((args.host, args.port), VisualizerHandler)
     print(f"Visualizer running at http://{args.host}:{args.port}")
     server.serve_forever()

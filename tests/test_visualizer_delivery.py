@@ -28,12 +28,15 @@ class VisualizerDeliveryTest(unittest.TestCase):
         self.assertIsNone(metrics["mrr"])
         self.assertEqual(metrics["evidence_status"], "missing_or_stale")
 
-    def test_historical_metrics_do_not_authorize_running_current_code_as_old_snapshot(self):
+    def test_historical_metrics_allow_selected_session_replay(self):
         runs = self.root / "runs"
-        (runs / "old").mkdir(parents=True)
-        with patch.object(server, "RUNS_DIR", runs), \
-                self.assertRaisesRegex(ValueError, "Historical.*read-only"):
-            self.runner.start_session(0, "old")
+        old = runs / "old"
+        old.mkdir(parents=True)
+        (old / "results.json").write_text(json.dumps({"evaluation": {"split": "full"}}))
+        with patch.object(server, "RUNS_DIR", runs):
+            start = self.runner.start_session(0, "old")
+        self.assertEqual(start["source_index"], 0)
+        self.assertEqual(start["session_index"], 1)
 
     def test_visualizer_is_always_offline_even_with_an_inherited_llm_mode(self):
         with patch.dict("os.environ", {"SHOPPING_MODE": "llm", "DEEPSEEK_API_KEY": "fixture"}, clear=True), \
@@ -62,24 +65,47 @@ class VisualizerDeliveryTest(unittest.TestCase):
         stream.close()
         self.assertEqual(self.runner.active_sessions, {})
 
-    def test_legacy_start_endpoint_honors_historical_experiment(self):
+    def test_legacy_start_endpoint_allows_historical_session_replay(self):
         runs = self.root / "runs"
-        (runs / "old").mkdir(parents=True)
+        old = runs / "old"
+        old.mkdir(parents=True)
+        (old / "results.json").write_text(json.dumps({"evaluation": {"split": "full"}}))
         handler = object.__new__(server.VisualizerHandler)
         handler.path = "/api/start?experiment=old&index=0"
         handler.runner = self.runner
         with patch.object(server, "RUNS_DIR", runs), patch.object(handler, "_send_json") as send:
             handler.do_GET()
-        self.assertEqual(send.call_args.kwargs["status"], 400)
-        self.assertIn("Historical", send.call_args.args[0]["message"])
-        self.assertEqual(self.runner.active_sessions, {})
+        self.assertEqual(send.call_args.args[0]["source_index"], 0)
+        self.assertEqual(len(self.runner.active_sessions), 1)
 
-    def test_direct_current_rerun_rejects_samples_outside_development(self):
-        outside = json.loads((server.ROOT / "docs/public_split_v1.json").read_text())["holdout"][0]
-        self.runner.samples[0]["sample_id"] = outside
-        with self.assertRaisesRegex(ValueError, "outside.*development"):
-            self.runner.start_session(0, "current")
-        self.assertEqual(self.runner.active_sessions, {})
+    def test_current_workspace_uses_all_loaded_samples_by_default(self):
+        summaries = self.runner.session_summaries("current")
+        self.assertEqual([item["display_index"] for item in summaries], [1])
+        self.assertEqual(summaries[0]["source_index"], 0)
+
+    def test_current_metrics_do_not_mix_a_different_split(self):
+        metrics = self.runner.overall_metrics("current")
+        self.assertEqual(metrics["loaded_session_count"], 1)
+        self.assertIsNone(metrics["sample_count"])
+
+    def test_filtered_session_numbers_are_contiguous(self):
+        dataset = self.catalog.parent / "three.jsonl"
+        rows = [
+            {"sample_id": "public_0001", "scenario_type": "buying",
+             "user_profile": {}, "ground_truth": {"parent_asin": "A"}},
+            {"sample_id": "public_0002", "scenario_type": "browsing",
+             "user_profile": {}, "ground_truth": {"parent_asin": "A"}},
+            {"sample_id": "public_0003", "scenario_type": "buying",
+             "user_profile": {}, "ground_truth": {"parent_asin": "A"}},
+        ]
+        dataset.write_text("\n".join(json.dumps(row) for row in rows) + "\n")
+        manifest = self.root / "split.json"
+        manifest.write_text(json.dumps({"development": ["public_0001", "public_0003"]}))
+        runner = server.TraceRunner(self.catalog, dataset,
+                                    default_split="development", split_manifest_path=manifest)
+        summaries = runner.session_summaries("current")
+        self.assertEqual([item["display_index"] for item in summaries], [1, 2])
+        self.assertEqual([item["source_index"] for item in summaries], [0, 2])
 
 
 if __name__ == "__main__":

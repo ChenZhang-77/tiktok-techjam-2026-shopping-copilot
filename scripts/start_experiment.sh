@@ -269,9 +269,12 @@ fi
 VISUALIZER_LABEL="com.tiktoktechjam.visualizer"
 if command -v launchctl >/dev/null 2>&1; then
   launchctl remove "$VISUALIZER_LABEL" >/dev/null 2>&1 || true
-  launchctl submit -l "$VISUALIZER_LABEL" -- "$ROOT_DIR/$PYTHON" "$ROOT_DIR/visualizer/server.py"
+  launchctl submit -l "$VISUALIZER_LABEL" -- "$ROOT_DIR/$PYTHON" "$ROOT_DIR/visualizer/server.py" \
+    --catalog "$ROOT_DIR/data/catalog.jsonl" --dataset "$ROOT_DIR/data/public_set.jsonl" --split "$SPLIT"
 else
-  nohup "$PYTHON" visualizer/server.py >/tmp/tiktok-techjam-visualizer.log 2>&1 &
+  nohup "$PYTHON" visualizer/server.py --catalog "$ROOT_DIR/data/catalog.jsonl" \
+    --dataset "$ROOT_DIR/data/public_set.jsonl" --split "$SPLIT" \
+    >/tmp/tiktok-techjam-visualizer.log 2>&1 &
 fi
 VISUALIZER_READY="false"
 for _ in {1..80}; do
