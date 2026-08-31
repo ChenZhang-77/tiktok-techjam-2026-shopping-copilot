@@ -103,3 +103,42 @@ the 37-file bundle, frozen evidence and 45-entry ZIP. Runtime and numerical
 evidence remain unchanged. The completion record is metadata-only; the reviewed
 ZIP hash remains the one recorded in the judge readiness review. Revised copy
 still awaits user approval before any form filling or documentation push.
+
+## Public-entry cleanup and main synchronization — 2026-08-31
+
+The user explicitly authorized cleaning the public entry points, rebuilding the
+attachment, reviewing it and synchronizing main. This supersedes the earlier
+documentation-push wait, not the separate form/video/paid-call boundaries.
+Fresh GitHub checks show PUBLIC visibility and default main; no visibility change
+was performed here. Pre-change remote main is `9d83674a1101ca86f29c6e430dbcaf45b2daa707`.
+Other remote heads remain `Zhang-Chen`=`3b01416`, `llm`=`a9e34ae`, `yuqing`=`9e1b1d4`.
+
+Public README, technical report, configuration, credits, evidence index and
+document navigation now separate judge/user content from maintainer operations.
+Stale private-repository assertions and approval/permission narratives were
+removed from the public entry prose; historical operational records are retained
+and labeled as historical. Genuine coverage, measurement and licensing limits
+remain. Devpost field values and story retain their earlier audience separation.
+
+The standalone configuration now documents `python tools/evaluate_offline.py
+--help` instead of a repository-only test module absent from the ZIP. It explicitly
+labels this as CLI availability, not Agent evaluation or benchmark reproduction.
+
+Validation completed before review:
+
+- 330 tests pass with offline flags in the prepared same-machine environment.
+- Generated package check passes for all 37 files; frozen Dev160/Full200 evidence
+  verification passes without rerunning Full200.
+- All Python files and frozen numerical reports/manifests are byte-identical to
+  remote-main baseline `9d83674`; only prose/generated document hashes change.
+- New 45-entry attachment and both manifests match current checkout bytes;
+  extracted-bundle CLI help succeeds without catalog/model assets or API calls.
+- Public entry local links resolve; Devpost preview contains eight text blocks,
+  a 138-character pitch and 12 technology tags. Private contact data is absent
+  from these entries and the attachment. `git diff --check` passes.
+- Current attachment identity is recorded in [final readiness](final_readiness.md).
+  The four older ZIPs are retained; no artifact was uploaded.
+
+Independent review uses the full `9d83674...HEAD` range, including the previously
+unpushed copy revisions. Review results and actual promotion confirmation follow
+after those actions; none is inferred from this pre-push validation record.

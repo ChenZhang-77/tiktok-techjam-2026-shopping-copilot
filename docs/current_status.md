@@ -18,9 +18,14 @@ fast-forwarded from `3b01416` to reviewed checkpoint `bb6b7f3`; subsequent relea
 status edits are documentation-only. Main was directly verified at `9d83674`.
 The user subsequently approved publication and the existing component credits,
 confirmed both participants registered, and requested a fresh project/copy review
-before any form filling. Revised copy is pending approval. The repository remains
-PRIVATE; available CLI permission is WRITE, so visibility requires an owner/admin.
-No public change, upload, new paid call or Devpost submission has occurred.
+before any form filling. A fresh GitHub check on 2026-08-31 confirms the repository
+is now PUBLIC; this check did not change its visibility. The earlier PRIVATE/WRITE
+observations are historical, not current publication blockers. The user now
+authorizes cleaning all public-facing entries, rebuilding/reviewing the attachment
+and synchronizing only main. The fresh pre-change remote main was `9d83674`;
+the [execution log](final_delivery_execution.md) records validation and promotion.
+All other branches are preserved. This work does not fill Devpost, upload a video,
+invoke an LLM or rerun Full200. Form filling still requires copy confirmation.
 
 Plan One's runtime is Chen `0bd3375`: state/extraction corrections, scoped
 QueryPlan, priority-based clarification, structured retrieval, and conditional

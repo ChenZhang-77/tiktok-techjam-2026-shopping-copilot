@@ -3,7 +3,21 @@
 Use this page to choose the right document without reconstructing project state
 from old reports.
 
-## Start here
+## For judges and users
+
+- [Project overview](../README.md) and [project story](devpost_story.md)
+- [Standalone setup and evaluation](../submission/README.md)
+- [Technical report](../submission/REPORT.md) and [configuration](../submission/CONFIGURATION.md)
+- [Evaluation evidence](delivery_reports/README.md)
+- [Team contributions](team_contributions.md)
+- [Local simulated demo](../visualizer/README.md)
+
+## Maintainer index
+
+The following sections contain engineering history, working plans and release
+operations. They are not Devpost field values or instructions for judges.
+
+### Current project state
 
 1. [Current status](current_status.md) — verified current behavior, metrics and gaps.
 2. [Final release plan](final_release_plan.md) — Plan One/Two and all freeze decisions.
@@ -16,26 +30,26 @@ from old reports.
 Older A13/A14 design and experiment documents below remain useful references.
 They do not authorize resuming frozen work or override current status.
 
-## Workstream execution
+### Workstream execution
 
 - `workstreams/DEVELOPER_A_CONTROL_PLANE.md` — A-side dialogue/state route
 - `workstreams/DEVELOPER_B_RETRIEVAL_RANKING.md` — B-side retrieval/ranking route
 - `a_control_plane_handoff.md` — compatibility pointer for old A-side links
 - `b_retrieval_ranking_handoff.md` — compatibility pointer for old B-side links
 
-## Delivery
+### Delivery
 
 - `final_readiness.md` — completed local checks, archive identity and remaining external gates
 - `final_delivery_execution.md` — six-step execution and automatic review log
 - `devpost_draft.md` — main-only code link and honest submission text
 - `demo_recording_script.md` — rehearsed simulated cases and recording script
-- `team_contributions.md` — commit-supported draft pending team confirmation
+- `team_contributions.md` — component contributions and AI-assistance disclosure
 - `delivery_reports/README.md` — independent package and historical F2 evidence
 - `demo_and_submission_plan.md` — demo, report, video, packaging, and claim rules
-- `../submission/README.md` — final-package staging checklist
+- `../submission/README.md` — standalone setup and official-harness evaluation
 - `../visualizer/README.md` — visual debugging and Agent/Evaluator view boundary
 
-## Contracts and evaluation
+### Contracts and evaluation
 
 - `competition_specification.md` — normalized Track 4 requirements
 - `agent_api_contract.json` — agent interface contract
@@ -43,7 +57,7 @@ They do not authorize resuming frozen work or override current status.
 - `development_folds_v1.json` — deterministic Development folds
 - `adr/0001-treat-public-holdout-as-exposed.md` — public-data decision record
 
-## Current experiment evidence
+### Current experiment evidence
 
 - `r0_development_failure_taxonomy.md` — canonical Development miss diagnosis
 - `a8_stateful_intent_evidence.md` — retained persistent intent assessment
@@ -66,7 +80,7 @@ Each recent experiment normally has a matching machine-readable
 `*_evidence.json` and raw `*_reports/` directory. These paths are deliberately
 stable because tests and evidence hashes bind them together.
 
-## Historical evidence
+### Historical evidence
 
 Files named `b0_*` through `b7_*` and directories such as `b2_reports/` through
 `b5_reports/` are experiment evidence. They do not override
@@ -75,7 +89,7 @@ Files named `b0_*` through `b7_*` and directories such as `b2_reports/` through
 Completed planning tickets that remain useful for provenance live under
 `archive/tickets/`. They are historical inputs, not the current backlog.
 
-## Repository structure
+### Repository structure
 
 Read `project_structure.md` before adding or moving a directory. In particular,
 do not cosmetically relocate hash-bound JSON or raw reports without updating

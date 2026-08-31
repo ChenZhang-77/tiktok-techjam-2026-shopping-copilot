@@ -14,7 +14,7 @@ are implementation choices, not extra official requirements.
 | Agent implementation and helper files | `submission/agent.py`, allowlisted `submission/src/` |
 | Dependencies, setup, evaluator command | `submission/README.md`, pinned requirements, setup/evaluation tools |
 | Method/model and runtime-cost report | `submission/REPORT.md`, configuration and bound evidence |
-| Public GitHub repository with reproducible README, limitations and credits | Private main published; component credits approved; public access still pending |
+| Public GitHub repository with reproducible README, limitations and credits | PUBLIC visibility verified; main synchronization recorded in the execution log |
 | Devpost project description, tools/APIs/libraries/data and links | `devpost_draft.md` prepared; actual form submission pending |
 | Short public YouTube demo linked from Devpost | Rehearsed `demo_recording_script.md`; actual recording/upload pending |
 | Permission-safe assets and attribution | Third-party notices and data attribution; team license/asset decisions pending |
@@ -40,7 +40,7 @@ checked on 2026-08-31 specifies a public 3-minute YouTube video and a deadline o
 - Problem Statement 按实际下拉菜单选择对应 Track 4；技术标签和报名复选项不是整段文本粘贴。
 - 附件使用 [final_readiness.md](final_readiness.md) 指定的当前 ZIP，观察到的上传上限为 35 MB。
   不上传工作区、catalog、模型缓存、凭据或其他分支 checkout；本操作清单不作为提交附件。
-- 正文修订需用户确认后才填表。公开仓库授权不代表已经公开；权限、远端状态和剩余发布检查
+- 正文修订需用户确认后才填表。仓库现已核验公开；远端状态和剩余发布检查
   以 [current_status.md](current_status.md) 与 [final_readiness.md](final_readiness.md) 为准。
   确认退出登录后代码与视频可访问，再使用其链接。
 - 保存草稿、接受规则、最终 Submit 是不同动作；遵守各自确认边界，最终核实 Submitted 状态。
@@ -56,12 +56,12 @@ those branches too; main-only submission is not branch-level privacy.
 The separately authorized main-only fast-forward completed on 2026-08-31 at
 reviewed checkpoint `bb6b7f3`; all other remote heads and PRIVATE visibility were
 verified unchanged. Release-status documentation follows that checkpoint.
-The user subsequently approved public visibility and the current component
-credits, and requested another project/copy review before filling. Revised copy
-awaits approval; public access has not been enabled. The available CLI identity
-has WRITE, not ADMIN, permission, so an owner/admin is needed for visibility.
-Uploads and final submission still need action-time confirmation. Inspect remote
-heads, public-history risks and signed-out access before public release.
+The PRIVATE observation above describes that earlier promotion, not current state.
+GitHub now reports PUBLIC visibility, verified on 2026-08-31. The user authorized
+public-entry cleanup, attachment rebuild/review and main-only synchronization;
+see [execution log](final_delivery_execution.md). Revised copy still needs
+confirmation before form filling. Uploads and final submission need action-time
+confirmation; verify signed-out code/video access before using their links.
 
 ## Evidence and claims
 
@@ -89,8 +89,9 @@ metrics only, never silently execute current code as old snapshots.
 - [x] User confirms both members registered and approves current component credits.
 - [x] Exact registered team name confirmed; see the field values.
 - [ ] Source license and asset permissions confirmed.
+- [ ] Final video presenter/recorder credits confirmed.
 - [x] Reviewed delivery integrated/pushed to private main; other remote branches preserved.
-- [ ] Authorized public repository access enabled by owner/admin and verified.
+- [x] Public repository visibility verified; no visibility change performed by this cleanup.
 - [ ] Actual public YouTube video and all Devpost fields verified/submitted.
 
 Unfinished external gates remain unfinished even if every local test passes.

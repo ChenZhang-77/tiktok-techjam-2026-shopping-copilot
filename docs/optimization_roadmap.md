@@ -20,11 +20,12 @@ branches remain intact. On 2026-08-31, reviewed integration checkpoint `bb6b7f3`
 was fast-forwarded to the existing private remote main with explicit authorization.
 Only release-status documentation follows that checkpoint; frozen runtime and
 recorded evaluation bytes are unchanged.
-The user now approves public visibility and current component credits, but asks
-for project/copy review before filling. Current work is judge-facing prose and
-release-risk verification, not runtime tuning. Visibility remains PRIVATE;
-owner/admin permission is needed. Revised copy, actual uploads and final Submit
-retain their confirmation gates. See the [operating checklist](demo_and_submission_plan.md).
+GitHub now reports PUBLIC visibility, verified on 2026-08-31 without changing it.
+The active user-authorized follow-up is public-entry cleanup, attachment rebuild,
+independent review and main-only synchronization, not runtime tuning. See the
+[execution log](final_delivery_execution.md) for completion evidence. Form filling,
+actual uploads and final Submit retain their confirmation gates; see the
+[operating checklist](demo_and_submission_plan.md).
 
 Earlier source publication to yuqing/llm is history, not a current instruction or
 a requirement for judges to assemble code. Source-publication records and recovery

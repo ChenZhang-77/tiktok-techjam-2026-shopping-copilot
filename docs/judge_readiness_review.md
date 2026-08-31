@@ -1,5 +1,12 @@
 # Judge-facing material and public-release review
 
+This document preserves historical review checkpoints. PRIVATE/permission and
+pending-publication statements in those checkpoints describe the observations
+then, not current state. The full public-entry cleanup and current review are
+recorded in [the execution log](final_delivery_execution.md); GitHub now reports
+PUBLIC visibility. Earlier two-document copy approval was not a review of every
+public-facing repository entry.
+
 Date: 2026-08-31. Review base: `9d83674`, the directly verified private main.
 Scope: improve the judge-facing story, recheck the submitted product/evidence,
 and inspect public-release risks. No algorithm changes, new paid calls, Full200

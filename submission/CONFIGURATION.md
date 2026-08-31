@@ -1,7 +1,8 @@
 # Delivery configurations
 
-The integration entry is `starter.delivery.Agent`; it preserves reset/respond.
-This is a locally tested integration, not a new live F2 verification or final submission.
+The standalone entry exports `Agent` from `agent.py` and preserves reset/respond.
+It uses `starter.delivery.Agent` internally. Offline is the default; live
+performance of the integrated LLM configuration has not been measured.
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
@@ -15,7 +16,7 @@ This is a locally tested integration, not a new live F2 verification or final su
 | DEEPSEEK_API_KEY | absent | Read only in explicitly selected llm configuration |
 
 Positive call, cost and duration limits are required for live calls. Mode alone
-does not authorize a bill: defaults stop at the boundary. No .env files are loaded
+does not enable requests: defaults stop at the boundary. No .env files are loaded
 automatically and setup/tests must not initiate provider calls. Do not put secrets
 in shell history, recorded commands or tracked files.
 
@@ -28,8 +29,8 @@ reranking. Only qualified Browsing requests run it. The exact frozen request/mod
 prompt and allowance logic comes from `llm@a9e34ae`, with no experiment imports.
 Its inherited cost assumptions are conservative experiment allowances, not verified
 current provider prices or an invoice; review pricing and funding before any new
-authorized paid run. Request timeout is 8 seconds with no retries, not a guarantee
-of an 8-second whole-turn deadline. Check organizer limits before final selection.
+paid run. Request timeout is 8 seconds with no retries, not a guarantee
+of an 8-second whole-turn deadline.
 
 `diagnostics.delivery` identifies requested mode, per-turn success/fallback/skip,
 cumulative attempts/successes/fallbacks, allowance and stop reason. Response usage
@@ -38,7 +39,13 @@ accounting, not a claim of zero billing. Invalid provider details are redacted.
 No successful calls means no successful enhancement validation, even if the Agent
 completed every session. Normal gate skips are not API failures.
 
-Offline verification: `python -m unittest tests.test_delivery_agent -q`.
-Use synthetic external providers in tests; new live tests need explicit transfer
-and budget authorization. Review the project's approved delivery rules before
-enabling any real provider run.
+From the standalone bundle directory, check the evaluator command-line entry:
+
+```bash
+python tools/evaluate_offline.py --help
+```
+
+This checks CLI availability only; it does not evaluate the Agent or reproduce
+benchmark results. Follow the bundled `README.md` for asset preparation and the
+official-harness evaluation command. The repository test suite is not included
+in the standalone bundle.

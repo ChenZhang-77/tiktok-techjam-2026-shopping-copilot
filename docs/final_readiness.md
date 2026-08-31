@@ -51,7 +51,7 @@ runtime and numerical evidence are unchanged. All 45 entries verify. Both older
 ZIPs above are retained. See [judge readiness review](judge_readiness_review.md)
 for the publication-risk checks and approval boundary.
 
-After the audience-boundary correction, the current local attachment is
+After the earlier two-document audience-boundary correction, the local attachment was
 `Track4_copy_ready_with_evidence_2026-08-31.zip`, SHA-256:
 `36ac1fb2bf37833f6867ad35e7867da40b08ebb0502ae5e63c5177972e785453`.
 The package report no longer lists the now-confirmed team name as missing; its
@@ -61,6 +61,15 @@ none has been uploaded by this revision. The field preview and project story are
 separate repository/form documents, not files in this minimal Agent attachment.
 
 ## Evidence and reproducibility
+
+Current attachment after the full public-entry cleanup:
+`Track4_public_main_with_evidence_2026-08-31.zip` (104,199 bytes; 45 entries).
+SHA-256: `79e1a727b653a09a1aaeac151bd946854ec04c7819360dcc52a894ff00828a37`.
+All archive entries match the current package/evidence files and both manifests.
+Its extracted standalone CLI help check passes; that check is not a benchmark run.
+The 330-test suite, 37-file generated-package check and frozen-evidence verification
+also pass. Only prose and generated document hashes changed. All four older ZIPs
+are preserved. The new ZIP is local, not uploaded to Devpost or GitHub Releases.
 
 See [delivery evidence index](delivery_reports/README.md),
 [submission setup](../submission/README.md) and
@@ -76,7 +85,7 @@ optional LLM path, but this final public report is not its performance evidence.
 Any later proposal to submit enhancement needs separate new live verification
 and a configuration decision; it cannot borrow this report or old paid approval.
 
-## External gates — not completed or inferred
+## External requirements and remaining work
 
 1. **Organizer eligibility/environment:** confirm the final network/resource and
    submission rules, and clarify any eligibility-critical coverage gaps. The
@@ -95,16 +104,13 @@ and a configuration decision; it cannot borrow this report or old paid approval.
    in [field values](devpost_draft.md#team-name). Source license choice and all
    video/data/model asset permissions still need resolution;
    publication/credit approval does not grant third-party redistribution rights.
-5. **Public GitHub:** private source integration is complete: user-authorized
-   non-force push fast-forwarded main=`3b01416` to reviewed checkpoint `bb6b7f3`
-   on 2026-08-31. Remote `Zhang-Chen`=`3b01416`, `llm`=`a9e34ae` and
-   `yuqing`=`9e1b1d4` were verified unchanged; default main and PRIVATE visibility
-   were preserved. Subsequent release-status documentation does not change the
-   frozen runtime or numerical reports. The user now approves public visibility,
-   but it is not enabled. The available CLI identity has WRITE, not ADMIN,
-   permission. Before owner/admin publication, audit history and
-   all branches for material not intended for public release, and verify signed-out
-   access. Preserve every other branch; making the repository public exposes them too.
+5. **Public GitHub — visibility completed:** GitHub reports PUBLIC, freshly
+   verified on 2026-08-31; the cleanup did not change visibility. The earlier
+   private-main promotion is historical. The user now authorizes public-entry
+   cleanup, rebuilt attachment review and main-only synchronization. Promotion
+   results are recorded in the [execution log](final_delivery_execution.md).
+   All other branches remain preserved and publicly visible too. This check is
+   not a claim that all historical commits have undergone a complete rights audit.
 6. **Video/Devpost:** record the real demo, upload a public YouTube video, verify
    signed-out playback/repository access, fill the actual event fields and submit.
    Upload/public-visibility changes and final submission need explicit authority.
@@ -112,8 +118,9 @@ and a configuration decision; it cannot borrow this report or old paid approval.
 The live event page checked on 2026-08-31 specifies a public 3-minute YouTube
 video and deadline 2026-09-01 12:00 SGT. Updated [judge-facing copy](devpost_story.md)
 and [field preview](devpost_draft.md) await user approval before form filling.
-The current rewrite is local; remote main remains `9d83674` until a later
-authorized documentation push. No video, form or visibility action was performed.
+The current cleanup includes an authorized main-only documentation push; its
+verified result is recorded in the execution log. No video, form or visibility
+action is included in this work.
 
 The first five implementation slices have passed independent Standards/Spec
 review after fixes. Step06's reporting tool passed a pre-freeze re-review; final

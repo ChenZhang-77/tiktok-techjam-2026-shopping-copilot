@@ -22,15 +22,12 @@ See [measured results and limits](#measured-evidence) and the
 - [Configuration, limits and fallback](submission/CONFIGURATION.md)
 - [Technical report](submission/REPORT.md)
 - [Local simulated demo](visualizer/README.md)
-- [Current evidence and remaining gates](docs/current_status.md)
-- [Devpost draft](docs/devpost_draft.md) · [Demo script](docs/demo_recording_script.md)
+- [Evaluation evidence](docs/delivery_reports/README.md)
+- [Project story](docs/devpost_story.md) · [Team contributions](docs/team_contributions.md)
 
-The final Devpost code link will point only to this repository's **main** and an
-identified final commit. No other branch is required to run the submission.
-Historical branches are preserved. On 2026-08-31 the reviewed integration
-checkpoint `bb6b7f3` was fast-forwarded to remote main with user authorization.
-The repository remains private; public GitHub/video/Devpost submission is not
-complete. See the [release record](docs/final_delivery_execution.md).
+This public repository's **main** contains the runtime, setup instructions and
+evaluation evidence. No branch assembly is required. The independent Agent lives
+in `submission/`; the optional visualizer is a separate local demo.
 
 ## Run the independent Agent
 
@@ -85,8 +82,8 @@ reset/respond inputs + frozen catalog
 
 This is a coverage assessment, not a claim of complete pillar fulfillment. The
 kit permits rule-based/local methods and says a paid LLM is not required, but that
-does not waive other architecture expectations. Confirm any eligibility-critical
-gap with the organizer before final submission; do not resolve it by wording alone.
+does not waive other architecture expectations. The gaps above remain limitations
+of this implementation.
 
 LLM mode is selected **before a run**, not hot-switched mid-conversation. It only
 reorders eligible existing Top-10 products with constraint protection: no recall
@@ -117,7 +114,7 @@ Historical F2 paired Development-160 scores were 0.779043 / 0.779199, with uncha
 HitRate/MTTC. These are **not new live measurements of the integrated package**.
 The [historical evidence retained in main](docs/delivery_reports/f2_historical.json)
 records 826 calls and an inherited USD 0.69472392 allowance estimate, not a current
-price or invoice. New real F2 verification remains separately gated.
+price or invoice. Live performance of the integrated LLM mode has not been measured.
 
 Recent selection used fixed Development-160/four folds. The remaining 40 public
 sessions were exposed earlier. The [final Full-200 report](docs/delivery_reports/final_public_full200.json)
@@ -141,7 +138,6 @@ Historical [ablations](docs/ablation_summary.md) and
   request timeout is not a guarantee of whole-turn latency or organizer limits.
 - The Agent must not read targets, labels, scenario IDs, future turns or private
   evaluation data. Demo hit/rank annotations are evaluator-only.
-- A13/A14, profile/depth/recall extensions and model/prompt tuning remain frozen.
 
 ## Rebuild and verify
 
@@ -174,17 +170,18 @@ versions, split/folds, report and SHA-256 manifest. Evaluation reports live unde
 `docs/delivery_reports/`, outside Agent runtime. Catalogs, model weights,
 embeddings, credentials and private data are not shipped in the bundle.
 
-## Team, attribution and submission
+## Team and attribution
 
-[Team-approved contributions](docs/team_contributions.md) distinguish verified
-component work from unassigned/shared or future work. See
+Team **double zhang**:
+
+- **ChenZhang-77** — context/preference correctness, guarded DeepSeek handoff and
+  local dialogue visualization.
+- **Pat7ryk** — retrieval/ranking, evaluation tooling, release integration and
+  the independent dual-mode package.
+
+See [component contributions and AI-assistance disclosure](docs/team_contributions.md),
 [third-party notices](submission/THIRD_PARTY_NOTICES.md) and
 [data attribution](DATA_ATTRIBUTION.md). Public visibility does not itself grant
-a source-code license; maintainers must confirm their license/asset decisions.
+a source-code license. No project-wide open-source license is included.
 
-The remaining external gates include repository public visibility,
-source/asset rights decisions, an actual public YouTube demo and final Devpost fields.
-Prepared text or local tests do not mean those actions have happened.
-
-Repository navigation: [docs map](docs/README.md). Coding agents must read
-[AGENTS.md](AGENTS.md), current status and the release roadmap before changes.
+Further reading: [documentation map and maintainer reference](docs/README.md).

@@ -24,7 +24,7 @@ complete proactive over-generality retrieval cutoff; III has query/context
 distillation and bounded fixed-strategy selection, not long-term profile updates
 or self-refining workflow orchestration; IV is covered by the reported public
 metrics/runtime evidence, with private performance unknown. These disclosed gaps
-still require organizer eligibility clarification, not a claim of full coverage.
+are limitations of this implementation, not a claim of full coverage.
 
 ## Evidence status, usage and cost
 
@@ -33,10 +33,8 @@ MTTC 4.13125, TechnicalScore .766231, exact paired core/delivery response traces
 and four-fold results, with 649 turns and zero observed fallback. Dense/fusion
 executed 101 times. The bound repository report and tested-runtime manifest are
 in the repository's [delivery evidence directory](https://github.com/ChenZhang-77/tiktok-techjam-2026-shopping-copilot/tree/main/docs/delivery_reports)
-on private main after the authorized 2026-08-31 source push. Public access is
-still pending; use an authorized checkout's `docs/delivery_reports/` or the
-combined ZIP's separate `evidence/` directory. These are same-machine,
-prepared-asset, synthetic-prewarm
+on public main and in the combined ZIP's separate `evidence/` directory.
+These are same-machine, prepared-asset, synthetic-prewarm
 measurements, not a fresh dependency install or hidden-set guarantee.
 Offline prompt/completion tokens and external API charges are zero; local CPU,
 memory and setup costs are not zero. Warm source evaluation is not a cold-start
@@ -49,7 +47,7 @@ Historical llm-branch F2 paired scores were .779043/.779199 with unchanged HR/MT
 826 calls had an inherited estimated allowance of USD .69472392, not a current
 price quote or invoice. Historical provider p95 was 1.146/1.609 seconds and max
 7.318 seconds. These are not live measurements of this integrated package.
-New live verification is pending separate authorization. The API has no retries,
+Live performance of the integrated LLM mode has not been measured. The API has no retries,
 8-second request timeout and call/cost/duration stop conditions; unknown usage
 is reserved as allowance, not called free. Failure preserves pre-rerank order.
 
@@ -69,7 +67,7 @@ this run. Full200 is exposed/public, not unseen validation; do not interpret a
 Dev160-versus-Full200 difference as an algorithm gain/regression. Documentation
 can be updated after a run; frozen Python/runtime hashes are checked separately.
 
-## Contributions and final submission
+## Reproducibility boundaries
 
 The paired run recorded peak RSS 1,140,097,024 bytes for the shared process,
 covering both arms, not isolated per-Agent memory. A separate standard-library-only
@@ -77,16 +75,13 @@ fresh virtual environment imported the package and returned catalog-valid offlin
 results with an explicit dense failure; that proves degraded startup only, not
 full dense dependency installation or matching benchmark performance.
 
-Private main now contains the code, setup, evaluation evidence, contribution draft
-and Devpost/demo materials. No branch assembly is required. Approved credits name
-ChenZhang-77 for context/preference fixes and visualization, and Patryk for
-retrieval/evaluation and release integration. On 2026-08-31 the user confirmed both
-participants registered and approved the existing component descriptions; this
-is not a claim of exclusive subsystem ownership. Public repository access, the
-required public 3-minute YouTube video, Devpost submission and license/asset
-decisions remain external gates. The registered team name has been confirmed.
-See the event requirements
-at https://tiktoktechjam2026.devpost.com/ . Publication approval has been given;
-visibility is not yet enabled and requires owner/admin permission.
-No new live LLM performance is claimed. The offline Full200 run does not clear
-the separate live-enhancement, organizer eligibility or public-submission gates.
+## Team
+
+Team **double zhang** built Adaptive Shopping Copilot. ChenZhang-77 contributed
+context/preference correctness, guarded DeepSeek handoff and local dialogue
+visualization. Pat7ryk contributed retrieval/ranking, evaluation tooling, release
+integration and the independent dual-mode package. AI coding assistance was used
+during implementation, testing, review and document preparation.
+
+The public repository's main contains the code, setup and evaluation evidence;
+no branch assembly is required. No new live LLM performance is claimed.

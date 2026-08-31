@@ -13,5 +13,5 @@ Optional dense dependencies are pinned in requirements-dense.txt and retain
 their respective licenses. Optional DeepSeek use is subject to its service terms,
 credential and cost restrictions; the organizer supplies no API credits.
 
-No new project source license is selected by this work. Maintainers retain that
-decision; public visibility alone is not an open-source license grant.
+No project-wide open-source license is included. Public visibility alone is not
+an open-source license grant.
