@@ -34,6 +34,11 @@ pre-rerank fallback for unavailable or invalid provider responses.
 
 ## How we built it / tools
 
+Development tools verified in this work: **Codex, Git and the macOS terminal**;
+Python unittest for regression checks and the in-app browser for UI verification.
+Any additional IDE/notebook tools remain for team confirmation; no VSCode/Colab
+usage is assumed.
+
 Python, SQLite FTS5, NumPy, PyTorch, Transformers and Sentence Transformers;
 sentence-transformers/all-MiniLM-L6-v2 at a pinned revision. Optional provider:
 DeepSeek deepseek-v4-flash with the frozen F2 prompt. Data comes from the official
@@ -62,7 +67,10 @@ are simulated, so we do not claim measured business impact or real-user uplift.
 ## Limitations / next steps
 
 Complex language and overrides can fail. Clarification is priority-biased,
-profile ranking is disabled, and dense retrieval is conditional. Same-machine
+not a complete immediate over-generality retrieval-cutoff policy. Long-term
+profile ranking/update and self-refining workflow orchestration are not
+implemented; bounded fixed strategy selection should not be described as those
+capabilities. Dense retrieval is conditional. Same-machine
 prepared-asset results do not prove cold-start portability. New real LLM testing
 and organizer resource/network eligibility are separate gates. We prioritize
 reproducibility and honest fallback over unsupported production-readiness claims.

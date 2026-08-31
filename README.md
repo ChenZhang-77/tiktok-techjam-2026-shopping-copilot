@@ -65,12 +65,17 @@ reset/respond inputs + frozen catalog
   -> priority-biased clarification + response guard
 ```
 
-| Track 4 capability | Implemented boundary |
+| Official Track 4 pillar | Implemented / conditional / missing boundary |
 | --- | --- |
-| Intent routing / hybrid search | Buying/Browsing changes execution; dense/RRF only behind the broad-Browsing gate |
-| Multi-turn evolution | Active, overridden and no-preference evidence is tracked; complex language still has known limitations |
-| Dynamic context | Current constraints form the query and diagnostics; no evaluator labels enter runtime |
-| LLM product ranking | Opt-in F2 only; offline mode does not claim to execute this component |
+| I. Core Architecture: Intent Routing & Hybrid Pipeline | Buying/Browsing routing and structured retrieval implemented; local dense/RRF conditional; LLM semantic ranking is F2 opt-in only, absent from offline execution |
+| II. Dialog Strategy: Multi-Turn Scenario Evolution | Scoped state/override/no-preference tracking and structured clarification implemented; priority-biased questions are not a complete proactive over-generality retrieval-cutoff policy |
+| III. Self-Evolution: Dynamic Context Programming | Current dialogue state distills the query and selects a bounded fixed strategy; long-term profile ranking/update and self-refining workflow orchestration are not implemented |
+| IV. Evaluation Matrix: Product & Efficiency Metrics | HR@10, MRR, MTTC, Efficiency and TechnicalScore plus folds/scenarios/runtime evidence are reported below; private-set performance remains unknown |
+
+This is a coverage assessment, not a claim of complete pillar fulfillment. The
+kit permits rule-based/local methods and says a paid LLM is not required, but that
+does not waive other architecture expectations. Confirm any eligibility-critical
+gap with the organizer before final submission; do not resolve it by wording alone.
 
 LLM mode is selected **before a run**, not hot-switched mid-conversation. It only
 reorders eligible existing Top-10 products with constraint protection: no recall

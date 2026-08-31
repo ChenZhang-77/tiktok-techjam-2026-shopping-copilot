@@ -18,6 +18,14 @@ version or output determinism is claimed. Clarification is priority-biased,
 long-term profile ranking is disabled, dense routing is conditional, and there
 is no active LLM dialogue-understanding module or multimodal input.
 
+Against the PDF's four pillars: I has intent routing, conditional dense/RRF and
+optional-only LLM product ranking; II has scoped state and clarification but no
+complete proactive over-generality retrieval cutoff; III has query/context
+distillation and bounded fixed-strategy selection, not long-term profile updates
+or self-refining workflow orchestration; IV is covered by the reported public
+metrics/runtime evidence, with private performance unknown. These disclosed gaps
+still require organizer eligibility clarification, not a claim of full coverage.
+
 ## Evidence status, usage and cost
 
 Independent package validation reproduced Development-160 HR .925, MRR .554521,
