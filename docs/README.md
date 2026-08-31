@@ -25,6 +25,7 @@ They do not authorize resuming frozen work or override current status.
 
 ## Delivery
 
+- `final_readiness.md` — completed local checks, archive identity and remaining external gates
 - `final_delivery_execution.md` — six-step execution and automatic review log
 - `devpost_draft.md` — main-only code link and honest submission text
 - `demo_recording_script.md` — rehearsed simulated cases and recording script

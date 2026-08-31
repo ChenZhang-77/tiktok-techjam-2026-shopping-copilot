@@ -10,9 +10,10 @@ not another optimization cycle.
 2. One offline-default / explicit F2 delivery entry — complete, reviewed.
 3. Independent source-only bundle and actual Dev160/four-fold parity — complete, reviewed.
 4. Accurate offline simulation, evidence binding and API boundaries — complete, reviewed.
-5. README/report, main-only Devpost draft, credits and recording script — in progress.
-6. Freeze the runtime, run one offline Full200 public report, reconcile local QA
-   and list external gates. Real LLM validation needs new transfer/budget approval.
+5. README/report, main-only Devpost draft, credits and recording script — complete, reviewed.
+6. Frozen offline Full200 report, local QA, combined archive and final review —
+   locally complete. [Remaining external gates](final_readiness.md) require
+   organizer/host/team decisions and explicit publication or paid-call authority.
 
 Final Devpost references only **main and the exact final commit**. Other GitHub
 branches remain intact. The integration branch is not yet merged/pushed to main.

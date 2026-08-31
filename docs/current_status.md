@@ -124,9 +124,14 @@ Python environment; no other-machine/fresh dependency-install claim is made.
 The visualizer now forces offline mode, binds recorded metrics to matching source
 and inputs, separates evaluator annotations, and rejects historical/out-of-split
 reruns. Seven API/behavior regressions and the browser walkthrough pass; the full
-suite is 323 tests at step 04. Step 05 prepares a main-only Devpost draft, a
+suite was 323 tests at step 04. Step 05 prepared a main-only Devpost draft, a
 commit-supported contribution draft and a rehearsed recording script.
 Actual video recording/upload, approved contributions, new live LLM verification
 and public submission remain incomplete. Profile remains disabled; B9 is
 conditional, not global hybrid retrieval, and Plan One does not claim an active
 LLM-ranking pillar. See [delivery plan](demo_and_submission_plan.md).
+
+Final local audit: 330 tests pass, including a clean source snapshot with an
+independently copied catalog; 37-file bundle and45-entry combined ZIP hashes
+verify. Standards/Spec final reviews pass. [Final readiness](final_readiness.md)
+records the exact limits of this local completion and the uncompleted external gates.
