@@ -16,8 +16,9 @@ are not authorized by that instruction.
 
 Plan One's runtime is Chen `0bd3375`: state/extraction corrections, scoped
 QueryPlan, priority-based clarification, structured retrieval, and conditional
-local MiniLM/RRF (B9). B12 and profile scoring remain off. No runtime or shared
-contract changes are part of this release organization.
+local MiniLM/RRF (B9). B12 and profile scoring remain off. Step 01 changes
+documentation only; subsequent approved tickets integrate delivery runtime while
+preserving offline behavior and the shared contract.
 
 ## Current measured default — Development-160 only
 
