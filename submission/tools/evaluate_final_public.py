@@ -109,7 +109,7 @@ def main():
             try:
                 validate_agent_response(response, catalog_ids=ids, top_k=top_k,
                                         allowed_ask_attributes=ALLOWED_ATTRIBUTES)
-            except ValueError:
+            except Exception:
                 self.invalid_responses += 1
                 raise
             return response
@@ -144,13 +144,23 @@ def main():
             "routes": observer.routes, "warmup": warm.diagnostics.to_dict(),
             "trace_sha256": hashlib.sha256(json.dumps(observer.trace, sort_keys=True).encode()).hexdigest(),
             "elapsed_seconds": time.perf_counter() - started}
-        unchanged = snapshot(bundle, args) == frozen
+        integrity_error = None
+        try:
+            unchanged = snapshot(bundle, args) == frozen
+            if not unchanged:
+                integrity_error = "hash_mismatch"
+        except Exception as exc:
+            # Preserve the completed run even if an input was changed/deleted.
+            # Do not include exception bodies or paths in the public report.
+            unchanged = False
+            integrity_error = type(exc).__name__
         passed = unchanged and len(result["sessions"]) == 200 and not any((observer.fallbacks,
             observer.invalid_responses, observer.response_exceptions))
         report = {"scope": frozen["scope"], "evaluation": {"split": "full", **frozen["configuration"]},
             "freeze_sha256": sha(args.freeze_file), "result": result, "runtime": runtime,
             "external_llm_calls": 0, "acceptance_passed": passed,
             "source_and_inputs_unchanged": unchanged,
+            "integrity_check_error": integrity_error,
             "environment": {"python": platform.python_version(), "platform": platform.platform(),
                 "peak_rss_bytes": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * (1 if sys.platform == "darwin" else 1024)},
             "limitations": ["Exposed public set; not unseen validation or a tuning input",
