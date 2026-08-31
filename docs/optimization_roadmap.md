@@ -2,6 +2,11 @@
 
 ## Current objective
 
+Active execution is now the [six-step integration plan](final_delivery_execution.md)
+under the [approved rules](final_delivery_rules.md). The source-publication sequence
+below is historical and does not authorize another push. Local integration,
+verification and documentation proceed after each step's dual review.
+
 Deliver [Plan One / optional Plan Two](final_release_plan.md), not another open-ended
 optimization cycle. The selected main source is Chen `0bd3375` → remote
 `yuqing`; local `llm` → remote `llm` retains the verified optional reranker.

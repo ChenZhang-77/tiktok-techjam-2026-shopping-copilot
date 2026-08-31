@@ -129,6 +129,36 @@ _Avoid_: timing failure as an Agent behavior class
 
 ## Evaluation language
 
+**Headless Submission**:
+The competition deliverable in which the evaluator interacts directly with the
+Shopping Agent; no human-operated chat interface is required for evaluation.
+_Avoid_: hosted chatbot, demo website
+
+**Offline Configuration**:
+A Shopping Agent configuration that uses prepared local catalog and model assets
+without external LLM or API calls during a run; it does not mean model-free.
+_Avoid_: no-model mode, fully offline installation
+
+**LLM-Enhanced Configuration**:
+A Shopping Agent configuration with optional LLM semantic ordering of existing
+recommendations, not LLM ownership of conversation understanding or clarification.
+_Avoid_: LLM chatbot mode, LLM understanding mode
+
+**LLM Rerank Fallback**:
+Preservation of the pre-LLM recommendation order when an intended LLM rerank
+cannot complete validly; a normal Conditional Route skip is not a failure.
+_Avoid_: successful enhancement, switching on LLM automatically
+
+**Official Scoring Configuration**:
+The frozen Shopping Agent configuration declared for organizer evaluation,
+distinct from the software's default configuration and any observed fallback.
+_Avoid_: whichever mode the evaluator guesses, software default
+
+**Evaluation Replay**:
+A presentation of a recorded evaluation run, distinct from a live customer
+conversation and from information available to the Shopping Agent.
+_Avoid_: live chat, Agent knowledge
+
 **Development Set**:
 The fixed 160 public sessions used for B-stage cross-validation, ablation, and
 ordinary experiment selection.
