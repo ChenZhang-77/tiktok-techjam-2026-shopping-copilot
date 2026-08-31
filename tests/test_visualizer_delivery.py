@@ -17,7 +17,7 @@ class VisualizerDeliveryTest(unittest.TestCase):
         self.catalog.write_text(json.dumps({"parent_asin": "A", "title": "shoes",
             "categories": ["Shoes"], "features": [], "details": {}}) + "\n")
         dataset = self.root / "public.jsonl"
-        dataset.write_text(json.dumps({"sample_id": "synthetic", "scenario_type": "buying",
+        dataset.write_text(json.dumps({"sample_id": "public_0001", "scenario_type": "buying",
             "user_profile": {}, "ground_truth": {"parent_asin": "A"}}) + "\n")
         self.runner = server.TraceRunner(self.catalog, dataset)
 
@@ -60,6 +60,25 @@ class VisualizerDeliveryTest(unittest.TestCase):
         next(stream)
         self.assertEqual(len(self.runner.active_sessions), 1)
         stream.close()
+        self.assertEqual(self.runner.active_sessions, {})
+
+    def test_legacy_start_endpoint_honors_historical_experiment(self):
+        runs = self.root / "runs"
+        (runs / "old").mkdir(parents=True)
+        handler = object.__new__(server.VisualizerHandler)
+        handler.path = "/api/start?experiment=old&index=0"
+        handler.runner = self.runner
+        with patch.object(server, "RUNS_DIR", runs), patch.object(handler, "_send_json") as send:
+            handler.do_GET()
+        self.assertEqual(send.call_args.kwargs["status"], 400)
+        self.assertIn("Historical", send.call_args.args[0]["message"])
+        self.assertEqual(self.runner.active_sessions, {})
+
+    def test_direct_current_rerun_rejects_samples_outside_development(self):
+        outside = json.loads((server.ROOT / "docs/public_split_v1.json").read_text())["holdout"][0]
+        self.runner.samples[0]["sample_id"] = outside
+        with self.assertRaisesRegex(ValueError, "outside.*development"):
+            self.runner.start_session(0, "current")
         self.assertEqual(self.runner.active_sessions, {})
 
 

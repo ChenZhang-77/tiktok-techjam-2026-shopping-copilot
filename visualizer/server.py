@@ -377,6 +377,10 @@ class TraceRunner:
     def start_session(self, index: int, experiment_id: str | None = None) -> dict:
         if index < 0 or index >= len(self.samples):
             raise ValueError(f"Session index out of range: {index}")
+        agent_cls = self._agent_class(experiment_id)
+        selected = self._split_sample_ids(experiment_id)
+        if selected is not None and str(self.samples[index].get("sample_id")) not in selected:
+            raise ValueError("Session is outside the selected development split.")
         session = InteractiveSession(
             index=index,
             sample=self.samples[index],
@@ -384,7 +388,7 @@ class TraceRunner:
             catalog_ids=self.catalog_ids,
             categories=self.categories,
             products=self.products,
-            agent_cls=self._agent_class(experiment_id),
+            agent_cls=agent_cls,
             retriever=self._retriever_for(experiment_id),
         )
         run_id = uuid.uuid4().hex
@@ -505,8 +509,9 @@ class VisualizerHandler(BaseHTTPRequestHandler):
         if parsed.path == "/api/start":
             query = parse_qs(parsed.query)
             index = int(query.get("index", ["0"])[0])
+            experiment_id = query.get("experiment", ["current"])[0]
             try:
-                self._send_json(self.runner.start_session(index))
+                self._send_json(self.runner.start_session(index, experiment_id))
             except ValueError as exc:
                 self._send_json({"message": str(exc)}, status=400)
             return
