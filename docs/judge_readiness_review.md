@@ -126,7 +126,13 @@ only actual field values plus a clearly separated story link in the field docume
 moves operating guidance to the existing team checklist, and replaces approval
 language with product-focused wording. Private contact details remain outside Git.
 Public-data, same-machine, live-LLM and architectural limitations are preserved.
-Runtime and numerical evidence are unchanged. Independent re-review is pending.
+Runtime and numerical evidence are unchanged. Independent Standards and Spec
+re-reviews of `318e948...aa2ed97` both pass with zero remaining findings; the prior
+two P2 and one P3 findings on each axis are resolved. This review specifically
+checks audience separation and does not certify completion of external gates.
+Field-block/length/contact checks, unchanged Results/limitations checks, local
+links, the 37-file package, frozen evidence and all 45 archive entries verify.
+No Agent evaluation or new live API call was run for this document-only revision.
 
 The current attachment and its hash are recorded in [final readiness](final_readiness.md).
 It only updates the package report's obsolete team-name gate and generated

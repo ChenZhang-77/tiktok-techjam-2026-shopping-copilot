@@ -24,7 +24,7 @@ The user now approves public visibility and current component credits, but asks
 for project/copy review before filling. Current work is judge-facing prose and
 release-risk verification, not runtime tuning. Visibility remains PRIVATE;
 owner/admin permission is needed. Revised copy, actual uploads and final Submit
-retain their confirmation gates. See [field preview](devpost_draft.md).
+retain their confirmation gates. See the [operating checklist](demo_and_submission_plan.md).
 
 Earlier source publication to yuqing/llm is history, not a current instruction or
 a requirement for judges to assemble code. Source-publication records and recovery
