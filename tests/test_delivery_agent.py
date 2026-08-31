@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import io
 from pathlib import Path
 import tempfile
 import unittest
@@ -32,6 +33,11 @@ class InvalidProvider:
     def rank(self, request):
         return SemanticRankOutcome(ordered_ids=("invented-product",),
             usage=ModelUsage(100, 20), finish_reason="stop")
+
+
+class UnexpectedFailureProvider:
+    def rank(self, request):
+        raise OverflowError("SECRET-invalid-token-count")
 
 
 class DeliveryAgentTest(unittest.TestCase):
@@ -147,6 +153,42 @@ class DeliveryAgentTest(unittest.TestCase):
         agent.reset("test", {})
         response = agent.respond("test", "Show me shoes", 1, 10)
         self.assertNotIn("SECRET", json.dumps(response))
+
+    def test_unexpected_provider_exception_preserves_order_and_is_not_a_skip(self):
+        core = self.agent(config=DeliveryConfig())
+        agent = self.agent(config=DeliveryConfig("llm", 10, 1, 30),
+                           backend=UnexpectedFailureProvider())
+        core.reset("test", {})
+        expected = core.respond("test", "Show me shoes", 1, 10)
+        for index in range(4):
+            agent.reset(str(index), {})
+            response = agent.respond(str(index), "Show me shoes", 1, 10)
+            self.assertEqual(response["recommendations"], expected["recommendations"])
+            self.assertEqual(response["diagnostics"]["delivery"]["turn_status"], "fallback")
+            self.assertNotIn("SECRET", json.dumps(response))
+        self.assertEqual(response["diagnostics"]["delivery"]["attempts"], 3)
+        self.assertEqual(response["diagnostics"]["delivery"]["fallbacks"], 4)
+
+    def test_real_adapter_malformed_numeric_usage_falls_back_without_network(self):
+        def response_for(request, **kwargs):
+            payload = json.loads(request.data)
+            prompt = json.loads(payload["messages"][1]["content"])
+            ranking = [row["id"] for row in reversed(prompt["candidates"])]
+            self.assertNotIn("ITEM-", json.dumps(prompt))
+            return io.BytesIO(json.dumps({"choices": [{"message": {
+                "content": json.dumps({"ranking": ranking})}, "finish_reason": "stop"}],
+                "usage": {"prompt_tokens": float("inf"), "completion_tokens": 20},
+            }).encode())
+
+        with patch.dict("os.environ", {"DEEPSEEK_API_KEY": "fixture-key"}, clear=True), \
+                patch("urllib.request.urlopen", side_effect=response_for):
+            agent = self.agent(config=DeliveryConfig("llm", 2, 1, 30))
+            agent.reset("test", {"do_not_send": "SECRET-profile"})
+            response = agent.respond("test", "Show me shoes", 1, 10)
+        info = response["diagnostics"]["delivery"]
+        self.assertEqual((info["turn_status"], info["attempts"], info["unknown_usage_attempts"]),
+                         ("fallback", 1, 1))
+        self.assertGreater(info["cost_allowance_usd"], 0)
 
 
 if __name__ == "__main__":

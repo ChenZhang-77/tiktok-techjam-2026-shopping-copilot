@@ -43,6 +43,23 @@ class _UnavailableRanker:
         raise SemanticRankError("no_key")
 
 
+class _ProviderBoundary:
+    """Normalize external transport/parser failures without exposing their bodies."""
+
+    def __init__(self, backend):
+        self.backend = backend
+
+    def rank(self, request):
+        try:
+            return self.backend.rank(request)
+        except SemanticRankError:
+            raise
+        except Exception as error:
+            # The optional provider must not escape into CoreAgent's unrelated
+            # catalog-fill fallback. Process interrupts are intentionally not caught.
+            raise SemanticRankError("provider_error") from error
+
+
 class Agent(CoreAgent):
     def __init__(self, catalog_path=None, *, config=None, retriever=None, backend=None,
                  strategy_config=None):
@@ -61,7 +78,7 @@ class Agent(CoreAgent):
                 api_key = os.environ.get("DEEPSEEK_API_KEY", "")
                 if api_key:
                     backend = DeepSeekSemanticRanker(api_key=api_key)
-            self.ledger = BudgetedRanker(backend,
+            self.ledger = BudgetedRanker(_ProviderBoundary(backend),
                 max_calls=self.delivery_config.max_calls,
                 max_usd=self.delivery_config.max_usd,
                 max_seconds=self.delivery_config.max_seconds)
@@ -89,6 +106,7 @@ class Agent(CoreAgent):
             "successes": sum(r["failure"] is None for r in records),
             "fallbacks": sum(bool(r["failure"]) for r in self.reranker.records) if self.reranker else 0,
             "cost_allowance_usd": self.ledger.total_cost if self.ledger else 0.0,
+            "unknown_usage_attempts": sum(not r["usage_known"] for r in records),
             "stop_reason": self.ledger.stop_reason if self.ledger else None,
         }
         return response
