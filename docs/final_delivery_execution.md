@@ -15,13 +15,19 @@ Only local work is authorized; live API and public actions remain gated.
 | Step | Outcome | Validation/review |
 | --- | --- | --- |
 | 01 Scope and baseline | Complete | 302 tests; caad3ea vs 3b01416: Standards/Spec pass; historical phase wording clarified |
-| 02 Dual configuration | Pending | Blocked by 01 |
+| 02 Dual configuration | Complete | eebef64..aa5df4e; 314 tests; provider-boundary P2 fixed; Standards/Spec re-review pass |
 | 03 Independent bundle | Pending | Blocked by 02 |
 | 04 Accurate replay | Pending | Blocked by 03 |
 | 05 Submission materials | Pending | Blocked by 03 and 04 |
 | 06 Final audit/external gates | Pending | Local checks can proceed without paid/public authorization |
 
 ## Evidence discipline
+
+Step 02 keeps all four extracted F2 definitions AST-identical to `llm@a9e34ae`;
+external parser exceptions are normalized outside that frozen logic. Baseline
+Development-160 rerun: HR .925, MRR .554521, MTTC 4.13125, score .766231,
+zero invalid responses/exceptions/fallbacks. This remains source evidence until
+step 03 independently tests the packaged entry.
 
 Baseline command: `PYTHONDONTWRITEBYTECODE=1 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 TOKENIZERS_PARALLELISM=false python -m unittest discover -s tests -q` using the prepared project environment. No paid calls. No configured type checker; Python syntax/contract checks apply.
 
