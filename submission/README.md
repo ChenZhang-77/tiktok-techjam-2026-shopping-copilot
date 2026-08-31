@@ -49,8 +49,6 @@ It does not run the exposed holdout, access private data, or call an LLM.
 The official final harness may instead import `Agent` directly and supply a
 catalog path. Organizer network/resource/packaging policy remains authoritative.
 
-## Delivery status
-
 ## Frozen final Full200 public report
 
 This is separate from development selection. The remaining40 were exposed earlier:
